@@ -171,15 +171,15 @@ async function initializeAuth() {
     }
 
     // Define getGeocode function
-    async function getGeocode(address) {
-        const baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
-        const response = await fetch(`${baseUrl}?address=${encodeURIComponent(address)}&key=AIzaSyAl_U4JqlECSfrRZX5swVKhmKkg63SWUs0`);
-        const data = await response.json();
-        if (data.status !== 'OK') {
-            throw new Error('Geocoding failed: ' + data.error_message);
-        }
-        return data.results[0].geometry.location;
+async function getGeocode(address) {
+    const baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+    const response = await fetch(`${baseUrl}?address=${encodeURIComponent(address)}&key=${CONFIG.GOOGLE_API_KEY}`);
+    const data = await response.json();
+    if (data.status !== 'OK') {
+        throw new Error('Geocoding failed: ' + data.error_message);
     }
+    return data.results[0].geometry.location;
+}
 
     function determineRiskCategory(type) {
         if (["hospital", "fire-station", "government"].includes(type)) {
