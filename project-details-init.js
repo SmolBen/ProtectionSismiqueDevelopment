@@ -45,6 +45,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("projectType").textContent = project.type;
                 document.getElementById("projectDomain").textContent = project.domain || "N/A";
                 document.getElementById("projectStatusDropdown").value = project.status;
+                document.getElementById("projectStatusDropdown").addEventListener('change', function() {
+                    if (canModifyProject()) {
+                        saveProjectStatus(this.value);
+                    }
+                });
                 document.getElementById("projectLatitude").textContent = project.latitude || "N/A";
                 document.getElementById("projectLongitude").textContent = project.longitude || "N/A";
                 document.getElementById("projectMaxSa0_2").textContent = project.maxSa0_2 || "N/A";

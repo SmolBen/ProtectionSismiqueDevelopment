@@ -4979,6 +4979,25 @@ async function prepareEquipmentForReport() {
     return equipmentWithEmbedment;
 }
 
+async function saveProjectStatus(newStatus) {
+    try {
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                id: currentProjectId,
+                status: newStatus
+            })
+        });
+        
+        if (response.ok) {
+            console.log('Status saved');
+        }
+    } catch (error) {
+        console.error('Save failed:', error);
+    }
+}
+
 
 // Make functions globally available
 window.logout = logout;
