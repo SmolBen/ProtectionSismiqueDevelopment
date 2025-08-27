@@ -93,7 +93,6 @@
     script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_API_KEY}&libraries=places&loading=async&callback=initGoogleMaps`;
     script.async = true;
     script.defer = true;
-    script.onerror = handleGoogleMapsError;
     document.head.appendChild(script);
     </script>
     <!-- AWS Cognito SDK -->
