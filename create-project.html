@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Project</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="create-project.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="title-area">
+                <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique</a>
+                <a href="dashboard.html" class="dashboard-btn">
+                    <i class="fas fa-th-large"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="user-info" id="userInfo">
+                <!-- User info will be populated by JavaScript -->
+            </div>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="form-container">
+            <h1>Create New Project</h1>
+            <form id="createProjectForm">
+                <div class="form-group">
+                    <label for="name">Project Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="type">Type:</label>
+                    <select id="type" name="type" required>
+                        <option value="condo">Condo</option>
+                        <option value="commercial">Commercial</option>
+                        <option value="residential">Residential</option>
+                        <option value="industrial">Industrial</option>
+                        <option value="hospital">Hospital</option>
+                        <option value="fire-station">Fire-station</option>
+                        <option value="government">Government</option>
+                        <option value="school">School</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="domain">Domain:</label>
+                    <select id="domain" name="domain" required>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="electricity">Electricity</option>
+                        <option value="ventilation">Ventilation</option>
+                        <option value="sprinkler">Sprinkler</option>
+                        <option value="interior system">Interior System</option>
+                    </select>
+                </div>
+                
+                <!-- Address fields -->
+                <div class="form-group">
+                    <label for="address1">Address Line 1:</label>
+                    <input type="text" id="address1" name="address1" required>
+                </div>
+                <div class="form-group">
+                    <label for="address2">Address Line 2:</label>
+                    <input type="text" id="address2" name="address2">
+                </div>
+                <div class="form-group">
+                    <label for="city">City:</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+                <div class="form-group">
+                    <label for="province">Province:</label>
+                    <input type="text" id="province" name="province" required>
+                </div>
+                <div class="form-group">
+                    <label for="country">Country:</label>
+                    <input type="text" id="country" name="country" value="Canada" readonly>
+                </div>
+                <button type="submit" class="button primary">Create Project</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAl_U4JqlECSfrRZX5swVKhmKkg63SWUs0&libraries=places&loading=async&callback=initGoogleMaps" async defer onerror="handleGoogleMapsError()"></script>
+    <!-- AWS Cognito SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-helper.js"></script>
+    <script src="create-project.js"></script>
+</body>
+</html>

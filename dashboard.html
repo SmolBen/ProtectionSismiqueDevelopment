@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protection Sismique - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div>
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="navbar-content">
+            <!-- <a href="dashboard.html" class="title">Protection Sismique</a> -->
+            <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique</a>
+            <div class="user-info" id="userInfo">
+                <!-- User info will be populated by JavaScript -->
+            </div>
+        </div>
+    </nav>
+    
+    <main>
+        <!-- Admin Panel (only visible to admins) -->
+        <div class="admin-panel" id="adminPanel">
+            <h2>
+                <i class="fas fa-shield-alt"></i>
+                Admin Panel
+            </h2>
+            <div class="admin-controls">
+                <button class="admin-btn" onclick="openUserManagement()">
+                    <i class="fas fa-users"></i>
+                    Manage Users
+                </button>
+                <button class="admin-btn" onclick="viewAllProjects()">
+                    <i class="fas fa-project-diagram"></i>
+                    View All Projects
+                </button>
+            </div>
+        </div>
+
+        <!-- Compact Stats Section -->
+        <div class="stats-grid" id="statsGrid">
+            <!-- Stats will be populated by JavaScript -->
+        </div>
+
+        <div id="dashboard" class="page">
+            <div class="header-section">
+                <div class="title-row">
+                    <h1 style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin: 0;">Projects</h1>
+                </div>
+                
+                <div class="controls-row">
+                    <div class="search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="projectSearch" placeholder="Search projects...">
+                    </div>
+                    <div class="filter">
+                        <i class="fas fa-filter"></i>
+                        <select id="projectFilter">
+                            <option value="all">All Status</option>
+                            <option value="Planning">Planning</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <button id="createProjectButton" class="button primary" style="margin-left: auto; padding: 6px 12px; font-size: 13px;">
+                        <i class="fas fa-plus"></i> New
+                    </button>
+                </div>
+            </div>
+            
+            <div id="projectList" class="project-list"></div>
+        </div>
+    </main>
+
+    <!-- AWS Cognito SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-helper.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protection Sismique - Authentication</title>
+    <link rel="stylesheet" href="auth.css">
+    <!-- Font Awesome for eye icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Protection Sismique</h1>
+        
+        <!-- Debug Info (remove in production) -->
+        <div id="debugInfo" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 12px;"></div>
+        
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" class="loading" style="display: none;">
+            <p>Loading authentication...</p>
+        </div>
+        
+        <!-- Error/Success messages -->
+        <div id="messageContainer"></div>
+        
+        <!-- Tab buttons -->
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab('login')">Login</button>
+            <button class="tab-button" onclick="switchTab('signup')">Sign Up</button>
+        </div>
+        
+        <!-- Login Tab -->
+        <div id="loginTab" class="tab-content active">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <div class="password-input-container">
+                        <input type="password" id="loginPassword" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">
+                            <i class="fas fa-eye" aria-label="Show password"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" id="loginBtn">Login</button>
+            </form>
+        </div>
+        
+        <!-- Signup Tab -->
+        <div id="signupTab" class="tab-content">
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupEmail">Email:</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password:</label>
+                    <div class="password-input-container">
+                        <input type="password" id="signupPassword" required minlength="8">
+                        <button type="button" class="password-toggle" onclick="togglePassword('signupPassword', this)">
+                            <i class="fas fa-eye" aria-label="Show password"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <div class="password-input-container">
+                        <input type="password" id="confirmPassword" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', this)">
+                            <i class="fas fa-eye" aria-label="Show password"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="firstName">First Name:</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name:</label>
+                    <input type="text" id="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="companyName">Company:</label>
+                    <input type="text" id="companyName" required>
+                </div>
+                <div class="form-group">
+                    <label for="domain">Domain:</label>
+                    <select id="domain" required>
+                        <option value="">Select domain</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="electricity">Electricity</option>
+                        <option value="interior-design">Interior Design</option>
+                        <option value="sprinklers">Sprinklers</option>
+                        <option value="ventilation">Ventilation</option>
+                    </select>
+                </div>
+                <button type="submit" id="signupBtn">Create Account</button>
+            </form>
+        </div>
+        
+        <!-- Verification Tab -->
+        <div id="verificationTab" class="tab-content">
+            <h3>Verify Your Email</h3>
+            <p>Enter the verification code sent to your email:</p>
+            <div class="form-group">
+                <input type="text" id="verificationCode" placeholder="Verification code" maxlength="6">
+            </div>
+            <button onclick="verifyEmail()">Verify</button>
+            <button onclick="resendVerificationCode()">Resend Code</button>
+        </div>
+    </div>
+
+    <script src="auth-helper.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+/* Authentication Page Styles */
+body { 
+    font-family: Arial, sans-serif; 
+    margin: 0; 
+    padding: 20px; 
+}
+
+.auth-container { 
+    max-width: 400px; 
+    margin: 0 auto; 
+}
+
+.error { 
+    color: red; 
+    background: #ffebee; 
+    padding: 10px; 
+    border-radius: 4px; 
+    margin: 10px 0; 
+}
+
+.success { 
+    color: green; 
+    background: #e8f5e8; 
+    padding: 10px; 
+    border-radius: 4px; 
+    margin: 10px 0; 
+}
+
+.loading { 
+    text-align: center; 
+    margin: 20px 0; 
+}
+
+.form-group { 
+    margin: 15px 0; 
+}
+
+.form-group label { 
+    display: block; 
+    margin-bottom: 5px; 
+}
+
+/* Password input container for positioning the toggle button */
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.form-group input, 
+.form-group select { 
+    width: 100%; 
+    padding: 10px; 
+    border: 1px solid #ddd; 
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Special styling for password inputs with toggle */
+.password-input-container input {
+    padding-right: 45px; /* Extra padding on right for icon */
+}
+
+/* Password toggle button */
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none !important;
+    border: none !important;
+    cursor: pointer;
+    color: #666;
+    font-size: 14px;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    transition: transform 0.2s ease;
+    z-index: 10;
+    width: auto;
+    height: auto;
+    min-width: unset;
+    box-shadow: none !important;
+    display: inline-block !important;
+    gap: unset !important;
+}
+
+.password-toggle:hover {
+    transform: translateY(-50%) scale(1.15);
+    background: none !important;
+    box-shadow: none !important;
+}
+
+.password-toggle:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+button { 
+    background: #007bff; 
+    color: white; 
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    width: 100%; 
+}
+
+button:hover { 
+    background: #0056b3; 
+}
+
+button:disabled { 
+    opacity: 0.6; 
+    cursor: not-allowed; 
+}
+
+.tab-buttons { 
+    display: flex; 
+    margin-bottom: 20px; 
+}
+
+.tab-button { 
+    flex: 1; 
+    padding: 10px; 
+    background: #f0f0f0; 
+    border: none; 
+    cursor: pointer; 
+}
+
+.tab-button.active { 
+    background: #007bff; 
+    color: white; 
+}
+
+.tab-content { 
+    display: none; 
+}
+
+.tab-content.active { 
+    display: block; 
+}

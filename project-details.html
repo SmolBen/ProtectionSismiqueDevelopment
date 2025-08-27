@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="project-details.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="title-area">
+                <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique</a>
+                <a href="dashboard.html" class="dashboard-btn">
+                    <i class="fas fa-th-large"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="user-info" id="userInfo">
+                <!-- User info will be populated by JavaScript -->
+            </div>
+        </div>
+    </nav>
+    
+    <div class="loading-project" id="loadingProject">
+        <h2>Loading Project...</h2>
+        <p>Please wait while we load the project details.</p>
+    </div>
+    
+    <div class="auth-error" id="authError" style="display: none;">
+        <h2>Authentication Required</h2>
+        <p>Please log in to view project details.</p>
+        <button onclick="window.location.href='auth.html'">Go to Login</button>
+    </div>
+    
+    <div class="access-denied" id="accessDenied" style="display: none;">
+        <h2>Access Denied</h2>
+        <p>You don't have permission to view this project.</p>
+        <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+    </div>
+    
+    <div class="container" id="projectContainer" style="display: none;">
+        <!-- Top Half split into two horizontal sections -->
+        <div class="top-half">
+            <div class="left-section">
+                <h1>Project Details</h1>
+                
+                <!-- Basic Information (Always Visible) -->
+                <div class="basic-info">
+                    <p><strong>Project Name:</strong> <span id="projectName"></span></p>
+                    <p><strong>Description:</strong> <span id="projectDescription"></span></p>
+                    <p><strong>Type:</strong> <span id="projectType"></span></p>
+                    <p><strong>Domain:</strong> <span id="projectDomain"></span></p>
+                    <p><strong>Status:</strong> 
+                        <select id="projectStatusDropdown">
+                            <option value="Planning">Planning</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </p>
+                </div>
+
+                <!-- Toggle Button -->
+                <div class="details-toggle-container">
+                    <button class="details-toggle-btn" id="detailsToggleBtn" onclick="toggleProjectDetails()">
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </button>
+                </div>
+
+                <!-- Detailed Technical Information (Collapsible) -->
+                <div class="detailed-info" id="detailedInfo">
+                    <p><strong>Latitude:</strong> <span id="projectLatitude"></span></p>
+                    <p><strong>Longitude:</strong> <span id="projectLongitude"></span></p>
+                    <p><strong>Max Sa (0.2):</strong> <span id="projectMaxSa0_2"></span></p>
+                    <p><strong>Max Sa (1.0):</strong> <span id="projectMaxSa1_0"></span></p>
+                    <p><strong>Max VGA:</strong> <span id="projectMaxVGA"></span></p>
+                    <p><strong>PGAref:</strong> <span id="projectPGAref"></span></p>
+                    <p><strong>F10:</strong> <span id="projectF10"></span></p>
+                    <p><strong>F02:</strong> <span id="projectF02"></span></p>
+                    <p><strong>S_MS:</strong> <span id="projectSMS"></span></p>
+                    <p><strong>S_DS:</strong> <span id="projectSDS"></span></p>
+                    <p><strong>S_M1:</strong> <span id="projectSM1"></span></p>
+                    <p><strong>S_D1:</strong> <span id="projectSD1"></span></p>
+                    <p><strong>RiskS_DS:</strong> <span id="projectRiskSDS"></span></p>
+                    <p><strong>RiskS_D1:</strong> <span id="projectRiskSD1"></span></p>
+                    <p><strong>Final Risk Category:</strong> <span id="projectFinalRiskCategory"></span></p>
+                    <div id="projectOwnerInfo">
+                        <!-- Owner info will be populated for admins -->
+                    </div>
+                </div>
+            </div>
+            <div class="right-section">
+                <h1>Equipment List</h1>
+                <div id="equipmentList"></div>
+                    <div class="equipment-actions" style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                        <button id="generateReportButton" class="button primary" style="background: #28a745;">
+                            <i class="fas fa-file-pdf"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Bottom Half for Equipment Details -->
+        <div class="bottom-half">
+            <button id="newCalculationButton">New Calculation</button>
+            <div id="equipmentForm">
+                <div class="calculation-sections">
+                    <!-- Section 1: Equipment Form -->
+                    <div class="equipment-form-section">
+                        <h2>New Equipment</h2>
+                        <form id="equipmentFormElement">
+                            <!-- 1. Equipment Selection -->
+                            <div class="form-group">
+                                <label for="equipment">Equipment:</label>
+                                <input type="text" id="equipment" name="equipment" list="equipmentOptions" placeholder="Select or type equipment..." required>
+                                <datalist id="equipmentOptions">
+                                    <!-- Options will be populated dynamically based on the selected domain -->
+                                </datalist>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="nbcCategory">NBC Category:</label>
+                                <select id="nbcCategory" name="nbcCategory" required>
+                                    <option value="">Select NBC category...</option>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+
+                            <!-- 2. Pipe Type (show only when Pipe is selected) -->
+                            <div class="form-group" id="pipeTypeGroup" style="display: none;">
+                                <label for="pipeType">Pipe Type:</label>
+                                <select id="pipeType" name="pipeType">
+                                    <option value="">Select pipe type...</option>
+                                    <option value="Steel_Pipe">Steel Pipe</option>
+                                    <option value="Copper_Pipe">Copper Pipe</option>
+                                    <option value="PVC_Pipe">PVC Pipe</option>
+                                    <option value="No_Hub_Pipe">No Hub Pipe</option>
+                                </select>
+                            </div>
+
+                            <!-- 4. Install Method -->
+                            <div class="form-group">
+                                <label for="installMethod">Install Method:</label>
+                                <select id="installMethod" name="installMethod">
+                                    <option value="">Select install method...</option>
+                                    <option value="1">Fixed to Slab</option>
+                                    <option value="2">Fixed to Wall</option>
+                                    <option value="3">Fixed to Structure</option>
+                                    <option value="4">Fixed to Ceiling</option>
+                                    <option value="5">Fixed to Roof</option>
+                                </select>
+                            </div>
+
+                            <!-- Traditional Equipment Fields (hidden for pipes) -->
+                            <div class="form-group" id="weightGroup">
+                                <label for="weight">Weight:</label>
+                                <div style="display: flex; gap: 5px; align-items: center;">
+                                    <input type="text" id="weight" name="weight" style="flex: 1; max-width: 120px;">
+                                    <select id="weightUnit" name="weightUnit" style="max-width: 80px;">
+                                        <option value="lbs" selected>lbs</option>
+                                        <option value="kg">kg</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group" id="dimensionGroup">
+                                <label for="dimension">Dimensions HxWxL (inches):</label>
+                                <div class="dimension-fields">
+                                    <input type="text" id="height" placeholder="Height">
+                                    <input type="text" id="width" placeholder="Width">
+                                    <input type="text" id="length" placeholder="Length">
+                                </div>
+                            </div>
+
+                            <div class="form-group" id="hxGroup">
+                                <label for="hx">Equipment Height Above Base (hx) in meters:</label>
+                                <input type="number" id="hx" name="hx" step="0.01" required>
+                            </div>
+
+                            <!-- 5. Pipe Weight per Foot (pipe only) -->
+                            <div class="form-group" id="pipingFieldsGroup" style="display: none;">
+                                <label for="pipeWeightPerFoot">Pipe Weight per Foot (lb/ft):</label>
+                                <input type="number" id="pipeWeightPerFoot" name="pipeWeightPerFoot" step="0.1" min="0">
+                            </div>
+
+                            <!-- 6. Pipe Diameter (pipe only) -->
+                            <div class="form-group" id="pipeDiameterGroup" style="display: none;">
+                                <label for="pipeDiameter">Pipe Diameter:</label>
+                                <select id="pipeDiameter" name="pipeDiameter">
+                                    <option value="">Select diameter...</option>
+                                    <option value="1">1"</option>
+                                    <option value="1-1/4">1-1/4"</option>
+                                    <option value="1-1/2">1-1/2"</option>
+                                    <option value="2">2"</option>
+                                    <option value="2-1/2">2-1/2"</option>
+                                    <option value="3">3"</option>
+                                    <option value="4">4"</option>
+                                    <option value="5">5"</option>
+                                    <option value="6">6"</option>
+                                    <option value="8">8"</option>
+                                    <option value="10">10"</option>
+                                    <option value="12">12"</option>
+                                </select>
+                            </div>
+
+                            <!-- 7. Support Type (pipe only) -->
+                            <div class="form-group" id="supportTypeGroup" style="display: none;">
+                                <label for="supportType">Support Type:</label>
+                                <select id="supportType" name="supportType">
+                                    <option value="individual">Individual Clevis</option>
+                                    <option value="trapeze">Trapeze</option>
+                                </select>
+                            </div>
+
+                            <!-- 8. Structure Type (pipe only) -->
+                            <div class="form-group" id="structureTypeGroup" style="display: none;">
+                                <label for="structureType">Structure Type:</label>
+                                <select id="structureType" name="structureType">
+                                    <option value="concrete-slab">Concrete Slab</option>
+                                    <option value="concrete-deck">Concrete Deck</option>
+                                    <option value="steel">Structural Steel</option>
+                                    <option value="wood">Wood Structure</option>
+                                </select>
+                            </div>
+
+                            <!-- Traditional Equipment Anchor Fields -->
+                            <div class="form-group" id="numberOfAnchorsGroup">
+                                <label for="numberOfAnchors">Number of Anchors:</label>
+                                <input type="number" id="numberOfAnchors" name="numberOfAnchors" min="1" required>
+                            </div>
+
+                            <div class="form-group" id="anchorTypeGroup">
+                                <label for="anchorType">Anchor Type:</label>
+                                <select id="anchorType" name="anchorType" required>
+                                    <option value="">Select anchor type...</option>
+                                    <option value="expansion">KWIK BOLT TZ2 Expansion anchor</option>
+                                    <option value="screw">KWIK HUS EZ Screw anchor</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="anchorDiameterGroup">
+                                <label for="anchorDiameter">Anchor Diameter (inches):</label>
+                                <select id="anchorDiameter" name="anchorDiameter" required>
+                                    <option value="">Select anchor type first...</option>
+                                </select>
+                            </div>
+
+                            <!-- 9. Slab Thickness (slab/ceiling installations) -->
+                            <div class="form-group" id="slabThicknessGroup" style="display: none;">
+                                <label for="slabThickness">Slab Thickness (inches):</label>
+                                <input type="number" id="slabThickness" name="slabThickness" step="0.25" value="4">
+                            </div>
+
+                            <!-- f'c field (traditional equipment only, hidden for pipes) -->
+                            <div class="form-group" id="fcGroup" style="display: none;">
+                                <label for="fc">f'c (psi):</label>
+                                <select id="fc" name="fc">
+                                    <option value="2500" selected>2500 psi</option>
+                                    <option value="3000">3000 psi</option>
+                                    <option value="4000">4000 psi</option>
+                                    <option value="6000">6000 psi</option>
+                                </select>
+                            </div>
+
+                            <!-- Mounting Type field (traditional equipment only, hidden for pipes) -->
+                            <div class="form-group" id="mountingTypeGroup" style="display: none;">
+                                <label for="mountingType">Mounting Type:</label>
+                                <select id="mountingType" name="mountingType">
+                                    <option value="no-isolators">1. No isolators</option>
+                                    <option value="type-3-1">2. Restrained with Type 3-1 vibration isolators</option>
+                                    <option value="type-3-2">3. Restrained with Type 3-2 vibration isolators</option>
+                                    <option value="type-3-5a">4. Restrained with Type 3-5A vibration isolators</option>
+                                    <option value="type-3-5b">5. Restrained with Type 3-5B vibration isolators</option>
+                                    <option value="type-3-5c">6. Restrained with Type 3-5C vibration isolators</option>
+                                    <option value="type-3-5d">7. Restrained with Type 3-5D vibration isolators</option>
+                                    <option value="type-3-10">8. Restrained with Type 3-10 seismic snubbers</option>
+                                    <option value="type-3-11">9. Restrained with Type 3-11 seismic snubbers</option>
+                                </select>
+                            </div>
+
+                            <!-- ASHRAE fields (traditional equipment only) -->
+                            <div class="form-group" id="isolatorWidthGroup" style="display: none;">
+                                <label for="isolatorWidth">Isolator/Snubber Width (B) in inches:</label>
+                                <input type="number" id="isolatorWidth" name="isolatorWidth" step="0.01">
+                            </div>
+
+                            <div class="form-group" id="restraintHeightGroup" style="display: none;">
+                                <label for="restraintHeight">Height to Restraint Connection (H) in inches:</label>
+                                <input type="number" id="restraintHeight" name="restraintHeight" step="0.01">
+                            </div>
+
+                            <div class="form-group" id="edgeDistancesGroup" style="display: none;">
+                                <label for="edgeDistanceA">Edge Distance A (a) in inches:</label>
+                                <input type="number" id="edgeDistanceA" name="edgeDistanceA" step="0.01">
+                            </div>
+
+                            <div class="form-group" id="edgeDistanceBGroup" style="display: none;">
+                                <label for="edgeDistanceB">Edge Distance B (b) in inches:</label>
+                                <input type="number" id="edgeDistanceB" name="edgeDistanceB" step="0.01">
+                            </div>
+
+                            <div class="form-group" id="numberOfIsolatorsGroup" style="display: none;">
+                                <label for="numberOfIsolators">Number of Isolators/Snubbers (N):</label>
+                                <input type="number" id="numberOfIsolators" name="numberOfIsolators" min="1">
+                            </div>
+
+                            <!-- 10. Level -->
+                            <div class="form-group">
+                                <label for="level">Level:</label>
+                                <input type="number" id="level" name="level">
+                            </div>
+
+                            <!-- 11. Total Levels -->
+                            <div class="form-group">
+                                <label for="totalLevels">Total Levels:</label>
+                                <input type="number" id="totalLevels" name="totalLevels">
+                            </div>
+
+                            <!-- 12. Total Building Height -->
+                            <div class="form-group">
+                                <label for="hn">Total Building Height (hn) in meters:</label>
+                                <input type="number" id="hn" name="hn" step="0.01" required>
+                            </div>
+                            
+                            <!-- Calculate and Save Buttons -->
+                            <div style="display: flex; gap: 15px; margin-top: 20px;">
+                                <button type="button" id="calculateEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                    <i class="fas fa-calculator"></i> Calculate
+                                </button>
+                                <button type="submit" id="saveEquipment" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Section 2: Equipment Image -->
+                    <div class="equipment-image-section">
+                        <h2>Equipment Image</h2>
+                        <div class="image-container">
+                            <img id="equipmentImage" src="" alt="Equipment Installation" style="border: 1px solid #ccc; display: none;">
+                            <div id="imagePlaceholder">
+                                <i class="fas fa-image" style="font-size: 48px; color: #ccc; margin-bottom: 10px; display: block;"></i>
+                                Select equipment and installation method to view image
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Calculation Results -->
+                    <div class="calculation-results-section">
+                        <div id="calculationResults" style="display: none;">
+                            <h2>Calculation Results</h2>
+                            <div id="calculationResultsContent"></div>
+                        </div>
+                        <div id="calculationPlaceholder">
+                            <h2 style="color: #666; text-align: center; margin-bottom: 10px;">Calculation Results</h2>
+                            <div style="text-align: center; color: #999; padding: 40px 20px;">
+                                <i class="fas fa-calculator" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+                                Click "Calculate" to see detailed analysis and calculations
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lightbox (global) -->
+                    <div id="equipLightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image preview">
+                        <div class="lightbox-content">
+                            <button class="lightbox-close" onclick="closeEquipLightbox()" aria-label="Close">✕</button>
+                            <img id="equipLightboxImg" alt="Equipment image preview"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AWS Cognito SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-helper.js"></script>
+    <script src="project-details.js"></script>
+    <script src="project-details-init.js"></script>
+</body>
+</html>
