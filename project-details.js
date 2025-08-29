@@ -2766,7 +2766,18 @@ function renderEquipmentList() {
 equipmentCard.innerHTML = `
     <div class="equipment-header">
         <div class="equipment-info-compact">
-            <h4 title="Click to toggle details">${equipment.equipment}</h4>
+            <h4 title="Click to toggle details">
+                ${equipment.equipment}
+                ${(() => {
+                    const requestInfo = getImageRequestInfo(equipment);
+                    if (requestInfo) {
+                        return `<i class="${requestInfo.icon}" 
+                                style="color: ${requestInfo.color}; margin-left: 8px; font-size: 14px;" 
+                                title="${requestInfo.tooltipText}"></i>`;
+                    }
+                    return '';
+                })()}
+            </h4>
             <div class="equipment-meta-compact">
                 ${equipment.isPipe ? `
                     <span>Pipe: ${equipment.pipeDiameter || 'N/A'}</span>
@@ -2783,7 +2794,18 @@ equipmentCard.innerHTML = `
         <div class="equipment-actions-compact">
             <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${index})">Details</button>
             ${canModifyProject() ? `
-                <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">Upload Image</button>
+                ${!equipment.imageRequested ? `
+                    <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">Upload Image</button>
+                ` : `
+                    <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">Upload Image</button>
+                `}
+                ${isAdmin ? `
+                    <button class="${equipment.imageRequested ? 'cancel-request-btn' : 'request-btn'}" 
+                            onclick="event.stopPropagation(); requestEquipmentImage(${index})"
+                            style="background: ${equipment.imageRequested ? '#dc3545' : '#6f42c1'}; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease; min-width: 60px;">
+                        ${equipment.imageRequested ? 'Cancel Request' : 'Request Image'}
+                    </button>
+                ` : ''}
                 <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${index})">Delete</button>
                 <input type="file" id="fileInput${index}" accept="image/*" style="display:none" 
                 onchange="handleImageSelected(event, ${index})">
@@ -3426,6 +3448,7 @@ function triggerUploadImage(index) {
     if (input) input.click();
 }
 
+// Updated handleImageSelected function to clear image requests
 async function handleImageSelected(evt, index) {
     const file = evt.target.files && evt.target.files[0];
     if (!file) return;
@@ -3469,6 +3492,12 @@ async function handleImageSelected(evt, index) {
         // 3) Persist image metadata on equipment (array-based)
         const eq = projectEquipment[index] || {};
         addImageToEquipment(eq, { key, viewUrlSigned, publicUrlHint });
+        
+        // CLEAR IMAGE REQUEST when new image is uploaded
+        if (eq.imageRequested) {
+            eq.imageRequested = false;
+        }
+        
         projectEquipment[index] = eq;
         await saveEquipmentToProject();
         renderEquipmentList();
@@ -3489,6 +3518,24 @@ async function handleImageSelected(evt, index) {
         // reset the input so choosing the same file again still triggers change
         evt.target.value = '';
     }
+}
+
+// Function to get request icon and tooltip text
+function getImageRequestInfo(equipment) {
+    if (!equipment.imageRequested) {
+        return null;
+    }
+
+    const hasImages = equipment.images && equipment.images.length > 0;
+    const tooltipText = hasImages 
+        ? "an admin has requested you to upload an additional image for this equipment"
+        : "an admin has requested you to upload an image for this equipment";
+
+    return {
+        icon: isAdmin ? 'fas fa-paper-plane' : 'fas fa-exclamation-triangle',
+        tooltipText: isAdmin ? "image request sent" : tooltipText,
+        color: isAdmin ? '#17a2b8' : '#ffc107'
+    };
 }
 
 // Helper function to get install method text
@@ -4998,6 +5045,38 @@ async function saveProjectStatus(newStatus) {
     }
 }
 
+// Function to request image for equipment (admin only)
+async function requestEquipmentImage(index) {
+    if (!isAdmin) {
+        alert('Only admins can request images.');
+        return;
+    }
+
+    if (!canModifyProject()) {
+        alert('You do not have permission to modify this project.');
+        return;
+    }
+
+    try {
+        // Toggle the image request status
+        const equipment = projectEquipment[index];
+        equipment.imageRequested = !equipment.imageRequested;
+        
+        // Save to database
+        await saveEquipmentToProject();
+        
+        // Re-render the equipment list
+        renderEquipmentList();
+        
+        const action = equipment.imageRequested ? 'sent' : 'cancelled';
+        alert(`Image request ${action} successfully.`);
+        
+    } catch (error) {
+        console.error('Error updating image request:', error);
+        alert('Error updating image request: ' + error.message);
+    }
+}
+
 
 // Make functions globally available
 window.logout = logout;
@@ -5010,3 +5089,4 @@ window.toggleProjectDetails = toggleProjectDetails;
 window.updateEditAnchorDiameters = updateEditAnchorDiameters;
 window.updateEditMountingTypeFields = updateEditMountingTypeFields;
 window.generateProjectReport = generateProjectReport;
+window.requestEquipmentImage = requestEquipmentImage;
