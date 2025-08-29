@@ -3533,7 +3533,7 @@ function getImageRequestInfo(equipment) {
 
     return {
         icon: isAdmin ? 'fas fa-paper-plane' : 'fas fa-exclamation-triangle',
-        tooltipText: isAdmin ? "image request sent" : tooltipText,
+        tooltipText: isAdmin ? "Image request sent" : tooltipText,
         color: isAdmin ? '#17a2b8' : '#ffc107'
     };
 }
