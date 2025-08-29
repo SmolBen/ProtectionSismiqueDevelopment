@@ -3528,8 +3528,8 @@ function getImageRequestInfo(equipment) {
 
     const hasImages = equipment.images && equipment.images.length > 0;
     const tooltipText = hasImages 
-        ? "an admin has requested you to upload an additional image for this equipment"
-        : "an admin has requested you to upload an image for this equipment";
+        ? "An admin has requested you to upload an additional image for this equipment"
+        : "An admin has requested you to upload an image for this equipment";
 
     return {
         icon: isAdmin ? 'fas fa-paper-plane' : 'fas fa-exclamation-triangle',
