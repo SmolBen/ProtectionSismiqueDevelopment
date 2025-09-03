@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFSS Project Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="project-details.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="title-area">
+                <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique - CFSS</a>
+                <a href="cfss-dashboard.html" class="dashboard-btn">
+                    <i class="fas fa-th-large"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="user-info" id="userInfo">
+                <!-- User info will be populated by JavaScript -->
+            </div>
+        </div>
+    </nav>
+    
+    <div class="loading-project" id="loadingProject">
+        <h2>Loading CFSS Project...</h2>
+        <p>Please wait while we load the project details.</p>
+    </div>
+    
+    <div class="auth-error" id="authError" style="display: none;">
+        <h2>Authentication Required</h2>
+        <p>Please log in to view CFSS project details.</p>
+        <button onclick="window.location.href='auth.html'">Go to Login</button>
+    </div>
+    
+    <div class="access-denied" id="accessDenied" style="display: none;">
+        <h2>Access Denied</h2>
+        <p>You don't have permission to view this CFSS project.</p>
+        <button onclick="window.location.href='cfss-dashboard.html'">Back to CFSS Dashboard</button>
+    </div>
+    
+    <div class="container" id="projectContainer" style="display: none;">
+        <!-- Top Half split into two horizontal sections -->
+        <div class="top-half">
+            <div class="left-section">
+                <h1>CFSS Project Details</h1>
+                
+                <!-- Basic Information (Always Visible) -->
+                <div class="basic-info">
+                    <p><strong>Project Name:</strong> <span id="projectName"></span></p>
+                    <p><strong>Description:</strong> <span id="projectDescription"></span></p>
+                    <p><strong>Type:</strong> <span id="projectType"></span></p>
+                    <p><strong>Status:</strong> 
+                        <select id="projectStatusDropdown">
+                            <option value="Planning">Planning</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </p>
+                    <p><strong>Address:</strong> <span id="projectAddress"></span></p>
+                </div>
+
+                <div id="projectOwnerInfo">
+                    <!-- Owner info will be populated for admins -->
+                </div>
+            </div>
+            <div class="right-section">
+                <h1>Wall List</h1>
+                <div id="equipmentList"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Half for Wall Details -->
+        <div class="bottom-half">
+            <button id="newCalculationButton">Add Wall</button>
+            <div id="equipmentForm">
+                <div class="calculation-sections">
+                    <!-- Section 1: Wall Form -->
+                    <div class="equipment-form-section">
+                        <h2>New Wall</h2>
+                        <form id="equipmentFormElement">
+                            <!-- 1. Wall Name -->
+                            <div class="form-group">
+                                <label for="equipment">Wall Name:</label>
+                                <input type="text" id="equipment" name="equipment" placeholder="Enter wall name..." required>
+                            </div>
+
+                            <!-- 2. Floor -->
+                            <div class="form-group">
+                                <label for="floor">Floor:</label>
+                                <input type="text" id="floor" name="floor" placeholder="Enter floor..." required>
+                            </div>
+
+                            <!-- 3. Hauteur Max -->
+                            <div class="form-group">
+                                <label for="hauteurMax">Hauteur Max:</label>
+                                <input type="number" id="hauteurMax" name="hauteurMax" step="0.01" placeholder="Enter hauteur max..." required>
+                            </div>
+
+                            <!-- 4. Déflexion Max -->
+                            <div class="form-group">
+                                <label for="deflexionMax">Déflexion Max:</label>
+                                <select id="deflexionMax" name="deflexionMax" required>
+                                    <option value="">Select déflexion max...</option>
+                                    <option value="L/360">L/360</option>
+                                    <option value="L/480">L/480</option>
+                                    <option value="L/600">L/600</option>
+                                    <option value="L/720">L/720</option>
+                                </select>
+                            </div>
+
+                            <!-- 5. Montant Métallique -->
+                            <div class="form-group">
+                                <label for="montantMetallique">Montant Métallique:</label>
+                                <input type="text" id="montantMetallique" name="montantMetallique" placeholder="Enter montant métallique..." required>
+                            </div>
+
+                            <!-- 6. Lisse Supérieure -->
+                            <div class="form-group">
+                                <label for="lisseSuperieure">Lisse Supérieure:</label>
+                                <input type="text" id="lisseSuperieure" name="lisseSuperieure" placeholder="Enter lisse supérieure..." required>
+                            </div>
+
+                            <!-- 7. Lisse Inférieure -->
+                            <div class="form-group">
+                                <label for="lisseInferieure">Lisse Inférieure:</label>
+                                <input type="text" id="lisseInferieure" name="lisseInferieure" placeholder="Enter lisse inférieure..." required>
+                            </div>
+
+                            <!-- 8. Entremise -->
+                            <div class="form-group">
+                                <label for="entremise">Entremise:</label>
+                                <input type="text" id="entremise" name="entremise" placeholder="Enter entremise..." required>
+                            </div>
+                            
+                            <!-- Calculate and Save Buttons -->
+                            <div style="display: flex; gap: 15px; margin-top: 20px;">
+                                <button type="button" id="calculateEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                    <i class="fas fa-calculator"></i> Calculate
+                                </button>
+                                <button type="submit" id="saveEquipment" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Section 2: Placeholder for calculations (no calculations for CFSS) -->
+                    <div class="calculation-results-section">
+                        <div id="calculationPlaceholder">
+                            <h2 style="color: #666; text-align: center; margin-bottom: 10px;">CFSS Wall Information</h2>
+                            <div style="text-align: center; color: #999; padding: 40px 20px;">
+                                <i class="fas fa-wall-brick" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+                                Wall details will be displayed here after saving
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AWS Cognito SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-helper.js"></script>
+    <script src="cfss-project-details.js"></script>
+    <script src="cfss-project-details-init.js"></script>
+</body>
+</html>

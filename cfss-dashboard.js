@@ -1,18 +1,18 @@
-// Dashboard Page JavaScript
-// Your API Gateway base URL
+// CFSS Dashboard Page JavaScript
+// API Gateway base URL
 const apiUrl = 'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects';
 
 // Initialize authHelper for dashboard
 let authHelper;
 
-// Initialize dashboard
+// Initialize CFSS dashboard
 window.addEventListener('load', async function() {
-    console.log('📄 Dashboard page loaded');
-    await initializeDashboard();
+    console.log('📄 CFSS Dashboard page loaded');
+    await initializeCFSSDashboard();
 });
 
-async function initializeDashboard() {
-    console.log('🚀 Initializing dashboard...');
+async function initializeCFSSDashboard() {
+    console.log('🚀 Initializing CFSS dashboard...');
     document.getElementById('loadingOverlay').classList.add('show');
 
     try {
@@ -32,7 +32,7 @@ async function initializeDashboard() {
         authHelper = new AuthHelper();
         console.log('✅ AuthHelper initialized');
         
-        // Check authentication using simplified approach
+        // Check authentication
         const userData = await authHelper.checkAuthentication();
         
         if (!userData) {
@@ -47,42 +47,41 @@ async function initializeDashboard() {
         authHelper.updateUserInterface();
         authHelper.showAdminElements();
         
-        // Load projects and stats
+        // Load CFSS projects and stats
         await Promise.all([
-            fetchProjects(),
-            loadDashboardStats()
+            fetchCFSSProjects(),
+            loadCFSSDashboardStats()
         ]);
 
         // Setup event listeners
-        setupEventListeners();
+        setupCFSSEventListeners();
 
         document.getElementById('loadingOverlay').classList.remove('show');
-        console.log('✅ Dashboard initialized successfully');
+        console.log('✅ CFSS Dashboard initialized successfully');
 
     } catch (error) {
-        console.error('❌ Error initializing dashboard:', error);
+        console.error('❌ Error initializing CFSS dashboard:', error);
         document.getElementById('loadingOverlay').classList.remove('show');
-        alert('Error initializing dashboard: ' + error.message);
-        // If there's an authentication error, redirect to auth page
+        alert('Error initializing CFSS dashboard: ' + error.message);
         window.location.href = 'auth.html';
     }
 }
 
-function setupEventListeners() {
-    // Create project button
+function setupCFSSEventListeners() {
+    // Create CFSS project button
     document.getElementById('createProjectButton').addEventListener('click', () => {
-        console.log('🎯 Create project button clicked');
-        window.location.href = 'create-project.html';
+        console.log('🎯 Create CFSS project button clicked');
+        window.location.href = 'cfss-create-project.html';
     });
 
     // Filter projects
-    document.getElementById('projectFilter').addEventListener('change', handleProjectFilter);
+    document.getElementById('projectFilter').addEventListener('change', handleCFSSProjectFilter);
 
     // Search projects
-    document.getElementById('projectSearch').addEventListener('input', handleProjectSearch);
+    document.getElementById('projectSearch').addEventListener('input', handleCFSSProjectSearch);
 }
 
-async function loadDashboardStats() {
+async function loadCFSSDashboardStats() {
     try {
         const response = await fetch(apiUrl, {
             method: 'GET',
@@ -94,8 +93,10 @@ async function loadDashboardStats() {
             return;
         }
 
-        const projects = await response.json();
-        console.log('📊 Projects loaded for stats:', projects.length);
+        const allProjects = await response.json();
+        // Filter for CFSS projects (projects without domain field)
+        const projects = allProjects.filter(p => !p.domain);
+        console.log('📊 CFSS Projects loaded for stats:', projects.length);
 
         const totalProjects = projects.length;
         const planningProjects = projects.filter(p => p.status === 'Planning').length;
@@ -107,7 +108,7 @@ async function loadDashboardStats() {
             <div class="stats-compact">
                 <div class="stat-item">
                     <span class="stat-value">${totalProjects}</span>
-                    <span>Total</span>
+                    <span>Total CFSS</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-value">${planningProjects}</span>
@@ -124,14 +125,14 @@ async function loadDashboardStats() {
             </div>
         `;
     } catch (error) {
-        console.error('Error loading dashboard stats:', error);
+        console.error('Error loading CFSS dashboard stats:', error);
     }
 }
 
-// Fetch projects from AWS
-async function fetchProjects() {
+// Fetch CFSS projects from AWS
+async function fetchCFSSProjects() {
     try {
-        console.log('📄 Fetching projects...');
+        console.log('📄 Fetching CFSS projects...');
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: authHelper.getAuthHeaders()
@@ -142,30 +143,32 @@ async function fetchProjects() {
             throw new Error(`HTTP ${response.status}`);
         }
 
-        const projects = await response.json();
+        const allProjects = await response.json();
+        // Filter for CFSS projects (projects without domain field)
+        const projects = allProjects.filter(p => !p.domain);
 
         // Sort by newest first
         projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         
-        console.log('✅ Projects fetched:', projects.length);
-        renderProjects(projects);
+        console.log('✅ CFSS Projects fetched:', projects.length);
+        renderCFSSProjects(projects);
     } catch (error) {
-        console.error('❌ Error fetching projects:', error);
+        console.error('❌ Error fetching CFSS projects:', error);
         document.getElementById('projectList').innerHTML = 
-            `<p style="color: red;">Error loading projects: ${error.message}</p>`;
+            `<p style="color: red;">Error loading CFSS projects: ${error.message}</p>`;
     }
 }
 
-// Render projects in compact list format
-function renderProjects(filteredProjects) {
+// Render CFSS projects in compact list format
+function renderCFSSProjects(filteredProjects) {
     const projectList = document.getElementById('projectList');
     projectList.innerHTML = '';
     
     if (filteredProjects.length === 0) {
         projectList.innerHTML = `
-            <div class="list-header">Projects (0)</div>
+            <div class="list-header">CFSS Projects (0)</div>
             <div style="padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                No projects found. Create your first project to get started!
+                No CFSS projects found. Create your first CFSS project to get started!
             </div>
         `;
         return;
@@ -174,7 +177,7 @@ function renderProjects(filteredProjects) {
     // Add list header
     const listHeader = document.createElement('div');
     listHeader.className = 'list-header';
-    listHeader.textContent = `Projects (${filteredProjects.length})`;
+    listHeader.textContent = `CFSS Projects (${filteredProjects.length})`;
     projectList.appendChild(listHeader);
     
     filteredProjects.forEach((project) => {
@@ -231,27 +234,27 @@ function renderProjects(filteredProjects) {
 
         // Add click event to entire card for navigation
         projectCard.addEventListener('click', () => {
-            window.location.href = `project-details.html?id=${project.id}`;
+            window.location.href = `cfss-project-details.html?id=${project.id}`;
         });
 
         // Add event listeners
         projectCard.querySelector('.view-details').addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent card click
-            window.location.href = `project-details.html?id=${project.id}`;
+            e.stopPropagation();
+            window.location.href = `cfss-project-details.html?id=${project.id}`;
         });
 
         const deleteButton = projectCard.querySelector('.delete-project');
         if (deleteButton) {
             deleteButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent card click
-                deleteProject(project.id);
+                e.stopPropagation();
+                deleteCFSSProject(project.id);
             });
         }
     });
 }
 
-// Filter projects
-async function handleProjectFilter(e) {
+// Filter CFSS projects
+async function handleCFSSProjectFilter(e) {
     const filter = e.target.value.toLowerCase();
     const searchTerm = document.getElementById('projectSearch').value.toLowerCase();
     
@@ -263,7 +266,8 @@ async function handleProjectFilter(e) {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        const projects = await response.json();
+        const allProjects = await response.json();
+        const projects = allProjects.filter(p => !p.domain); // Filter for CFSS projects
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
@@ -275,14 +279,14 @@ async function handleProjectFilter(e) {
             return matchesSearch && matchesFilter;
         });
         
-        renderProjects(filteredProjects);
+        renderCFSSProjects(filteredProjects);
     } catch (error) {
-        console.error('Error filtering projects:', error);
+        console.error('Error filtering CFSS projects:', error);
     }
 }
 
-// Combined search and filter function
-async function handleProjectSearch() {
+// Combined search and filter function for CFSS
+async function handleCFSSProjectSearch() {
     const searchTerm = document.getElementById('projectSearch').value.toLowerCase();
     const filterValue = document.getElementById('projectFilter').value.toLowerCase();
     
@@ -294,7 +298,8 @@ async function handleProjectSearch() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        const projects = await response.json();
+        const allProjects = await response.json();
+        const projects = allProjects.filter(p => !p.domain); // Filter for CFSS projects
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
@@ -306,15 +311,15 @@ async function handleProjectSearch() {
             return matchesSearch && matchesFilter;
         });
         
-        renderProjects(filteredProjects);
+        renderCFSSProjects(filteredProjects);
     } catch (error) {
-        console.error('Error searching projects:', error);
+        console.error('Error searching CFSS projects:', error);
     }
 }
 
-// Delete project function
-async function deleteProject(id) {
-    if (!confirm('Are you sure you want to delete this project?')) {
+// Delete CFSS project function
+async function deleteCFSSProject(id) {
+    if (!confirm('Are you sure you want to delete this CFSS project?')) {
         return;
     }
 
@@ -329,24 +334,24 @@ async function deleteProject(id) {
 
         // Refresh project list
         await Promise.all([
-            fetchProjects(),
-            loadDashboardStats()
+            fetchCFSSProjects(),
+            loadCFSSDashboardStats()
         ]);
         
-        alert('Project deleted successfully!');
+        alert('CFSS Project deleted successfully!');
     } catch (error) {
-        console.error('Error deleting project:', error);
-        alert('Error deleting project. Please try again.');
+        console.error('Error deleting CFSS project:', error);
+        alert('Error deleting CFSS project. Please try again.');
     }
 }
 
-// Switch to CFSS dashboard
-function switchToCFSS() {
+// Switch to Seismic dashboard
+function switchToSeismic() {
     if (!authHelper.isAdmin()) {
         alert('Admin access required');
         return;
     }
-    window.location.href = 'cfss-dashboard.html';
+    window.location.href = 'dashboard.html';
 }
 
 // Admin functions
@@ -363,20 +368,11 @@ function viewAllProjects() {
         alert('Admin access required');
         return;
     }
-    fetchProjects();
-    alert('Showing all projects in the system');
-}
-
-function exportData() {
-    if (!authHelper.isAdmin()) {
-        alert('Admin access required');
-        return;
-    }
-    alert('Data export feature coming soon!');
+    fetchCFSSProjects();
+    alert('Showing all CFSS projects in the system');
 }
 
 // Make functions available globally
-window.switchToCFSS = switchToCFSS;
+window.switchToSeismic = switchToSeismic;
 window.openUserManagement = openUserManagement;
 window.viewAllProjects = viewAllProjects;
-window.exportData = exportData;
