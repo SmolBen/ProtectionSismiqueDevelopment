@@ -94,8 +94,10 @@ async function loadDashboardStats() {
             return;
         }
 
-        const projects = await response.json();
-        console.log('📊 Projects loaded for stats:', projects.length);
+        const allProjects = await response.json();
+        // Filter for seismic projects (projects with domain field)
+        const projects = allProjects.filter(p => p.domain);
+        console.log('📊 Seismic Projects loaded for stats:', projects.length);
 
         const totalProjects = projects.length;
         const planningProjects = projects.filter(p => p.status === 'Planning').length;
@@ -131,7 +133,7 @@ async function loadDashboardStats() {
 // Fetch projects from AWS
 async function fetchProjects() {
     try {
-        console.log('📄 Fetching projects...');
+        console.log('📄 Fetching seismic projects...');
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: authHelper.getAuthHeaders()
@@ -142,19 +144,22 @@ async function fetchProjects() {
             throw new Error(`HTTP ${response.status}`);
         }
 
-        const projects = await response.json();
+        const allProjects = await response.json();
+        // Filter for seismic projects (projects with domain field)
+        const projects = allProjects.filter(p => p.domain);
 
         // Sort by newest first
         projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         
-        console.log('✅ Projects fetched:', projects.length);
+        console.log('✅ Seismic Projects fetched:', projects.length);
         renderProjects(projects);
     } catch (error) {
-        console.error('❌ Error fetching projects:', error);
+        console.error('❌ Error fetching seismic projects:', error);
         document.getElementById('projectList').innerHTML = 
-            `<p style="color: red;">Error loading projects: ${error.message}</p>`;
+            `<p style="color: red;">Error loading seismic projects: ${error.message}</p>`;
     }
 }
+
 
 // Render projects in compact list format
 function renderProjects(filteredProjects) {
@@ -165,7 +170,7 @@ function renderProjects(filteredProjects) {
         projectList.innerHTML = `
             <div class="list-header">Projects (0)</div>
             <div style="padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                No projects found. Create your first project to get started!
+                No seismic projects found. Create your first seismic project to get started!
             </div>
         `;
         return;
@@ -263,7 +268,9 @@ async function handleProjectFilter(e) {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        const projects = await response.json();
+        const allProjects = await response.json();
+        // Filter for seismic projects (projects with domain field)
+        const projects = allProjects.filter(p => p.domain);
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
@@ -277,7 +284,7 @@ async function handleProjectFilter(e) {
         
         renderProjects(filteredProjects);
     } catch (error) {
-        console.error('Error filtering projects:', error);
+        console.error('Error filtering seismic projects:', error);
     }
 }
 
@@ -294,7 +301,9 @@ async function handleProjectSearch() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        const projects = await response.json();
+        const allProjects = await response.json();
+        // Filter for seismic projects (projects with domain field)
+        const projects = allProjects.filter(p => p.domain);
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
@@ -308,7 +317,7 @@ async function handleProjectSearch() {
         
         renderProjects(filteredProjects);
     } catch (error) {
-        console.error('Error searching projects:', error);
+        console.error('Error searching seismic projects:', error);
     }
 }
 
