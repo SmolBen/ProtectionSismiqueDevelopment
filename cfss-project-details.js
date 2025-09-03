@@ -398,8 +398,68 @@ function setupEquipmentFormHandler() {
 
 // Handle Calculate button (no calculations for CFSS)
 function handleCalculateEquipment() {
-    console.log('Calculate button clicked for CFSS - no calculations performed');
-    alert('CFSS calculations will be implemented in future updates.');
+    console.log('Calculate button clicked for CFSS - displaying wall details');
+    
+    try {
+        // Get form data and validate
+        const wallData = getWallFormData();
+        if (!wallData) {
+            return; // Validation failed, errors already shown
+        }
+        
+        // Display wall details in the results section
+        displayWallDetails(wallData);
+        
+    } catch (error) {
+        console.error('Error displaying wall details:', error);
+        alert('Error displaying wall details: ' + error.message);
+    }
+}
+
+// Function to display wall details
+function displayWallDetails(wallData) {
+    console.log('Displaying wall details for:', wallData);
+
+    // Generate the wall details HTML
+    const wallDetailsHTML = generateWallDetailsHTML(wallData);
+
+    // Show the results section and hide placeholder
+    const calculationResults = document.getElementById('calculationResults');
+    const calculationPlaceholder = document.getElementById('calculationPlaceholder');
+    const calculationResultsContent = document.getElementById('calculationResultsContent');
+
+    if (calculationPlaceholder) calculationPlaceholder.style.display = 'none';
+    if (calculationResults) calculationResults.style.display = 'block';
+    if (calculationResultsContent) calculationResultsContent.innerHTML = wallDetailsHTML;
+
+    console.log('Wall details displayed successfully');
+}
+
+// Function to generate wall details HTML
+function generateWallDetailsHTML(wallData) {
+    let html = `
+        <div class="calculation-equipment-info">
+            <h3 style="color: #333; margin-bottom: 15px;">Wall Information</h3>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff;">
+                <p><strong>Wall Name:</strong> ${wallData.equipment}</p>
+                <p><strong>Floor:</strong> ${wallData.floor}</p>
+                <p><strong>Hauteur Max:</strong> ${wallData.hauteurMax}</p>
+                <p><strong>Déflexion Max:</strong> ${wallData.deflexionMax}</p>
+                <p><strong>Montant Métallique:</strong> ${wallData.montantMetallique}</p>
+                <p><strong>Lisse Supérieure:</strong> ${wallData.lisseSuperieure}</p>
+                <p><strong>Lisse Inférieure:</strong> ${wallData.lisseInferieure}</p>
+                <p><strong>Entremise:</strong> ${wallData.entremise}</p>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 6px; text-align: center;">
+                <i class="fas fa-info-circle" style="color: #28a745; margin-right: 8px;"></i>
+                <span style="color: #155724; font-size: 14px;">Wall details ready for review. Click Save to add to project.</span>
+            </div>
+        </div>
+    `;
+
+    return html;
 }
 
 // Handle Save button
