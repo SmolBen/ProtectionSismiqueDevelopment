@@ -754,30 +754,31 @@ async function saveCFSSData() {
     }
     
     try {
+        // Collect all floor section data
         const sections = document.querySelectorAll('.floor-section');
         const newCfssData = [];
+        
+        // Get project-wide fields (collected once)
+        const maxDeflection = document.getElementById('maxDeflection')?.value.trim() || '';
+        const maxSpacing = document.getElementById('maxSpacing')?.value.trim() || '';
+        const framingAssembly = document.getElementById('framingAssembly')?.value.trim() || '';
+        const concreteAnchor = document.getElementById('concreteAnchor')?.value.trim() || '';
+        const steelAnchor = document.getElementById('steelAnchor')?.value.trim() || '';
+        const minMetalThickness = document.getElementById('minMetalThickness')?.value.trim() || '';
+        const lisseInferieure = document.getElementById('lisseInferieure')?.value.trim() || '';
+        const lisseSuperieure = document.getElementById('lisseSuperieure')?.value.trim() || '';
         
         sections.forEach(section => {
             const floorRange = section.querySelector('.floor-input').value.trim();
             const resistance = parseFloat(section.querySelectorAll('.value-input')[0].value) || 0;
             const deflection = parseFloat(section.querySelectorAll('.value-input')[1].value) || 0;
             
-            // Get all text inputs
-            const textInputs = section.querySelectorAll('.text-input');
-            const maxDeflection = textInputs[0]?.value.trim() || '';
-            const maxSpacing = textInputs[1]?.value.trim() || '';
-            const framingAssembly = textInputs[2]?.value.trim() || '';
-            const concreteAnchor = textInputs[3]?.value.trim() || '';
-            const steelAnchor = textInputs[4]?.value.trim() || '';
-            const minMetalThickness = textInputs[5]?.value.trim() || '';
-            const lisseInferieure = textInputs[6]?.value.trim() || '';
-            const lisseSuperieure = textInputs[7]?.value.trim() || '';
-            
             if (floorRange) {
                 newCfssData.push({
                     floorRange: floorRange,
                     resistance: resistance,
                     deflection: deflection,
+                    // Add project-wide fields to each floor section
                     maxDeflection: maxDeflection,
                     maxSpacing: maxSpacing,
                     framingAssembly: framingAssembly,
@@ -799,6 +800,7 @@ async function saveCFSSData() {
         
         console.log('Saving CFSS wind data:', newCfssData);
         
+        // Save to database using your existing API
         const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`, {
             method: 'PUT',
             headers: getAuthHeaders(),
@@ -815,6 +817,8 @@ async function saveCFSSData() {
         updateCFSSDataDisplay(newCfssData);
         
         alert('CFSS data saved successfully!');
+        
+        // Hide the form after saving
         toggleCFSSForm();
         
     } catch (error) {
@@ -976,48 +980,49 @@ function populateCFSSForm(windData) {
     const container = document.getElementById('floor-sections');
     container.innerHTML = '';
     
+    // Populate project-wide fields from the first entry (since they're the same for all)
+    if (windData.length > 0) {
+        const firstEntry = windData[0];
+        document.getElementById('maxDeflection').value = firstEntry.maxDeflection || '';
+        document.getElementById('maxSpacing').value = firstEntry.maxSpacing || '';
+        document.getElementById('framingAssembly').value = firstEntry.framingAssembly || '';
+        document.getElementById('concreteAnchor').value = firstEntry.concreteAnchor || '';
+        document.getElementById('steelAnchor').value = firstEntry.steelAnchor || '';
+        document.getElementById('minMetalThickness').value = firstEntry.minMetalThickness || '';
+        document.getElementById('lisseInferieure').value = firstEntry.lisseInferieure || '';
+        document.getElementById('lisseSuperieure').value = firstEntry.lisseSuperieure || '';
+    }
+    
     windData.forEach(data => {
         const section = document.createElement('div');
         section.className = 'floor-section';
         section.innerHTML = `
-            <label>Floor Range:</label>
-            <input type="text" class="floor-input" value="${data.floorRange || ''}">
-            
-            <label>Resistance:</label>
-            <input type="number" class="value-input" value="${data.resistance || ''}" step="0.1">
-            <span class="unit-label">cfs</span>
-            
-            <label>Deflection:</label>
-            <input type="number" class="value-input" value="${data.deflection || ''}" step="0.1">
-            <span class="unit-label">cfs</span>
-            
-            <label>Max Deflection:</label>
-            <input type="text" class="text-input" value="${data.maxDeflection || ''}">
-            
-            <label>Max Spacing Between Braces:</label>
-            <input type="text" class="text-input" value="${data.maxSpacing || ''}">
-            
-            <label>Framing Assembly:</label>
-            <input type="text" class="text-input" value="${data.framingAssembly || ''}">
-            
-            <label>Concrete Anchor:</label>
-            <input type="text" class="text-input" value="${data.concreteAnchor || ''}">
-            
-            <label>Steel Anchor:</label>
-            <input type="text" class="text-input" value="${data.steelAnchor || ''}">
-            
-            <label>Min Metal Framing Thickness:</label>
-            <input type="text" class="text-input" value="${data.minMetalThickness || ''}">
-            
-            <label>Lisse Inférieure:</label>
-            <input type="text" class="text-input" value="${data.lisseInferieure || ''}">
-            
-            <label>Lisse Supérieure:</label>
-            <input type="text" class="text-input" value="${data.lisseSuperieure || ''}">
-            
-            <button class="remove-btn" onclick="removeCFSSSection(this)">
-                <i class="fas fa-trash"></i>
-            </button>
+            <div class="main-fields-row">
+                <div class="field-group floor-range">
+                    <label>Floor Range:</label>
+                    <input type="text" class="floor-input" value="${data.floorRange || ''}">
+                </div>
+                
+                <div class="field-group resistance">
+                    <label>Resistance:</label>
+                    <div class="field-with-unit">
+                        <input type="number" class="value-input" value="${data.resistance || ''}" step="0.1">
+                        <span class="unit-label">cfs</span>
+                    </div>
+                </div>
+                
+                <div class="field-group deflection">
+                    <label>Deflection:</label>
+                    <div class="field-with-unit">
+                        <input type="number" class="value-input" value="${data.deflection || ''}" step="0.1">
+                        <span class="unit-label">cfs</span>
+                    </div>
+                </div>
+                
+                <button class="remove-btn" onclick="removeCFSSSection(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         `;
         container.appendChild(section);
     });
