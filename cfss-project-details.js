@@ -603,6 +603,7 @@ function clearWallForm() {
 
 // Setup new calculation button handler
 function setupNewCalculationButton() {
+    setupCFSSDataButton();
     const newCalcButton = document.getElementById('newCalculationButton');
     const equipmentForm = document.getElementById('equipmentForm');
     
@@ -625,6 +626,21 @@ function setupNewCalculationButton() {
                     block: 'start' 
                 });
             }
+        });
+    }
+}
+
+function setupCFSSDataButton() {
+    const cfssButton = document.getElementById('cfssDataButton');
+    
+    if (cfssButton) {
+        cfssButton.addEventListener('click', function() {
+            if (!canModifyProject()) {
+                alert('You do not have permission to add CFSS data to this project.');
+                return;
+            }
+            
+            toggleCFSSForm();
         });
     }
 }

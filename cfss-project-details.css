@@ -1,9 +1,13 @@
+.cfss-data-section {
+    margin-bottom: 15px;
+}
+
 .cfss-btn {
-    background: #28a745;
+    background: #17a2b8;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
+    padding: 12px 24px;
+    border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
@@ -11,11 +15,11 @@
     align-items: center;
     gap: 8px;
     transition: all 0.2s ease;
-    margin-top: 15px;
+    margin-bottom: 10px;
 }
 
 .cfss-btn:hover {
-    background: #218838;
+    background: #138496;
     transform: translateY(-1px);
 }
 
@@ -24,11 +28,12 @@
 }
 
 .cfss-form {
-    margin-top: 15px;
+    margin-top: 10px;
     padding: 20px;
     background: #f8f9fa;
     border-radius: 8px;
     border: 2px solid #e9ecef;
+    margin-bottom: 20px;
 }
 
 .cfss-form.hidden {

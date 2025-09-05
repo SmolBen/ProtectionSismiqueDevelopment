@@ -62,7 +62,20 @@
                     </p>
                     <p><strong>Address:</strong> <span id="projectAddress"></span></p>
                 </div>
-                <div class="cfss-data-section">
+
+                <div id="projectOwnerInfo">
+                    <!-- Owner info will be populated for admins -->
+                </div>
+            </div>
+            <div class="right-section">
+                <h1>Wall List</h1>
+                <div id="equipmentList"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Half for Wall Details -->
+        <div class="bottom-half">
+                            <div class="cfss-data-section">
                     <button class="cfss-btn" onclick="toggleCFSSForm()">
                         <i class="fas fa-plus"></i>
                         <span id="cfss-btn-text">Add CFSS Data</span>
@@ -94,19 +107,7 @@
                         </button>
                     </div>
                 </div>
-
-                <div id="projectOwnerInfo">
-                    <!-- Owner info will be populated for admins -->
-                </div>
-            </div>
-            <div class="right-section">
-                <h1>Wall List</h1>
-                <div id="equipmentList"></div>
-            </div>
-        </div>
-
-        <!-- Bottom Half for Wall Details -->
-        <div class="bottom-half">
+                
             <button id="newCalculationButton">Add Wall</button>
             <div id="equipmentForm">
                 <div class="calculation-sections">
