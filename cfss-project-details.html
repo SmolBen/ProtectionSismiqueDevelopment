@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,11 +62,13 @@
                         </select>
                     </p>
                     <p><strong>Address:</strong> <span id="projectAddress"></span></p>
+                </div>
 
-                    <div id="cfssDataDisplay" class="cfss-data-display" style="display: none;">
-                        <p><strong>CFSS Wind Data:</strong></p>
-                        <div id="cfssDataContent" class="cfss-data-content">
-                            <!-- CFSS data will be populated here -->
+                <!-- CFSS Data Display (shows saved data) -->
+                <div id="cfssDataDisplay" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                    <h3 style="margin: 0 0 10px 0; color: #17a2b8; font-size: 16px;">CFSS Wind Data</h3>
+                    <div id="cfssDataContent">
+                        <!-- CFSS data will be populated here by JavaScript -->
                     </div>
                 </div>
 
@@ -81,39 +84,39 @@
 
         <!-- Bottom Half for Wall Details -->
         <div class="bottom-half">
-                            <div class="cfss-data-section">
-                    <button class="cfss-btn" onclick="toggleCFSSForm()">
-                        <i class="fas fa-plus"></i>
-                        <span id="cfss-btn-text">Add CFSS Data</span>
+            <div class="cfss-data-section">
+                <button class="cfss-btn" onclick="toggleCFSSForm()">
+                    <i class="fas fa-plus"></i>
+                    <span id="cfss-btn-text">Add CFSS Data</span>
+                </button>
+                
+                <div id="cfss-form" class="cfss-form hidden">
+                    <div id="floor-sections">
+                        <div class="floor-section">
+                            <label>Floor Range:</label>
+                            <input type="text" class="floor-input" placeholder="e.g., 1-4">
+                            <label>Resistance:</label>
+                            <input type="number" class="value-input" placeholder="cfs" step="0.1">
+                            <span class="unit-label">cfs</span>
+                            <label>Deflection:</label>
+                            <input type="number" class="value-input" placeholder="cfs" step="0.1">
+                            <span class="unit-label">cfs</span>
+                            <button class="remove-btn" onclick="removeCFSSSection(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="add-section-btn" onclick="addCFSSFloorSection()">
+                        <i class="fas fa-plus"></i> Add Floor Section
                     </button>
                     
-                    <div id="cfss-form" class="cfss-form hidden">
-                        <div id="floor-sections">
-                            <div class="floor-section">
-                                <label>Floor Range:</label>
-                                <input type="text" class="floor-input" placeholder="e.g., 1-4">
-                                <label>Resistance:</label>
-                                <input type="number" class="value-input" placeholder="cfs" step="0.1">
-                                <span class="unit-label">cfs</span>
-                                <label>Deflection:</label>
-                                <input type="number" class="value-input" placeholder="cfs" step="0.1">
-                                <span class="unit-label">cfs</span>
-                                <button class="remove-btn" onclick="removeCFSSSection(this)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <button class="add-section-btn" onclick="addCFSSFloorSection()">
-                            <i class="fas fa-plus"></i> Add Floor Section
-                        </button>
-                        
-                        <button class="save-cfss-btn" onclick="saveCFSSData()">
-                            <i class="fas fa-save"></i> Save CFSS Data
-                        </button>
-                    </div>
+                    <button class="save-cfss-btn" onclick="saveCFSSData()">
+                        <i class="fas fa-save"></i> Save CFSS Data
+                    </button>
                 </div>
-
+            </div>
+                
             <button id="newCalculationButton">Add Wall</button>
             <div id="equipmentForm">
                 <div class="calculation-sections">
