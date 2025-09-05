@@ -4,6 +4,7 @@ let projectEquipment = []; // For CFSS, this will store walls
 let currentUser = null;
 let isAdmin = false;
 let projectData = null;
+let cfssWindData = []; // Store wind data
 
 // Function to check authentication
 async function checkAuthentication() {
@@ -645,6 +646,142 @@ async function saveProjectStatus(newStatus) {
     } catch (error) {
         console.error('Save failed:', error);
     }
+}
+
+function toggleCFSSForm() {
+    const form = document.getElementById('cfss-form');
+    const btn = document.querySelector('.cfss-btn');
+    const btnText = document.getElementById('cfss-btn-text');
+    
+    if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden');
+        btn.classList.add('expanded');
+        btnText.textContent = 'Hide CFSS Data';
+    } else {
+        form.classList.add('hidden');
+        btn.classList.remove('expanded');
+        btnText.textContent = 'Add CFSS Data';
+    }
+}
+
+function addCFSSFloorSection() {
+    const container = document.getElementById('floor-sections');
+    const newSection = document.createElement('div');
+    newSection.className = 'floor-section';
+    newSection.innerHTML = `
+        <label>Floor Range:</label>
+        <input type="text" class="floor-input" placeholder="e.g., 5-8">
+        <label>Resistance:</label>
+        <input type="number" class="value-input" placeholder="cfs" step="0.1">
+        <span class="unit-label">cfs</span>
+        <label>Deflection:</label>
+        <input type="number" class="value-input" placeholder="cfs" step="0.1">
+        <span class="unit-label">cfs</span>
+        <button class="remove-btn" onclick="removeCFSSSection(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(newSection);
+}
+
+function removeCFSSSection(button) {
+    const section = button.closest('.floor-section');
+    if (section) {
+        section.remove();
+    }
+}
+
+async function saveCFSSData() {
+    if (!canModifyProject()) {
+        alert('You do not have permission to modify CFSS data for this project.');
+        return;
+    }
+    
+    try {
+        // Collect all floor section data
+        const sections = document.querySelectorAll('.floor-section');
+        const newCfssData = [];
+        
+        sections.forEach(section => {
+            const floorRange = section.querySelector('.floor-input').value.trim();
+            const resistance = parseFloat(section.querySelectorAll('.value-input')[0].value) || 0;
+            const deflection = parseFloat(section.querySelectorAll('.value-input')[1].value) || 0;
+            
+            if (floorRange) {
+                newCfssData.push({
+                    floorRange: floorRange,
+                    resistance: resistance,
+                    deflection: deflection,
+                    dateAdded: new Date().toISOString(),
+                    addedBy: currentUser.email
+                });
+            }
+        });
+        
+        if (newCfssData.length === 0) {
+            alert('Please add at least one floor section with data.');
+            return;
+        }
+        
+        console.log('Saving CFSS wind data:', newCfssData);
+        
+        // Save to database using your existing API
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ cfssWindData: newCfssData })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to save CFSS data: ${response.status}`);
+        }
+        
+        cfssWindData = newCfssData;
+        alert('CFSS data saved successfully!');
+        
+        // Hide the form after saving
+        toggleCFSSForm();
+        
+    } catch (error) {
+        console.error('Error saving CFSS data:', error);
+        alert('Error saving CFSS data: ' + error.message);
+    }
+}
+
+// Load existing CFSS data when page loads
+function loadCFSSData(project) {
+    if (project.cfssWindData && project.cfssWindData.length > 0) {
+        cfssWindData = project.cfssWindData;
+        populateCFSSForm(cfssWindData);
+        
+        // Show that data exists
+        const btnText = document.getElementById('cfss-btn-text');
+        btnText.textContent = `CFSS Data (${cfssWindData.length} sections)`;
+    }
+}
+
+function populateCFSSForm(windData) {
+    const container = document.getElementById('floor-sections');
+    container.innerHTML = ''; // Clear existing
+    
+    windData.forEach(data => {
+        const section = document.createElement('div');
+        section.className = 'floor-section';
+        section.innerHTML = `
+            <label>Floor Range:</label>
+            <input type="text" class="floor-input" value="${data.floorRange}">
+            <label>Resistance:</label>
+            <input type="number" class="value-input" value="${data.resistance}" step="0.1">
+            <span class="unit-label">cfs</span>
+            <label>Deflection:</label>
+            <input type="number" class="value-input" value="${data.deflection}" step="0.1">
+            <span class="unit-label">cfs</span>
+            <button class="remove-btn" onclick="removeCFSSSection(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        container.appendChild(section);
+    });
 }
 
 // Make functions globally available

@@ -66,6 +66,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ].filter(Boolean).join(', ');
                 document.getElementById("projectAddress").textContent = projectAddress;
 
+                if (project.cfssWindData) {
+                        loadCFSSData(project);
+                    }
+
                 if (isAdmin && project.createdBy) {
                     const ownerInfo = document.getElementById('projectOwnerInfo');
                     ownerInfo.innerHTML = `
