@@ -685,63 +685,14 @@ function addCFSSFloorSection() {
     const newSection = document.createElement('div');
     newSection.className = 'floor-section';
     newSection.innerHTML = `
-        <div class="field-row">
-            <label>Floor Range:</label>
-            <input type="text" class="floor-input" placeholder="e.g., 5-8">
-        </div>
-        
-        <div class="field-row">
-            <label>Resistance:</label>
-            <input type="number" class="value-input" placeholder="cfs" step="0.1">
-            <span class="unit-label">cfs</span>
-        </div>
-        
-        <div class="field-row">
-            <label>Deflection:</label>
-            <input type="number" class="value-input" placeholder="cfs" step="0.1">
-            <span class="unit-label">cfs</span>
-        </div>
-        
-        <div class="field-row">
-            <label>Max Deflection:</label>
-            <input type="text" class="text-input" placeholder="Enter max deflection">
-        </div>
-        
-        <div class="field-row">
-            <label>Max Spacing Between Braces:</label>
-            <input type="text" class="text-input" placeholder="Enter max spacing">
-        </div>
-        
-        <div class="field-row">
-            <label>Framing Assembly:</label>
-            <input type="text" class="text-input" placeholder="Enter framing assembly">
-        </div>
-        
-        <div class="field-row">
-            <label>Concrete Anchor:</label>
-            <input type="text" class="text-input" placeholder="Enter concrete anchor">
-        </div>
-        
-        <div class="field-row">
-            <label>Steel Anchor:</label>
-            <input type="text" class="text-input" placeholder="Enter steel anchor">
-        </div>
-        
-        <div class="field-row">
-            <label>Min Metal Framing Thickness:</label>
-            <input type="text" class="text-input" placeholder="Enter min thickness">
-        </div>
-        
-        <div class="field-row">
-            <label>Lisse Inférieure:</label>
-            <input type="text" class="text-input" placeholder="Enter lisse inférieure">
-        </div>
-        
-        <div class="field-row">
-            <label>Lisse Supérieure:</label>
-            <input type="text" class="text-input" placeholder="Enter lisse supérieure">
-        </div>
-        
+        <label>Floor Range:</label>
+        <input type="text" class="floor-input" placeholder="e.g., 5-8">
+        <label>Resistance:</label>
+        <input type="number" class="value-input" placeholder="cfs" step="0.1">
+        <span class="unit-label">cfs</span>
+        <label>Deflection:</label>
+        <input type="number" class="value-input" placeholder="cfs" step="0.1">
+        <span class="unit-label">cfs</span>
         <button class="remove-btn" onclick="removeCFSSSection(this)">
             <i class="fas fa-trash"></i>
         </button>

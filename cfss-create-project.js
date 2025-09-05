@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = 'auth.html';
         }
     }
-
+    
     function setFormLoading(loading) {
         const submitButton = form.querySelector('button[type="submit"]');
         const formContainer = document.querySelector('.form-container');

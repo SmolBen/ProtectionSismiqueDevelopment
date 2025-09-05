@@ -90,81 +90,77 @@
                     <span id="cfss-btn-text">Add CFSS Data</span>
                 </button>
                 
-                <div id="cfss-form" class="cfss-form hidden">
-                    <div id="floor-sections">
-                        <div class="floor-section">
-                            <div class="field-row">
-                                <label>Floor Range:</label>
-                                <input type="text" class="floor-input" placeholder="e.g., 1-4">
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Resistance:</label>
-                                <input type="number" class="value-input" placeholder="cfs" step="0.1">
-                                <span class="unit-label">cfs</span>
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Deflection:</label>
-                                <input type="number" class="value-input" placeholder="cfs" step="0.1">
-                                <span class="unit-label">cfs</span>
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Max Deflection:</label>
-                                <input type="text" class="text-input" placeholder="Enter max deflection">
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Max Spacing Between Braces:</label>
-                                <input type="text" class="text-input" placeholder="Enter max spacing">
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Framing Assembly:</label>
-                                <input type="text" class="text-input" placeholder="Enter framing assembly">
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Concrete Anchor:</label>
-                                <input type="text" class="text-input" placeholder="Enter concrete anchor">
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Steel Anchor:</label>
-                                <input type="text" class="text-input" placeholder="Enter steel anchor">
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Min Metal Framing Thickness:</label>
-                                <input type="text" class="text-input" placeholder="Enter min thickness">
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Lisse Inférieure:</label>
-                                <input type="text" class="text-input" placeholder="Enter lisse inférieure">
-                            </div>
-                            
-                            <div class="field-row">
-                                <label>Lisse Supérieure:</label>
-                                <input type="text" class="text-input" placeholder="Enter lisse supérieure">
-                            </div>
-                            
-                            <button class="remove-btn" onclick="removeCFSSSection(this)">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <button class="add-section-btn" onclick="addCFSSFloorSection()">
-                        <i class="fas fa-plus"></i> Add Floor Section
-                    </button>
-                    
-                    <button class="save-cfss-btn" onclick="saveCFSSData()">
-                        <i class="fas fa-save"></i> Save CFSS Data
-                    </button>
-                </div>
-            </div>
+<div id="cfss-form" class="cfss-form hidden">
+    <!-- Floor-specific sections (can have multiple) -->
+    <div id="floor-sections">
+        <div class="floor-section">
+            <label>Floor Range:</label>
+            <input type="text" class="floor-input" placeholder="e.g., 1-4">
+            <label>Resistance:</label>
+            <input type="number" class="value-input" placeholder="cfs" step="0.1">
+            <span class="unit-label">cfs</span>
+            <label>Deflection:</label>
+            <input type="number" class="value-input" placeholder="cfs" step="0.1">
+            <span class="unit-label">cfs</span>
+            <button class="remove-btn" onclick="removeCFSSSection(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Add Floor Section Button -->
+    <button class="add-section-btn" onclick="addCFSSFloorSection()">
+        <i class="fas fa-plus"></i> Add Floor Section
+    </button>
+    
+    <!-- Project-wide fields (single instance) -->
+    <div class="project-fields">
+        <div class="field-row">
+            <label>Max Deflection:</label>
+            <input type="text" id="maxDeflection" class="text-input" placeholder="Enter max deflection">
+        </div>
+        
+        <div class="field-row">
+            <label>Max Spacing Between Braces:</label>
+            <input type="text" id="maxSpacing" class="text-input" placeholder="Enter max spacing">
+        </div>
+        
+        <div class="field-row">
+            <label>Framing Assembly:</label>
+            <input type="text" id="framingAssembly" class="text-input" placeholder="Enter framing assembly">
+        </div>
+        
+        <div class="field-row">
+            <label>Concrete Anchor:</label>
+            <input type="text" id="concreteAnchor" class="text-input" placeholder="Enter concrete anchor">
+        </div>
+        
+        <div class="field-row">
+            <label>Steel Anchor:</label>
+            <input type="text" id="steelAnchor" class="text-input" placeholder="Enter steel anchor">
+        </div>
+        
+        <div class="field-row">
+            <label>Min Metal Framing Thickness:</label>
+            <input type="text" id="minMetalThickness" class="text-input" placeholder="Enter min thickness">
+        </div>
+        
+        <div class="field-row">
+            <label>Lisse Inférieure:</label>
+            <input type="text" id="lisseInferieure" class="text-input" placeholder="Enter lisse inférieure">
+        </div>
+        
+        <div class="field-row">
+            <label>Lisse Supérieure:</label>
+            <input type="text" id="lisseSuperieure" class="text-input" placeholder="Enter lisse supérieure">
+        </div>
+    </div>
+    
+    <!-- Save Button -->
+    <button class="save-cfss-btn" onclick="saveCFSSData()">
+        <i class="fas fa-save"></i> Save CFSS Data
+    </button>
+</div>
                 
             <button id="newCalculationButton">Add Wall</button>
             <div id="equipmentForm">
