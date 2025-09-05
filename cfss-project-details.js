@@ -685,40 +685,62 @@ function addCFSSFloorSection() {
     const newSection = document.createElement('div');
     newSection.className = 'floor-section';
     newSection.innerHTML = `
-        <label>Floor Range:</label>
-        <input type="text" class="floor-input" placeholder="e.g., 5-8">
+        <div class="field-row">
+            <label>Floor Range:</label>
+            <input type="text" class="floor-input" placeholder="e.g., 5-8">
+        </div>
         
-        <label>Resistance:</label>
-        <input type="number" class="value-input" placeholder="cfs" step="0.1">
-        <span class="unit-label">cfs</span>
+        <div class="field-row">
+            <label>Resistance:</label>
+            <input type="number" class="value-input" placeholder="cfs" step="0.1">
+            <span class="unit-label">cfs</span>
+        </div>
         
-        <label>Deflection:</label>
-        <input type="number" class="value-input" placeholder="cfs" step="0.1">
-        <span class="unit-label">cfs</span>
+        <div class="field-row">
+            <label>Deflection:</label>
+            <input type="number" class="value-input" placeholder="cfs" step="0.1">
+            <span class="unit-label">cfs</span>
+        </div>
         
-        <label>Max Deflection:</label>
-        <input type="text" class="text-input" placeholder="Enter max deflection">
+        <div class="field-row">
+            <label>Max Deflection:</label>
+            <input type="text" class="text-input" placeholder="Enter max deflection">
+        </div>
         
-        <label>Max Spacing Between Braces:</label>
-        <input type="text" class="text-input" placeholder="Enter max spacing">
+        <div class="field-row">
+            <label>Max Spacing Between Braces:</label>
+            <input type="text" class="text-input" placeholder="Enter max spacing">
+        </div>
         
-        <label>Framing Assembly:</label>
-        <input type="text" class="text-input" placeholder="Enter framing assembly">
+        <div class="field-row">
+            <label>Framing Assembly:</label>
+            <input type="text" class="text-input" placeholder="Enter framing assembly">
+        </div>
         
-        <label>Concrete Anchor:</label>
-        <input type="text" class="text-input" placeholder="Enter concrete anchor">
+        <div class="field-row">
+            <label>Concrete Anchor:</label>
+            <input type="text" class="text-input" placeholder="Enter concrete anchor">
+        </div>
         
-        <label>Steel Anchor:</label>
-        <input type="text" class="text-input" placeholder="Enter steel anchor">
+        <div class="field-row">
+            <label>Steel Anchor:</label>
+            <input type="text" class="text-input" placeholder="Enter steel anchor">
+        </div>
         
-        <label>Min Metal Framing Thickness:</label>
-        <input type="text" class="text-input" placeholder="Enter min thickness">
+        <div class="field-row">
+            <label>Min Metal Framing Thickness:</label>
+            <input type="text" class="text-input" placeholder="Enter min thickness">
+        </div>
         
-        <label>Lisse Inférieure:</label>
-        <input type="text" class="text-input" placeholder="Enter lisse inférieure">
+        <div class="field-row">
+            <label>Lisse Inférieure:</label>
+            <input type="text" class="text-input" placeholder="Enter lisse inférieure">
+        </div>
         
-        <label>Lisse Supérieure:</label>
-        <input type="text" class="text-input" placeholder="Enter lisse supérieure">
+        <div class="field-row">
+            <label>Lisse Supérieure:</label>
+            <input type="text" class="text-input" placeholder="Enter lisse supérieure">
+        </div>
         
         <button class="remove-btn" onclick="removeCFSSSection(this)">
             <i class="fas fa-trash"></i>
