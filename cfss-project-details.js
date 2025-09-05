@@ -916,63 +916,6 @@ function removeCFSSSection(button) {
     }
 }
 
-async function saveCFSSData() {
-    if (!canModifyProject()) {
-        alert('You do not have permission to modify CFSS data for this project.');
-        return;
-    }
-    
-    try {
-        // Collect all floor section data
-        const sections = document.querySelectorAll('.floor-section');
-        const newCfssData = [];
-        
-        sections.forEach(section => {
-            const floorRange = section.querySelector('.floor-input').value.trim();
-            const resistance = parseFloat(section.querySelectorAll('.value-input')[0].value) || 0;
-            const deflection = parseFloat(section.querySelectorAll('.value-input')[1].value) || 0;
-            
-            if (floorRange) {
-                newCfssData.push({
-                    floorRange: floorRange,
-                    resistance: resistance,
-                    deflection: deflection,
-                    dateAdded: new Date().toISOString(),
-                    addedBy: currentUser.email
-                });
-            }
-        });
-        
-        if (newCfssData.length === 0) {
-            alert('Please add at least one floor section with data.');
-            return;
-        }
-        
-        console.log('Saving CFSS wind data:', newCfssData);
-        
-        // Save to database using your existing API
-        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ cfssWindData: newCfssData })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to save CFSS data: ${response.status}`);
-        }
-        
-        cfssWindData = newCfssData;
-        alert('CFSS data saved successfully!');
-        
-        // Hide the form after saving
-        toggleCFSSForm();
-        
-    } catch (error) {
-        console.error('Error saving CFSS data:', error);
-        alert('Error saving CFSS data: ' + error.message);
-    }
-}
-
 // Load existing CFSS data when page loads
 function loadCFSSData(project) {
     const cfssDisplay = document.getElementById('cfssDataDisplay');
