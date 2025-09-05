@@ -1,3 +1,54 @@
+.main-fields-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.field-group.floor-range {
+    flex: 2;
+    min-width: 120px;
+}
+
+.field-group.resistance,
+.field-group.deflection {
+    flex: 1;
+    min-width: 100px;
+}
+
+.field-group label {
+    font-weight: 500;
+    font-size: 14px;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.field-group input {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.field-with-unit {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.field-with-unit input {
+    flex: 1;
+}
+
 .cfss-data-section {
     margin-bottom: 15px;
 }
@@ -77,15 +128,13 @@
 }
 
 .floor-section {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     padding: 15px;
     background: white;
     border-radius: 6px;
     border: 1px solid #dee2e6;
 }
+
 
 .floor-section .field-row {
     display: flex;
@@ -127,7 +176,7 @@
     cursor: pointer;
     font-size: 12px;
     align-self: flex-start;
-    margin-top: 10px;
+    margin-left: auto;
 }
 
 .add-section-btn, .save-cfss-btn {
@@ -145,4 +194,21 @@
     background: #28a745;
     padding: 10px 20px;
     margin-left: 10px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .main-fields-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .field-group {
+        margin-bottom: 10px;
+    }
+
+    .remove-btn {
+        margin-left: 0;
+        align-self: stretch;
+    }
 }

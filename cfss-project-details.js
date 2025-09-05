@@ -685,17 +685,32 @@ function addCFSSFloorSection() {
     const newSection = document.createElement('div');
     newSection.className = 'floor-section';
     newSection.innerHTML = `
-        <label>Floor Range:</label>
-        <input type="text" class="floor-input" placeholder="e.g., 5-8">
-        <label>Resistance:</label>
-        <input type="number" class="value-input" placeholder="cfs" step="0.1">
-        <span class="unit-label">cfs</span>
-        <label>Deflection:</label>
-        <input type="number" class="value-input" placeholder="cfs" step="0.1">
-        <span class="unit-label">cfs</span>
-        <button class="remove-btn" onclick="removeCFSSSection(this)">
-            <i class="fas fa-trash"></i>
-        </button>
+        <div class="main-fields-row">
+            <div class="field-group floor-range">
+                <label>Floor Range:</label>
+                <input type="text" class="floor-input" placeholder="e.g., 5-8">
+            </div>
+            
+            <div class="field-group resistance">
+                <label>Resistance:</label>
+                <div class="field-with-unit">
+                    <input type="number" class="value-input" placeholder="0.0" step="0.1">
+                    <span class="unit-label">cfs</span>
+                </div>
+            </div>
+            
+            <div class="field-group deflection">
+                <label>Deflection:</label>
+                <div class="field-with-unit">
+                    <input type="number" class="value-input" placeholder="0.0" step="0.1">
+                    <span class="unit-label">cfs</span>
+                </div>
+            </div>
+            
+            <button class="remove-btn" onclick="removeCFSSSection(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
     `;
     container.appendChild(newSection);
 }
