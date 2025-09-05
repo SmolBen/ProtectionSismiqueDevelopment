@@ -700,6 +700,112 @@ function addCFSSFloorSection() {
     container.appendChild(newSection);
 }
 
+// Function to display CFSS data in the basic info section
+function displayCFSSData(cfssData) {
+    const displayDiv = document.getElementById('cfssDataDisplay');
+    const contentDiv = document.getElementById('cfssDataContent');
+    
+    if (!cfssData || cfssData.length === 0) {
+        displayDiv.style.display = 'none';
+        return;
+    }
+    
+    displayDiv.style.display = 'block';
+    
+    let html = '';
+    cfssData.forEach(item => {
+        html += `
+            <div class="cfss-floor-item">
+                <span class="cfss-floor-range">Floor ${item.floorRange}</span>
+                <span class="cfss-values">Resistance: ${item.resistance} cfs, Deflection: ${item.deflection} cfs</span>
+            </div>
+        `;
+    });
+    
+    contentDiv.innerHTML = html;
+    
+    // Update the button text to show data exists
+    const btnText = document.getElementById('cfss-btn-text');
+    if (btnText) {
+        btnText.textContent = `CFSS Data (${cfssData.length} sections)`;
+    }
+}
+
+// Update the saveCFSSData function to refresh the display
+async function saveCFSSData() {
+    if (!canModifyProject()) {
+        alert('You do not have permission to modify CFSS data for this project.');
+        return;
+    }
+    
+    try {
+        // Collect all floor section data
+        const sections = document.querySelectorAll('.floor-section');
+        const newCfssData = [];
+        
+        sections.forEach(section => {
+            const floorRange = section.querySelector('.floor-input').value.trim();
+            const resistance = parseFloat(section.querySelectorAll('.value-input')[0].value) || 0;
+            const deflection = parseFloat(section.querySelectorAll('.value-input')[1].value) || 0;
+            
+            if (floorRange) {
+                newCfssData.push({
+                    floorRange: floorRange,
+                    resistance: resistance,
+                    deflection: deflection,
+                    dateAdded: new Date().toISOString(),
+                    addedBy: currentUser.email
+                });
+            }
+        });
+        
+        if (newCfssData.length === 0) {
+            alert('Please add at least one floor section with data.');
+            return;
+        }
+        
+        console.log('Saving CFSS wind data:', newCfssData);
+        
+        // Save to database using your existing API
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ cfssWindData: newCfssData })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to save CFSS data: ${response.status}`);
+        }
+        
+        cfssWindData = newCfssData;
+        
+        // UPDATE: Display the saved data in the basic info section
+        displayCFSSData(cfssWindData);
+        
+        alert('CFSS data saved successfully!');
+        
+        // Hide the form after saving
+        toggleCFSSForm();
+        
+    } catch (error) {
+        console.error('Error saving CFSS data:', error);
+        alert('Error saving CFSS data: ' + error.message);
+    }
+}
+
+// Update the loadCFSSData function
+function loadCFSSData(project) {
+    if (project.cfssWindData && project.cfssWindData.length > 0) {
+        cfssWindData = project.cfssWindData;
+        
+        // Display in the basic info section
+        displayCFSSData(cfssWindData);
+        
+        // Populate form if needed
+        populateCFSSForm(cfssWindData);
+    }
+}
+
 function removeCFSSSection(button) {
     const section = button.closest('.floor-section');
     if (section) {
