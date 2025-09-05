@@ -766,13 +766,37 @@ async function saveCFSSData() {
 
 // Load existing CFSS data when page loads
 function loadCFSSData(project) {
+    const cfssDisplay = document.getElementById('cfssDataDisplay');
+    const cfssContent = document.getElementById('cfssDataContent');
+    
     if (project.cfssWindData && project.cfssWindData.length > 0) {
         cfssWindData = project.cfssWindData;
-        populateCFSSForm(cfssWindData);
         
-        // Show that data exists
+        // Show the display section
+        cfssDisplay.style.display = 'block';
+        
+        // Generate HTML for displaying the data
+        let dataHtml = '';
+        project.cfssWindData.forEach((data, index) => {
+            dataHtml += `
+                <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6;">
+                    <strong>Floor Range:</strong> ${data.floorRange} | 
+                    <strong>Resistance:</strong> ${data.resistance} cfs | 
+                    <strong>Deflection:</strong> ${data.deflection} cfs
+                </div>
+            `;
+        });
+        
+        cfssContent.innerHTML = dataHtml;
+        
+        // Update button text to show data exists
         const btnText = document.getElementById('cfss-btn-text');
-        btnText.textContent = `CFSS Data (${cfssWindData.length} sections)`;
+        if (btnText) {
+            btnText.textContent = `CFSS Data (${project.cfssWindData.length} sections)`;
+        }
+    } else {
+        // Hide the display section if no data
+        cfssDisplay.style.display = 'none';
     }
 }
 
