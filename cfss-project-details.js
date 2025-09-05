@@ -716,6 +716,7 @@ function addCFSSFloorSection() {
 }
 
 // Function to display CFSS data in the basic info section
+// Function to display CFSS data in the basic info section
 function displayCFSSData(cfssData) {
     const displayDiv = document.getElementById('cfssDataDisplay');
     const contentDiv = document.getElementById('cfssDataContent');
@@ -727,22 +728,79 @@ function displayCFSSData(cfssData) {
     
     displayDiv.style.display = 'block';
     
+    // Get project-wide fields from first entry (they're the same across all floor sections)
+    const projectData = cfssData[0] || {};
+    
     let html = '';
-    cfssData.forEach(item => {
+    
+    // Display project-wide CFSS data first
+    const projectFields = [
+        { label: 'Max Deflection', value: projectData.maxDeflection },
+        { label: 'Max Spacing Between Braces', value: projectData.maxSpacing },
+        { label: 'Framing Assembly', value: projectData.framingAssembly },
+        { label: 'Concrete Anchor', value: projectData.concreteAnchor },
+        { label: 'Steel Anchor', value: projectData.steelAnchor },
+        { label: 'Min Metal Framing Thickness', value: projectData.minMetalThickness },
+        { label: 'Lisse Inférieure', value: projectData.lisseInferieure },
+        { label: 'Lisse Supérieure', value: projectData.lisseSuperieure }
+    ];
+    
+    // Filter out empty project fields
+    const filledProjectFields = projectFields.filter(field => field.value && field.value.trim() !== '');
+    
+    if (filledProjectFields.length > 0) {
         html += `
-            <div class="cfss-floor-item">
-                <span class="cfss-floor-range">Floor ${item.floorRange}</span>
-                <span class="cfss-values">Resistance: ${item.resistance} cfs, Deflection: ${item.deflection} cfs</span>
+            <div class="cfss-project-data">
+                <h4 style="margin: 0 0 10px 0; color: #28a745; font-size: 14px; border-bottom: 1px solid #28a745; padding-bottom: 5px;">
+                    Project Specifications
+                </h4>
+                <div class="cfss-project-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+        `;
+        
+        filledProjectFields.forEach(field => {
+            html += `
+                <div class="cfss-project-item" style="font-size: 12px; padding: 4px 0;">
+                    <strong style="color: #495057;">${field.label}:</strong>
+                    <span style="color: #6c757d; margin-left: 8px;">${field.value}</span>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
             </div>
         `;
-    });
+    }
+    
+    // Display wind data by floor
+    if (cfssData.length > 0) {
+        html += `
+            <div class="cfss-wind-data">
+                <h4 style="margin: 0 0 10px 0; color: #17a2b8; font-size: 14px; border-bottom: 1px solid #17a2b8; padding-bottom: 5px;">
+                    Wind Data by Floor
+                </h4>
+        `;
+        
+        cfssData.forEach(item => {
+            html += `
+                <div class="cfss-floor-item">
+                    <span class="cfss-floor-range">Floor ${item.floorRange}</span>
+                    <span class="cfss-values">Resistance: ${item.resistance} cfs, Deflection: ${item.deflection} cfs</span>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
+    }
     
     contentDiv.innerHTML = html;
     
     // Update the button text to show data exists
     const btnText = document.getElementById('cfss-btn-text');
     if (btnText) {
-        btnText.textContent = `CFSS Data (${cfssData.length} sections)`;
+        const floorCount = cfssData.length;
+        const projectFieldCount = filledProjectFields.length;
+        btnText.textContent = `CFSS Data (${floorCount} floors, ${projectFieldCount} specs)`;
     }
 }
 
@@ -835,9 +893,18 @@ function loadCFSSData(project) {
         populateCFSSForm(cfssWindData);
         
         // Show that data exists
+        const projectData = project.cfssWindData[0] || {};
+        const projectFields = [
+            projectData.maxDeflection, projectData.maxSpacing, projectData.framingAssembly,
+            projectData.concreteAnchor, projectData.steelAnchor, projectData.minMetalThickness,
+            projectData.lisseInferieure, projectData.lisseSuperieure
+        ].filter(field => field && field.trim() !== '');
+        
         const btnText = document.getElementById('cfss-btn-text');
         if (btnText) {
-            btnText.textContent = `CFSS Data (${project.cfssWindData.length} sections)`;
+            const floorCount = project.cfssWindData.length;
+            const projectFieldCount = projectFields.length;
+            btnText.textContent = `CFSS Data (${floorCount} floors, ${projectFieldCount} specs)`;
         }
     }
 }
@@ -949,28 +1016,76 @@ function updateCFSSDataDisplay(windData) {
     if (windData && windData.length > 0) {
         cfssDisplay.style.display = 'block';
         
+        // Get project-wide fields from first entry
+        const projectData = windData[0] || {};
+        
         let dataHtml = '';
+        
+        // Display project-wide data
+        const projectFields = [
+            { label: 'Max Deflection', value: projectData.maxDeflection },
+            { label: 'Max Spacing Between Braces', value: projectData.maxSpacing },
+            { label: 'Framing Assembly', value: projectData.framingAssembly },
+            { label: 'Concrete Anchor', value: projectData.concreteAnchor },
+            { label: 'Steel Anchor', value: projectData.steelAnchor },
+            { label: 'Min Metal Framing Thickness', value: projectData.minMetalThickness },
+            { label: 'Lisse Inférieure', value: projectData.lisseInferieure },
+            { label: 'Lisse Supérieure', value: projectData.lisseSuperieure }
+        ];
+        
+        const filledProjectFields = projectFields.filter(field => field.value && field.value.trim() !== '');
+        
+        if (filledProjectFields.length > 0) {
+            dataHtml += `
+                <div style="margin-bottom: 15px; padding: 10px; background: #e8f5e8; border-radius: 6px; border-left: 4px solid #28a745;">
+                    <h4 style="margin: 0 0 8px 0; color: #28a745; font-size: 14px;">Project Specifications</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            `;
+            
+            filledProjectFields.forEach(field => {
+                dataHtml += `
+                    <div style="font-size: 12px;">
+                        <strong style="color: #155724;">${field.label}:</strong>
+                        <span style="color: #155724; margin-left: 4px;">${field.value}</span>
+                    </div>
+                `;
+            });
+            
+            dataHtml += `
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Display wind data
+        dataHtml += `
+            <div>
+                <h4 style="margin: 0 0 8px 0; color: #17a2b8; font-size: 14px;">Wind Data by Floor</h4>
+        `;
+        
         windData.forEach((data, index) => {
             dataHtml += `
-                <div style="margin-bottom: 12px; padding: 12px; background: white; border-radius: 6px; border: 1px solid #dee2e6;">
-                    <div style="font-weight: bold; color: #17a2b8; margin-bottom: 8px;">Floor Range: ${data.floorRange}</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+                <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6;">
+                    <div style="font-weight: bold; color: #17a2b8; margin-bottom: 4px;">Floor Range: ${data.floorRange}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
                         <div><strong>Resistance:</strong> ${data.resistance} cfs</div>
                         <div><strong>Deflection:</strong> ${data.deflection} cfs</div>
-                        ${data.maxDeflection ? `<div><strong>Max Deflection:</strong> ${data.maxDeflection}</div>` : ''}
-                        ${data.maxSpacing ? `<div><strong>Max Spacing:</strong> ${data.maxSpacing}</div>` : ''}
-                        ${data.framingAssembly ? `<div><strong>Framing Assembly:</strong> ${data.framingAssembly}</div>` : ''}
-                        ${data.concreteAnchor ? `<div><strong>Concrete Anchor:</strong> ${data.concreteAnchor}</div>` : ''}
-                        ${data.steelAnchor ? `<div><strong>Steel Anchor:</strong> ${data.steelAnchor}</div>` : ''}
-                        ${data.minMetalThickness ? `<div><strong>Min Metal Thickness:</strong> ${data.minMetalThickness}</div>` : ''}
-                        ${data.lisseInferieure ? `<div><strong>Lisse Inférieure:</strong> ${data.lisseInferieure}</div>` : ''}
-                        ${data.lisseSuperieure ? `<div><strong>Lisse Supérieure:</strong> ${data.lisseSuperieure}</div>` : ''}
                     </div>
                 </div>
             `;
         });
         
+        dataHtml += `</div>`;
+        
         cfssContent.innerHTML = dataHtml;
+        
+        // Update button text
+        const btnText = document.getElementById('cfss-btn-text');
+        if (btnText) {
+            const floorCount = windData.length;
+            const projectFieldCount = filledProjectFields.length;
+            btnText.textContent = `CFSS Data (${floorCount} floors, ${projectFieldCount} specs)`;
+        }
     } else {
         cfssDisplay.style.display = 'none';
     }
@@ -983,16 +1098,26 @@ function populateCFSSForm(windData) {
     // Populate project-wide fields from the first entry (since they're the same for all)
     if (windData.length > 0) {
         const firstEntry = windData[0];
-        document.getElementById('maxDeflection').value = firstEntry.maxDeflection || '';
-        document.getElementById('maxSpacing').value = firstEntry.maxSpacing || '';
-        document.getElementById('framingAssembly').value = firstEntry.framingAssembly || '';
-        document.getElementById('concreteAnchor').value = firstEntry.concreteAnchor || '';
-        document.getElementById('steelAnchor').value = firstEntry.steelAnchor || '';
-        document.getElementById('minMetalThickness').value = firstEntry.minMetalThickness || '';
-        document.getElementById('lisseInferieure').value = firstEntry.lisseInferieure || '';
-        document.getElementById('lisseSuperieure').value = firstEntry.lisseSuperieure || '';
+        const projectFields = [
+            { id: 'maxDeflection', value: firstEntry.maxDeflection },
+            { id: 'maxSpacing', value: firstEntry.maxSpacing },
+            { id: 'framingAssembly', value: firstEntry.framingAssembly },
+            { id: 'concreteAnchor', value: firstEntry.concreteAnchor },
+            { id: 'steelAnchor', value: firstEntry.steelAnchor },
+            { id: 'minMetalThickness', value: firstEntry.minMetalThickness },
+            { id: 'lisseInferieure', value: firstEntry.lisseInferieure },
+            { id: 'lisseSuperieure', value: firstEntry.lisseSuperieure }
+        ];
+        
+        projectFields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (element) {
+                element.value = field.value || '';
+            }
+        });
     }
     
+    // Populate floor-specific sections
     windData.forEach(data => {
         const section = document.createElement('div');
         section.className = 'floor-section';
