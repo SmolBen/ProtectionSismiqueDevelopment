@@ -687,12 +687,39 @@ function addCFSSFloorSection() {
     newSection.innerHTML = `
         <label>Floor Range:</label>
         <input type="text" class="floor-input" placeholder="e.g., 5-8">
+        
         <label>Resistance:</label>
         <input type="number" class="value-input" placeholder="cfs" step="0.1">
         <span class="unit-label">cfs</span>
+        
         <label>Deflection:</label>
         <input type="number" class="value-input" placeholder="cfs" step="0.1">
         <span class="unit-label">cfs</span>
+        
+        <label>Max Deflection:</label>
+        <input type="text" class="text-input" placeholder="Enter max deflection">
+        
+        <label>Max Spacing Between Braces:</label>
+        <input type="text" class="text-input" placeholder="Enter max spacing">
+        
+        <label>Framing Assembly:</label>
+        <input type="text" class="text-input" placeholder="Enter framing assembly">
+        
+        <label>Concrete Anchor:</label>
+        <input type="text" class="text-input" placeholder="Enter concrete anchor">
+        
+        <label>Steel Anchor:</label>
+        <input type="text" class="text-input" placeholder="Enter steel anchor">
+        
+        <label>Min Metal Framing Thickness:</label>
+        <input type="text" class="text-input" placeholder="Enter min thickness">
+        
+        <label>Lisse Inférieure:</label>
+        <input type="text" class="text-input" placeholder="Enter lisse inférieure">
+        
+        <label>Lisse Supérieure:</label>
+        <input type="text" class="text-input" placeholder="Enter lisse supérieure">
+        
         <button class="remove-btn" onclick="removeCFSSSection(this)">
             <i class="fas fa-trash"></i>
         </button>
@@ -739,7 +766,6 @@ async function saveCFSSData() {
     }
     
     try {
-        // Collect all floor section data
         const sections = document.querySelectorAll('.floor-section');
         const newCfssData = [];
         
@@ -748,11 +774,30 @@ async function saveCFSSData() {
             const resistance = parseFloat(section.querySelectorAll('.value-input')[0].value) || 0;
             const deflection = parseFloat(section.querySelectorAll('.value-input')[1].value) || 0;
             
+            // Get all text inputs
+            const textInputs = section.querySelectorAll('.text-input');
+            const maxDeflection = textInputs[0]?.value.trim() || '';
+            const maxSpacing = textInputs[1]?.value.trim() || '';
+            const framingAssembly = textInputs[2]?.value.trim() || '';
+            const concreteAnchor = textInputs[3]?.value.trim() || '';
+            const steelAnchor = textInputs[4]?.value.trim() || '';
+            const minMetalThickness = textInputs[5]?.value.trim() || '';
+            const lisseInferieure = textInputs[6]?.value.trim() || '';
+            const lisseSuperieure = textInputs[7]?.value.trim() || '';
+            
             if (floorRange) {
                 newCfssData.push({
                     floorRange: floorRange,
                     resistance: resistance,
                     deflection: deflection,
+                    maxDeflection: maxDeflection,
+                    maxSpacing: maxSpacing,
+                    framingAssembly: framingAssembly,
+                    concreteAnchor: concreteAnchor,
+                    steelAnchor: steelAnchor,
+                    minMetalThickness: minMetalThickness,
+                    lisseInferieure: lisseInferieure,
+                    lisseSuperieure: lisseSuperieure,
                     dateAdded: new Date().toISOString(),
                     addedBy: currentUser.email
                 });
@@ -766,7 +811,6 @@ async function saveCFSSData() {
         
         console.log('Saving CFSS wind data:', newCfssData);
         
-        // Save to database using your existing API
         const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`, {
             method: 'PUT',
             headers: getAuthHeaders(),
@@ -779,12 +823,10 @@ async function saveCFSSData() {
         
         cfssWindData = newCfssData;
         
-        // UPDATE: Display the saved data in the basic info section
-        displayCFSSData(cfssWindData);
+        // Update the display
+        updateCFSSDataDisplay(newCfssData);
         
         alert('CFSS data saved successfully!');
-        
-        // Hide the form after saving
         toggleCFSSForm();
         
     } catch (error) {
@@ -797,12 +839,14 @@ async function saveCFSSData() {
 function loadCFSSData(project) {
     if (project.cfssWindData && project.cfssWindData.length > 0) {
         cfssWindData = project.cfssWindData;
-        
-        // Display in the basic info section
-        displayCFSSData(cfssWindData);
-        
-        // Populate form if needed
+        updateCFSSDataDisplay(project.cfssWindData);
         populateCFSSForm(cfssWindData);
+        
+        // Show that data exists
+        const btnText = document.getElementById('cfss-btn-text');
+        if (btnText) {
+            btnText.textContent = `CFSS Data (${project.cfssWindData.length} sections)`;
+        }
     }
 }
 
@@ -906,22 +950,83 @@ function loadCFSSData(project) {
     }
 }
 
+function updateCFSSDataDisplay(windData) {
+    const cfssDisplay = document.getElementById('cfssDataDisplay');
+    const cfssContent = document.getElementById('cfssDataContent');
+    
+    if (windData && windData.length > 0) {
+        cfssDisplay.style.display = 'block';
+        
+        let dataHtml = '';
+        windData.forEach((data, index) => {
+            dataHtml += `
+                <div style="margin-bottom: 12px; padding: 12px; background: white; border-radius: 6px; border: 1px solid #dee2e6;">
+                    <div style="font-weight: bold; color: #17a2b8; margin-bottom: 8px;">Floor Range: ${data.floorRange}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+                        <div><strong>Resistance:</strong> ${data.resistance} cfs</div>
+                        <div><strong>Deflection:</strong> ${data.deflection} cfs</div>
+                        ${data.maxDeflection ? `<div><strong>Max Deflection:</strong> ${data.maxDeflection}</div>` : ''}
+                        ${data.maxSpacing ? `<div><strong>Max Spacing:</strong> ${data.maxSpacing}</div>` : ''}
+                        ${data.framingAssembly ? `<div><strong>Framing Assembly:</strong> ${data.framingAssembly}</div>` : ''}
+                        ${data.concreteAnchor ? `<div><strong>Concrete Anchor:</strong> ${data.concreteAnchor}</div>` : ''}
+                        ${data.steelAnchor ? `<div><strong>Steel Anchor:</strong> ${data.steelAnchor}</div>` : ''}
+                        ${data.minMetalThickness ? `<div><strong>Min Metal Thickness:</strong> ${data.minMetalThickness}</div>` : ''}
+                        ${data.lisseInferieure ? `<div><strong>Lisse Inférieure:</strong> ${data.lisseInferieure}</div>` : ''}
+                        ${data.lisseSuperieure ? `<div><strong>Lisse Supérieure:</strong> ${data.lisseSuperieure}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        cfssContent.innerHTML = dataHtml;
+    } else {
+        cfssDisplay.style.display = 'none';
+    }
+}
+
 function populateCFSSForm(windData) {
     const container = document.getElementById('floor-sections');
-    container.innerHTML = ''; // Clear existing
+    container.innerHTML = '';
     
     windData.forEach(data => {
         const section = document.createElement('div');
         section.className = 'floor-section';
         section.innerHTML = `
             <label>Floor Range:</label>
-            <input type="text" class="floor-input" value="${data.floorRange}">
+            <input type="text" class="floor-input" value="${data.floorRange || ''}">
+            
             <label>Resistance:</label>
-            <input type="number" class="value-input" value="${data.resistance}" step="0.1">
+            <input type="number" class="value-input" value="${data.resistance || ''}" step="0.1">
             <span class="unit-label">cfs</span>
+            
             <label>Deflection:</label>
-            <input type="number" class="value-input" value="${data.deflection}" step="0.1">
+            <input type="number" class="value-input" value="${data.deflection || ''}" step="0.1">
             <span class="unit-label">cfs</span>
+            
+            <label>Max Deflection:</label>
+            <input type="text" class="text-input" value="${data.maxDeflection || ''}">
+            
+            <label>Max Spacing Between Braces:</label>
+            <input type="text" class="text-input" value="${data.maxSpacing || ''}">
+            
+            <label>Framing Assembly:</label>
+            <input type="text" class="text-input" value="${data.framingAssembly || ''}">
+            
+            <label>Concrete Anchor:</label>
+            <input type="text" class="text-input" value="${data.concreteAnchor || ''}">
+            
+            <label>Steel Anchor:</label>
+            <input type="text" class="text-input" value="${data.steelAnchor || ''}">
+            
+            <label>Min Metal Framing Thickness:</label>
+            <input type="text" class="text-input" value="${data.minMetalThickness || ''}">
+            
+            <label>Lisse Inférieure:</label>
+            <input type="text" class="text-input" value="${data.lisseInferieure || ''}">
+            
+            <label>Lisse Supérieure:</label>
+            <input type="text" class="text-input" value="${data.lisseSuperieure || ''}">
+            
             <button class="remove-btn" onclick="removeCFSSSection(this)">
                 <i class="fas fa-trash"></i>
             </button>
