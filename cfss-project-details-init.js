@@ -1,4 +1,3 @@
-// CFSS Project Details Page Initialization
 document.addEventListener("DOMContentLoaded", async () => {
     const isAuthenticated = await checkAuthentication();
     if (!isAuthenticated) {
@@ -66,9 +65,29 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ].filter(Boolean).join(', ');
                 document.getElementById("projectAddress").textContent = projectAddress;
 
-                if (project.cfssWindData) {
-                        loadCFSSData(project);
+                // FIXED: Load CFSS data with proper error handling and logging
+                console.log('🔍 Checking for CFSS data in project:', project.cfssWindData);
+                if (project.cfssWindData && project.cfssWindData.length > 0) {
+                    console.log('✅ CFSS data found, loading display...');
+                    cfssWindData = project.cfssWindData;
+                    
+                    // Use a small delay to ensure DOM is fully ready
+                    setTimeout(() => {
+                        try {
+                            updateCFSSDataDisplay(project.cfssWindData);
+                            console.log('✅ CFSS data display updated successfully');
+                        } catch (error) {
+                            console.error('❌ Error updating CFSS data display:', error);
+                        }
+                    }, 100);
+                } else {
+                    console.log('⚠️ No CFSS data found in project');
+                    // Ensure display is hidden if no data
+                    const cfssDisplay = document.getElementById('cfssDataDisplay');
+                    if (cfssDisplay) {
+                        cfssDisplay.style.display = 'none';
                     }
+                }
 
                 if (isAdmin && project.createdBy) {
                     const ownerInfo = document.getElementById('projectOwnerInfo');
@@ -81,6 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     `;
                 }
 
+                // Load equipment data
                 if (project.equipment && project.equipment.length > 0) {
                     projectEquipment = project.equipment;
                 } else {
@@ -98,9 +118,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 }
 
+                // Setup form handlers and render equipment list
                 setupNewCalculationButton();
                 setupEquipmentFormHandler();
-                
                 renderEquipmentList();
 
                 const newCalcButton = document.getElementById('newCalculationButton');
