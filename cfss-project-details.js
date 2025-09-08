@@ -1102,39 +1102,91 @@ function initializeImageUpload() {
     }
 }
 
-// Array to store current wall images
-let currentWallImages = [];
-
 function setupImageUploadHandlers() {
-    const uploadBox = document.getElementById('imageUploadBox');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('imageFileInput');
-    const previewContainer = document.getElementById('imagePreviewContainer');
     
-    if (!uploadBox || !fileInput) {
+    if (!cameraBtn || !dropZone || !fileInput) {
         console.error('Image upload elements not found');
         return;
     }
     
-    // Click to upload
-    uploadBox.addEventListener('click', () => {
+    // Camera button click
+    cameraBtn.addEventListener('click', () => {
         fileInput.click();
     });
     
     // File input change
     fileInput.addEventListener('change', handleFileSelect);
     
-    // Drag and drop
-    uploadBox.addEventListener('dragover', handleDragOver);
-    uploadBox.addEventListener('dragleave', handleDragLeave);
-    uploadBox.addEventListener('drop', handleDrop);
+    // Paste functionality - only when drop zone is focused
+    dropZone.addEventListener('paste', handlePaste);
     
-    // Paste functionality
-    document.addEventListener('paste', handlePaste);
+    // Drag and drop on drop zone
+    dropZone.addEventListener('dragover', handleDragOver);
+    dropZone.addEventListener('dragleave', handleDragLeave);
+    dropZone.addEventListener('drop', handleDrop);
+}
+
+// Array to store current wall images
+let currentWallImages = [];
+
+function initializeImageUpload() {
+    // Add image upload section to the form
+    const formSection = document.querySelector('.equipment-form-section');
+    const calculationSections = document.querySelector('.calculation-sections');
+    
+    if (formSection && calculationSections) {
+        // Create image upload section with new compact design
+        const imageSection = document.createElement('div');
+        imageSection.className = 'image-upload-section';
+        imageSection.innerHTML = `
+            <div class="upload-controls">
+                <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
+                    <i class="fas fa-camera"></i>
+                </button>
+                
+                <input 
+                    class="drop-zone" 
+                    id="dropZone" 
+                    placeholder="Drop or paste images here"
+                    readonly>
+            </div>
+            
+            <div class="image-preview-container" id="imagePreviewContainer"></div>
+            
+            <input type="file" id="imageFileInput" multiple accept="image/*" style="display: none;">
+        `;
+        
+        // Add to the calculation sections container
+        calculationSections.appendChild(imageSection);
+        
+        setupImageUploadHandlers();
+    }
 }
 
 function handleFileSelect(event) {
     const files = Array.from(event.target.files);
     processFiles(files);
+}
+
+function handlePaste(event) {
+    const items = event.clipboardData.items;
+    const files = [];
+    
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+        }
+    }
+    
+    if (files.length > 0) {
+        event.preventDefault();
+        processFiles(files);
+        event.target.value = ''; // Clear the input
+    }
 }
 
 function handleDragOver(event) {
@@ -1152,27 +1204,6 @@ function handleDrop(event) {
     
     const files = Array.from(event.dataTransfer.files);
     processFiles(files);
-}
-
-function handlePaste(event) {
-    // Only handle paste when form is visible
-    const form = document.getElementById('equipmentForm');
-    if (!form || !form.classList.contains('show')) return;
-    
-    const items = event.clipboardData.items;
-    const files = [];
-    
-    for (let item of items) {
-        if (item.type.indexOf('image') !== -1) {
-            const file = item.getAsFile();
-            if (file) files.push(file);
-        }
-    }
-    
-    if (files.length > 0) {
-        event.preventDefault();
-        processFiles(files);
-    }
 }
 
 async function processFiles(files) {
