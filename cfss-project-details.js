@@ -1081,8 +1081,6 @@ function addImageUploadCSS() {
 
 // Initialize image upload functionality
 function initializeImageUpload() {
-    addImageUploadCSS();
-    
     // Add image upload section to the form
     const formSection = document.querySelector('.equipment-form-section');
     const calculationSections = document.querySelector('.calculation-sections');
@@ -1118,6 +1116,11 @@ function setupImageUploadHandlers() {
     const uploadBox = document.getElementById('imageUploadBox');
     const fileInput = document.getElementById('imageFileInput');
     const previewContainer = document.getElementById('imagePreviewContainer');
+    
+    if (!uploadBox || !fileInput) {
+        console.error('Image upload elements not found');
+        return;
+    }
     
     // Click to upload
     uploadBox.addEventListener('click', () => {
