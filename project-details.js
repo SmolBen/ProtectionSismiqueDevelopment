@@ -2032,6 +2032,9 @@ async function updateEquipmentImage() {
             
             equipmentImageElement.onload = function() {
                 console.log('✅ Image loaded successfully:', fullImageUrl);
+                // Add lightbox click handler
+                this.style.cursor = 'pointer';
+                this.onclick = () => window.openEquipLightbox(fullImageUrl);
             };
             
             equipmentImageElement.onerror = function() {
@@ -4342,6 +4345,9 @@ async function loadEquipmentDetailImage(equipment, index) {
                 console.log('✅ Detail image loaded successfully:', fullImageUrl);
                 placeholder.style.display = 'none';
                 imageContainer.appendChild(imgElement);
+                // Add lightbox click handler
+                imgElement.style.cursor = 'pointer';
+                imgElement.onclick = () => window.openEquipLightbox(fullImageUrl);
             };
             
             imgElement.onerror = function() {
