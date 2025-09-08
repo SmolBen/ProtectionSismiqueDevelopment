@@ -202,27 +202,27 @@
 /* Main Layout - Embedded Layout with Expanded Space */
 .calculation-sections {
     display: flex;
-    gap: 25px;
-    max-width: 1400px;
+    gap: 30px;
+    max-width: none; /* Remove width constraint */
+    width: 95%; /* Use 95% of available width */
     margin: 0 auto;
     padding: 20px;
-    width: 100%;
 }
 
 /* Left side: Form + Upload combined */
 .equipment-form-section {
-    flex: 2;
+    flex: 3; /* Increased from 2 */
     background: #f9f9f9;
-    padding: 25px;
+    padding: 30px; /* Increased padding */
     border-radius: 8px;
     display: flex;
-    gap: 20px;
+    gap: 25px; /* Increased gap */
     min-width: 0;
 }
 
 /* Form fields */
 .form-fields {
-    flex: 3;
+    flex: 2; /* Adjusted ratio */
     min-width: 0;
 }
 
@@ -244,20 +244,33 @@
     color: #333;
 }
 
+/* Also ensure the parent container uses full width */
+.container {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 20px !important;
+}
+
+.bottom-half {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 12px; /* Increased padding */
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 15px; /* Slightly larger font */
     box-sizing: border-box;
 }
 
 /* Image upload section */
 .image-upload-section {
     flex: 1;
-    min-width: 180px;
+    min-width: 200px; /* Increased minimum width */
     display: flex;
     flex-direction: column;
 }
@@ -276,12 +289,12 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    height: 40px;
+    font-size: 15px; /* Larger font */
+    height: 45px; /* Larger height */
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     transition: background 0.2s ease;
 }
 
@@ -290,7 +303,7 @@
 }
 
 .drop-zone {
-    height: 70px;
+    height: 80px; /* Much larger height */
     border: 2px dashed #ccc;
     border-radius: 4px;
     background: white;
@@ -298,14 +311,14 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: 12px;
+    font-size: 13px; /* Larger font */
     color: #666;
     cursor: pointer;
     line-height: 1.3;
     transition: all 0.3s ease;
     outline: none;
     resize: none;
-    padding: 10px;
+    padding: 15px; /* Increased padding */
 }
 
 .drop-zone:hover {
@@ -326,14 +339,14 @@
 
 .image-preview-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px; /* Increased gap */
 }
 
 .image-preview {
     position: relative;
     width: 100%;
-    height: 70px;
+    height: 80px; /* Larger height */
     border-radius: 4px;
     overflow: hidden;
     border: 1px solid #ddd;
@@ -368,9 +381,9 @@
 
 /* Right side: Calculation results */
 .calculation-results-section {
-    flex: 1.5;
+    flex: 2; /* Increased from 1.5 */
     background: white;
-    padding: 25px;
+    padding: 30px; /* Increased padding */
     border-radius: 8px;
     border: 1px solid #e0e0e0;
     min-width: 0;
@@ -391,6 +404,22 @@
 .upload-icon,
 .upload-text {
     display: none;
+}
+
+/* Remove any width constraints from parent containers */
+@media (min-width: 1200px) {
+    .calculation-sections {
+        width: 98%; /* Even wider on large screens */
+        gap: 40px; /* Larger gap on big screens */
+    }
+    
+    .equipment-form-section {
+        padding: 40px; /* More padding on large screens */
+    }
+    
+    .calculation-results-section {
+        padding: 40px;
+    }
 }
 
 /* Responsive design */
