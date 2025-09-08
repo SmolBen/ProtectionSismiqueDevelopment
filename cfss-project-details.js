@@ -1457,12 +1457,6 @@ function openImageModal(imageKey, filename) {
     loadWallImage(modal.querySelector('img'), imageKey);
 }
 
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Add delay to ensure form is ready
-    setTimeout(initializeImageUpload, 500);
-});
-
 // Make functions globally available
 window.logout = logout;
 window.deleteEquipment = deleteEquipment;
