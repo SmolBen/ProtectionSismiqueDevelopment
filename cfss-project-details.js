@@ -1072,13 +1072,6 @@ function populateCFSSForm(windData) {
     });
 }
 
-// Add the CSS to the page
-function addImageUploadCSS() {
-    const style = document.createElement('style');
-    style.textContent = imageUploadCSS;
-    document.head.appendChild(style);
-}
-
 // Initialize image upload functionality
 function initializeImageUpload() {
     // Add image upload section to the form
