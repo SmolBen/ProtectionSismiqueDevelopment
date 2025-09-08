@@ -133,6 +133,11 @@ function renderEquipmentList() {
                                 <p><strong>Lisse Inférieure:</strong> ${wall.lisseInferieure || 'N/A'}</p>
                                 <p><strong>Entremise:</strong> ${wall.entremise || 'N/A'}</p>
                                 
+                                <div style="margin-top: 15px;">
+                                    <strong>Images:</strong>
+                                    ${renderWallImages(wall, index)}
+                                </div>
+                                
                                 ${canModifyProject() ? `
                                     <div style="margin-top: 15px;">
                                         <button class="edit-btn" onclick="editEquipment(${index})" style="background: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
@@ -242,6 +247,19 @@ function editEquipment(index) {
         return;
     }
 
+    // Populate current images for editing
+    const wall = projectEquipment[index];
+    currentWallImages = [...(wall.images || [])];
+    
+    // Clear and repopulate image previews
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    if (previewContainer) {
+        previewContainer.innerHTML = '';
+        currentWallImages.forEach(image => {
+            addImagePreview(image);
+        });
+    }
+
     document.getElementById(`equipmentView${index}`).style.display = 'none';
     document.getElementById(`equipmentEdit${index}`).style.display = 'block';
     
@@ -320,13 +338,32 @@ async function saveEquipmentEdit(index, event) {
 }
 
 // Function to delete wall
-function deleteEquipment(index) {
+async function deleteEquipment(index) {
     if (!canModifyProject()) {
         alert('You do not have permission to delete walls from this project.');
         return;
     }
 
-    if (confirm('Are you sure you want to delete this wall?')) {
+    if (confirm('Are you sure you want to delete this wall and all its images?')) {
+        const wall = projectEquipment[index];
+        
+        // Delete associated images from S3
+        if (wall.images && wall.images.length > 0) {
+            try {
+                for (const image of wall.images) {
+                    await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/delete`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ key: image.key })
+                    });
+                }
+                console.log('Wall images deleted from S3');
+            } catch (error) {
+                console.error('Error deleting wall images:', error);
+                // Continue with wall deletion even if image deletion fails
+            }
+        }
+        
         projectEquipment.splice(index, 1);
         saveEquipmentToProject();
         renderEquipmentList();
@@ -526,79 +563,12 @@ async function handleSaveEquipment(e) {
 
 // Get wall form data
 function getWallFormData() {
-    const equipment = document.getElementById('equipment').value;
-    const floor = document.getElementById('floor').value;
-    const hauteurMax = document.getElementById('hauteurMax').value;
-    const deflexionMax = document.getElementById('deflexionMax').value;
-    const montantMetallique = document.getElementById('montantMetallique').value;
-    const lisseSuperieure = document.getElementById('lisseSuperieure').value;
-    const lisseInferieure = document.getElementById('lisseInferieure').value;
-    const entremise = document.getElementById('entremise').value;
-
-    // Validation
-    if (!equipment) {
-        alert('Please enter a wall name.');
-        return null;
-    }
-
-    if (!floor) {
-        alert('Please enter a floor.');
-        return null;
-    }
-
-    if (!hauteurMax || parseFloat(hauteurMax) <= 0) {
-        alert('Please enter a valid hauteur max greater than 0.');
-        return null;
-    }
-
-    if (!deflexionMax) {
-        alert('Please select a déflexion max.');
-        return null;
-    }
-
-    if (!montantMetallique) {
-        alert('Please enter montant métallique.');
-        return null;
-    }
-
-    if (!lisseSuperieure) {
-        alert('Please enter lisse supérieure.');
-        return null;
-    }
-
-    if (!lisseInferieure) {
-        alert('Please enter lisse inférieure.');
-        return null;
-    }
-
-    if (!entremise) {
-        alert('Please enter entremise.');
-        return null;
-    }
-
-    const wallData = {
-        equipment: equipment,
-        floor: floor,
-        hauteurMax: parseFloat(hauteurMax),
-        deflexionMax: deflexionMax,
-        montantMetallique: montantMetallique,
-        lisseSuperieure: lisseSuperieure,
-        lisseInferieure: lisseInferieure,
-        entremise: entremise,
-        dateAdded: new Date().toISOString(),
-        addedBy: currentUser.email
-    };
-
-    return wallData;
+return getWallFormDataWithImages();
 }
 
 // Clear wall form
 function clearWallForm() {
-    const form = document.getElementById('equipmentFormElement');
-    if (form) {
-        form.reset();
-        console.log('Wall form cleared');
-    }
+clearWallFormWithImages();
 }
 
 // Setup new calculation button handler
@@ -1102,6 +1072,394 @@ function populateCFSSForm(windData) {
     });
 }
 
+// Add the CSS to the page
+function addImageUploadCSS() {
+    const style = document.createElement('style');
+    style.textContent = imageUploadCSS;
+    document.head.appendChild(style);
+}
+
+// Initialize image upload functionality
+function initializeImageUpload() {
+    addImageUploadCSS();
+    
+    // Add image upload section to the form
+    const formSection = document.querySelector('.equipment-form-section');
+    const calculationSections = document.querySelector('.calculation-sections');
+    
+    if (formSection && calculationSections) {
+        // Create image upload section
+        const imageSection = document.createElement('div');
+        imageSection.className = 'image-upload-section';
+        imageSection.innerHTML = `
+            <div class="image-upload-box" id="imageUploadBox">
+                <i class="fas fa-camera upload-icon"></i>
+                <div class="upload-text">
+                    Click to upload<br>
+                    or drag & drop images<br>
+                    <small>Paste screenshots with Ctrl+V</small>
+                </div>
+                <input type="file" id="imageFileInput" multiple accept="image/*" style="display: none;">
+            </div>
+            <div class="image-preview-container" id="imagePreviewContainer"></div>
+        `;
+        
+        // Add to the calculation sections container
+        calculationSections.appendChild(imageSection);
+        
+        setupImageUploadHandlers();
+    }
+}
+
+// Array to store current wall images
+let currentWallImages = [];
+
+function setupImageUploadHandlers() {
+    const uploadBox = document.getElementById('imageUploadBox');
+    const fileInput = document.getElementById('imageFileInput');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    
+    // Click to upload
+    uploadBox.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    // Drag and drop
+    uploadBox.addEventListener('dragover', handleDragOver);
+    uploadBox.addEventListener('dragleave', handleDragLeave);
+    uploadBox.addEventListener('drop', handleDrop);
+    
+    // Paste functionality
+    document.addEventListener('paste', handlePaste);
+}
+
+function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    processFiles(files);
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('dragover');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('dragover');
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+    
+    const files = Array.from(event.dataTransfer.files);
+    processFiles(files);
+}
+
+function handlePaste(event) {
+    // Only handle paste when form is visible
+    const form = document.getElementById('equipmentForm');
+    if (!form || !form.classList.contains('show')) return;
+    
+    const items = event.clipboardData.items;
+    const files = [];
+    
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+        }
+    }
+    
+    if (files.length > 0) {
+        event.preventDefault();
+        processFiles(files);
+    }
+}
+
+async function processFiles(files) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+    
+    for (const file of validFiles) {
+        try {
+            // Upload to S3 and get URL
+            const imageData = await uploadImageToS3(file);
+            
+            // Add to current images array
+            currentWallImages.push(imageData);
+            
+            // Show preview
+            addImagePreview(imageData);
+            
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+}
+
+async function uploadImageToS3(file) {
+    try {
+        // Get upload URL from backend
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                filename: file.name,
+                contentType: file.type
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to get upload URL');
+        }
+        
+        const uploadData = await response.json();
+        
+        // Upload file directly to S3
+        const uploadResponse = await fetch(uploadData.uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Content-Type': file.type
+            }
+        });
+        
+        if (!uploadResponse.ok) {
+            throw new Error('Failed to upload image to S3');
+        }
+        
+        return {
+            key: uploadData.key,
+            filename: file.name,
+            uploadedAt: new Date().toISOString()
+        };
+        
+    } catch (error) {
+        console.error('Error in uploadImageToS3:', error);
+        throw error;
+    }
+}
+
+function addImagePreview(imageData) {
+    const container = document.getElementById('imagePreviewContainer');
+    
+    const preview = document.createElement('div');
+    preview.className = 'image-preview';
+    preview.innerHTML = `
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
+        <button class="image-remove" onclick="removeImage('${imageData.key}')" title="Remove image">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    container.appendChild(preview);
+    
+    // Load the actual image
+    loadImagePreview(preview.querySelector('img'), imageData.key);
+}
+
+async function loadImagePreview(imgElement, imageKey) {
+    try {
+        // Get signed URL for viewing
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(imageKey)}`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            imgElement.src = data.url;
+        }
+    } catch (error) {
+        console.error('Error loading image preview:', error);
+        imgElement.alt = 'Failed to load';
+    }
+}
+
+function removeImage(imageKey) {
+    // Remove from current images array
+    currentWallImages = currentWallImages.filter(img => img.key !== imageKey);
+    
+    // Remove preview element
+    const container = document.getElementById('imagePreviewContainer');
+    const previews = container.querySelectorAll('.image-preview');
+    previews.forEach(preview => {
+        const removeBtn = preview.querySelector('.image-remove');
+        if (removeBtn && removeBtn.getAttribute('onclick').includes(imageKey)) {
+            preview.remove();
+        }
+    });
+}
+
+// Update the getWallFormData function to include images
+function getWallFormDataWithImages() {
+    const equipment = document.getElementById('equipment').value;
+    const floor = document.getElementById('floor').value;
+    const hauteurMax = document.getElementById('hauteurMax').value;
+    const deflexionMax = document.getElementById('deflexionMax').value;
+    const montantMetallique = document.getElementById('montantMetallique').value;
+    const lisseSuperieure = document.getElementById('lisseSuperieure').value;
+    const lisseInferieure = document.getElementById('lisseInferieure').value;
+    const entremise = document.getElementById('entremise').value;
+
+    // Validation
+    if (!equipment) {
+        alert('Please enter a wall name.');
+        return null;
+    }
+
+    if (!floor) {
+        alert('Please enter a floor.');
+        return null;
+    }
+
+    if (!hauteurMax || parseFloat(hauteurMax) <= 0) {
+        alert('Please enter a valid hauteur max greater than 0.');
+        return null;
+    }
+
+    if (!deflexionMax) {
+        alert('Please select a déflexion max.');
+        return null;
+    }
+
+    if (!montantMetallique) {
+        alert('Please enter montant métallique.');
+        return null;
+    }
+
+    if (!lisseSuperieure) {
+        alert('Please enter lisse supérieure.');
+        return null;
+    }
+
+    if (!lisseInferieure) {
+        alert('Please enter lisse inférieure.');
+        return null;
+    }
+
+    if (!entremise) {
+        alert('Please enter entremise.');
+        return null;
+    }
+
+    const wallData = {
+        equipment: equipment,
+        floor: floor,
+        hauteurMax: parseFloat(hauteurMax),
+        deflexionMax: deflexionMax,
+        montantMetallique: montantMetallique,
+        lisseSuperieure: lisseSuperieure,
+        lisseInferieure: lisseInferieure,
+        entremise: entremise,
+        images: [...currentWallImages], // Include uploaded images
+        dateAdded: new Date().toISOString(),
+        addedBy: currentUser.email
+    };
+
+    return wallData;
+}
+
+// Update clearWallForm to also clear images
+function clearWallFormWithImages() {
+    const form = document.getElementById('equipmentFormElement');
+    if (form) {
+        form.reset();
+    }
+    
+    // Clear images
+    currentWallImages = [];
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    if (previewContainer) {
+        previewContainer.innerHTML = '';
+    }
+    
+    console.log('Wall form and images cleared');
+}
+
+// Update the wall rendering to show images
+function renderWallImages(wall, index) {
+    if (!wall.images || wall.images.length === 0) {
+        return '<p style="color: #666; font-style: italic;">No images</p>';
+    }
+    
+    let imagesHTML = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">';
+    
+    wall.images.forEach((image, imgIndex) => {
+        imagesHTML += `
+            <div style="position: relative; width: 80px; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" 
+                    alt="${image.filename}" 
+                    style="width: 100%; height: 100%; object-fit: cover;"
+                    onload="loadWallImage(this, '${image.key}')"
+                    onclick="openImageModal('${image.key}', '${image.filename}')">
+            </div>
+        `;
+    });
+    
+    imagesHTML += '</div>';
+    return imagesHTML;
+}
+
+// Function to load wall images in the details view
+async function loadWallImage(imgElement, imageKey) {
+    try {
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(imageKey)}`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            imgElement.src = data.url;
+        }
+    } catch (error) {
+        console.error('Error loading wall image:', error);
+        imgElement.alt = 'Failed to load';
+    }
+}
+
+// Function to open image in modal for full view
+function openImageModal(imageKey, filename) {
+    // Create modal
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.8); display: flex; align-items: center; 
+        justify-content: center; z-index: 1000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="position: relative; max-width: 90%; max-height: 90%;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23fff'%3ELoading...%3C/text%3E%3C/svg%3E" 
+                style="max-width: 100%; max-height: 100%; border-radius: 8px;"
+                alt="${filename}">
+            <button style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer;"
+                    onclick="this.closest('.modal').remove()">×</button>
+        </div>
+    `;
+    
+    modal.className = 'modal';
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    
+    document.body.appendChild(modal);
+    
+    // Load the full-size image
+    loadWallImage(modal.querySelector('img'), imageKey);
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Add delay to ensure form is ready
+    setTimeout(initializeImageUpload, 500);
+});
+
 // Make functions globally available
 window.logout = logout;
 window.deleteEquipment = deleteEquipment;
@@ -1109,3 +1467,6 @@ window.toggleEquipmentDetails = toggleEquipmentDetails;
 window.editEquipment = editEquipment;
 window.saveEquipmentEdit = saveEquipmentEdit;
 window.cancelEquipmentEdit = cancelEquipmentEdit;
+window.removeImage = removeImage;
+window.loadWallImage = loadWallImage;
+window.openImageModal = openImageModal;
