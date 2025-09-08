@@ -1296,16 +1296,16 @@ function removeImage(imageKey) {
 
 // Update the getWallFormData function to include images
 function getWallFormDataWithImages() {
-    const equipment = document.getElementById('equipment').value;
-    const floor = document.getElementById('floor').value;
-    const hauteurMax = document.getElementById('hauteurMax').value;
-    const deflexionMax = document.getElementById('deflexionMax').value;
-    const montantMetallique = document.getElementById('montantMetallique').value;
-    const lisseSuperieure = document.getElementById('lisseSuperieure').value;
-    const lisseInferieure = document.getElementById('lisseInferieure').value;
-    const entremise = document.getElementById('entremise').value;
+    const equipment = document.getElementById('equipment').value.trim();
+    const floor = document.getElementById('floor').value.trim();
+    const hauteurMax = document.getElementById('hauteurMax').value.trim();
+    const deflexionMax = document.getElementById('deflexionMax').value.trim();
+    const montantMetallique = document.getElementById('montantMetallique').value.trim();
+    const lisseSuperieure = document.getElementById('lisseSuperieure').value.trim();
+    const lisseInferieure = document.getElementById('lisseInferieure').value.trim();
+    const entremise = document.getElementById('entremise').value.trim();
 
-    // Validation
+    // Validation with trimmed values
     if (!equipment) {
         alert('Please enter a wall name.');
         return null;
