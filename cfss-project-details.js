@@ -1072,8 +1072,6 @@ function populateCFSSForm(windData) {
     });
 }
 
-// Initialize image upload functionality
-function initializeImageUpload() {
     // Add image upload section to the form
     const formSection = document.querySelector('.equipment-form-section');
     const calculationSections = document.querySelector('.calculation-sections');
@@ -1100,7 +1098,6 @@ function initializeImageUpload() {
         
         setupImageUploadHandlers();
     }
-}
 
 function setupImageUploadHandlers() {
     const cameraBtn = document.getElementById('cameraBtn');
@@ -1133,36 +1130,47 @@ function setupImageUploadHandlers() {
 let currentWallImages = [];
 
 function initializeImageUpload() {
-    // Add image upload section to the form
-    const formSection = document.querySelector('.equipment-form-section');
-    const calculationSections = document.querySelector('.calculation-sections');
+    // Find the equipment-form-section (the container that holds form-fields)
+    const equipmentFormSection = document.querySelector('.equipment-form-section');
     
-    if (formSection && calculationSections) {
-        // Create image upload section with new compact design
-        const imageSection = document.createElement('div');
-        imageSection.className = 'image-upload-section';
-        imageSection.innerHTML = `
-            <div class="upload-controls">
-                <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
-                    <i class="fas fa-camera"></i>
-                </button>
-                
-                <input 
-                    class="drop-zone" 
-                    id="dropZone" 
-                    placeholder="Drop or paste images here"
-                    readonly>
-            </div>
-            
-            <div class="image-preview-container" id="imagePreviewContainer"></div>
-            
-            <input type="file" id="imageFileInput" multiple accept="image/*" style="display: none;">
-        `;
+    if (equipmentFormSection) {
+        // Check if image upload section already exists
+        let imageSection = equipmentFormSection.querySelector('.image-upload-section');
         
-        // Add to the calculation sections container
-        calculationSections.appendChild(imageSection);
+        if (!imageSection) {
+            // Create image upload section with new compact design
+            imageSection = document.createElement('div');
+            imageSection.className = 'image-upload-section';
+            imageSection.innerHTML = `
+                <div class="upload-controls">
+                    <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
+                        <i class="fas fa-camera"></i>
+                        Browse
+                    </button>
+                    
+                    <input 
+                        class="drop-zone" 
+                        id="dropZone" 
+                        placeholder="Drop or paste images here"
+                        readonly>
+                </div>
+                
+                <div class="image-preview-container" id="imagePreviewContainer"></div>
+            `;
+            
+            // Add the image upload section to the equipment-form-section
+            // Insert it before the hidden file input
+            const fileInput = equipmentFormSection.querySelector('#imageFileInput');
+            if (fileInput) {
+                equipmentFormSection.insertBefore(imageSection, fileInput);
+            } else {
+                equipmentFormSection.appendChild(imageSection);
+            }
+        }
         
         setupImageUploadHandlers();
+    } else {
+        console.error('Equipment form section not found');
     }
 }
 
