@@ -203,8 +203,8 @@
 .calculation-sections {
     display: flex;
     gap: 30px;
-    max-width: none; /* Remove width constraint */
-    width: 95%; /* Use 95% of available width */
+    max-width: 1600px; /* Add back constraint, but larger than before */
+    width: 90%; /* Reduce from 95% */
     margin: 0 auto;
     padding: 20px;
 }
@@ -243,19 +243,6 @@
     margin-bottom: 5px;
     color: #333;
 }
-
-/* Also ensure the parent container uses full width */
-.container {
-    max-width: none !important;
-    width: 100% !important;
-    padding: 0 20px !important;
-}
-
-.bottom-half {
-    max-width: none !important;
-    width: 100% !important;
-}
-
 
 .form-group input,
 .form-group select {
