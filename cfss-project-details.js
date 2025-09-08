@@ -944,102 +944,94 @@ function loadCFSSData(project) {
     }
 }
 
+// Simplified CFSS data display function
 function updateCFSSDataDisplay(windData) {
     const cfssDisplay = document.getElementById('cfssDataDisplay');
     const cfssContent = document.getElementById('cfssDataContent');
     
-    if (windData && windData.length > 0) {
-        cfssDisplay.style.display = 'block';
-        
-        // Get project-wide fields from first entry
-        const projectData = windData[0] || {};
-        
-        let dataHtml = '';
-        
-        // Display project-wide data if any exists
-        const projectFields = [
-            { label: 'Max Deflection', value: projectData.maxDeflection },
-            { label: 'Max Spacing Between Braces', value: projectData.maxSpacing },
-            { label: 'Framing Assembly', value: projectData.framingAssembly },
-            { label: 'Concrete Anchor', value: projectData.concreteAnchor },
-            { label: 'Steel Anchor', value: projectData.steelAnchor },
-            { label: 'Min Metal Framing Thickness', value: projectData.minMetalThickness },
-            { label: 'Lisse Inférieure', value: projectData.lisseInferieure },
-            { label: 'Lisse Supérieure', value: projectData.lisseSuperieure }
-        ];
-        
-        const filledProjectFields = projectFields.filter(field => field.value && field.value.trim() !== '');
-        
-        if (filledProjectFields.length > 0) {
-            dataHtml += `
-                <div style="margin-bottom: 15px; padding: 12px; background: #e8f5e8; border-radius: 6px; border-left: 4px solid #28a745;">
-                    <h4 style="margin: 0 0 10px 0; color: #28a745; font-size: 14px; font-weight: 600;">
-                        <i class="fas fa-cogs" style="margin-right: 8px;"></i>Project Specifications
-                    </h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            `;
-            
-            filledProjectFields.forEach(field => {
-                dataHtml += `
-                    <div style="font-size: 12px; padding: 4px 0;">
-                        <strong style="color: #155724;">${field.label}:</strong>
-                        <span style="color: #155724; margin-left: 6px;">${field.value}</span>
-                    </div>
-                `;
-            });
-            
-            dataHtml += `
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Display wind data
-        dataHtml += `
-            <div>
-                <h4 style="margin: 0 0 10px 0; color: #17a2b8; font-size: 14px; font-weight: 600;">
-                    <i class="fas fa-wind" style="margin-right: 8px;"></i>Wind Data by Floor
-                </h4>
-        `;
-        
-        windData.forEach((data, index) => {
-            dataHtml += `
-                <div style="margin-bottom: 8px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #dee2e6;">
-                    <div style="font-weight: bold; color: #17a2b8; margin-bottom: 6px; font-size: 13px;">
-                        <i class="fas fa-building" style="margin-right: 6px;"></i>Floor Range: ${data.floorRange}
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
-                        <div style="padding: 4px; background: #f8f9fa; border-radius: 3px;">
-                            <strong style="color: #495057;">Resistance:</strong> 
-                            <span style="color: #6c757d;">${data.resistance} cfs</span>
-                        </div>
-                        <div style="padding: 4px; background: #f8f9fa; border-radius: 3px;">
-                            <strong style="color: #495057;">Deflection:</strong> 
-                            <span style="color: #6c757d;">${data.deflection} cfs</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        dataHtml += `</div>`;
-        
-        cfssContent.innerHTML = dataHtml;
-        
-        // Update button text
-        const btnText = document.getElementById('cfss-btn-text');
-        if (btnText) {
-            const floorCount = windData.length;
-            const projectFieldCount = filledProjectFields.length;
-            
-            if (projectFieldCount > 0) {
-                btnText.textContent = `CFSS Data (${floorCount} floors, ${projectFieldCount} specs)`;
-            } else {
-                btnText.textContent = `CFSS Data (${floorCount} floors)`;
-            }
-        }
-    } else {
+    if (!windData || windData.length === 0) {
         cfssDisplay.style.display = 'none';
+        return;
+    }
+    
+    cfssDisplay.style.display = 'block';
+    
+    // Get project-wide fields from first entry
+    const projectData = windData[0] || {};
+    
+    let html = `
+        <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 15px 0; color: #333;">CFSS Wind Data</h3>
+        
+        <!-- Wind Data Table -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr>
+                    <th style="background: #f8f9fa; padding: 8px 12px; text-align: left; font-weight: 500; font-size: 13px; border-bottom: 1px solid #dee2e6;">Floor Range</th>
+                    <th style="background: #f8f9fa; padding: 8px 12px; text-align: left; font-weight: 500; font-size: 13px; border-bottom: 1px solid #dee2e6;">Resistance</th>
+                    <th style="background: #f8f9fa; padding: 8px 12px; text-align: left; font-weight: 500; font-size: 13px; border-bottom: 1px solid #dee2e6;">Deflection</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    // Add wind data rows
+    windData.forEach(data => {
+        html += `
+            <tr style="hover: #f8f9fa;">
+                <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.floorRange}</td>
+                <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.resistance} cfs</td>
+                <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.deflection} cfs</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+        
+        <!-- Project Specifications -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+    `;
+    
+    // Define all specifications with their labels
+    const specifications = [
+        { label: 'Max Deflection', value: projectData.maxDeflection },
+        { label: 'Max Spacing Between Braces', value: projectData.maxSpacing },
+        { label: 'Framing Assembly', value: projectData.framingAssembly },
+        { label: 'Concrete Anchor', value: projectData.concreteAnchor },
+        { label: 'Steel Anchor', value: projectData.steelAnchor },
+        { label: 'Min Metal Framing Thickness', value: projectData.minMetalThickness },
+        { label: 'Lisse Inférieure', value: projectData.lisseInferieure },
+        { label: 'Lisse Supérieure', value: projectData.lisseSuperieure }
+    ];
+    
+    // Only show specifications that have values
+    const filledSpecs = specifications.filter(spec => spec.value && spec.value.trim() !== '');
+    
+    filledSpecs.forEach(spec => {
+        html += `
+            <div style="font-size: 13px; padding: 4px 0;">
+                <div style="color: #666; font-weight: 500;">${spec.label}:</div>
+                <div style="color: #333;">${spec.value}</div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    
+    cfssContent.innerHTML = html;
+    
+    // Update button text
+    const btnText = document.getElementById('cfss-btn-text');
+    if (btnText) {
+        const floorCount = windData.length;
+        const specCount = filledSpecs.length;
+        
+        if (specCount > 0) {
+            btnText.textContent = `CFSS Data (${floorCount} floors, ${specCount} specs)`;
+        } else {
+            btnText.textContent = `CFSS Data (${floorCount} floors)`;
+        }
     }
 }
 
