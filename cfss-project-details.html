@@ -182,73 +182,81 @@
                 <div class="calculation-sections">
                     <!-- Section 1: Wall Form -->
                     <div class="equipment-form-section">
-                        <h2>New Wall</h2>
-                        <form id="equipmentFormElement">
-                            <!-- 1. Wall Name -->
-                            <div class="form-group">
-                                <label for="equipment">Wall Name:</label>
-                                <input type="text" id="equipment" name="equipment" placeholder="Enter wall name..." required>
-                            </div>
+                        <!-- Form Fields (Left side within the section) -->
+                        <div class="form-fields">
+                            <h2>New Wall</h2>
+                            <form id="equipmentFormElement">
+                                <!-- 1. Wall Name -->
+                                <div class="form-group">
+                                    <label for="equipment">Wall Name:</label>
+                                    <input type="text" id="equipment" name="equipment" placeholder="Enter wall name..." required>
+                                </div>
 
-                            <!-- 2. Floor -->
-                            <div class="form-group">
-                                <label for="floor">Floor:</label>
-                                <input type="text" id="floor" name="floor" placeholder="Enter floor..." required>
-                            </div>
+                                <!-- 2. Floor -->
+                                <div class="form-group">
+                                    <label for="floor">Floor:</label>
+                                    <input type="text" id="floor" name="floor" placeholder="Enter floor..." required>
+                                </div>
 
-                            <!-- 3. Hauteur Max -->
-                            <div class="form-group">
-                                <label for="hauteurMax">Hauteur Max:</label>
-                                <input type="number" id="hauteurMax" name="hauteurMax" step="0.01" placeholder="Enter hauteur max..." required>
-                            </div>
+                                <!-- 3. Hauteur Max -->
+                                <div class="form-group">
+                                    <label for="hauteurMax">Hauteur Max:</label>
+                                    <input type="number" id="hauteurMax" name="hauteurMax" step="0.01" placeholder="Enter hauteur max..." required>
+                                </div>
 
-                            <!-- 4. Déflexion Max -->
-                            <div class="form-group">
-                                <label for="deflexionMax">Déflexion Max:</label>
-                                <select id="deflexionMax" name="deflexionMax" required>
-                                    <option value="">Select déflexion max...</option>
-                                    <option value="L/360">L/360</option>
-                                    <option value="L/480">L/480</option>
-                                    <option value="L/600">L/600</option>
-                                    <option value="L/720">L/720</option>
-                                </select>
-                            </div>
+                                <!-- 4. Déflexion Max -->
+                                <div class="form-group">
+                                    <label for="deflexionMax">Déflexion Max:</label>
+                                    <select id="deflexionMax" name="deflexionMax" required>
+                                        <option value="">Select déflexion max...</option>
+                                        <option value="L/360">L/360</option>
+                                        <option value="L/480">L/480</option>
+                                        <option value="L/600">L/600</option>
+                                        <option value="L/720">L/720</option>
+                                    </select>
+                                </div>
 
-                            <!-- 5. Montant Métallique -->
-                            <div class="form-group">
-                                <label for="montantMetallique">Montant Métallique:</label>
-                                <input type="text" id="montantMetallique" name="montantMetallique" placeholder="Enter montant métallique..." required>
-                            </div>
+                                <!-- 5. Montant Métallique -->
+                                <div class="form-group">
+                                    <label for="montantMetallique">Montant Métallique:</label>
+                                    <input type="text" id="montantMetallique" name="montantMetallique" placeholder="Enter montant métallique..." required>
+                                </div>
 
-                            <!-- 6. Lisse Supérieure -->
-                            <div class="form-group">
-                                <label for="lisseSuperieure">Lisse Supérieure:</label>
-                                <input type="text" id="lisseSuperieure" name="lisseSuperieure" placeholder="Enter lisse supérieure..." required>
-                            </div>
+                                <!-- 6. Lisse Supérieure -->
+                                <div class="form-group">
+                                    <label for="lisseSuperieure">Lisse Supérieure:</label>
+                                    <input type="text" id="lisseSuperieure" name="lisseSuperieure" placeholder="Enter lisse supérieure..." required>
+                                </div>
 
-                            <!-- 7. Lisse Inférieure -->
-                            <div class="form-group">
-                                <label for="lisseInferieure">Lisse Inférieure:</label>
-                                <input type="text" id="lisseInferieure" name="lisseInferieure" placeholder="Enter lisse inférieure..." required>
-                            </div>
+                                <!-- 7. Lisse Inférieure -->
+                                <div class="form-group">
+                                    <label for="lisseInferieure">Lisse Inférieure:</label>
+                                    <input type="text" id="lisseInferieure" name="lisseInferieure" placeholder="Enter lisse inférieure..." required>
+                                </div>
 
-                            <!-- 8. Entremise -->
-                            <div class="form-group">
-                                <label for="entremise">Entremise:</label>
-                                <input type="text" id="entremise" name="entremise" placeholder="Enter entremise..." required>
-                            </div>
+                                <!-- 8. Entremise -->
+                                <div class="form-group">
+                                    <label for="entremise">Entremise:</label>
+                                    <input type="text" id="entremise" name="entremise" placeholder="Enter entremise..." required>
+                                </div>
+                                
+                                <!-- Calculate and Save Buttons -->
+                                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                                    <button type="button" id="calculateEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                        <i class="fas fa-calculator"></i> Calculate
+                                    </button>
+                                    <button type="submit" id="saveEquipment" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                            <!-- Image Upload Section (Right side within the section) -->
+                            <!-- This will be dynamically added by JavaScript via initializeImageUpload() -->
                             
-                            <!-- Calculate and Save Buttons -->
-                            <div style="display: flex; gap: 15px; margin-top: 20px;">
-                                <button type="button" id="calculateEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                    <i class="fas fa-calculator"></i> Calculate
-                                </button>
-                                <button type="submit" id="saveEquipment" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                    <i class="fas fa-save"></i> Save
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            <input type="file" id="imageFileInput" multiple accept="image/*" style="display: none;">
+                        </div>
 
                     <!-- Section 2: Placeholder for calculations (no calculations for CFSS) -->
                     <div class="calculation-results-section">
