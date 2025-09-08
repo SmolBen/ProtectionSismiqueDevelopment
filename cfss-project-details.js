@@ -832,8 +832,8 @@ async function saveCFSSData() {
         const concreteAnchor = document.getElementById('concreteAnchor')?.value.trim() || '';
         const steelAnchor = document.getElementById('steelAnchor')?.value.trim() || '';
         const minMetalThickness = document.getElementById('minMetalThickness')?.value.trim() || '';
-        const lisseInferieure = document.getElementById('lisseInferieure')?.value.trim() || '';
-        const lisseSuperieure = document.getElementById('lisseSuperieure')?.value.trim() || '';
+        const lisseInferieure = document.getElementById('cfssLisseInferieure')?.value.trim() || '';
+        const lisseSuperieure = document.getElementById('cfssLisseSuperieure')?.value.trim() || '';
         
         sections.forEach(section => {
             const floorRange = section.querySelector('.floor-input').value.trim();
@@ -1024,8 +1024,8 @@ function populateCFSSForm(windData) {
             { id: 'concreteAnchor', value: firstEntry.concreteAnchor },
             { id: 'steelAnchor', value: firstEntry.steelAnchor },
             { id: 'minMetalThickness', value: firstEntry.minMetalThickness },
-            { id: 'lisseInferieure', value: firstEntry.lisseInferieure },
-            { id: 'lisseSuperieure', value: firstEntry.lisseSuperieure }
+            { id: 'cfssLisseInferieure', value: firstEntry.lisseInferieure },
+            { id: 'cfssLisseSuperieure', value: firstEntry.lisseSuperieure }
         ];
         
         projectFields.forEach(field => {
