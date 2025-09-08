@@ -26,6 +26,9 @@ setTimeout(() => {
 }, 0);
 };
 
+const imageUrlCache = new Map();
+const failedUrlCache = new Set();
+
 window.closeEquipLightbox = function () {
 const box = document.getElementById('equipLightbox');
 const img = document.getElementById('equipLightboxImg');
@@ -1954,18 +1957,33 @@ function getEquipmentImageUrl(equipmentType, pipeType, installMethod, projectDom
     }
 }
 
-// Helper function to try both JPG and PNG formats
+// Updated getWorkingImageUrl function with caching
 async function getWorkingImageUrl(equipmentType, pipeType, installMethod, projectDomain) {
+    // Create a cache key
+    const cacheKey = `${equipmentType}-${pipeType}-${installMethod}-${projectDomain}`;
+    
+    // Check if we already found a working URL for this combination
+    if (imageUrlCache.has(cacheKey)) {
+        return imageUrlCache.get(cacheKey);
+    }
+    
+    // Check if we already know this combination fails
+    if (failedUrlCache.has(cacheKey)) {
+        return null;
+    }
+    
     // Try JPG first
     const jpgUrl = getEquipmentImageUrl(equipmentType, pipeType, installMethod, projectDomain, false);
     if (jpgUrl) {
         try {
             const jpgResponse = await fetch(jpgUrl, { method: 'HEAD' });
             if (jpgResponse.ok) {
+                console.log('✅ JPG found and cached:', jpgUrl);
+                imageUrlCache.set(cacheKey, jpgUrl);
                 return jpgUrl;
             }
         } catch (error) {
-            console.log('JPG not found, trying PNG...');
+            console.log('JPG not accessible, trying PNG...');
         }
     }
     
@@ -1975,14 +1993,19 @@ async function getWorkingImageUrl(equipmentType, pipeType, installMethod, projec
         try {
             const pngResponse = await fetch(pngUrl, { method: 'HEAD' });
             if (pngResponse.ok) {
+                console.log('✅ PNG found and cached:', pngUrl);
+                imageUrlCache.set(cacheKey, pngUrl);
                 return pngUrl;
             }
         } catch (error) {
-            console.log('PNG also not found');
+            console.log('PNG also not accessible');
         }
     }
     
-    return null; // Neither format found
+    // Neither format worked, cache this failure
+    console.log('❌ No working image found, caching failure for:', cacheKey);
+    failedUrlCache.add(cacheKey);
+    return null;
 }
 
 // Updated updateEquipmentImage function with JPG/PNG fallback
