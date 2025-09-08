@@ -672,10 +672,50 @@ function toggleCFSSForm() {
     if (form.classList.contains('hidden')) {
         form.classList.remove('hidden');
         btn.classList.add('expanded');
-        btnText.textContent = 'Hide CFSS Data';
+        
+        // Check if we have existing CFSS data and populate form
+        if (cfssWindData && cfssWindData.length > 0) {
+            populateCFSSForm(cfssWindData);
+            btnText.textContent = 'Hide CFSS Data';
+        } else {
+            btnText.textContent = 'Hide CFSS Data';
+        }
     } else {
         form.classList.add('hidden');
         btn.classList.remove('expanded');
+        
+        // Update button text based on whether data exists
+        updateCFSSButtonText();
+    }
+}
+
+function updateCFSSButtonText() {
+    const btnText = document.getElementById('cfss-btn-text');
+    if (!btnText) return;
+    
+    if (cfssWindData && cfssWindData.length > 0) {
+        const floorCount = cfssWindData.length;
+        
+        // Count filled specifications
+        const projectData = cfssWindData[0] || {};
+        const specifications = [
+            projectData.maxDeflection,
+            projectData.maxSpacing,
+            projectData.framingAssembly,
+            projectData.concreteAnchor,
+            projectData.steelAnchor,
+            projectData.minMetalThickness,
+            projectData.lisseInferieure,
+            projectData.lisseSuperieure
+        ];
+        const filledSpecs = specifications.filter(spec => spec && spec.trim() !== '').length;
+        
+        if (filledSpecs > 0) {
+            btnText.textContent = `Edit CFSS Data (${floorCount} floors, ${filledSpecs} specs)`;
+        } else {
+            btnText.textContent = `Edit CFSS Data (${floorCount} floors)`;
+        }
+    } else {
         btnText.textContent = 'Add CFSS Data';
     }
 }
@@ -870,8 +910,11 @@ async function saveCFSSData() {
         
         cfssWindData = newCfssData;
         
-        // Update the display with new comprehensive display function
+        // Update the display with simplified version
         updateCFSSDataDisplay(newCfssData);
+        
+        // Update button text to reflect new data
+        updateCFSSButtonText();
         
         alert('CFSS data saved successfully!');
         
@@ -881,23 +924,6 @@ async function saveCFSSData() {
     } catch (error) {
         console.error('Error saving CFSS data:', error);
         alert('Error saving CFSS data: ' + error.message);
-    }
-}
-
-// Update the loadCFSSData function
-function loadCFSSData(project) {
-    if (project.cfssWindData && project.cfssWindData.length > 0) {
-        cfssWindData = project.cfssWindData;
-        updateCFSSDataDisplay(project.cfssWindData);
-        populateCFSSForm(cfssWindData);
-        
-        console.log('CFSS data loaded:', project.cfssWindData);
-    } else {
-        // Hide the display section if no data
-        const cfssDisplay = document.getElementById('cfssDataDisplay');
-        if (cfssDisplay) {
-            cfssDisplay.style.display = 'none';
-        }
     }
 }
 
@@ -911,46 +937,38 @@ function removeCFSSSection(button) {
 // Load existing CFSS data when page loads
 function loadCFSSData(project) {
     const cfssDisplay = document.getElementById('cfssDataDisplay');
-    const cfssContent = document.getElementById('cfssDataContent');
     
     if (project.cfssWindData && project.cfssWindData.length > 0) {
         cfssWindData = project.cfssWindData;
         
-        // Show the display section
-        cfssDisplay.style.display = 'block';
+        // Update the display with simplified version
+        updateCFSSDataDisplay(project.cfssWindData);
         
-        // Generate HTML for displaying the data
-        let dataHtml = '';
-        project.cfssWindData.forEach((data, index) => {
-            dataHtml += `
-                <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6;">
-                    <strong>Floor Range:</strong> ${data.floorRange} | 
-                    <strong>Resistance:</strong> ${data.resistance} cfs | 
-                    <strong>Deflection:</strong> ${data.deflection} cfs
-                </div>
-            `;
-        });
+        // Update button text to show "Edit" instead of "Add"
+        updateCFSSButtonText();
         
-        cfssContent.innerHTML = dataHtml;
-        
-        // Update button text to show data exists
-        const btnText = document.getElementById('cfss-btn-text');
-        if (btnText) {
-            btnText.textContent = `CFSS Data (${project.cfssWindData.length} sections)`;
-        }
+        console.log('CFSS data loaded:', project.cfssWindData);
     } else {
         // Hide the display section if no data
-        cfssDisplay.style.display = 'none';
+        if (cfssDisplay) {
+            cfssDisplay.style.display = 'none';
+        }
+        
+        // Reset global variable
+        cfssWindData = [];
+        
+        // Ensure button shows "Add"
+        updateCFSSButtonText();
     }
 }
 
-// Simplified CFSS data display function
 function updateCFSSDataDisplay(windData) {
     const cfssDisplay = document.getElementById('cfssDataDisplay');
     const cfssContent = document.getElementById('cfssDataContent');
     
     if (!windData || windData.length === 0) {
         cfssDisplay.style.display = 'none';
+        updateCFSSButtonText(); // Update button when no data
         return;
     }
     
@@ -977,7 +995,7 @@ function updateCFSSDataDisplay(windData) {
     // Add wind data rows
     windData.forEach(data => {
         html += `
-            <tr style="hover: #f8f9fa;">
+            <tr>
                 <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.floorRange}</td>
                 <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.resistance} cfs</td>
                 <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.deflection} cfs</td>
@@ -1021,20 +1039,9 @@ function updateCFSSDataDisplay(windData) {
     
     cfssContent.innerHTML = html;
     
-    // Update button text
-    const btnText = document.getElementById('cfss-btn-text');
-    if (btnText) {
-        const floorCount = windData.length;
-        const specCount = filledSpecs.length;
-        
-        if (specCount > 0) {
-            btnText.textContent = `CFSS Data (${floorCount} floors, ${specCount} specs)`;
-        } else {
-            btnText.textContent = `CFSS Data (${floorCount} floors)`;
-        }
-    }
+    // Update button text based on data
+    updateCFSSButtonText();
 }
-
 function populateCFSSForm(windData) {
     const container = document.getElementById('floor-sections');
     container.innerHTML = '';
