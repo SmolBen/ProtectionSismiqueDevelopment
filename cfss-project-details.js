@@ -1295,56 +1295,115 @@ function removeImage(imageKey) {
 }
 
 // Update the getWallFormData function to include images
+// Debug version of getWallFormDataWithImages function
 function getWallFormDataWithImages() {
-    const equipment = document.getElementById('equipment').value.trim();
-    const floor = document.getElementById('floor').value.trim();
-    const hauteurMax = document.getElementById('hauteurMax').value.trim();
-    const deflexionMax = document.getElementById('deflexionMax').value.trim();
-    const montantMetallique = document.getElementById('montantMetallique').value.trim();
-    const lisseSuperieure = document.getElementById('lisseSuperieure').value.trim();
-    const lisseInferieure = document.getElementById('lisseInferieure').value.trim();
-    const entremise = document.getElementById('entremise').value.trim();
+    console.log('=== DEBUG: Starting form validation ===');
+    
+    // Get elements first and check if they exist
+    const equipmentEl = document.getElementById('equipment');
+    const floorEl = document.getElementById('floor');
+    const hauteurMaxEl = document.getElementById('hauteurMax');
+    const deflexionMaxEl = document.getElementById('deflexionMax');
+    const montantMetalliqueEl = document.getElementById('montantMetallique');
+    const lisseSuperieureEl = document.getElementById('lisseSuperieure');
+    const lisseInferieureEl = document.getElementById('lisseInferieure');
+    const entremiseEl = document.getElementById('entremise');
 
-    // Validation with trimmed values
+    // Debug: Check if elements exist
+    console.log('Element check:');
+    console.log('  equipment element:', equipmentEl);
+    console.log('  floor element:', floorEl);
+    console.log('  hauteurMax element:', hauteurMaxEl);
+    console.log('  deflexionMax element:', deflexionMaxEl);
+    console.log('  montantMetallique element:', montantMetalliqueEl);
+    console.log('  lisseSuperieure element:', lisseSuperieureEl);
+    console.log('  lisseInferieure element:', lisseInferieureEl);
+    console.log('  entremise element:', entremiseEl);
+
+    if (!lisseSuperieureEl) {
+        alert('ERROR: lisseSuperieure element not found!');
+        return null;
+    }
+
+    // Get values
+    const equipment = equipmentEl ? equipmentEl.value.trim() : '';
+    const floor = floorEl ? floorEl.value.trim() : '';
+    const hauteurMax = hauteurMaxEl ? hauteurMaxEl.value.trim() : '';
+    const deflexionMax = deflexionMaxEl ? deflexionMaxEl.value.trim() : '';
+    const montantMetallique = montantMetalliqueEl ? montantMetalliqueEl.value.trim() : '';
+    const lisseSuperieure = lisseSuperieureEl ? lisseSuperieureEl.value.trim() : '';
+    const lisseInferieure = lisseInferieureEl ? lisseInferieureEl.value.trim() : '';
+    const entremise = entremiseEl ? entremiseEl.value.trim() : '';
+
+    // Debug: Check values
+    console.log('Form values:');
+    console.log('  equipment:', `"${equipment}"`);
+    console.log('  floor:', `"${floor}"`);
+    console.log('  hauteurMax:', `"${hauteurMax}"`);
+    console.log('  deflexionMax:', `"${deflexionMax}"`);
+    console.log('  montantMetallique:', `"${montantMetallique}"`);
+    console.log('  lisseSuperieure:', `"${lisseSuperieure}"`);
+    console.log('  lisseInferieure:', `"${lisseInferieure}"`);
+    console.log('  entremise:', `"${entremise}"`);
+
+    // Debug: Check lengths
+    console.log('Value lengths:');
+    console.log('  lisseSuperieure length:', lisseSuperieure.length);
+    console.log('  lisseSuperieure char codes:', [...lisseSuperieure].map(c => c.charCodeAt(0)));
+
+    // Validation with debugging
     if (!equipment) {
+        console.log('VALIDATION FAILED: equipment');
         alert('Please enter a wall name.');
         return null;
     }
 
     if (!floor) {
+        console.log('VALIDATION FAILED: floor');
         alert('Please enter a floor.');
         return null;
     }
 
     if (!hauteurMax || parseFloat(hauteurMax) <= 0) {
+        console.log('VALIDATION FAILED: hauteurMax');
         alert('Please enter a valid hauteur max greater than 0.');
         return null;
     }
 
     if (!deflexionMax) {
+        console.log('VALIDATION FAILED: deflexionMax');
         alert('Please select a déflexion max.');
         return null;
     }
 
     if (!montantMetallique) {
+        console.log('VALIDATION FAILED: montantMetallique');
         alert('Please enter montant métallique.');
         return null;
     }
 
     if (!lisseSuperieure) {
+        console.log('VALIDATION FAILED: lisseSuperieure');
+        console.log('  Raw value:', lisseSuperieureEl.value);
+        console.log('  Trimmed value:', `"${lisseSuperieure}"`);
+        console.log('  Boolean check:', !!lisseSuperieure);
         alert('Please enter lisse supérieure.');
         return null;
     }
 
     if (!lisseInferieure) {
+        console.log('VALIDATION FAILED: lisseInferieure');
         alert('Please enter lisse inférieure.');
         return null;
     }
 
     if (!entremise) {
+        console.log('VALIDATION FAILED: entremise');
         alert('Please enter entremise.');
         return null;
     }
+
+    console.log('=== DEBUG: All validations passed ===');
 
     const wallData = {
         equipment: equipment,
@@ -1360,6 +1419,7 @@ function getWallFormDataWithImages() {
         addedBy: currentUser.email
     };
 
+    console.log('Final wall data:', wallData);
     return wallData;
 }
 
