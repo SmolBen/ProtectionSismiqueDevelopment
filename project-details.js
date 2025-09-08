@@ -2046,9 +2046,10 @@ async function updateEquipmentImage() {
         } else {
             console.log('❌ No image found in either JPG or PNG format');
             equipmentImageElement.style.display = 'none';
+            const imageName = getImageName(equipment, pipeType, installMethod, projectDomain);
             imagePlaceholder.innerHTML = `
                 <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107; margin-bottom: 10px; display: block;"></i>
-                Image not available in JPG or PNG format
+                Can't find ${imageName || 'image'}
             `;
             imagePlaceholder.style.display = 'block';
         }
@@ -3601,6 +3602,31 @@ function getInstallMethodText(value) {
     return methods[value] || 'Unknown';
 }
 
+// Helper function to generate just the image name (without base URL and extension)
+function getImageName(equipmentType, pipeType, installMethod, projectDomain) {
+    if (equipmentType === 'Pipe') {
+        if (!pipeType) return null;
+        
+        const pipeTypeMap = {
+            'Steel_Pipe': 'Steel',
+            'Copper_Pipe': 'Copper', 
+            'PVC_Pipe': 'PVC',
+            'No_Hub_Pipe': 'NoHub'
+        };
+        
+        const mappedPipeType = pipeTypeMap[pipeType] || pipeType;
+        return `Pipe_${mappedPipeType}`;
+    } else {
+        const domainMapping = equipmentMappings[projectDomain];
+        if (!domainMapping) return null;
+
+        const equipmentCode = domainMapping.equipmentMap[equipmentType];
+        if (!equipmentCode) return null;
+        
+        return `${domainMapping.domainCode}_${equipmentCode}_${installMethod}`;
+    }
+}
+
 // Helper function to get mounting type text
 function getMountingTypeText(value) {
     const types = {
@@ -4329,9 +4355,10 @@ async function loadEquipmentDetailImage(equipment, index) {
             imgElement.src = fullImageUrl;
         } else {
             console.log('❌ No detail image found in either JPG or PNG format');
+            const imageName = getImageName(equipmentType, pipeType, installMethod, projectDomain);
             placeholder.innerHTML = `
                 <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-                Image not available in JPG or PNG format
+                Can't find ${imageName || 'image'}
             `;
         }
     } catch (error) {
