@@ -978,8 +978,6 @@ function updateCFSSDataDisplay(windData) {
     const projectData = windData[0] || {};
     
     let html = `
-        <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 15px 0; color: #333;">CFSS Wind Data</h3>
-        
         <!-- Wind Data Table -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <thead>
