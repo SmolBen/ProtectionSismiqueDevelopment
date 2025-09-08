@@ -57,7 +57,7 @@ let projectData = null;
 const equipmentOptions = {
     'ventilation': ['Fan_1', 'Fan_2', 'VU_1', 'VU_2', 'VU_3', 'AHU_1', 'Pipe'],
     'plumbing': ['HUM_1', 'RF_1', 'TE_1', 'CE_1', 'CE_2', 'P_1', 'Pipe'],
-    'electricity': ['Generator', 'Panel', 'Transformer', 'UPS', 'Controller', 'Battery', 'Pipe'],
+    'electricity': ['Generator', 'Transformer', 'Panel', 'UPS', 'Cabinet', 'Battery', 'Switchgear', 'Variable Frequency Drive', 'Motor Control Center', 'Pipe'],
     'sprinkler': ['Pipe'],
     'interior system': ['Pipe']
 };
@@ -66,12 +66,15 @@ const equipmentOptions = {
 // Based on Excel: Fixed to slab | Fixed to Ceiling | Fixed to concrete wall | Fixed to Steel Structure | Fixed to Wooden sleeper
 const equipmentInstallMethods = {
     'electricity': {
-        'Generator': ['1', '3', '5'], // slab, structure, roof(wooden sleeper)
-        'Transformer': ['1', '4', '2'], // slab, ceiling, wall(concrete wall)
-        'Panel': ['2', '3'], // Add when Excel is updated
-        'UPS': ['1', '3', '5'], // Add when Excel is updated
-        'Controller': ['1', '3', '5'], // Add when Excel is updated
-        'Battery': ['1', '3', '5'] // Add when Excel is updated
+        'Generator': ['1', '4', '5'], // slab, ceiling, roof
+        'Transformer': ['1', '4', '2'], // slab, ceiling, wall
+        'Panel': ['2', '3'], // wall, structure
+        'UPS': ['1', '4', '5'], // slab, ceiling, roof
+        'Cabinet': ['1', '4', '5'], // slab, ceiling, roof
+        'Battery': ['1', '4', '5'], // slab, ceiling, roof
+        'Switchgear': ['1', '4', '5'], // slab, ceiling, roof
+        'Variable Frequency Drive': ['1', '2', '3'], // slab, wall, structure
+        'Motor Control Center': ['1', '4', '5'] // slab, ceiling, roof
     }
     // Other domains (plumbing, ventilation, etc.) will be added as Excel is updated
 };
@@ -81,12 +84,16 @@ const equipmentMappings = {
         domainCode: 'El',
         equipmentMap: {
             'Generator': 'GE',
-            'Panel': 'PA', 
             'Transformer': 'TRA',
+            'Panel': 'PA', 
             'UPS': 'UPS',
-            'Controller': 'CN',
+            'Cabinet': 'CA',
             'Battery': 'BA',
-            'Pipe': 'Pipe' // Special handling for pipes
+            'Switchgear': 'SW',
+            'Variable Frequency Drive': 'VFD',
+            'Motor Control Center': 'MCC',
+            'Controller': 'CN', // Keep existing for backward compatibility
+            'Pipe': 'Pipe'
         } 
     },
     'ventilation': {
