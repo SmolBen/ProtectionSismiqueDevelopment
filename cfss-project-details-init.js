@@ -123,6 +123,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setupEquipmentFormHandler();
                 renderEquipmentList();
 
+                initializeImageUpload();
+
                 const newCalcButton = document.getElementById('newCalculationButton');
                 newCalcButton.style.display = 'block';
                 console.log('✅ Add Wall button shown');
