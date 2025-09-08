@@ -1916,8 +1916,70 @@ function hideAllConditionalFields() {
 
 }
 
-// Function to update image based on selected values
-function updateEquipmentImage() {
+// Helper function to generate image URL with specified extension
+function getEquipmentImageUrl(equipmentType, pipeType, installMethod, projectDomain, preferPng = false) {
+    const extension = preferPng ? 'png' : 'jpg';
+    
+    if (equipmentType === 'Pipe') {
+        if (!pipeType) return null;
+        
+        const pipeTypeMap = {
+            'Steel_Pipe': 'Steel',
+            'Copper_Pipe': 'Copper', 
+            'PVC_Pipe': 'PVC',
+            'No_Hub_Pipe': 'NoHub'
+        };
+        
+        const mappedPipeType = pipeTypeMap[pipeType] || pipeType;
+        return `${s3BaseUrl}piping/Pipe_${mappedPipeType}.${extension}`;
+    } else {
+        const domainMapping = equipmentMappings[projectDomain];
+        if (!domainMapping) return null;
+
+        const equipmentCode = domainMapping.equipmentMap[equipmentType];
+        if (!equipmentCode) return null;
+        
+        if (projectDomain === 'electricity') {
+            return `${s3BaseUrl}electricity/${domainMapping.domainCode}_${equipmentCode}_${installMethod}.${extension}`;
+        } else {
+            return `${s3BaseUrl}${domainMapping.domainCode}_${equipmentCode}_${installMethod}.${extension}`;
+        }
+    }
+}
+
+// Helper function to try both JPG and PNG formats
+async function getWorkingImageUrl(equipmentType, pipeType, installMethod, projectDomain) {
+    // Try JPG first
+    const jpgUrl = getEquipmentImageUrl(equipmentType, pipeType, installMethod, projectDomain, false);
+    if (jpgUrl) {
+        try {
+            const jpgResponse = await fetch(jpgUrl, { method: 'HEAD' });
+            if (jpgResponse.ok) {
+                return jpgUrl;
+            }
+        } catch (error) {
+            console.log('JPG not found, trying PNG...');
+        }
+    }
+    
+    // Try PNG as fallback
+    const pngUrl = getEquipmentImageUrl(equipmentType, pipeType, installMethod, projectDomain, true);
+    if (pngUrl) {
+        try {
+            const pngResponse = await fetch(pngUrl, { method: 'HEAD' });
+            if (pngResponse.ok) {
+                return pngUrl;
+            }
+        } catch (error) {
+            console.log('PNG also not found');
+        }
+    }
+    
+    return null; // Neither format found
+}
+
+// Updated updateEquipmentImage function with JPG/PNG fallback
+async function updateEquipmentImage() {
     console.log('🖼️ updateEquipmentImage() called');
     
     const equipmentImageElement = document.getElementById('equipmentImage');
@@ -1930,7 +1992,7 @@ function updateEquipmentImage() {
 
     const projectDomain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
     const equipment = document.getElementById('equipment')?.value;
-    const pipeType = document.getElementById('pipeType')?.value; // For pipe sub-types
+    const pipeType = document.getElementById('pipeType')?.value;
     const installMethod = document.getElementById('installMethod')?.value;
     
     console.log('📋 Current selections:', { projectDomain, equipment, pipeType, installMethod });
@@ -1942,8 +2004,6 @@ function updateEquipmentImage() {
         return;
     }
 
-    let imagePath;
-    
     // Special handling for pipes
     if (equipment === 'Pipe') {
         if (!pipeType) {
@@ -1956,60 +2016,51 @@ function updateEquipmentImage() {
             imagePlaceholder.style.display = 'block';
             return;
         }
-        
-        // Use piping directory for all pipe images
-        const pipeTypeMap = {
-            'Steel_Pipe': 'Steel',
-            'Copper_Pipe': 'Copper', 
-            'PVC_Pipe': 'PVC',
-            'No_Hub_Pipe': 'NoHub'
-        };
-        
-        const mappedPipeType = pipeTypeMap[pipeType] || pipeType;
-        imagePath = `piping/Pipe_${mappedPipeType}.jpg`;
-    } else {
-        // Regular equipment handling
-        const domainMapping = equipmentMappings[projectDomain];
-        if (!domainMapping) {
-            console.log('❌ Unknown domain:', projectDomain);
-            return;
-        }
-
-        const equipmentCode = domainMapping.equipmentMap[equipment];
-        if (!equipmentCode) {
-            console.log('❌ Unknown equipment:', equipment);
-            return;
-        }
-
-        if (projectDomain === 'electricity') {
-            imagePath = `electricity/${domainMapping.domainCode}_${equipmentCode}_${installMethod}.jpg`;
-        } else {
-            imagePath = `${domainMapping.domainCode}_${equipmentCode}_${installMethod}.jpg`;
-        }
     }
     
-    const fullImageUrl = `${s3BaseUrl}${imagePath}`;
-    
-    console.log('🔗 Generated image URL:', fullImageUrl);
-    
-    imagePlaceholder.style.display = 'none';
-    equipmentImageElement.style.display = 'block';
-    equipmentImageElement.src = fullImageUrl;
-    equipmentImageElement.alt = equipment === 'Pipe' ? `Image of ${pipeType} pipe` : `Image of ${equipment} with installation method ${installMethod}`;
-    
-    equipmentImageElement.onerror = function() {
-        console.log('❌ Image failed to load:', fullImageUrl);
-        this.style.display = 'none';
+    try {
+        // Try to get working image URL (JPG first, then PNG)
+        const fullImageUrl = await getWorkingImageUrl(equipment, pipeType, installMethod, projectDomain);
+        
+        if (fullImageUrl) {
+            console.log('🔗 Using image URL:', fullImageUrl);
+            
+            imagePlaceholder.style.display = 'none';
+            equipmentImageElement.style.display = 'block';
+            equipmentImageElement.src = fullImageUrl;
+            equipmentImageElement.alt = equipment === 'Pipe' ? `Image of ${pipeType} pipe` : `Image of ${equipment} with installation method ${installMethod}`;
+            
+            equipmentImageElement.onload = function() {
+                console.log('✅ Image loaded successfully:', fullImageUrl);
+            };
+            
+            equipmentImageElement.onerror = function() {
+                console.log('❌ Image failed to load even after fallback check:', fullImageUrl);
+                this.style.display = 'none';
+                imagePlaceholder.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107; margin-bottom: 10px; display: block;"></i>
+                    Image not available
+                `;
+                imagePlaceholder.style.display = 'block';
+            };
+        } else {
+            console.log('❌ No image found in either JPG or PNG format');
+            equipmentImageElement.style.display = 'none';
+            imagePlaceholder.innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107; margin-bottom: 10px; display: block;"></i>
+                Image not available in JPG or PNG format
+            `;
+            imagePlaceholder.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error in updateEquipmentImage:', error);
+        equipmentImageElement.style.display = 'none';
         imagePlaceholder.innerHTML = `
             <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107; margin-bottom: 10px; display: block;"></i>
-            Image not available: ${imagePath}
+            Error loading image
         `;
         imagePlaceholder.style.display = 'block';
-    };
-    
-    equipmentImageElement.onload = function() {
-        console.log('✅ Image loaded successfully:', fullImageUrl);
-    };
+    }
 }
 
 // Event listeners to update image when selections change
@@ -4203,8 +4254,8 @@ function toggleProjectDetails() {
     }
 }
 
-// Function to load equipment image in details view
-function loadEquipmentDetailImage(equipment, index) {
+// Updated loadEquipmentDetailImage function with JPG/PNG fallback
+async function loadEquipmentDetailImage(equipment, index) {
     const imageContainer = document.getElementById(`equipmentDetailImage${index}`);
     const placeholder = document.getElementById(`equipmentDetailPlaceholder${index}`);
     
@@ -4214,8 +4265,9 @@ function loadEquipmentDetailImage(equipment, index) {
     }
 
     const projectDomain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
-    const equipmentType = equipment.equipmentType || equipment.equipment; // Use equipmentType if available
+    const equipmentType = equipment.equipmentType || equipment.equipment;
     const installMethod = equipment.installMethod;
+    const pipeType = equipment.pipeType;
     
     console.log('📋 Loading image for equipment:', { projectDomain, equipmentType, equipment: equipment.equipment, installMethod, index });
 
@@ -4227,89 +4279,68 @@ function loadEquipmentDetailImage(equipment, index) {
         return;
     }
 
-    let imagePath;
-    
     // Special handling for pipes
     if (equipmentType === 'Pipe' || equipment.isPipe) {
-        const pipeType = equipment.pipeType || equipment.equipment;
+        const pipeTypeToUse = pipeType || equipment.equipment;
         
-        if (!pipeType) {
+        if (!pipeTypeToUse) {
             placeholder.innerHTML = `
                 <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
                 Missing pipe type data
             `;
             return;
         }
-        
-        // Map pipe types to image names
-        const pipeTypeMap = {
-            'Steel_Pipe': 'Steel',
-            'Copper_Pipe': 'Copper', 
-            'PVC_Pipe': 'PVC',
-            'No_Hub_Pipe': 'NoHub'
-        };
-        
-        const mappedPipeType = pipeTypeMap[pipeType] || pipeType.replace('_Pipe', '');
-        imagePath = `piping/Pipe_${mappedPipeType}.jpg`;
-    } else {
-        // Regular equipment handling
-        const domainMapping = equipmentMappings[projectDomain];
-        if (!domainMapping) {
-            placeholder.innerHTML = `
-                <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-                Unknown domain: ${projectDomain}
-            `;
-            return;
-        }
-
-        const equipmentCode = domainMapping.equipmentMap[equipmentType];
-        if (!equipmentCode) {
-            placeholder.innerHTML = `
-                <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-                Unknown equipment: ${equipmentType}
-            `;
-            return;
-        }
-
-        if (projectDomain === 'electricity') {
-            imagePath = `electricity/${domainMapping.domainCode}_${equipmentCode}_${installMethod}.jpg`;
-        } else {
-            imagePath = `${domainMapping.domainCode}_${equipmentCode}_${installMethod}.jpg`;
-        }
     }
     
-    const fullImageUrl = `${s3BaseUrl}${imagePath}`;
-    
-    console.log('🔗 Generated detail image URL:', fullImageUrl);
-    
-    // Create image element
-    const imgElement = document.createElement('img');
-    imgElement.style.cssText = `
-        width: 100%;
-        height: auto;
-        max-height: 200px;
-        object-fit: contain;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: white;
-    `;
-    imgElement.alt = equipment.isPipe ? `${equipment.pipeType || equipment.equipment} pipe` : `${equipmentType} with installation method ${installMethod}`;
-    
-    imgElement.onload = function() {
-        console.log('✅ Detail image loaded successfully:', fullImageUrl);
-        placeholder.style.display = 'none';
-        imageContainer.appendChild(imgElement);
-    };
-    
-    imgElement.onerror = function() {
-        console.log('❌ Detail image failed to load:', fullImageUrl);
+    try {
+        // Try to get working image URL (JPG first, then PNG)
+        const fullImageUrl = await getWorkingImageUrl(equipmentType, pipeType, installMethod, projectDomain);
+        
+        if (fullImageUrl) {
+            console.log('🔗 Using detail image URL:', fullImageUrl);
+            
+            // Create image element
+            const imgElement = document.createElement('img');
+            imgElement.style.cssText = `
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+                object-fit: contain;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: white;
+            `;
+            imgElement.alt = equipment.isPipe ? `${equipment.pipeType || equipment.equipment} pipe` : `${equipmentType} with installation method ${installMethod}`;
+            
+            imgElement.onload = function() {
+                console.log('✅ Detail image loaded successfully:', fullImageUrl);
+                placeholder.style.display = 'none';
+                imageContainer.appendChild(imgElement);
+            };
+            
+            imgElement.onerror = function() {
+                console.log('❌ Detail image failed to load even after fallback check:', fullImageUrl);
+                placeholder.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
+                    Image not available
+                `;
+            };
+            
+            imgElement.src = fullImageUrl;
+        } else {
+            console.log('❌ No detail image found in either JPG or PNG format');
+            placeholder.innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
+                Image not available in JPG or PNG format
+            `;
+        }
+    } catch (error) {
+        console.error('Error in loadEquipmentDetailImage:', error);
         placeholder.innerHTML = `
             <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-            Image not available:<br><small>${imagePath}</small>
+            Error loading image
         `;
-    };
-    
-    imgElement.src = fullImageUrl;
+    }
 }
 
 // Helper function to get and validate equipment form data
