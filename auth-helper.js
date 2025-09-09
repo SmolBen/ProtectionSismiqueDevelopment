@@ -110,9 +110,6 @@ class AuthHelper {
         if (currentUser.userId) {
             headers['x-user-id'] = currentUser.userId.trim();
         }
-
-        // Log headers for debugging
-        console.log('🔑 Auth headers created:', headers);
         
         return headers;
     }
