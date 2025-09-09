@@ -2864,6 +2864,8 @@ equipmentCard.innerHTML = `
                 })()}
             </h4>
             <div class="equipment-meta-compact">
+                ${equipment.model ? `<span>Model: ${equipment.model}</span><span class="meta-separator">•</span>` : ''}
+                ${equipment.tag ? `<span>Tag: ${equipment.tag}</span><span class="meta-separator">•</span>` : ''}
                 ${equipment.isPipe ? `
                     <span>Pipe: ${equipment.pipeDiameter || 'N/A'}</span>
                     <span class="meta-separator">•</span>
@@ -2937,6 +2939,8 @@ return `
                             <!-- Pipe specific fields -->
                             ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
                             <p><strong>Pipe Type:</strong> ${equipment.pipeType || equipment.equipment}</p>
+                            ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
+                            ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
                             <p><strong>Pipe Weight per Foot:</strong> ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</p>
                             <p><strong>Pipe Diameter:</strong> ${equipment.pipeDiameter || 'N/A'}</p>
                             <p><strong>Support Type:</strong> ${equipment.supportType || 'N/A'} | <strong>Structure Type:</strong> ${equipment.structureType || 'N/A'}</p>
@@ -2945,6 +2949,8 @@ return `
                         ` : `
                             <!-- Traditional equipment fields -->
                             ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
+                            ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
+                            ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
                             <p><strong>Weight:</strong> ${equipment.weight || 'N/A'} ${equipment.weightUnit || 'kg'} | <strong>Dimensions:</strong> ${equipment.height}×${equipment.width}×${equipment.length} in</p>
                             <p><strong>Level:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>Install Method:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
                             ${equipment.mountingType ? `<p><strong>Mounting Type:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
@@ -3110,6 +3116,14 @@ return `
                                         </select>
                                     </div>
                                     <div>
+                                        <label><strong>Model:</strong></label>
+                                        <input type="text" id="editModel${index}" value="${equipment.model || ''}" style="width: 100%; padding: 5px;">
+                                    </div>
+                                    <div>
+                                        <label><strong>Tag:</strong></label>
+                                        <input type="text" id="editTag${index}" value="${equipment.tag || ''}" style="width: 100%; padding: 5px;">
+                                    </div>
+                                    <div>
                                         <label><strong>NBC Category:</strong></label>
                                         <select id="editNbcCategory${index}" style="width: 100%; padding: 5px;">
                                             <option value="15" ${equipment.nbcCategory === '15' ? 'selected' : ''}>15 - Pipes, ducts (including contents)</option>
@@ -3156,6 +3170,14 @@ return `
                                     </div>
                                 ` : `
                                     <!-- Traditional Equipment Edit Fields -->
+                                    <div>
+                                        <label><strong>Model:</strong></label>
+                                        <input type="text" id="editModel${index}" value="${equipment.model || ''}" style="width: 100%; padding: 5px;">
+                                    </div>
+                                    <div>
+                                        <label><strong>Tag:</strong></label>
+                                        <input type="text" id="editTag${index}" value="${equipment.tag || ''}" style="width: 100%; padding: 5px;">
+                                    </div>
                                     <div>
                                         <label><strong>NBC Category:</strong></label>
                                         <select id="editNbcCategory${index}" style="width: 100%; padding: 5px;">
@@ -3983,6 +4005,8 @@ async function saveEquipmentEdit(index, event) {
         // Get updated values from form - common fields
         const updatedEquipment = {
             ...currentEquipment, // Keep existing properties
+            model: document.getElementById(`editModel${index}`).value || null,
+            tag: document.getElementById(`editTag${index}`).value || null,
             level: parseInt(document.getElementById(`editLevel${index}`).value) || 1,
             totalLevels: parseInt(document.getElementById(`editTotalLevels${index}`).value) || 1,
             installMethod: document.getElementById(`editInstallMethod${index}`).value,
@@ -4410,6 +4434,8 @@ async function loadEquipmentDetailImage(equipment, index) {
 function getEquipmentFormData() {
     // Get form elements
     const equipment = document.getElementById('equipment').value;
+    const model = document.getElementById('model').value;
+    const tag = document.getElementById('tag').value;
     const pipeType = document.getElementById('pipeType')?.value;
     const domain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
     const isPipe = equipment === 'Pipe';
@@ -4457,6 +4483,8 @@ function getEquipmentFormData() {
         equipment: isPipe ? `${pipeType}` : equipment, // Store full pipe type name for pipes
         equipmentType: equipment, // Store the base equipment type (Pipe or regular equipment)
         pipeType: isPipe ? pipeType : null, // Store pipe type separately for pipes
+        model: model || null,
+        tag: tag || null,
         domain: domain,
         level: parseInt(level),
         totalLevels: parseInt(totalLevels),
@@ -4571,6 +4599,8 @@ function getEquipmentFormData() {
             edgeDistanceB: parseFloat(edgeDistanceB) || null,
             numberOfIsolators: parseInt(numberOfIsolators) || null,
             hx: parseFloat(hx),
+            model: model || null,
+            tag: tag || null,
             isPipe: false
         };
     }
@@ -4643,6 +4673,8 @@ function clearEquipmentForm() {
         form.reset();
         
         // Reset specific fields to defaults
+        document.getElementById('model').value = '';
+        document.getElementById('tag').value = '';
         document.getElementById('nbcCategory').value = '11-rigid';
         document.getElementById('weightUnit').value = 'lbs';
         document.getElementById('fc').value = '2500';
@@ -4677,6 +4709,8 @@ function generateEquipmentDetailsHTML(equipment, currentProject, cfsResult, late
                 <!-- Pipe specific display in calculation results -->
                 ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
                 <p><strong>Pipe Type:</strong> ${equipment.pipeType || equipment.equipment}</p>
+                ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
+                ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
                 <p><strong>Pipe Weight per Foot:</strong> ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</p>
                 <p><strong>Pipe Diameter:</strong> ${equipment.pipeDiameter || 'N/A'}</p>
                 <p><strong>Support Type:</strong> ${equipment.supportType || 'N/A'} | <strong>Structure Type:</strong> ${equipment.structureType || 'N/A'}</p>
@@ -4685,6 +4719,8 @@ function generateEquipmentDetailsHTML(equipment, currentProject, cfsResult, late
             ` : `
                 <!-- Traditional equipment display in calculation results -->
                 ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
+                ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
+                ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
                 <p><strong>Weight:</strong> ${equipment.weight || 'N/A'} ${equipment.weightUnit || 'kg'} | <strong>Dimensions:</strong> ${equipment.height}×${equipment.width}×${equipment.length} in</p>
                 <p><strong>Level:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>Install Method:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
                 ${equipment.mountingType ? `<p><strong>Mounting Type:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
