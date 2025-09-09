@@ -121,6 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // Setup form handlers and render equipment list
                 setupNewCalculationButton();
                 setupEquipmentFormHandler();
+                setupCFSSReportButton(); 
                 renderEquipmentList();
 
                 initializeImageUpload();

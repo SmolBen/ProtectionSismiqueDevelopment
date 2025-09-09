@@ -1549,6 +1549,96 @@ function openImageModal(imageKey, filename) {
     loadWallImage(modal.querySelector('img'), imageKey);
 }
 
+// CFSS Report Generation Function
+async function generateCFSSProjectReport() {
+    if (!currentProjectId) {
+        alert('Error: No project selected');
+        return;
+    }
+
+    const generateButton = document.getElementById('generateCFSSReportButton');
+    
+    try {
+        generateButton.disabled = true;
+        generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating CFSS PDF... (up to 30 seconds)';
+        
+        // Prepare CFSS project data including walls and wind data
+        const cfssProjectData = {
+            ...projectData,
+            walls: projectEquipment, // CFSS uses walls instead of equipment
+            cfssWindData: cfssWindData
+        };
+        
+        console.log('📊 CFSS Project data being sent:', {
+            name: cfssProjectData.name,
+            wallsCount: cfssProjectData.walls?.length || 0,
+            windDataCount: cfssProjectData.cfssWindData?.length || 0
+        });
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-report`, {
+            method: 'POST',
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                projectData: cfssProjectData
+            }),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            if (response.status === 504) {
+                throw new Error('CFSS PDF generation timed out. Please try again.');
+            }
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'CFSS PDF generation failed');
+        }
+
+        if (!result.downloadUrl) {
+            throw new Error('No download URL received from server');
+        }
+
+        console.log('✅ Opening CFSS download URL:', result.downloadUrl);
+        window.location.href = result.downloadUrl;
+        
+        console.log('✅ CFSS PDF download completed successfully');
+        
+    } catch (error) {
+        console.error('❌ CFSS PDF generation error:', error);
+        if (error.name === 'AbortError' || error.message.includes('504')) {
+            alert('CFSS PDF generation timed out. Please try again in a few minutes.');
+        } else {
+            alert('Error generating CFSS report: ' + error.message);
+        }
+    } finally {
+        generateButton.disabled = false;
+        generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
+    }
+}
+
+// Setup function for CFSS Report button
+function setupCFSSReportButton() {
+    const generateButton = document.getElementById('generateCFSSReportButton');
+    if (generateButton) {
+        generateButton.addEventListener('click', generateCFSSProjectReport);
+        console.log('✅ CFSS Report button setup completed');
+    } else {
+        console.warn('⚠️ CFSS Report button not found');
+    }
+}
+
 // Make functions globally available
 window.logout = logout;
 window.deleteEquipment = deleteEquipment;
@@ -1559,3 +1649,4 @@ window.cancelEquipmentEdit = cancelEquipmentEdit;
 window.removeImage = removeImage;
 window.loadWallImage = loadWallImage;
 window.openImageModal = openImageModal;
+window.generateCFSSProjectReport = generateCFSSProjectReport;
