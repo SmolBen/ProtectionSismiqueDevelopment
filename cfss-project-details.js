@@ -794,7 +794,7 @@ function displayCFSSData(cfssData) {
             html += `
                 <div class="cfss-floor-item">
                     <span class="cfss-floor-range">Floor ${item.floorRange}</span>
-                    <span class="cfss-values">Resistance: ${item.resistance} cfs, Deflection: ${item.deflection} cfs</span>
+                    <span class="cfss-values">Resistance: ${item.resistance} psf, Deflection: ${item.deflection} psf</span>
                 </div>
             `;
         });
@@ -965,8 +965,8 @@ function updateCFSSDataDisplay(windData) {
         html += `
             <tr>
                 <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.floorRange}</td>
-                <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.resistance} cfs</td>
-                <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.deflection} cfs</td>
+                <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.resistance} psf</td>
+                <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #f1f3f4;">${data.deflection} psf</td>
             </tr>
         `;
     });
@@ -1051,7 +1051,7 @@ function populateCFSSForm(windData) {
                     <label>Resistance:</label>
                     <div class="field-with-unit">
                         <input type="number" class="value-input" value="${data.resistance || ''}" step="0.1">
-                        <span class="unit-label">cfs</span>
+                        <span class="unit-label">psf</span>
                     </div>
                 </div>
                 
@@ -1059,7 +1059,7 @@ function populateCFSSForm(windData) {
                     <label>Deflection:</label>
                     <div class="field-with-unit">
                         <input type="number" class="value-input" value="${data.deflection || ''}" step="0.1">
-                        <span class="unit-label">cfs</span>
+                        <span class="unit-label">psf</span>
                     </div>
                 </div>
                 
