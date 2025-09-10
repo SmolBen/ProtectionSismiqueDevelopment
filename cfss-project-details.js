@@ -705,7 +705,7 @@ function addCFSSFloorSection() {
                 <label>Resistance:</label>
                 <div class="field-with-unit">
                     <input type="number" class="value-input" placeholder="0.0" step="0.1">
-                    <span class="unit-label">cfs</span>
+                    <span class="unit-label">psf</span>
                 </div>
             </div>
             
@@ -713,7 +713,7 @@ function addCFSSFloorSection() {
                 <label>Deflection:</label>
                 <div class="field-with-unit">
                     <input type="number" class="value-input" placeholder="0.0" step="0.1">
-                    <span class="unit-label">cfs</span>
+                    <span class="unit-label">psf</span>
                 </div>
             </div>
             
