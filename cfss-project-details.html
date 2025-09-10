@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +8,41 @@
     <link rel="stylesheet" href="project-details.css">
     <link rel="stylesheet" href="cfss-project-details.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Enhanced form styles for better UX */
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        
+        .auto-filled {
+            background-color: #f8f9fa !important;
+            border-color: #28a745;
+        }
+        
+        .auto-filled:focus {
+            background-color: white !important;
+            border-color: #007bff;
+        }
+        
+        .form-hint {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -203,10 +237,17 @@
                                     <input type="text" id="floor" name="floor" placeholder="Enter floor..." required>
                                 </div>
 
-                                <!-- 3. Hauteur Max -->
+                                <!-- 3. Hauteur Max - NOW A DROPDOWN -->
                                 <div class="form-group">
                                     <label for="hauteurMax">Hauteur Max:</label>
-                                    <input type="number" id="hauteurMax" name="hauteurMax" step="0.01" placeholder="Enter hauteur max..." required>
+                                    <select id="hauteurMax" name="hauteurMax" required>
+                                        <option value="">Select hauteur max...</option>
+                                        <option value="1'-2\"">1'-2"</option>
+                                        <option value="2'-8\"">2'-8"</option>
+                                        <option value="8'-10\"">8'-10"</option>
+                                        <option value="9'-8\"">9'-8"</option>
+                                        <option value="10'-10\"">10'-10"</option>
+                                    </select>
                                 </div>
 
                                 <!-- 4. Déflexion Max -->
@@ -221,28 +262,37 @@
                                     </select>
                                 </div>
 
-                                <!-- 5. Montant Métallique -->
+                                <!-- 5. Montant Métallique - NOW A DROPDOWN -->
                                 <div class="form-group">
                                     <label for="montantMetallique">Montant Métallique:</label>
-                                    <input type="text" id="montantMetallique" name="montantMetallique" placeholder="Enter montant métallique..." required>
+                                    <select id="montantMetallique" name="montantMetallique" required>
+                                        <option value="">Select montant métallique...</option>
+                                        <!-- Options will be populated by JavaScript from CSV data -->
+                                    </select>
                                 </div>
 
-                                <!-- 6. Lisse Supérieure -->
+                                <!-- 6. Lisse Supérieure - AUTO-POPULATED BUT EDITABLE -->
                                 <div class="form-group">
                                     <label for="lisseSuperieure">Lisse Supérieure:</label>
-                                    <input type="text" id="lisseSuperieure" name="lisseSuperieure" placeholder="Enter lisse supérieure..." required>
+                                    <input type="text" id="lisseSuperieure" name="lisseSuperieure" placeholder="Will be auto-filled based on montant selection..." required>
+                                    <div class="form-hint">Auto-filled from montant selection, but you can edit if needed</div>
                                 </div>
 
-                                <!-- 7. Lisse Inférieure -->
+                                <!-- 7. Lisse Inférieure - AUTO-POPULATED BUT EDITABLE -->
                                 <div class="form-group">
                                     <label for="lisseInferieure">Lisse Inférieure:</label>
-                                    <input type="text" id="lisseInferieure" name="lisseInferieure" placeholder="Enter lisse inférieure..." required>
+                                    <input type="text" id="lisseInferieure" name="lisseInferieure" placeholder="Will be auto-filled based on montant selection..." required>
+                                    <div class="form-hint">Auto-filled from montant selection, but you can edit if needed</div>
                                 </div>
 
-                                <!-- 8. Entremise -->
+                                <!-- 8. Entremise - NOW A DROPDOWN -->
                                 <div class="form-group">
                                     <label for="entremise">Entremise:</label>
-                                    <input type="text" id="entremise" name="entremise" placeholder="Enter entremise..." required>
+                                    <select id="entremise" name="entremise" required>
+                                        <option value="">Select entremise...</option>
+                                        <option value="150U75-43 @48\"c/c">150U75-43 @48"c/c</option>
+                                        <option value="N/A">N/A</option>
+                                    </select>
                                 </div>
                                 
                                 <!-- Calculate and Save Buttons -->
@@ -286,6 +336,245 @@
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
     <script src="auth-helper.js"></script>
+    
+    <script>
+    // Colombian data mapping from CSV
+    const colombageData = {
+        "162S125-33": { lisseSuperieur: "162ST250-33 TROUÉE", lisseInferieure: "162T125-33" },
+        "162S162-33": { lisseSuperieur: "162ST250-33 TROUÉE", lisseInferieure: "162T125-33" },
+        "162S125-43": { lisseSuperieur: "162ST250-43 TROUÉE", lisseInferieure: "162T125-43" },
+        "250S125-33": { lisseSuperieur: "250ST250-33 TROUÉE", lisseInferieure: "250T125-33" },
+        "250S162-33": { lisseSuperieur: "250ST250-33 TROUÉE", lisseInferieure: "250T125-33" },
+        "250S200-33": { lisseSuperieur: "250ST250-33 TROUÉE", lisseInferieure: "250T125-33" },
+        "250S125-43": { lisseSuperieur: "250ST250-43 TROUÉE", lisseInferieure: "250T125-43" },
+        "250S162-43": { lisseSuperieur: "250ST250-43 TROUÉE", lisseInferieure: "250T125-43" },
+        "250S200-43": { lisseSuperieur: "250ST250-43 TROUÉE", lisseInferieure: "250T125-43" },
+        "250S125-54": { lisseSuperieur: "250ST250-54 TROUÉE", lisseInferieure: "250T125-54" },
+        "250S162-54": { lisseSuperieur: "250ST250-54 TROUÉE", lisseInferieure: "250T125-54" },
+        "250S200-54": { lisseSuperieur: "250ST250-54 TROUÉE", lisseInferieure: "250T125-54" },
+        "250S162-68": { lisseSuperieur: "250ST250-68 TROUÉE", lisseInferieure: "250T125-68" },
+        "250S200-68": { lisseSuperieur: "250ST250-68 TROUÉE", lisseInferieure: "250T125-68" },
+        "250S162-97": { lisseSuperieur: "250ST250-97 TROUÉE", lisseInferieure: "250T125-97" },
+        "250S200-97": { lisseSuperieur: "250ST250-97 TROUÉE", lisseInferieure: "250T125-97" },
+        "362S125-33": { lisseSuperieur: "362ST250-33 TROUÉE", lisseInferieure: "362T125-33" },
+        "362S162-33": { lisseSuperieur: "362ST250-33 TROUÉE", lisseInferieure: "362T125-33" },
+        "362S200-33": { lisseSuperieur: "362ST250-33 TROUÉE", lisseInferieure: "362T125-33" },
+        "362S125-43": { lisseSuperieur: "362ST250-43 TROUÉE", lisseInferieure: "362T125-43" },
+        "362S162-43": { lisseSuperieur: "362ST250-43 TROUÉE", lisseInferieure: "362T125-43" },
+        "362S200-43": { lisseSuperieur: "362ST250-43 TROUÉE", lisseInferieure: "362T125-43" },
+        "362S125-54": { lisseSuperieur: "362ST250-54 TROUÉE", lisseInferieure: "362T125-54" },
+        "362S162-54": { lisseSuperieur: "362ST250-54 TROUÉE", lisseInferieure: "362T125-54" },
+        "362S200-54": { lisseSuperieur: "362ST250-54 TROUÉE", lisseInferieure: "362T125-54" },
+        "362S162-68": { lisseSuperieur: "362ST250-68 TROUÉE", lisseInferieure: "362T125-68" },
+        "362S200-68": { lisseSuperieur: "362ST250-68 TROUÉE", lisseInferieure: "362T125-68" },
+        "362S162-97": { lisseSuperieur: "362ST250-97 TROUÉE", lisseInferieure: "362T125-97" },
+        "362S200-97": { lisseSuperieur: "362ST250-97 TROUÉE", lisseInferieure: "362T125-97" },
+        "212CH-18": { lisseSuperieur: "212CHT250-18 TROUÉE", lisseInferieure: "212CHT125-18" },
+        "212CH-34": { lisseSuperieur: "212CHT250-34 TROUÉE", lisseInferieure: "212CHT125-34" },
+        "250CH-18": { lisseSuperieur: "250CHT250-18 TROUÉE", lisseInferieure: "250CHT125-18" },
+        "250CH-34": { lisseSuperieur: "250CHT250-34 TROUÉE", lisseInferieure: "250CHT125-34" },
+        "300CH-18": { lisseSuperieur: "300CHT250-18 TROUÉE", lisseInferieure: "300CHT125-18" },
+        "300CH-34": { lisseSuperieur: "300CHT250-34 TROUÉE", lisseInferieure: "300CHT125-34" },
+        "350CH-18": { lisseSuperieur: "350CHT250-18 TROUÉE", lisseInferieure: "350CHT125-18" },
+        "350CH-34": { lisseSuperieur: "350CHT250-34 TROUÉE", lisseInferieure: "350CHT125-34" },
+        "400CH-18": { lisseSuperieur: "400CHT250-18 TROUÉE", lisseInferieure: "400CHT125-18" },
+        "400CH-34": { lisseSuperieur: "400CHT250-34 TROUÉE", lisseInferieure: "400CHT125-34" },
+        "600S125-33": { lisseSuperieur: "600ST250-33 TROUÉE", lisseInferieure: "600T125-33" },
+        "600S162-33": { lisseSuperieur: "600ST250-33 TROUÉE", lisseInferieure: "600T125-33" },
+        "600S200-33": { lisseSuperieur: "600ST250-33 TROUÉE", lisseInferieure: "600T125-33" },
+        "600S125-43": { lisseSuperieur: "600ST250-43 TROUÉE", lisseInferieure: "600T125-43" },
+        "600S162-43": { lisseSuperieur: "600ST250-43 TROUÉE", lisseInferieure: "600T125-43" },
+        "600S200-43": { lisseSuperieur: "600ST250-43 TROUÉE", lisseInferieure: "600T125-43" },
+        "600S125-54": { lisseSuperieur: "600ST250-54 TROUÉE", lisseInferieure: "600T125-54" },
+        "600S162-54": { lisseSuperieur: "600ST250-54 TROUÉE", lisseInferieure: "600T125-54" },
+        "600S200-54": { lisseSuperieur: "600ST250-54 TROUÉE", lisseInferieure: "600T125-54" },
+        "600S162-68": { lisseSuperieur: "600ST250-68 TROUÉE", lisseInferieure: "600T125-68" },
+        "600S200-68": { lisseSuperieur: "600ST250-68 TROUÉE", lisseInferieure: "600T125-68" },
+        "600S162-97": { lisseSuperieur: "600ST250-97 TROUÉE", lisseInferieure: "600T125-97" },
+        "600S200-97": { lisseSuperieur: "600ST250-97 TROUÉE", lisseInferieure: "600T125-97" },
+        "800S125-33": { lisseSuperieur: "800ST250-33 TROUÉE", lisseInferieure: "800T125-33" },
+        "800S162-33": { lisseSuperieur: "800ST250-33 TROUÉE", lisseInferieure: "800T125-33" },
+        "800S200-33": { lisseSuperieur: "800ST250-33 TROUÉE", lisseInferieure: "800T125-33" },
+        "800S125-43": { lisseSuperieur: "800ST250-43 TROUÉE", lisseInferieure: "800T125-43" },
+        "800S162-43": { lisseSuperieur: "800ST250-43 TROUÉE", lisseInferieure: "800T125-43" },
+        "800S200-43": { lisseSuperieur: "800ST250-43 TROUÉE", lisseInferieure: "800T125-43" },
+        "800S125-54": { lisseSuperieur: "800ST250-54 TROUÉE", lisseInferieure: "800T125-54" },
+        "800S162-54": { lisseSuperieur: "800ST250-54 TROUÉE", lisseInferieure: "800T125-54" },
+        "800S200-54": { lisseSuperieur: "800ST250-54 TROUÉE", lisseInferieure: "800T125-54" },
+        "800S162-68": { lisseSuperieur: "800ST250-68 TROUÉE", lisseInferieure: "800T125-68" },
+        "800S200-68": { lisseSuperieur: "800ST250-68 TROUÉE", lisseInferieure: "800T125-68" },
+        "800S162-97": { lisseSuperieur: "800ST250-97 TROUÉE", lisseInferieure: "800T125-97" },
+        "800S200-97": { lisseSuperieur: "800ST250-97 TROUÉE", lisseInferieure: "800T125-97" },
+        "1000S125-33": { lisseSuperieur: "1000ST250-33 TROUÉE", lisseInferieure: "1000T125-33" },
+        "1000S162-33": { lisseSuperieur: "1000ST250-33 TROUÉE", lisseInferieure: "1000T125-33" },
+        "1000S200-33": { lisseSuperieur: "1000ST250-33 TROUÉE", lisseInferieure: "1000T125-33" },
+        "1000S125-43": { lisseSuperieur: "1000ST250-43 TROUÉE", lisseInferieure: "1000T125-43" },
+        "1000S162-43": { lisseSuperieur: "1000ST250-43 TROUÉE", lisseInferieure: "1000T125-43" },
+        "1000S200-43": { lisseSuperieur: "1000ST250-43 TROUÉE", lisseInferieure: "1000T125-43" }
+    };
+
+    // Initialize form functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeMontantDropdown();
+        setupMontantChangeHandler();
+    });
+
+    // Populate the Montant Métallique dropdown
+    function initializeMontantDropdown() {
+        const montantSelect = document.getElementById('montantMetallique');
+        if (!montantSelect) return;
+
+        // Clear existing options except the first one
+        montantSelect.innerHTML = '<option value="">Select montant métallique...</option>';
+
+        // Sort the keys alphabetically and add options
+        const sortedKeys = Object.keys(colombageData).sort();
+        sortedKeys.forEach(montant => {
+            const option = document.createElement('option');
+            option.value = montant;
+            option.textContent = montant;
+            montantSelect.appendChild(option);
+        });
+
+        console.log(`Populated ${sortedKeys.length} montant métallique options`);
+    }
+
+    // Setup change handler for montant selection
+    function setupMontantChangeHandler() {
+        const montantSelect = document.getElementById('montantMetallique');
+        const lisseSuperieureInput = document.getElementById('lisseSuperieure');
+        const lisseInferieureInput = document.getElementById('lisseInferieure');
+
+        if (!montantSelect || !lisseSuperieureInput || !lisseInferieureInput) return;
+
+        montantSelect.addEventListener('change', function() {
+            const selectedMontant = this.value;
+            
+            if (selectedMontant && colombageData[selectedMontant]) {
+                const data = colombageData[selectedMontant];
+                
+                // Auto-fill the lisse fields
+                lisseSuperieureInput.value = data.lisseSuperieur;
+                lisseInferieureInput.value = data.lisseInferieure;
+                
+                // Add visual indication that these fields were auto-filled
+                lisseSuperieureInput.classList.add('auto-filled');
+                lisseInferieureInput.classList.add('auto-filled');
+                
+                console.log(`Auto-filled lisse fields for ${selectedMontant}`);
+                
+                // Remove auto-filled styling when user starts typing
+                [lisseSuperieureInput, lisseInferieureInput].forEach(input => {
+                    input.addEventListener('input', function() {
+                        this.classList.remove('auto-filled');
+                    }, { once: true });
+                });
+            } else {
+                // Clear the fields if no valid selection
+                lisseSuperieureInput.value = '';
+                lisseInferieureInput.value = '';
+                lisseSuperieureInput.classList.remove('auto-filled');
+                lisseInferieureInput.classList.remove('auto-filled');
+            }
+        });
+    }
+
+    // Update the form validation function to work with dropdowns
+    function getWallFormDataWithImages() {
+        console.log('=== DEBUG: Starting form validation with dropdowns ===');
+        
+        // Get elements first and check if they exist
+        const equipmentEl = document.getElementById('equipment');
+        const floorEl = document.getElementById('floor');
+        const hauteurMaxEl = document.getElementById('hauteurMax');
+        const deflexionMaxEl = document.getElementById('deflexionMax');
+        const montantMetalliqueEl = document.getElementById('montantMetallique');
+        const lisseSuperieureEl = document.getElementById('lisseSuperieure');
+        const lisseInferieureEl = document.getElementById('lisseInferieure');
+        const entremiseEl = document.getElementById('entremise');
+
+        // Get values
+        const equipment = equipmentEl ? equipmentEl.value.trim() : '';
+        const floor = floorEl ? floorEl.value.trim() : '';
+        const hauteurMax = hauteurMaxEl ? hauteurMaxEl.value.trim() : '';
+        const deflexionMax = deflexionMaxEl ? deflexionMaxEl.value.trim() : '';
+        const montantMetallique = montantMetalliqueEl ? montantMetalliqueEl.value.trim() : '';
+        const lisseSuperieure = lisseSuperieureEl ? lisseSuperieureEl.value.trim() : '';
+        const lisseInferieure = lisseInferieureEl ? lisseInferieureEl.value.trim() : '';
+        const entremise = entremiseEl ? entremiseEl.value.trim() : '';
+
+        // Debug: Check values
+        console.log('Form values:', {
+            equipment, floor, hauteurMax, deflexionMax, 
+            montantMetallique, lisseSuperieure, lisseInferieure, entremise
+        });
+
+        // Validation
+        if (!equipment) {
+            alert('Please enter a wall name.');
+            return null;
+        }
+
+        if (!floor) {
+            alert('Please enter a floor.');
+            return null;
+        }
+
+        if (!hauteurMax) {
+            alert('Please select a hauteur max.');
+            return null;
+        }
+
+        if (!deflexionMax) {
+            alert('Please select a déflexion max.');
+            return null;
+        }
+
+        if (!montantMetallique) {
+            alert('Please select montant métallique.');
+            return null;
+        }
+
+        if (!lisseSuperieure) {
+            alert('Please enter lisse supérieure.');
+            return null;
+        }
+
+        if (!lisseInferieure) {
+            alert('Please enter lisse inférieure.');
+            return null;
+        }
+
+        if (!entremise) {
+            alert('Please select entremise.');
+            return null;
+        }
+
+        console.log('=== DEBUG: All validations passed ===');
+
+        const wallData = {
+            equipment: equipment,
+            floor: floor,
+            hauteurMax: hauteurMax, // Now a string from dropdown
+            deflexionMax: deflexionMax,
+            montantMetallique: montantMetallique,
+            lisseSuperieure: lisseSuperieure,
+            lisseInferieure: lisseInferieure,
+            entremise: entremise,
+            images: [...(window.currentWallImages || [])], // Include uploaded images
+            dateAdded: new Date().toISOString(),
+            addedBy: window.currentUser?.email || 'unknown'
+        };
+
+        console.log('Final wall data:', wallData);
+        return wallData;
+    }
+
+    // Make the function globally available
+    window.getWallFormDataWithImages = getWallFormDataWithImages;
+    window.colombageData = colombageData;
+    </script>
+    
     <script src="cfss-project-details.js"></script>
     <script src="cfss-project-details-init.js"></script>
 </body>
