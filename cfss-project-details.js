@@ -190,13 +190,12 @@ function renderEquipmentList() {
                                         <select id="editHauteurMaxUnit${originalIndex}" style="flex: 1; padding: 5px;">
                                             <option value="">Unit</option>
                                             <option value="ft" ${wall.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-                                            <option value="pi" ${wall.hauteurMaxUnit === 'pi' ? 'selected' : ''}>pi</option>
+                                            <option value="m" ${wall.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
                                         </select>
                                         <input type="number" id="editHauteurMaxMinor${originalIndex}" value="${wall.hauteurMaxMinor || ''}" placeholder="Minor" style="flex: 1; padding: 5px;">
                                         <select id="editHauteurMaxMinorUnit${originalIndex}" style="flex: 1; padding: 5px;">
                                             <option value="">Unit</option>
                                             <option value="in" ${wall.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
-                                            <option value="po" ${wall.hauteurMaxMinorUnit === 'po' ? 'selected' : ''}>po</option>
                                             <option value="mm" ${wall.hauteurMaxMinorUnit === 'mm' ? 'selected' : ''}>mm</option>
                                         </select>
                                     </div>
@@ -254,22 +253,22 @@ function renderEquipmentList() {
             equipmentListDiv.appendChild(wallCard);
 
             setTimeout(() => {
-            const editMajorUnit = document.getElementById(`editHauteurMaxUnit${originalIndex}`);
-            const editMinorUnit = document.getElementById(`editHauteurMaxMinorUnit${originalIndex}`);
-            
-            if (editMajorUnit && editMinorUnit) {
-                editMajorUnit.addEventListener('change', function() {
-                    const majorUnit = this.value;
-                    
-                    // Auto-pair ft with in, pi with po (but allow mm to stay)
-                    if (majorUnit === 'ft' && editMinorUnit.value !== 'mm') {
-                        editMinorUnit.value = 'in';
-                    } else if (majorUnit === 'pi' && editMinorUnit.value !== 'mm') {
-                        editMinorUnit.value = 'po';
-                    }
-                });
-            }
-        }, 100);
+                const editMajorUnit = document.getElementById(`editHauteurMaxUnit${originalIndex}`);
+                const editMinorUnit = document.getElementById(`editHauteurMaxMinorUnit${originalIndex}`);
+                
+                if (editMajorUnit && editMinorUnit) {
+                    editMajorUnit.addEventListener('change', function() {
+                        const majorUnit = this.value;
+                        
+                        // Auto-pair ft with in, m with mm
+                        if (majorUnit === 'ft') {
+                            editMinorUnit.value = 'in';
+                        } else if (majorUnit === 'm') {
+                            editMinorUnit.value = 'mm';
+                        }
+                    });
+                }
+            }, 100);
 
             // Add click event to entire card for toggling details
             wallCard.addEventListener('click', (e) => {
@@ -1722,21 +1721,21 @@ function setupHauteurMaxPreview() {
         }
     }
     
-    // AUTO-PAIRING: When major unit changes, auto-update minor unit
+    // AUTO-PAIRING: ft with in, m with mm
     majorUnitSelect.addEventListener('change', function() {
         const majorUnit = this.value;
         
-        // Auto-pair ft with in, pi with po
-        if (majorUnit === 'ft' && minorUnitSelect.value !== 'mm') {
+        // Auto-pair ft with in, m with mm
+        if (majorUnit === 'ft') {
             minorUnitSelect.value = 'in';
-        } else if (majorUnit === 'pi' && minorUnitSelect.value !== 'mm') {
-            minorUnitSelect.value = 'po';
+        } else if (majorUnit === 'm') {
+            minorUnitSelect.value = 'mm';
         }
         
         updatePreview();
     });
     
-    // When minor unit changes, don't affect major (especially for mm)
+    // When minor unit changes, don't affect major
     minorUnitSelect.addEventListener('change', updatePreview);
     
     // Add event listeners for input changes
