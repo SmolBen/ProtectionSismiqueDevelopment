@@ -94,7 +94,21 @@ function renderEquipmentList() {
             return;
         }
 
-        projectEquipment.forEach((wall, index) => {
+        // SORT WALLS BY NAME BEFORE RENDERING
+        const sortedWalls = [...projectEquipment].sort((a, b) => {
+            const nameA = (a.equipment || '').toLowerCase();
+            const nameB = (b.equipment || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+
+        sortedWalls.forEach((wall, index) => {
+            // Find the original index in projectEquipment array for operations
+            const originalIndex = projectEquipment.findIndex(w => 
+                w.equipment === wall.equipment && 
+                w.floor === wall.floor &&
+                w.dateAdded === wall.dateAdded
+            );
+            
             // Format hauteur max display with unit
             const hauteurMaxDisplay = wall.hauteurMaxUnit ? 
                 `${wall.hauteurMax}${wall.hauteurMaxUnit}` : 
@@ -115,21 +129,23 @@ function renderEquipmentList() {
                             <span>Hauteur: ${hauteurMaxDisplay}</span>
                             <span class="meta-separator">•</span>
                             <span>Déflexion: ${wall.deflexionMax || 'N/A'}</span>
+                            <span class="meta-separator">•</span>
+                            <span>Espacement: ${wall.espacement || 'N/A'}</span>
                         </div>
                     </div>
                     <div class="equipment-actions-compact">
-                        <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${index})">Details</button>
+                        <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${originalIndex})">Details</button>
                         ${canModifyProject() ? `
-                            <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${index})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                            <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${originalIndex})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px;">
                                 <i class="fas fa-copy"></i> Duplicate
                             </button>
-                            <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${index})">Delete</button>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${originalIndex})">Delete</button>
                         ` : ''}
                     </div>
                 </div>
 
-                <div class="equipment-details" id="equipmentDetails${index}">
-                    <div id="equipmentView${index}">
+                <div class="equipment-details" id="equipmentDetails${originalIndex}">
+                    <div id="equipmentView${originalIndex}">
                         <div class="equipment-details-container">
                             <div class="equipment-info-section">
                                 <p><strong>Wall Name:</strong> ${wall.equipment}</p>
@@ -140,15 +156,16 @@ function renderEquipmentList() {
                                 <p><strong>Lisse Supérieure:</strong> ${wall.lisseSuperieure || 'N/A'}</p>
                                 <p><strong>Lisse Inférieure:</strong> ${wall.lisseInferieure || 'N/A'}</p>
                                 <p><strong>Entremise:</strong> ${wall.entremise || 'N/A'}</p>
+                                <p><strong>Espacement:</strong> ${wall.espacement || 'N/A'}</p>
                                 
                                 <div style="margin-top: 15px;">
                                     <strong>Images:</strong>
-                                    ${renderWallImages(wall, index)}
+                                    ${renderWallImages(wall, originalIndex)}
                                 </div>
                                 
                                 ${canModifyProject() ? `
                                     <div style="margin-top: 15px;">
-                                        <button class="edit-btn" onclick="editEquipment(${index})" style="background: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                                        <button class="edit-btn" onclick="editEquipment(${originalIndex})" style="background: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
                                             <i class="fas fa-edit"></i> Edit Wall
                                         </button>
                                     </div>
@@ -157,22 +174,22 @@ function renderEquipmentList() {
                         </div>
                     </div>
                     
-                    <div id="equipmentEdit${index}" style="display: none;">
-                        <form id="equipmentEditForm${index}" onsubmit="saveEquipmentEdit(${index}, event)">
+                    <div id="equipmentEdit${originalIndex}" style="display: none;">
+                        <form id="equipmentEditForm${originalIndex}" onsubmit="saveEquipmentEdit(${originalIndex}, event)">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                                 <div>
                                     <label><strong>Wall Name:</strong></label>
-                                    <input type="text" id="editEquipment${index}" value="${wall.equipment || ''}" style="width: 100%; padding: 5px;">
+                                    <input type="text" id="editEquipment${originalIndex}" value="${wall.equipment || ''}" style="width: 100%; padding: 5px;">
                                 </div>
                                 <div>
                                     <label><strong>Floor:</strong></label>
-                                    <input type="text" id="editFloor${index}" value="${wall.floor || ''}" style="width: 100%; padding: 5px;">
+                                    <input type="text" id="editFloor${originalIndex}" value="${wall.floor || ''}" style="width: 100%; padding: 5px;">
                                 </div>
                                 <div>
                                     <label><strong>Hauteur Max:</strong></label>
                                     <div style="display: flex; gap: 8px;">
-                                        <input type="text" id="editHauteurMax${index}" value="${wall.hauteurMax || ''}" placeholder="Value" style="flex: 1; padding: 5px;">
-                                        <select id="editHauteurMaxUnit${index}" style="padding: 5px; min-width: 80px;">
+                                        <input type="text" id="editHauteurMax${originalIndex}" value="${wall.hauteurMax || ''}" placeholder="Value" style="flex: 1; padding: 5px;">
+                                        <select id="editHauteurMaxUnit${originalIndex}" style="padding: 5px; min-width: 80px;">
                                             <option value="">Unit</option>
                                             <option value="ft-in" ${wall.hauteurMaxUnit === 'ft-in' ? 'selected' : ''}>ft-in</option>
                                             <option value="mm" ${wall.hauteurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
@@ -181,7 +198,7 @@ function renderEquipmentList() {
                                 </div>
                                 <div>
                                     <label><strong>Déflexion Max:</strong></label>
-                                    <select id="editDeflexionMax${index}" style="width: 100%; padding: 5px;">
+                                    <select id="editDeflexionMax${originalIndex}" style="width: 100%; padding: 5px;">
                                         <option value="L/360" ${wall.deflexionMax === 'L/360' ? 'selected' : ''}>L/360</option>
                                         <option value="L/480" ${wall.deflexionMax === 'L/480' ? 'selected' : ''}>L/480</option>
                                         <option value="L/600" ${wall.deflexionMax === 'L/600' ? 'selected' : ''}>L/600</option>
@@ -190,19 +207,29 @@ function renderEquipmentList() {
                                 </div>
                                 <div>
                                     <label><strong>Montant Métallique:</strong></label>
-                                    <input type="text" id="editMontantMetallique${index}" value="${wall.montantMetallique || ''}" style="width: 100%; padding: 5px;">
+                                    <input type="text" id="editMontantMetallique${originalIndex}" value="${wall.montantMetallique || ''}" style="width: 100%; padding: 5px;">
                                 </div>
                                 <div>
                                     <label><strong>Lisse Supérieure:</strong></label>
-                                    <input type="text" id="editLisseSuperieure${index}" value="${wall.lisseSuperieure || ''}" style="width: 100%; padding: 5px;">
+                                    <input type="text" id="editLisseSuperieure${originalIndex}" value="${wall.lisseSuperieure || ''}" style="width: 100%; padding: 5px;">
                                 </div>
                                 <div>
                                     <label><strong>Lisse Inférieure:</strong></label>
-                                    <input type="text" id="editLisseInferieure${index}" value="${wall.lisseInferieure || ''}" style="width: 100%; padding: 5px;">
+                                    <input type="text" id="editLisseInferieure${originalIndex}" value="${wall.lisseInferieure || ''}" style="width: 100%; padding: 5px;">
                                 </div>
                                 <div>
                                     <label><strong>Entremise:</strong></label>
-                                    <input type="text" id="editEntremise${index}" value="${wall.entremise || ''}" style="width: 100%; padding: 5px;">
+                                    <input type="text" id="editEntremise${originalIndex}" value="${wall.entremise || ''}" style="width: 100%; padding: 5px;">
+                                </div>
+                                <div>
+                                    <label><strong>Espacement:</strong></label>
+                                    <select id="editEspacement${originalIndex}" style="width: 100%; padding: 5px;">
+                                        <option value="">Select espacement...</option>
+                                        <option value="8&quot;c/c" ${wall.espacement === '8"c/c' ? 'selected' : ''}>8"c/c</option>
+                                        <option value="12&quot;c/c" ${wall.espacement === '12"c/c' ? 'selected' : ''}>12"c/c</option>
+                                        <option value="16&quot;c/c" ${wall.espacement === '16"c/c' ? 'selected' : ''}>16"c/c</option>
+                                        <option value="24&quot;c/c" ${wall.espacement === '24"c/c' ? 'selected' : ''}>24"c/c</option>
+                                    </select>
                                 </div>
                             </div>
                             
@@ -210,7 +237,7 @@ function renderEquipmentList() {
                                 <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
                                     <i class="fas fa-save"></i> Save Changes
                                 </button>
-                                <button type="button" onclick="cancelEquipmentEdit(${index})" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                                <button type="button" onclick="cancelEquipmentEdit(${originalIndex})" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
                                     <i class="fas fa-times"></i> Cancel
                                 </button>
                             </div>
@@ -227,7 +254,7 @@ function renderEquipmentList() {
                     e.target.closest('.equipment-details')) {
                     return;
                 }
-                toggleEquipmentDetails(index);
+                toggleEquipmentDetails(originalIndex);
             });
         });
         
@@ -369,6 +396,7 @@ async function saveEquipmentEdit(index, event) {
             lisseSuperieure: document.getElementById(`editLisseSuperieure${index}`).value,
             lisseInferieure: document.getElementById(`editLisseInferieure${index}`).value,
             entremise: document.getElementById(`editEntremise${index}`).value,
+            espacement: document.getElementById(`editEspacement${index}`).value, // NEW FIELD
             lastModified: new Date().toISOString(),
             modifiedBy: currentUser?.email || 'unknown'
         };
@@ -396,6 +424,11 @@ async function saveEquipmentEdit(index, event) {
 
         if (!updatedWall.deflexionMax) {
             alert('Please select a déflexion max.');
+            return;
+        }
+
+        if (!updatedWall.espacement) {
+            alert('Please select an espacement.');
             return;
         }
 
@@ -1429,6 +1462,7 @@ function getWallFormDataWithImages() {
     const lisseSuperieureEl = document.getElementById('lisseSuperieure');
     const lisseInferieureEl = document.getElementById('lisseInferieure');
     const entremiseEl = document.getElementById('entremise');
+    const espacementEl = document.getElementById('espacement'); // ADD THIS LINE
 
     // Get values
     const equipment = equipmentEl ? equipmentEl.value.trim() : '';
@@ -1440,11 +1474,12 @@ function getWallFormDataWithImages() {
     const lisseSuperieure = lisseSuperieureEl ? lisseSuperieureEl.value.trim() : '';
     const lisseInferieure = lisseInferieureEl ? lisseInferieureEl.value.trim() : '';
     const entremise = entremiseEl ? entremiseEl.value.trim() : '';
+    const espacement = espacementEl ? espacementEl.value.trim() : ''; // ADD THIS LINE
 
     // Debug: Check values
     console.log('Form values:', {
         equipment, floor, hauteurMaxValue, hauteurMaxUnit, deflexionMax, 
-        montantMetallique, lisseSuperieure, lisseInferieure, entremise
+        montantMetallique, lisseSuperieure, lisseInferieure, entremise, espacement // ADD espacement HERE
     });
 
     // Validation
@@ -1493,6 +1528,11 @@ function getWallFormDataWithImages() {
         return null;
     }
 
+    if (!espacement) { // ADD THIS VALIDATION
+        alert('Please select an espacement.');
+        return null;
+    }
+
     console.log('=== DEBUG: All validations passed ===');
 
     const wallData = {
@@ -1505,7 +1545,8 @@ function getWallFormDataWithImages() {
         lisseSuperieure: lisseSuperieure,
         lisseInferieure: lisseInferieure,
         entremise: entremise,
-        images: [...(window.currentWallImages || [])], // Include uploaded images
+        espacement: espacement, // ADD THIS LINE
+        images: [...(window.currentWallImages || [])],
         dateAdded: new Date().toISOString(),
         addedBy: window.currentUser?.email || 'unknown'
     };
