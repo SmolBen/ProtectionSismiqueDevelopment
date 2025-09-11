@@ -237,17 +237,27 @@
                                     <input type="text" id="floor" name="floor" placeholder="Enter floor..." required>
                                 </div>
 
-                                <!-- 3. Hauteur Max - NOW A DROPDOWN -->
+                                <!-- 3. Hauteur Max - MANUAL INPUT WITH UNIT SELECTION -->
                                 <div class="form-group">
                                     <label for="hauteurMax">Hauteur Max:</label>
-                                    <select id="hauteurMax" name="hauteurMax" required>
-                                        <option value="">Select hauteur max...</option>
-                                        <option value="1'-2\"">1'-2"</option>
-                                        <option value="2'-8\"">2'-8"</option>
-                                        <option value="8'-10\"">8'-10"</option>
-                                        <option value="9'-8\"">9'-8"</option>
-                                        <option value="10'-10\"">10'-10"</option>
-                                    </select>
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <input 
+                                            type="text" 
+                                            id="hauteurMax" 
+                                            name="hauteurMax" 
+                                            required 
+                                            style="flex: 3; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                                        >
+                                        <select 
+                                            id="hauteurMaxUnit" 
+                                            name="hauteurMaxUnit" 
+                                            required 
+                                            style="flex: 1; max-width: 70px; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                                        >
+                                            <option value="ft-in" selected>ft-in</option>
+                                            <option value="mm">mm</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <!-- 4. Déflexion Max -->

@@ -95,6 +95,11 @@ function renderEquipmentList() {
         }
 
         projectEquipment.forEach((wall, index) => {
+            // Format hauteur max display with unit
+            const hauteurMaxDisplay = wall.hauteurMaxUnit ? 
+                `${wall.hauteurMax}${wall.hauteurMaxUnit}` : 
+                wall.hauteurMax || 'N/A';
+            
             const wallCard = document.createElement('div');
             wallCard.className = 'equipment-card';
             
@@ -107,7 +112,7 @@ function renderEquipmentList() {
                         <div class="equipment-meta-compact">
                             <span>Floor: ${wall.floor || 'N/A'}</span>
                             <span class="meta-separator">•</span>
-                            <span>Hauteur: ${wall.hauteurMax || 'N/A'}</span>
+                            <span>Hauteur: ${hauteurMaxDisplay}</span>
                             <span class="meta-separator">•</span>
                             <span>Déflexion: ${wall.deflexionMax || 'N/A'}</span>
                         </div>
@@ -126,7 +131,7 @@ function renderEquipmentList() {
                             <div class="equipment-info-section">
                                 <p><strong>Wall Name:</strong> ${wall.equipment}</p>
                                 <p><strong>Floor:</strong> ${wall.floor || 'N/A'}</p>
-                                <p><strong>Hauteur Max:</strong> ${wall.hauteurMax || 'N/A'}</p>
+                                <p><strong>Hauteur Max:</strong> ${hauteurMaxDisplay}</p>
                                 <p><strong>Déflexion Max:</strong> ${wall.deflexionMax || 'N/A'}</p>
                                 <p><strong>Montant Métallique:</strong> ${wall.montantMetallique || 'N/A'}</p>
                                 <p><strong>Lisse Supérieure:</strong> ${wall.lisseSuperieure || 'N/A'}</p>
@@ -162,7 +167,14 @@ function renderEquipmentList() {
                                 </div>
                                 <div>
                                     <label><strong>Hauteur Max:</strong></label>
-                                    <input type="number" id="editHauteurMax${index}" value="${wall.hauteurMax || ''}" step="0.01" style="width: 100%; padding: 5px;">
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" id="editHauteurMax${index}" value="${wall.hauteurMax || ''}" placeholder="Value" style="flex: 1; padding: 5px;">
+                                        <select id="editHauteurMaxUnit${index}" style="padding: 5px; min-width: 80px;">
+                                            <option value="">Unit</option>
+                                            <option value="ft-in" ${wall.hauteurMaxUnit === 'ft-in' ? 'selected' : ''}>ft-in</option>
+                                            <option value="mm" ${wall.hauteurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div>
                                     <label><strong>Déflexion Max:</strong></label>
@@ -296,7 +308,8 @@ async function saveEquipmentEdit(index, event) {
             ...currentWall,
             equipment: document.getElementById(`editEquipment${index}`).value,
             floor: document.getElementById(`editFloor${index}`).value,
-            hauteurMax: parseFloat(document.getElementById(`editHauteurMax${index}`).value) || 0,
+            hauteurMax: document.getElementById(`editHauteurMax${index}`).value,
+            hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${index}`).value,
             deflexionMax: document.getElementById(`editDeflexionMax${index}`).value,
             montantMetallique: document.getElementById(`editMontantMetallique${index}`).value,
             lisseSuperieure: document.getElementById(`editLisseSuperieure${index}`).value,
@@ -317,12 +330,22 @@ async function saveEquipmentEdit(index, event) {
             return;
         }
 
+        if (!updatedWall.hauteurMax) {
+            alert('Please enter a hauteur max value.');
+            return;
+        }
+
+        if (!updatedWall.hauteurMaxUnit) {
+            alert('Please select a unit for hauteur max.');
+            return;
+        }
+
         if (!updatedWall.deflexionMax) {
             alert('Please select a déflexion max.');
             return;
         }
 
-        console.log('📄 Updating wall:', updatedWall);
+        console.log('🔄 Updating wall:', updatedWall);
 
         projectEquipment[index] = updatedWall;
         
@@ -336,6 +359,7 @@ async function saveEquipmentEdit(index, event) {
         alert('Error saving wall changes: ' + error.message);
     }
 }
+
 
 // Function to delete wall
 async function deleteEquipment(index) {
@@ -475,6 +499,10 @@ function displayWallDetails(wallData) {
 
 // Function to generate wall details HTML
 function generateWallDetailsHTML(wallData) {
+    const hauteurMaxDisplay = wallData.hauteurMaxUnit ? 
+        `${wallData.hauteurMax} ${wallData.hauteurMaxUnit}` : 
+        wallData.hauteurMax;
+
     let html = `
         <div class="calculation-equipment-info">
             <h3 style="color: #333; margin-bottom: 15px;">Wall Information</h3>
@@ -482,7 +510,7 @@ function generateWallDetailsHTML(wallData) {
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff;">
                 <p><strong>Wall Name:</strong> ${wallData.equipment}</p>
                 <p><strong>Floor:</strong> ${wallData.floor}</p>
-                <p><strong>Hauteur Max:</strong> ${wallData.hauteurMax}</p>
+                <p><strong>Hauteur Max:</strong> ${hauteurMaxDisplay}</p>
                 <p><strong>Déflexion Max:</strong> ${wallData.deflexionMax}</p>
                 <p><strong>Montant Métallique:</strong> ${wallData.montantMetallique}</p>
                 <p><strong>Lisse Supérieure:</strong> ${wallData.lisseSuperieure}</p>
@@ -1334,40 +1362,25 @@ function removeImage(imageKey) {
 }
 
 // Update the getWallFormData function to include images
-// Debug version of getWallFormDataWithImages function
 function getWallFormDataWithImages() {
-    console.log('=== DEBUG: Starting form validation ===');
+    console.log('=== DEBUG: Starting form validation with manual hauteur max ===');
     
     // Get elements first and check if they exist
     const equipmentEl = document.getElementById('equipment');
     const floorEl = document.getElementById('floor');
     const hauteurMaxEl = document.getElementById('hauteurMax');
+    const hauteurMaxUnitEl = document.getElementById('hauteurMaxUnit');
     const deflexionMaxEl = document.getElementById('deflexionMax');
     const montantMetalliqueEl = document.getElementById('montantMetallique');
     const lisseSuperieureEl = document.getElementById('lisseSuperieure');
     const lisseInferieureEl = document.getElementById('lisseInferieure');
     const entremiseEl = document.getElementById('entremise');
 
-    // Debug: Check if elements exist
-    console.log('Element check:');
-    console.log('  equipment element:', equipmentEl);
-    console.log('  floor element:', floorEl);
-    console.log('  hauteurMax element:', hauteurMaxEl);
-    console.log('  deflexionMax element:', deflexionMaxEl);
-    console.log('  montantMetallique element:', montantMetalliqueEl);
-    console.log('  lisseSuperieure element:', lisseSuperieureEl);
-    console.log('  lisseInferieure element:', lisseInferieureEl);
-    console.log('  entremise element:', entremiseEl);
-
-    if (!lisseSuperieureEl) {
-        alert('ERROR: lisseSuperieure element not found!');
-        return null;
-    }
-
     // Get values
     const equipment = equipmentEl ? equipmentEl.value.trim() : '';
     const floor = floorEl ? floorEl.value.trim() : '';
-    const hauteurMax = hauteurMaxEl ? hauteurMaxEl.value.trim() : '';
+    const hauteurMaxValue = hauteurMaxEl ? hauteurMaxEl.value.trim() : '';
+    const hauteurMaxUnit = hauteurMaxUnitEl ? hauteurMaxUnitEl.value.trim() : '';
     const deflexionMax = deflexionMaxEl ? deflexionMaxEl.value.trim() : '';
     const montantMetallique = montantMetalliqueEl ? montantMetalliqueEl.value.trim() : '';
     const lisseSuperieure = lisseSuperieureEl ? lisseSuperieureEl.value.trim() : '';
@@ -1375,70 +1388,54 @@ function getWallFormDataWithImages() {
     const entremise = entremiseEl ? entremiseEl.value.trim() : '';
 
     // Debug: Check values
-    console.log('Form values:');
-    console.log('  equipment:', `"${equipment}"`);
-    console.log('  floor:', `"${floor}"`);
-    console.log('  hauteurMax:', `"${hauteurMax}"`);
-    console.log('  deflexionMax:', `"${deflexionMax}"`);
-    console.log('  montantMetallique:', `"${montantMetallique}"`);
-    console.log('  lisseSuperieure:', `"${lisseSuperieure}"`);
-    console.log('  lisseInferieure:', `"${lisseInferieure}"`);
-    console.log('  entremise:', `"${entremise}"`);
+    console.log('Form values:', {
+        equipment, floor, hauteurMaxValue, hauteurMaxUnit, deflexionMax, 
+        montantMetallique, lisseSuperieure, lisseInferieure, entremise
+    });
 
-    // Debug: Check lengths
-    console.log('Value lengths:');
-    console.log('  lisseSuperieure length:', lisseSuperieure.length);
-    console.log('  lisseSuperieure char codes:', [...lisseSuperieure].map(c => c.charCodeAt(0)));
-
-    // Validation with debugging
+    // Validation
     if (!equipment) {
-        console.log('VALIDATION FAILED: equipment');
         alert('Please enter a wall name.');
         return null;
     }
 
     if (!floor) {
-        console.log('VALIDATION FAILED: floor');
         alert('Please enter a floor.');
         return null;
     }
 
-    if (!hauteurMax || parseFloat(hauteurMax) <= 0) {
-        console.log('VALIDATION FAILED: hauteurMax');
-        alert('Please enter a valid hauteur max greater than 0.');
+    if (!hauteurMaxValue) {
+        alert('Please enter a hauteur max value.');
+        return null;
+    }
+
+    if (!hauteurMaxUnit) {
+        alert('Please select a unit for hauteur max.');
         return null;
     }
 
     if (!deflexionMax) {
-        console.log('VALIDATION FAILED: deflexionMax');
         alert('Please select a déflexion max.');
         return null;
     }
 
     if (!montantMetallique) {
-        console.log('VALIDATION FAILED: montantMetallique');
-        alert('Please enter montant métallique.');
+        alert('Please select montant métallique.');
         return null;
     }
 
     if (!lisseSuperieure) {
-        console.log('VALIDATION FAILED: lisseSuperieure');
-        console.log('  Raw value:', lisseSuperieureEl.value);
-        console.log('  Trimmed value:', `"${lisseSuperieure}"`);
-        console.log('  Boolean check:', !!lisseSuperieure);
         alert('Please enter lisse supérieure.');
         return null;
     }
 
     if (!lisseInferieure) {
-        console.log('VALIDATION FAILED: lisseInferieure');
         alert('Please enter lisse inférieure.');
         return null;
     }
 
     if (!entremise) {
-        console.log('VALIDATION FAILED: entremise');
-        alert('Please enter entremise.');
+        alert('Please select entremise.');
         return null;
     }
 
@@ -1447,15 +1444,16 @@ function getWallFormDataWithImages() {
     const wallData = {
         equipment: equipment,
         floor: floor,
-        hauteurMax: parseFloat(hauteurMax),
+        hauteurMax: hauteurMaxValue,
+        hauteurMaxUnit: hauteurMaxUnit,
         deflexionMax: deflexionMax,
         montantMetallique: montantMetallique,
         lisseSuperieure: lisseSuperieure,
         lisseInferieure: lisseInferieure,
         entremise: entremise,
-        images: [...currentWallImages], // Include uploaded images
+        images: [...(window.currentWallImages || [])], // Include uploaded images
         dateAdded: new Date().toISOString(),
-        addedBy: currentUser.email
+        addedBy: window.currentUser?.email || 'unknown'
     };
 
     console.log('Final wall data:', wallData);
