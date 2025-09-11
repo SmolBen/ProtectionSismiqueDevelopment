@@ -110,9 +110,7 @@ function renderEquipmentList() {
             );
             
             // Format hauteur max display with unit
-            const hauteurMaxDisplay = wall.hauteurMaxUnit ? 
-                `${wall.hauteurMax}${wall.hauteurMaxUnit}` : 
-                wall.hauteurMax || 'N/A';
+            const hauteurMaxDisplay = formatHauteurDisplay(wall);
             
             const wallCard = document.createElement('div');
             wallCard.className = 'equipment-card';
@@ -187,12 +185,19 @@ function renderEquipmentList() {
                                 </div>
                                 <div>
                                     <label><strong>Hauteur Max:</strong></label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <input type="text" id="editHauteurMax${originalIndex}" value="${wall.hauteurMax || ''}" placeholder="Value" style="flex: 1; padding: 5px;">
-                                        <select id="editHauteurMaxUnit${originalIndex}" style="padding: 5px; min-width: 80px;">
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="number" id="editHauteurMax${originalIndex}" value="${wall.hauteurMax || ''}" placeholder="Main" style="flex: 1; padding: 5px;">
+                                        <select id="editHauteurMaxUnit${originalIndex}" style="flex: 1; padding: 5px;">
                                             <option value="">Unit</option>
-                                            <option value="ft-in" ${wall.hauteurMaxUnit === 'ft-in' ? 'selected' : ''}>ft-in</option>
-                                            <option value="mm" ${wall.hauteurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
+                                            <option value="ft" ${wall.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+                                            <option value="pi" ${wall.hauteurMaxUnit === 'pi' ? 'selected' : ''}>pi</option>
+                                        </select>
+                                        <input type="number" id="editHauteurMaxMinor${originalIndex}" value="${wall.hauteurMaxMinor || ''}" placeholder="Minor" style="flex: 1; padding: 5px;">
+                                        <select id="editHauteurMaxMinorUnit${originalIndex}" style="flex: 1; padding: 5px;">
+                                            <option value="">Unit</option>
+                                            <option value="in" ${wall.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
+                                            <option value="po" ${wall.hauteurMaxMinorUnit === 'po' ? 'selected' : ''}>po</option>
+                                            <option value="mm" ${wall.hauteurMaxMinorUnit === 'mm' ? 'selected' : ''}>mm</option>
                                         </select>
                                     </div>
                                 </div>
@@ -247,6 +252,24 @@ function renderEquipmentList() {
             `;
             
             equipmentListDiv.appendChild(wallCard);
+
+            setTimeout(() => {
+            const editMajorUnit = document.getElementById(`editHauteurMaxUnit${originalIndex}`);
+            const editMinorUnit = document.getElementById(`editHauteurMaxMinorUnit${originalIndex}`);
+            
+            if (editMajorUnit && editMinorUnit) {
+                editMajorUnit.addEventListener('change', function() {
+                    const majorUnit = this.value;
+                    
+                    // Auto-pair ft with in, pi with po (but allow mm to stay)
+                    if (majorUnit === 'ft' && editMinorUnit.value !== 'mm') {
+                        editMinorUnit.value = 'in';
+                    } else if (majorUnit === 'pi' && editMinorUnit.value !== 'mm') {
+                        editMinorUnit.value = 'po';
+                    }
+                });
+            }
+        }, 100);
 
             // Add click event to entire card for toggling details
             wallCard.addEventListener('click', (e) => {
@@ -391,6 +414,8 @@ async function saveEquipmentEdit(index, event) {
             floor: document.getElementById(`editFloor${index}`).value,
             hauteurMax: document.getElementById(`editHauteurMax${index}`).value,
             hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${index}`).value,
+            hauteurMaxMinor: document.getElementById(`editHauteurMaxMinor${index}`).value, // NEW
+            hauteurMaxMinorUnit: document.getElementById(`editHauteurMaxMinorUnit${index}`).value, // NEW
             deflexionMax: document.getElementById(`editDeflexionMax${index}`).value,
             montantMetallique: document.getElementById(`editMontantMetallique${index}`).value,
             lisseSuperieure: document.getElementById(`editLisseSuperieure${index}`).value,
@@ -1448,39 +1473,56 @@ function removeImage(imageKey) {
     });
 }
 
-// Update the getWallFormData function to include images
-function getWallFormDataWithImages() {
-    console.log('=== DEBUG: Starting form validation with manual hauteur max ===');
+function formatHauteurDisplay(wall) {
+    const major = wall.hauteurMax || '0';
+    const majorUnit = wall.hauteurMaxUnit || '';
+    const minor = wall.hauteurMinor || wall.hauteurMaxMinor || '0';
+    const minorUnit = wall.hauteurMinorUnit || wall.hauteurMaxMinorUnit || '';
     
-    // Get elements first and check if they exist
+    // If both values are 0 or empty, show N/A
+    if ((major === '0' || major === '') && (minor === '0' || minor === '')) {
+        return 'N/A';
+    }
+    
+    // If major is 0 or empty, show only minor
+    if (major === '0' || major === '') {
+        return `${minor} ${minorUnit}`;
+    }
+    
+    // If there's a major value, always show both with dash (even if minor is 0)
+    return `${major} ${majorUnit} - ${minor} ${minorUnit}`;
+}
+
+function getWallFormDataWithImages() {
+    console.log('=== DEBUG: Starting form validation with structured hauteur max ===');
+    
+    // Get elements (keeping existing names + new ones)
     const equipmentEl = document.getElementById('equipment');
     const floorEl = document.getElementById('floor');
     const hauteurMaxEl = document.getElementById('hauteurMax');
     const hauteurMaxUnitEl = document.getElementById('hauteurMaxUnit');
+    const hauteurMaxMinorEl = document.getElementById('hauteurMaxMinor'); // NEW
+    const hauteurMaxMinorUnitEl = document.getElementById('hauteurMaxMinorUnit'); // NEW
     const deflexionMaxEl = document.getElementById('deflexionMax');
     const montantMetalliqueEl = document.getElementById('montantMetallique');
     const lisseSuperieureEl = document.getElementById('lisseSuperieure');
     const lisseInferieureEl = document.getElementById('lisseInferieure');
     const entremiseEl = document.getElementById('entremise');
-    const espacementEl = document.getElementById('espacement'); // ADD THIS LINE
+    const espacementEl = document.getElementById('espacement');
 
     // Get values
     const equipment = equipmentEl ? equipmentEl.value.trim() : '';
     const floor = floorEl ? floorEl.value.trim() : '';
-    const hauteurMaxValue = hauteurMaxEl ? hauteurMaxEl.value.trim() : '';
+    const hauteurMax = hauteurMaxEl ? hauteurMaxEl.value.trim() : '';
     const hauteurMaxUnit = hauteurMaxUnitEl ? hauteurMaxUnitEl.value.trim() : '';
+    const hauteurMaxMinor = hauteurMaxMinorEl ? hauteurMaxMinorEl.value.trim() : ''; // NEW
+    const hauteurMaxMinorUnit = hauteurMaxMinorUnitEl ? hauteurMaxMinorUnitEl.value.trim() : ''; // NEW
     const deflexionMax = deflexionMaxEl ? deflexionMaxEl.value.trim() : '';
     const montantMetallique = montantMetalliqueEl ? montantMetalliqueEl.value.trim() : '';
     const lisseSuperieure = lisseSuperieureEl ? lisseSuperieureEl.value.trim() : '';
     const lisseInferieure = lisseInferieureEl ? lisseInferieureEl.value.trim() : '';
     const entremise = entremiseEl ? entremiseEl.value.trim() : '';
-    const espacement = espacementEl ? espacementEl.value.trim() : ''; // ADD THIS LINE
-
-    // Debug: Check values
-    console.log('Form values:', {
-        equipment, floor, hauteurMaxValue, hauteurMaxUnit, deflexionMax, 
-        montantMetallique, lisseSuperieure, lisseInferieure, entremise, espacement // ADD espacement HERE
-    });
+    const espacement = espacementEl ? espacementEl.value.trim() : '';
 
     // Validation
     if (!equipment) {
@@ -1493,16 +1535,22 @@ function getWallFormDataWithImages() {
         return null;
     }
 
-    if (!hauteurMaxValue) {
-        alert('Please enter a hauteur max value.');
+    if (!hauteurMax && !hauteurMaxMinor) {
+        alert('Please enter at least one height value.');
         return null;
     }
 
-    if (!hauteurMaxUnit) {
-        alert('Please select a unit for hauteur max.');
+    if (hauteurMax && !hauteurMaxUnit) {
+        alert('Please select a unit for the main height value.');
         return null;
     }
 
+    if (hauteurMaxMinor && !hauteurMaxMinorUnit) {
+        alert('Please select a unit for the minor height value.');
+        return null;
+    }
+
+    // Rest of validation remains the same...
     if (!deflexionMax) {
         alert('Please select a déflexion max.');
         return null;
@@ -1528,24 +1576,24 @@ function getWallFormDataWithImages() {
         return null;
     }
 
-    if (!espacement) { // ADD THIS VALIDATION
+    if (!espacement) {
         alert('Please select an espacement.');
         return null;
     }
 
-    console.log('=== DEBUG: All validations passed ===');
-
     const wallData = {
         equipment: equipment,
         floor: floor,
-        hauteurMax: hauteurMaxValue,
-        hauteurMaxUnit: hauteurMaxUnit,
+        hauteurMax: hauteurMax || '0', // Keep existing field
+        hauteurMaxUnit: hauteurMaxUnit, // Keep existing field
+        hauteurMaxMinor: hauteurMaxMinor || '0', // NEW field
+        hauteurMaxMinorUnit: hauteurMaxMinorUnit, // NEW field
         deflexionMax: deflexionMax,
         montantMetallique: montantMetallique,
         lisseSuperieure: lisseSuperieure,
         lisseInferieure: lisseInferieure,
         entremise: entremise,
-        espacement: espacement, // ADD THIS LINE
+        espacement: espacement,
         images: [...(window.currentWallImages || [])],
         dateAdded: new Date().toISOString(),
         addedBy: window.currentUser?.email || 'unknown'
@@ -1640,6 +1688,76 @@ function openImageModal(imageKey, filename) {
     
     // Load the full-size image
     loadWallImage(modal.querySelector('img'), imageKey);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup hauteur max preview
+    setupHauteurMaxPreview();
+});
+
+function setupHauteurMaxPreview() {
+    const majorInput = document.getElementById('hauteurMax');
+    const majorUnitSelect = document.getElementById('hauteurMaxUnit');
+    const minorInput = document.getElementById('hauteurMaxMinor');
+    const minorUnitSelect = document.getElementById('hauteurMaxMinorUnit');
+    const preview = document.getElementById('hauteurPreview');
+    
+    if (!majorInput || !majorUnitSelect || !minorInput || !minorUnitSelect || !preview) {
+        return;
+    }
+    
+    function updatePreview() {
+        const major = majorInput.value || '0';
+        const majorUnit = majorUnitSelect.value || 'ft';
+        const minor = minorInput.value || '0';
+        const minorUnit = minorUnitSelect.value || 'in';
+        
+        if (major === '0' && minor === '0') {
+            preview.textContent = 'Preview: --';
+            preview.style.color = '#666';
+        } else {
+            const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+            preview.textContent = `Preview: ${formatted}`;
+            preview.style.color = '#2c5aa0';
+        }
+    }
+    
+    // AUTO-PAIRING: When major unit changes, auto-update minor unit
+    majorUnitSelect.addEventListener('change', function() {
+        const majorUnit = this.value;
+        
+        // Auto-pair ft with in, pi with po
+        if (majorUnit === 'ft' && minorUnitSelect.value !== 'mm') {
+            minorUnitSelect.value = 'in';
+        } else if (majorUnit === 'pi' && minorUnitSelect.value !== 'mm') {
+            minorUnitSelect.value = 'po';
+        }
+        
+        updatePreview();
+    });
+    
+    // When minor unit changes, don't affect major (especially for mm)
+    minorUnitSelect.addEventListener('change', updatePreview);
+    
+    // Add event listeners for input changes
+    majorInput.addEventListener('input', updatePreview);
+    minorInput.addEventListener('input', updatePreview);
+    
+    // Initial preview
+    updatePreview();
+}
+
+// Helper function for preview formatting
+function formatPreviewDisplay(major, majorUnit, minor, minorUnit) {
+    if ((major === '0' || major === '') && (minor === '0' || minor === '')) {
+        return 'N/A';
+    }
+    
+    if (major === '0' || major === '') {
+        return `${minor} ${minorUnit}`;
+    }
+    
+    return `${major} ${majorUnit} - ${minor} ${minorUnit}`;
 }
 
 // CFSS Report Generation Function
