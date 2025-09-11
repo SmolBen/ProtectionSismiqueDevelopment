@@ -120,6 +120,9 @@ function renderEquipmentList() {
                     <div class="equipment-actions-compact">
                         <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${index})">Details</button>
                         ${canModifyProject() ? `
+                            <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${index})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                                <i class="fas fa-copy"></i> Duplicate
+                            </button>
                             <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${index})">Delete</button>
                         ` : ''}
                     </div>
@@ -231,6 +234,57 @@ function renderEquipmentList() {
     } catch (error) {
         console.error('Error in renderEquipmentList():', error);
     }
+}
+
+function duplicateEquipment(index) {
+    if (!canModifyProject()) {
+        alert('You do not have permission to add walls to this project.');
+        return;
+    }
+
+    const wallToDuplicate = projectEquipment[index];
+    
+    // Clear any existing form data and images
+    clearWallForm();
+    currentWallImages = [];
+    
+    // Populate form with wall data (except images)
+    document.getElementById('equipment').value = wallToDuplicate.equipment;
+    document.getElementById('floor').value = wallToDuplicate.floor || '';
+    document.getElementById('hauteurMax').value = wallToDuplicate.hauteurMax || '';
+    document.getElementById('hauteurMaxUnit').value = wallToDuplicate.hauteurMaxUnit || '';
+    document.getElementById('deflexionMax').value = wallToDuplicate.deflexionMax || '';
+    document.getElementById('montantMetallique').value = wallToDuplicate.montantMetallique || '';
+    document.getElementById('lisseSuperieure').value = wallToDuplicate.lisseSuperieure || '';
+    document.getElementById('lisseInferieure').value = wallToDuplicate.lisseInferieure || '';
+    document.getElementById('entremise').value = wallToDuplicate.entremise || '';
+    
+    // Show the form
+    const equipmentForm = document.getElementById('equipmentForm');
+    const newCalcButton = document.getElementById('newCalculationButton');
+    
+    if (equipmentForm && newCalcButton) {
+        equipmentForm.classList.add('show');
+        newCalcButton.textContent = 'Hide Form';
+        
+        // Scroll to form
+        equipmentForm.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+        
+        // Focus on the floor field so user can modify it
+        setTimeout(() => {
+            const floorField = document.getElementById('floor');
+            if (floorField) {
+                floorField.focus();
+                floorField.select(); // Select the text so user can easily change it
+            }
+        }, 100);
+
+    }
+    
+    console.log(`Duplicated wall: ${wallToDuplicate.equipment}`);
 }
 
 // Function to toggle wall details
@@ -1648,3 +1702,4 @@ window.removeImage = removeImage;
 window.loadWallImage = loadWallImage;
 window.openImageModal = openImageModal;
 window.generateCFSSProjectReport = generateCFSSProjectReport;
+window.duplicateEquipment = duplicateEquipment;
