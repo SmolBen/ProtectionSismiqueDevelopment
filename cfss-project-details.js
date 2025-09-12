@@ -6,6 +6,7 @@ let isAdmin = false;
 let projectData = null;
 let cfssWindData = []; // Store wind data
 
+
 // Function to check authentication
 async function checkAuthentication() {
     try {
@@ -362,15 +363,21 @@ function editEquipment(index) {
         return;
     }
 
-    // Populate current images for editing
     const wall = projectEquipment[index];
-    currentWallImages = [...(wall.images || [])];
+    
+    // Properly set current images for editing with deep copy
+    window.currentWallImages = wall.images ? [...wall.images] : [];
+    currentWallImages = window.currentWallImages;
+    
+    console.log(`Editing wall ${wall.equipment}, loaded ${window.currentWallImages.length} images`);
     
     // Clear and repopulate image previews
     const previewContainer = document.getElementById('imagePreviewContainer');
     if (previewContainer) {
         previewContainer.innerHTML = '';
-        currentWallImages.forEach(image => {
+        
+        // Add existing images to preview
+        window.currentWallImages.forEach(image => {
             addImagePreview(image);
         });
     }
@@ -513,11 +520,20 @@ async function saveEquipmentToProject(options = {}) {
         console.log('Current project ID:', currentProjectId);
         console.log('Walls to save:', projectEquipment);
         
+        // Debug: Log image data for each wall
+        projectEquipment.forEach((wall, index) => {
+            console.log(`Wall ${index} (${wall.equipment}): ${wall.images?.length || 0} images`);
+            if (wall.images) {
+                wall.images.forEach((img, imgIndex) => {
+                    console.log(`  Image ${imgIndex}: key=${img.key}, filename=${img.filename}`);
+                });
+            }
+        });
+        
         const apiUrl = `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/equipment`;
         console.log('API URL:', apiUrl);
         
         const requestBody = { equipment: projectEquipment };
-        console.log('Request body:', JSON.stringify(requestBody, null, 2));
         
         const response = await fetch(apiUrl, {
             method: 'PUT',
@@ -1583,22 +1599,23 @@ function getWallFormDataWithImages() {
     const wallData = {
         equipment: equipment,
         floor: floor,
-        hauteurMax: hauteurMax || '0', // Keep existing field
-        hauteurMaxUnit: hauteurMaxUnit, // Keep existing field
-        hauteurMaxMinor: hauteurMaxMinor || '0', // NEW field
-        hauteurMaxMinorUnit: hauteurMaxMinorUnit, // NEW field
+        hauteurMax: hauteurMax || '0',
+        hauteurMaxUnit: hauteurMaxUnit,
+        hauteurMaxMinor: hauteurMaxMinor || '0',
+        hauteurMaxMinorUnit: hauteurMaxMinorUnit,
         deflexionMax: deflexionMax,
         montantMetallique: montantMetallique,
         lisseSuperieure: lisseSuperieure,
         lisseInferieure: lisseInferieure,
         entremise: entremise,
         espacement: espacement,
-        images: [...(window.currentWallImages || [])],
+        images: [...(window.currentWallImages || [])], // Keep this reference
         dateAdded: new Date().toISOString(),
         addedBy: window.currentUser?.email || 'unknown'
     };
 
-    console.log('Final wall data:', wallData);
+    console.log('Final wall data with images:', wallData);
+    console.log('Current images count:', window.currentWallImages?.length || 0);
     return wallData;
 }
 
@@ -1609,8 +1626,10 @@ function clearWallFormWithImages() {
         form.reset();
     }
     
-    // Clear images
-    currentWallImages = [];
+    // Clear images - use global reference
+    window.currentWallImages = [];
+    currentWallImages = window.currentWallImages;
+    
     const previewContainer = document.getElementById('imagePreviewContainer');
     if (previewContainer) {
         previewContainer.innerHTML = '';
@@ -1625,38 +1644,69 @@ function renderWallImages(wall, index) {
         return '<p style="color: #666; font-style: italic;">No images</p>';
     }
     
+    console.log(`Rendering ${wall.images.length} images for wall ${wall.equipment}`);
+    
     let imagesHTML = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">';
     
     wall.images.forEach((image, imgIndex) => {
+        const imageId = `wall-image-${index}-${imgIndex}`;
         imagesHTML += `
             <div style="position: relative; width: 80px; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" 
-                    alt="${image.filename}" 
-                    style="width: 100%; height: 100%; object-fit: cover;"
-                    onload="loadWallImage(this, '${image.key}')"
-                    onclick="openImageModal('${image.key}', '${image.filename}')">
+                <img id="${imageId}"
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" 
+                    alt="${image.filename || 'Wall image'}" 
+                    style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                    onclick="openImageModal('${image.key}', '${image.filename || 'Wall image'}')"
+                    data-image-key="${image.key}">
             </div>
         `;
     });
     
     imagesHTML += '</div>';
+    
+    // Load images after DOM is updated
+    setTimeout(() => {
+        wall.images.forEach((image, imgIndex) => {
+            const imageId = `wall-image-${index}-${imgIndex}`;
+            const imgElement = document.getElementById(imageId);
+            if (imgElement && image.key) {
+                loadWallImage(imgElement, image.key);
+            }
+        });
+    }, 100);
+    
     return imagesHTML;
 }
 
-// Function to load wall images in the details view
+// Function to load wall images in the details view with better error handling
 async function loadWallImage(imgElement, imageKey) {
+    if (!imgElement || !imageKey) {
+        console.error('Missing image element or key');
+        return;
+    }
+    
     try {
+        console.log(`Loading image with key: ${imageKey}`);
+        
         const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(imageKey)}`, {
             headers: getAuthHeaders()
         });
         
         if (response.ok) {
             const data = await response.json();
-            imgElement.src = data.url;
+            if (data.url) {
+                imgElement.src = data.url;
+                console.log(`Image loaded successfully: ${imageKey}`);
+            } else {
+                throw new Error('No URL in response');
+            }
+        } else {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error loading wall image:', error);
-        imgElement.alt = 'Failed to load';
+        imgElement.alt = 'Failed to load image';
+        imgElement.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect width="80" height="80" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EError%3C/text%3E%3C/svg%3E';
     }
 }
 
