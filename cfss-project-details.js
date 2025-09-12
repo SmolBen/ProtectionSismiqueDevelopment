@@ -238,6 +238,34 @@ function renderEquipmentList() {
                                 </div>
                             </div>
                             
+                            <!-- Image Upload Section for Edit Mode -->
+                            <div style="margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+                                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Wall Images:</label>
+                                
+                                <!-- Image Upload Controls -->
+                                <!-- Image Upload Controls -->
+                            <div class="edit-upload-controls" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                                <button type="button" class="edit-camera-btn" onclick="triggerEditImageUpload(${originalIndex})" 
+                                        style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-camera"></i> Add Images
+                                </button>
+                                
+                                <input type="text" class="edit-drop-zone" id="editDropZone${originalIndex}" 
+                                    placeholder="Drop or paste images here (Ctrl+V)" 
+                                    readonly
+                                    tabindex="0"
+                                    style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white; cursor: text;">
+                                
+                                <input type="file" id="editImageFileInput${originalIndex}" multiple accept="image/*" style="display: none;">
+                            </div>
+                                
+                                <!-- Image Preview Container -->
+                                <div class="edit-image-preview-container" id="editImagePreviewContainer${originalIndex}" 
+                                    style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white;">
+                                    <!-- Images will be populated here -->
+                                </div>
+                            </div>
+                            
                             <div style="display: flex; gap: 10px; margin-top: 15px;">
                                 <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
                                     <i class="fas fa-save"></i> Save Changes
@@ -364,27 +392,13 @@ function editEquipment(index) {
     }
 
     const wall = projectEquipment[index];
+    console.log(`Starting edit mode for wall ${wall.equipment} at index ${index}`);
     
-    // Properly set current images for editing with deep copy
-    window.currentWallImages = wall.images ? [...wall.images] : [];
-    currentWallImages = window.currentWallImages;
-    
-    console.log(`Editing wall ${wall.equipment}, loaded ${window.currentWallImages.length} images`);
-    
-    // Clear and repopulate image previews
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    if (previewContainer) {
-        previewContainer.innerHTML = '';
-        
-        // Add existing images to preview
-        window.currentWallImages.forEach(image => {
-            addImagePreview(image);
-        });
-    }
-
+    // Show edit form and hide view
     document.getElementById(`equipmentView${index}`).style.display = 'none';
     document.getElementById(`equipmentEdit${index}`).style.display = 'block';
     
+    // Ensure details section is expanded
     const detailsDiv = document.getElementById(`equipmentDetails${index}`);
     const detailsButton = detailsDiv.closest('.equipment-card').querySelector('.details-btn');
     
@@ -394,12 +408,28 @@ function editEquipment(index) {
             detailsButton.textContent = 'Hide Details';
         }
     }
+    
+    // Setup image upload handlers for this edit form (with slight delay to ensure DOM is ready)
+    setTimeout(() => {
+        setupEditImageHandlers(index);
+        
+        // Load existing images into edit mode
+        loadExistingImagesInEdit(wall, index);
+        
+        console.log(`Edit mode setup complete for wall ${index}`);
+    }, 100);
 }
 
 // Function to cancel wall edit
 function cancelEquipmentEdit(index) {
+    // Clean up edit mode images
+    clearEditModeImages(index);
+    
+    // Switch back to view mode
     document.getElementById(`equipmentView${index}`).style.display = 'block';
     document.getElementById(`equipmentEdit${index}`).style.display = 'none';
+    
+    console.log(`Cancelled edit mode for wall ${index}`);
 }
 
 // Function to save wall edit
@@ -420,14 +450,14 @@ async function saveEquipmentEdit(index, event) {
             floor: document.getElementById(`editFloor${index}`).value,
             hauteurMax: document.getElementById(`editHauteurMax${index}`).value,
             hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${index}`).value,
-            hauteurMaxMinor: document.getElementById(`editHauteurMaxMinor${index}`).value, // NEW
-            hauteurMaxMinorUnit: document.getElementById(`editHauteurMaxMinorUnit${index}`).value, // NEW
+            hauteurMaxMinor: document.getElementById(`editHauteurMaxMinor${index}`).value,
+            hauteurMaxMinorUnit: document.getElementById(`editHauteurMaxMinorUnit${index}`).value,
             deflexionMax: document.getElementById(`editDeflexionMax${index}`).value,
             montantMetallique: document.getElementById(`editMontantMetallique${index}`).value,
             lisseSuperieure: document.getElementById(`editLisseSuperieure${index}`).value,
             lisseInferieure: document.getElementById(`editLisseInferieure${index}`).value,
             entremise: document.getElementById(`editEntremise${index}`).value,
-            espacement: document.getElementById(`editEspacement${index}`).value, // NEW FIELD
+            espacement: document.getElementById(`editEspacement${index}`).value,
             lastModified: new Date().toISOString(),
             modifiedBy: currentUser?.email || 'unknown'
         };
@@ -443,13 +473,18 @@ async function saveEquipmentEdit(index, event) {
             return;
         }
 
-        if (!updatedWall.hauteurMax) {
-            alert('Please enter a hauteur max value.');
+        if (!updatedWall.hauteurMax && !updatedWall.hauteurMaxMinor) {
+            alert('Please enter at least one height value.');
             return;
         }
 
-        if (!updatedWall.hauteurMaxUnit) {
-            alert('Please select a unit for hauteur max.');
+        if (updatedWall.hauteurMax && !updatedWall.hauteurMaxUnit) {
+            alert('Please select a unit for the main height value.');
+            return;
+        }
+
+        if (updatedWall.hauteurMaxMinor && !updatedWall.hauteurMaxMinorUnit) {
+            alert('Please select a unit for the minor height value.');
             return;
         }
 
@@ -463,11 +498,26 @@ async function saveEquipmentEdit(index, event) {
             return;
         }
 
-        console.log('🔄 Updating wall:', updatedWall);
+        // Handle images - get current edit mode images
+        const editImages = getEditModeImages(index);
+        updatedWall.images = editImages;
+        
+        console.log('Saving wall with images:', {
+            wallName: updatedWall.equipment,
+            imageCount: editImages.length,
+            images: editImages.map(img => ({ key: img.key, filename: img.filename }))
+        });
 
+        // Update the project equipment array
         projectEquipment[index] = updatedWall;
         
+        // Save to database
         await saveEquipmentToProject();
+        
+        // Clean up edit mode
+        clearEditModeImages(index);
+        
+        // Re-render the equipment list to show updated data
         renderEquipmentList();
         
         alert('Wall updated successfully!');
@@ -477,7 +527,6 @@ async function saveEquipmentEdit(index, event) {
         alert('Error saving wall changes: ' + error.message);
     }
 }
-
 
 // Function to delete wall
 async function deleteEquipment(index) {
@@ -1264,7 +1313,7 @@ function setupImageUploadHandlers() {
         return;
     }
     
-    // Camera button click
+    // Camera button click - opens file dialog
     cameraBtn.addEventListener('click', () => {
         fileInput.click();
     });
@@ -1272,13 +1321,23 @@ function setupImageUploadHandlers() {
     // File input change
     fileInput.addEventListener('change', handleFileSelect);
     
-    // Paste functionality - only when drop zone is focused
+    // Drop zone - ONLY handle paste, drag/drop, and focus
+    // Remove the click handler that was triggering file upload
     dropZone.addEventListener('paste', handlePaste);
-    
-    // Drag and drop on drop zone
     dropZone.addEventListener('dragover', handleDragOver);
     dropZone.addEventListener('dragleave', handleDragLeave);
     dropZone.addEventListener('drop', handleDrop);
+    
+    // Add focus behavior for better UX
+    dropZone.addEventListener('focus', () => {
+        dropZone.style.borderColor = '#007bff';
+        dropZone.style.boxShadow = '0 0 0 2px rgba(0, 123, 255, 0.25)';
+    });
+    
+    dropZone.addEventListener('blur', () => {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.boxShadow = 'none';
+    });
 }
 
 // Array to store current wall images
@@ -1297,21 +1356,22 @@ function initializeImageUpload() {
             imageSection = document.createElement('div');
             imageSection.className = 'image-upload-section';
             imageSection.innerHTML = `
-                <div class="upload-controls">
-                    <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
-                        <i class="fas fa-camera"></i>
-                        Browse
-                    </button>
-                    
-                    <input 
-                        class="drop-zone" 
-                        id="dropZone" 
-                        placeholder="Drop or paste images here"
-                        readonly>
-                </div>
+            <div class="upload-controls">
+                <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
+                    <i class="fas fa-camera"></i>
+                    Browse
+                </button>
                 
-                <div class="image-preview-container" id="imagePreviewContainer"></div>
-            `;
+                <input 
+                    class="drop-zone" 
+                    id="dropZone" 
+                    placeholder="Drop or paste images here (Ctrl+V)"
+                    readonly
+                    tabindex="0">
+            </div>
+            
+            <div class="image-preview-container" id="imagePreviewContainer"></div>
+        `;
             
             // Add the image upload section to the equipment-form-section
             // Insert it before the hidden file input
@@ -1899,6 +1959,246 @@ function setupCFSSReportButton() {
     }
 }
 
+// Add these functions to cfss-project-details.js
+
+// Global variable to track edit mode images
+let editModeImages = {};
+
+// Function to trigger image upload for edit mode
+function triggerEditImageUpload(wallIndex) {
+    const fileInput = document.getElementById(`editImageFileInput${wallIndex}`);
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+// Function to setup edit mode image handlers
+function setupEditImageHandlers(wallIndex) {
+    const fileInput = document.getElementById(`editImageFileInput${wallIndex}`);
+    const dropZone = document.getElementById(`editDropZone${wallIndex}`);
+    
+    if (!fileInput || !dropZone) {
+        console.error(`Edit image elements not found for wall ${wallIndex}`);
+        return;
+    }
+    
+    // File input change
+    fileInput.addEventListener('change', (event) => handleEditFileSelect(event, wallIndex));
+    
+    // Drop zone events - NO CLICK HANDLER for file upload
+    dropZone.addEventListener('dragover', (event) => handleEditDragOver(event, wallIndex));
+    dropZone.addEventListener('dragleave', (event) => handleEditDragLeave(event, wallIndex));
+    dropZone.addEventListener('drop', (event) => handleEditDrop(event, wallIndex));
+    dropZone.addEventListener('paste', (event) => handleEditPaste(event, wallIndex));
+    
+    // Focus/blur for better UX
+    dropZone.addEventListener('focus', () => {
+        dropZone.style.borderColor = '#007bff';
+        dropZone.style.boxShadow = '0 0 0 2px rgba(0, 123, 255, 0.25)';
+    });
+    
+    dropZone.addEventListener('blur', () => {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.boxShadow = 'none';
+    });
+    
+    console.log(`Edit mode image handlers setup for wall ${wallIndex}`);
+}
+
+// Handle file selection in edit mode
+function handleEditFileSelect(event, wallIndex) {
+    const files = Array.from(event.target.files);
+    processEditFiles(files, wallIndex);
+}
+
+// Handle paste in edit mode
+function handleEditPaste(event, wallIndex) {
+    const items = event.clipboardData.items;
+    const files = [];
+    
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+        }
+    }
+    
+    if (files.length > 0) {
+        event.preventDefault();
+        processEditFiles(files, wallIndex);
+        event.target.value = ''; // Clear the input
+        event.target.placeholder = 'Images pasted successfully!';
+        setTimeout(() => {
+            event.target.placeholder = 'Drop, paste, or browse images';
+        }, 2000);
+    }
+}
+
+// Handle drag over in edit mode
+function handleEditDragOver(event, wallIndex) {
+    event.preventDefault();
+    const dropZone = document.getElementById(`editDropZone${wallIndex}`);
+    if (dropZone) {
+        dropZone.style.borderColor = '#007bff';
+        dropZone.style.backgroundColor = '#f0f8ff';
+    }
+}
+
+// Handle drag leave in edit mode
+function handleEditDragLeave(event, wallIndex) {
+    const dropZone = document.getElementById(`editDropZone${wallIndex}`);
+    if (dropZone) {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.backgroundColor = 'white';
+    }
+}
+
+// Handle drop in edit mode
+function handleEditDrop(event, wallIndex) {
+    event.preventDefault();
+    const dropZone = document.getElementById(`editDropZone${wallIndex}`);
+    if (dropZone) {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.backgroundColor = 'white';
+    }
+    
+    const files = Array.from(event.dataTransfer.files);
+    processEditFiles(files, wallIndex);
+}
+
+// Process files in edit mode
+async function processEditFiles(files, wallIndex) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+    
+    // Show loading state
+    const dropZone = document.getElementById(`editDropZone${wallIndex}`);
+    if (dropZone) {
+        dropZone.placeholder = `Uploading ${validFiles.length} image(s)...`;
+    }
+    
+    for (const file of validFiles) {
+        try {
+            // Upload to S3 and get URL
+            const imageData = await uploadImageToS3(file);
+            
+            // Add to edit mode images for this wall
+            if (!editModeImages[wallIndex]) {
+                editModeImages[wallIndex] = [];
+            }
+            editModeImages[wallIndex].push(imageData);
+            
+            // Show preview
+            addEditImagePreview(imageData, wallIndex);
+            
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+    
+    // Reset placeholder
+    if (dropZone) {
+        dropZone.placeholder = 'Drop, paste, or browse images';
+    }
+}
+
+// Add image preview in edit mode
+function addEditImagePreview(imageData, wallIndex) {
+    const container = document.getElementById(`editImagePreviewContainer${wallIndex}`);
+    if (!container) return;
+    
+    const preview = document.createElement('div');
+    preview.className = 'edit-image-preview';
+    preview.style.cssText = `
+        position: relative; 
+        width: 80px; 
+        height: 80px; 
+        border-radius: 4px; 
+        overflow: hidden; 
+        border: 1px solid #ddd;
+        background: #f5f5f5;
+    `;
+    
+    preview.innerHTML = `
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" 
+            alt="${imageData.filename}"
+            style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+            onclick="openImageModal('${imageData.key}', '${imageData.filename}')"
+            data-image-key="${imageData.key}">
+        <button class="edit-image-remove" 
+                onclick="removeEditImage('${imageData.key}', ${wallIndex})" 
+                title="Remove image"
+                style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            ×
+        </button>
+    `;
+    
+    container.appendChild(preview);
+    
+    // Load the actual image
+    const imgElement = preview.querySelector('img');
+    loadImagePreview(imgElement, imageData.key);
+}
+
+// Remove image in edit mode
+function removeEditImage(imageKey, wallIndex) {
+    // Remove from edit mode images array
+    if (editModeImages[wallIndex]) {
+        editModeImages[wallIndex] = editModeImages[wallIndex].filter(img => img.key !== imageKey);
+    }
+    
+    // Remove preview element
+    const container = document.getElementById(`editImagePreviewContainer${wallIndex}`);
+    if (container) {
+        const previews = container.querySelectorAll('.edit-image-preview');
+        previews.forEach(preview => {
+            const img = preview.querySelector('img');
+            if (img && img.getAttribute('data-image-key') === imageKey) {
+                preview.remove();
+            }
+        });
+    }
+    
+    console.log(`Removed image ${imageKey} from edit mode`);
+}
+
+// Load existing images in edit mode
+function loadExistingImagesInEdit(wall, wallIndex) {
+    const container = document.getElementById(`editImagePreviewContainer${wallIndex}`);
+    if (!container) return;
+    
+    // Initialize edit mode images for this wall
+    editModeImages[wallIndex] = wall.images ? [...wall.images] : [];
+    
+    // Clear container
+    container.innerHTML = '';
+    
+    // Add existing images
+    if (wall.images && wall.images.length > 0) {
+        wall.images.forEach(image => {
+            addEditImagePreview(image, wallIndex);
+        });
+        console.log(`Loaded ${wall.images.length} existing images for editing`);
+    } 
+}
+
+// Get edit mode images for saving
+function getEditModeImages(wallIndex) {
+    return editModeImages[wallIndex] || [];
+}
+
+// Clear edit mode images
+function clearEditModeImages(wallIndex) {
+    if (editModeImages[wallIndex]) {
+        delete editModeImages[wallIndex];
+    }
+}
+
 // Make functions globally available
 window.logout = logout;
 window.deleteEquipment = deleteEquipment;
@@ -1911,3 +2211,9 @@ window.loadWallImage = loadWallImage;
 window.openImageModal = openImageModal;
 window.generateCFSSProjectReport = generateCFSSProjectReport;
 window.duplicateEquipment = duplicateEquipment;
+window.triggerEditImageUpload = triggerEditImageUpload;
+window.removeEditImage = removeEditImage;
+window.setupEditImageHandlers = setupEditImageHandlers;
+window.loadExistingImagesInEdit = loadExistingImagesInEdit;
+window.getEditModeImages = getEditModeImages;
+window.clearEditModeImages = clearEditModeImages;
