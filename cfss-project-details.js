@@ -156,6 +156,7 @@ function renderEquipmentList() {
                                 <p><strong>Lisse Inférieure:</strong> ${wall.lisseInferieure || 'N/A'}</p>
                                 <p><strong>Entremise:</strong> ${wall.entremise || 'N/A'}</p>
                                 <p><strong>Espacement:</strong> ${wall.espacement || 'N/A'}</p>
+                                ${wall.note ? `<p><strong>Note:</strong> ${wall.note}</p>` : ''}
                                 
                                 <div style="margin-top: 15px;">
                                     <strong>Images:</strong>
@@ -236,6 +237,11 @@ function renderEquipmentList() {
                                         <option value="24&quot;c/c" ${wall.espacement === '24"c/c' ? 'selected' : ''}>24"c/c</option>
                                     </select>
                                 </div>
+                                <div>
+                                <label><strong>Note:</strong></label>
+                                <input type="text" id="editNote${originalIndex}" value="${wall.note || ''}" maxlength="100" placeholder="Optional note (max 100 characters)" style="width: 100%; padding: 5px;">
+                                <div style="font-size: 11px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
+                            </div>
                             </div>
                             
                             <!-- Image Upload Section for Edit Mode -->
@@ -336,6 +342,7 @@ function duplicateEquipment(index) {
     document.getElementById('lisseSuperieure').value = wallToDuplicate.lisseSuperieure || '';
     document.getElementById('lisseInferieure').value = wallToDuplicate.lisseInferieure || '';
     document.getElementById('entremise').value = wallToDuplicate.entremise || '';
+    document.getElementById('note').value = wallToDuplicate.note || '';
     
     // Show the form
     const equipmentForm = document.getElementById('equipmentForm');
@@ -458,6 +465,7 @@ async function saveEquipmentEdit(index, event) {
             lisseInferieure: document.getElementById(`editLisseInferieure${index}`).value,
             entremise: document.getElementById(`editEntremise${index}`).value,
             espacement: document.getElementById(`editEspacement${index}`).value,
+            note: document.getElementById(`editNote${index}`).value,
             lastModified: new Date().toISOString(),
             modifiedBy: currentUser?.email || 'unknown'
         };
@@ -692,6 +700,7 @@ function generateWallDetailsHTML(wallData) {
                 <p><strong>Lisse Supérieure:</strong> ${wallData.lisseSuperieure}</p>
                 <p><strong>Lisse Inférieure:</strong> ${wallData.lisseInferieure}</p>
                 <p><strong>Entremise:</strong> ${wallData.entremise}</p>
+                ${wallData.note ? `<p><strong>Note:</strong> ${wallData.note}</p>` : ''}
             </div>
             
             <div style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 6px; text-align: center;">
@@ -1584,6 +1593,7 @@ function getWallFormDataWithImages() {
     const lisseInferieureEl = document.getElementById('lisseInferieure');
     const entremiseEl = document.getElementById('entremise');
     const espacementEl = document.getElementById('espacement');
+    const noteEl = document.getElementById('note'); 
 
     // Get values
     const equipment = equipmentEl ? equipmentEl.value.trim() : '';
@@ -1598,6 +1608,7 @@ function getWallFormDataWithImages() {
     const lisseInferieure = lisseInferieureEl ? lisseInferieureEl.value.trim() : '';
     const entremise = entremiseEl ? entremiseEl.value.trim() : '';
     const espacement = espacementEl ? espacementEl.value.trim() : '';
+    const note = noteEl ? noteEl.value.trim() : '';
 
     // Validation
     if (!equipment) {
@@ -1669,6 +1680,7 @@ function getWallFormDataWithImages() {
         lisseInferieure: lisseInferieure,
         entremise: entremise,
         espacement: espacement,
+        note: note,
         images: [...(window.currentWallImages || [])], // Keep this reference
         dateAdded: new Date().toISOString(),
         addedBy: window.currentUser?.email || 'unknown'
