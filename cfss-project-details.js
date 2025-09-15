@@ -1353,6 +1353,11 @@ function setupImageUploadHandlers() {
 let currentWallImages = [];
 
 function initializeImageUpload() {
+    // FIX: Initialize global variable
+    if (!window.currentWallImages) {
+        window.currentWallImages = [];
+    }
+    
     // Find the equipment-form-section (the container that holds form-fields)
     const equipmentFormSection = document.querySelector('.equipment-form-section');
     
@@ -1393,6 +1398,7 @@ function initializeImageUpload() {
         }
         
         setupImageUploadHandlers();
+        console.log('Image upload initialized, current count:', window.currentWallImages.length);
     } else {
         console.error('Equipment form section not found');
     }
@@ -1446,13 +1452,18 @@ async function processFiles(files) {
         return;
     }
     
+    // Initialize window.currentWallImages if it doesn't exist
+    if (!window.currentWallImages) {
+        window.currentWallImages = [];
+    }
+    
     for (const file of validFiles) {
         try {
             // Upload to S3 and get URL
             const imageData = await uploadImageToS3(file);
             
-            // Add to current images array
-            currentWallImages.push(imageData);
+            // FIX: Add to WINDOW global array, not local array
+            window.currentWallImages.push(imageData);
             
             // Show preview
             addImagePreview(imageData);
@@ -1543,8 +1554,11 @@ async function loadImagePreview(imgElement, imageKey) {
 }
 
 function removeImage(imageKey) {
-    // Remove from current images array
-    currentWallImages = currentWallImages.filter(img => img.key !== imageKey);
+    // FIX: Remove from window global array
+    if (!window.currentWallImages) {
+        window.currentWallImages = [];
+    }
+    window.currentWallImages = window.currentWallImages.filter(img => img.key !== imageKey);
     
     // Remove preview element
     const container = document.getElementById('imagePreviewContainer');
@@ -1555,6 +1569,8 @@ function removeImage(imageKey) {
             preview.remove();
         }
     });
+    
+    console.log('Image removed, remaining count:', window.currentWallImages.length);
 }
 
 function formatHauteurDisplay(wall) {
@@ -1580,6 +1596,8 @@ function formatHauteurDisplay(wall) {
 function getWallFormDataWithImages() {
     console.log('=== DEBUG: Starting form validation with structured hauteur max ===');
     
+    console.log('DEBUG: window.currentWallImages:', window.currentWallImages);
+    console.log('DEBUG: window.currentWallImages length:', window.currentWallImages?.length || 0);
     // Get elements (keeping existing names + new ones)
     const equipmentEl = document.getElementById('equipment');
     const floorEl = document.getElementById('floor');
@@ -1681,7 +1699,7 @@ function getWallFormDataWithImages() {
         entremise: entremise,
         espacement: espacement,
         note: note,
-        images: [...(window.currentWallImages || [])], // Keep this reference
+        images: [...(window.currentWallImages || [])], // This should now work correctly
         dateAdded: new Date().toISOString(),
         addedBy: window.currentUser?.email || 'unknown'
     };
@@ -1698,16 +1716,15 @@ function clearWallFormWithImages() {
         form.reset();
     }
     
-    // Clear images - use global reference
+    // FIX: Initialize window.currentWallImages properly
     window.currentWallImages = [];
-    currentWallImages = window.currentWallImages;
     
     const previewContainer = document.getElementById('imagePreviewContainer');
     if (previewContainer) {
         previewContainer.innerHTML = '';
     }
     
-    console.log('Wall form and images cleared');
+    console.log('Wall form and images cleared, image count:', window.currentWallImages.length);
 }
 
 // Update the wall rendering to show images
