@@ -251,7 +251,7 @@ function renderEquipmentList() {
                                 <!-- Image Upload Controls -->
                                 <!-- Image Upload Controls -->
                             <div class="edit-upload-controls" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
-                                <button type="button" class="edit-camera-btn" onclick="triggerEditImageUpload(${originalIndex})" 
+                                <button type="button" class="edit-camera-btn" id="editCameraBtn${originalIndex}"
                                         style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                                     <i class="fas fa-camera"></i> Add Images
                                 </button>
@@ -288,22 +288,32 @@ function renderEquipmentList() {
             equipmentListDiv.appendChild(wallCard);
 
             setTimeout(() => {
-                const editMajorUnit = document.getElementById(`editHauteurMaxUnit${originalIndex}`);
-                const editMinorUnit = document.getElementById(`editHauteurMaxMinorUnit${originalIndex}`);
-                
-                if (editMajorUnit && editMinorUnit) {
-                    editMajorUnit.addEventListener('change', function() {
-                        const majorUnit = this.value;
-                        
-                        // Auto-pair ft with in, m with mm
-                        if (majorUnit === 'ft') {
-                            editMinorUnit.value = 'in';
-                        } else if (majorUnit === 'm') {
-                            editMinorUnit.value = 'mm';
-                        }
-                    });
-                }
-            }, 100);
+            // Setup edit mode camera button with proper event prevention
+            const editCameraBtn = document.getElementById(`editCameraBtn${originalIndex}`);
+            if (editCameraBtn) {
+                editCameraBtn.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    triggerEditImageUpload(originalIndex, event);
+                });
+            }
+
+            const editMajorUnit = document.getElementById(`editHauteurMaxUnit${originalIndex}`);
+            const editMinorUnit = document.getElementById(`editHauteurMaxMinorUnit${originalIndex}`);
+            
+            if (editMajorUnit && editMinorUnit) {
+                editMajorUnit.addEventListener('change', function() {
+                    const majorUnit = this.value;
+                    
+                    // Auto-pair ft with in, m with mm
+                    if (majorUnit === 'ft') {
+                        editMinorUnit.value = 'in';
+                    } else if (majorUnit === 'm') {
+                        editMinorUnit.value = 'mm';
+                    }
+                });
+            }
+        }, 100);
 
             // Add click event to entire card for toggling details
             wallCard.addEventListener('click', (e) => {
@@ -1312,6 +1322,7 @@ function populateCFSSForm(windData) {
         setupImageUploadHandlers();
     }
 
+// Fix 4: Update the camera button to prevent form submission
 function setupImageUploadHandlers() {
     const cameraBtn = document.getElementById('cameraBtn');
     const dropZone = document.getElementById('dropZone');
@@ -1322,22 +1333,20 @@ function setupImageUploadHandlers() {
         return;
     }
     
-    // Camera button click - opens file dialog
-    cameraBtn.addEventListener('click', () => {
+    // Camera button click - prevent form submission
+    cameraBtn.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent form submission
+        event.stopPropagation();
         fileInput.click();
     });
     
-    // File input change
+    // Rest of the handlers remain the same
     fileInput.addEventListener('change', handleFileSelect);
-    
-    // Drop zone - ONLY handle paste, drag/drop, and focus
-    // Remove the click handler that was triggering file upload
     dropZone.addEventListener('paste', handlePaste);
     dropZone.addEventListener('dragover', handleDragOver);
     dropZone.addEventListener('dragleave', handleDragLeave);
     dropZone.addEventListener('drop', handleDrop);
     
-    // Add focus behavior for better UX
     dropZone.addEventListener('focus', () => {
         dropZone.style.borderColor = '#007bff';
         dropZone.style.boxShadow = '0 0 0 2px rgba(0, 123, 255, 0.25)';
@@ -1518,6 +1527,7 @@ async function uploadImageToS3(file) {
     }
 }
 
+// Fix 3: Update the main image upload section (non-edit mode) to also prevent form issues
 function addImagePreview(imageData) {
     const container = document.getElementById('imagePreviewContainer');
     
@@ -1525,12 +1535,20 @@ function addImagePreview(imageData) {
     preview.className = 'image-preview';
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button class="image-remove" onclick="removeImage('${imageData.key}')" title="Remove image">
+        <button type="button" class="image-remove" title="Remove image">
             <i class="fas fa-times"></i>
         </button>
     `;
     
     container.appendChild(preview);
+    
+    // Add event listener instead of inline onclick
+    const removeButton = preview.querySelector('.image-remove');
+    removeButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        removeImage(imageData.key);
+    });
     
     // Load the actual image
     loadImagePreview(preview.querySelector('img'), imageData.key);
@@ -1993,8 +2011,13 @@ function setupCFSSReportButton() {
 // Global variable to track edit mode images
 let editModeImages = {};
 
-// Function to trigger image upload for edit mode
-function triggerEditImageUpload(wallIndex) {
+// Fix 5: Update triggerEditImageUpload to prevent form submission
+function triggerEditImageUpload(wallIndex, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
     const fileInput = document.getElementById(`editImageFileInput${wallIndex}`);
     if (fileInput) {
         fileInput.click();
@@ -2159,8 +2182,7 @@ function addEditImagePreview(imageData, wallIndex) {
             style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
             onclick="openImageModal('${imageData.key}', '${imageData.filename}')"
             data-image-key="${imageData.key}">
-        <button class="edit-image-remove" 
-                onclick="removeEditImage('${imageData.key}', ${wallIndex})" 
+        <button type="button" class="edit-image-remove" 
                 title="Remove image"
                 style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
             ×
@@ -2169,13 +2191,25 @@ function addEditImagePreview(imageData, wallIndex) {
     
     container.appendChild(preview);
     
+    // IMPORTANT: Add event listener instead of onclick to properly handle the event
+    const removeButton = preview.querySelector('.edit-image-remove');
+    removeButton.addEventListener('click', function(event) {
+        removeEditImage(imageData.key, wallIndex, event);
+    });
+    
     // Load the actual image
     const imgElement = preview.querySelector('img');
     loadImagePreview(imgElement, imageData.key);
 }
 
 // Remove image in edit mode
-function removeEditImage(imageKey, wallIndex) {
+function removeEditImage(imageKey, wallIndex, event) {
+    // CRITICAL: Prevent form submission and event bubbling
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
     // Remove from edit mode images array
     if (editModeImages[wallIndex]) {
         editModeImages[wallIndex] = editModeImages[wallIndex].filter(img => img.key !== imageKey);
