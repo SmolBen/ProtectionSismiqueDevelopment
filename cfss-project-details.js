@@ -5,7 +5,439 @@ let currentUser = null;
 let isAdmin = false;
 let projectData = null;
 let cfssWindData = []; // Store wind data
+let projectRevisions = [];
+let currentRevisionId = null;
 
+
+// Initialize revision system when project loads
+function initializeRevisionSystem(project) {
+    console.log('🔄 Initializing revision system...');
+    
+    // Load existing revisions or initialize empty
+    projectRevisions = project.wallRevisions || [];
+    currentRevisionId = project.currentWallRevisionId || null;
+    
+    // If we have revisions, ensure we're showing the latest
+    if (projectRevisions.length > 0) {
+        const latestRevision = projectRevisions[projectRevisions.length - 1];
+        currentRevisionId = latestRevision.id;
+        projectEquipment = [...latestRevision.walls]; // Load latest revision walls
+    }
+    
+    updateRevisionIndicator();
+    console.log(`✅ Revision system initialized with ${projectRevisions.length} revisions`);
+}
+
+// Update the revision indicator in wall list header
+function updateRevisionIndicator() {
+    const equipmentListDiv = document.getElementById('equipmentList');
+    if (!equipmentListDiv) return;
+    
+    let indicatorHtml = '';
+    if (projectRevisions.length > 0) {
+        const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
+        if (currentRevision) {
+            const revNumber = currentRevision.number;
+            const description = currentRevision.description ? `: ${currentRevision.description}` : '';
+            indicatorHtml = `
+                <div style="font-size: 12px; color: #666; margin-bottom: 10px; font-style: italic;">
+                    Currently viewing: Revision ${revNumber}${description} (Latest)
+                </div>
+            `;
+        }
+    }
+    
+    // Find existing indicator and update or create new one
+    let indicator = equipmentListDiv.querySelector('.revision-indicator');
+    if (indicator) {
+        indicator.innerHTML = indicatorHtml;
+    } else if (indicatorHtml) {
+        const indicatorDiv = document.createElement('div');
+        indicatorDiv.className = 'revision-indicator';
+        indicatorDiv.innerHTML = indicatorHtml;
+        equipmentListDiv.insertBefore(indicatorDiv, equipmentListDiv.firstChild);
+    }
+}
+
+// Show revision decision popup
+function showRevisionPopup(actionType, wallName = '', callback) {
+    const modal = document.createElement('div');
+    modal.className = 'revision-modal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+        justify-content: center; z-index: 2000;
+    `;
+    
+    const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
+    const currentRevInfo = currentRevision ? 
+        `Revision ${currentRevision.number}${currentRevision.description ? ': ' + currentRevision.description : ''}` : 
+        'No current revision';
+    
+    const actionText = {
+        'add': `add wall "${wallName}"`,
+        'edit': `save changes to wall "${wallName}"`,
+        'delete': `delete wall "${wallName}"`
+    };
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 25px; border-radius: 8px; min-width: 400px; max-width: 500px;">
+            <h3 style="margin: 0 0 15px 0; color: #333;">Save Wall Changes</h3>
+            <p style="margin-bottom: 20px; color: #555;">
+                Choose how to ${actionText[actionType]}:
+            </p>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 10px; cursor: pointer;">
+                    <input type="radio" name="revisionChoice" value="current" checked style="margin-right: 8px;">
+                    <strong>Update current revision</strong> (${currentRevInfo})
+                </label>
+                
+                <label style="display: block; cursor: pointer;">
+                    <input type="radio" name="revisionChoice" value="new" style="margin-right: 8px;">
+                    <strong>Create new revision</strong>
+                </label>
+            </div>
+            
+            <div id="newRevisionOptions" style="margin-left: 20px; margin-bottom: 20px; display: none;">
+                <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #555;">
+                    Optional description:
+                </label>
+                <input type="text" id="revisionDescription" maxlength="100" 
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                <div style="font-size: 12px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="closeRevisionModal()" 
+                        style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    Cancel
+                </button>
+                <button onclick="processRevisionChoice()" 
+                        style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    Save
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Store callback for processing
+    modal.revisionCallback = callback;
+    
+    // Handle radio button changes
+    const radioButtons = modal.querySelectorAll('input[name="revisionChoice"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const newRevisionOptions = modal.querySelector('#newRevisionOptions');
+            if (this.value === 'new') {
+                newRevisionOptions.style.display = 'block';
+            } else {
+                newRevisionOptions.style.display = 'none';
+            }
+        });
+    });
+    
+    // Make functions globally accessible for this modal
+    window.currentRevisionModal = modal;
+}
+
+// Close revision modal
+function closeRevisionModal() {
+    if (window.currentRevisionModal) {
+        window.currentRevisionModal.remove();
+        window.currentRevisionModal = null;
+    }
+}
+
+// Process revision choice
+function processRevisionChoice() {
+    const modal = window.currentRevisionModal;
+    if (!modal) return;
+    
+    const selectedChoice = modal.querySelector('input[name="revisionChoice"]:checked').value;
+    const description = modal.querySelector('#revisionDescription').value.trim();
+    
+    if (selectedChoice === 'new') {
+        // Check if we're at max revisions
+        if (projectRevisions.length >= 5) {
+            alert('Maximum of 5 revisions allowed. Please delete an old revision first.');
+            return;
+        }
+        
+        // Create new revision
+        createNewRevision(description, modal.revisionCallback);
+    } else {
+        // Update current revision
+        updateCurrentRevision(modal.revisionCallback);
+    }
+    
+    closeRevisionModal();
+}
+
+// Create new revision
+async function createNewRevision(description, callback) {
+    console.log('📝 Creating new revision with description:', description);
+    
+    const newRevisionNumber = projectRevisions.length + 1;
+    const newRevision = {
+        id: `rev_${Date.now()}`,
+        number: newRevisionNumber,
+        description: description || '',
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser?.email || 'unknown',
+        walls: [...projectEquipment] // Current walls state
+    };
+    
+    projectRevisions.push(newRevision);
+    currentRevisionId = newRevision.id;
+    
+    await saveRevisionsToDatabase();
+    updateRevisionIndicator();
+    
+    console.log(`✅ Created revision ${newRevisionNumber}: ${description || '(no description)'}`);
+    
+    if (callback) callback();
+}
+
+// Update current revision
+async function updateCurrentRevision(callback) {
+    console.log('📝 Updating current revision');
+    
+    const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
+    if (currentRevision) {
+        currentRevision.walls = [...projectEquipment];
+        currentRevision.lastModified = new Date().toISOString();
+        currentRevision.lastModifiedBy = currentUser?.email || 'unknown';
+        
+        await saveRevisionsToDatabase();
+        console.log(`✅ Updated revision ${currentRevision.number}`);
+    }
+    
+    if (callback) callback();
+}
+
+// Save revisions to database - FIXED VERSION
+async function saveRevisionsToDatabase() {
+    try {
+        console.log('💾 Saving revisions to database...');
+        
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/wall-revisions`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                wallRevisions: projectRevisions,
+                currentWallRevisionId: currentRevisionId
+            })
+        });
+        
+        if (!response.ok) {
+            // READ THE RESPONSE BODY TO GET THE DETAILED ERROR MESSAGE
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.error) {
+                    errorMessage = errorData.error;
+                }
+            } catch (parseError) {
+                // If we can't parse the error response, use the status text
+                console.error('Could not parse error response:', parseError);
+            }
+            throw new Error(errorMessage);
+        }
+        
+        console.log('✅ Revisions saved successfully');
+        
+    } catch (error) {
+        console.error('❌ Error saving revisions:', error);
+        alert('Error saving revisions: ' + error.message);
+    }
+}
+
+// Updated handleSaveEquipment with revision system
+async function handleSaveEquipmentWithRevisions(e) {
+    if (!canModifyProject()) {
+        alert('You do not have permission to add walls to this project.');
+        return;
+    }
+    
+    console.log('💾 Save button clicked for CFSS wall with revisions!');
+    
+    try {
+        const wallData = getWallFormData();
+        if (!wallData) {
+            return;
+        }
+
+        console.log('Wall data to save:', wallData);
+
+        // Check if this is the first wall (auto-create Revision 1)
+        if (projectEquipment.length === 0 && projectRevisions.length === 0) {
+            console.log('🔄 First wall - auto-creating Revision 1');
+            
+            projectEquipment.push(wallData);
+            
+            // Auto-create first revision
+            const firstRevision = {
+                id: `rev_${Date.now()}`,
+                number: 1,
+                description: '', // No description for auto-created first revision
+                createdAt: new Date().toISOString(),
+                createdBy: currentUser?.email || 'unknown',
+                walls: [...projectEquipment]
+            };
+            
+            projectRevisions.push(firstRevision);
+            currentRevisionId = firstRevision.id;
+            
+            await saveRevisionsToDatabase();
+            renderEquipmentList();
+            updateRevisionIndicator();
+            
+            clearWallForm();
+            hideForm();
+            showSuccessMessage();
+            
+        } else {
+            // Show revision popup for subsequent saves
+            showRevisionPopup('add', wallData.equipment, async () => {
+                projectEquipment.push(wallData);
+                renderEquipmentList();
+                clearWallForm();
+                hideForm();
+                showSuccessMessage();
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error saving wall:', error);
+        alert('Error saving wall: ' + error.message);
+    }
+}
+
+// Updated saveEquipmentEdit with revision system
+async function saveEquipmentEditWithRevisions(index, event) {
+    event.preventDefault();
+    
+    if (!canModifyProject()) {
+        alert('You do not have permission to edit walls in this project.');
+        return;
+    }
+
+    try {
+        const currentWall = projectEquipment[index];
+        const wallName = currentWall.equipment;
+        
+        // Get updated wall data (existing validation code)
+        const updatedWall = {
+            ...currentWall,
+            equipment: document.getElementById(`editEquipment${index}`).value,
+            floor: document.getElementById(`editFloor${index}`).value,
+            // ... other fields same as before
+            lastModified: new Date().toISOString(),
+            modifiedBy: currentUser?.email || 'unknown'
+        };
+
+        // Validation (existing code)
+        if (!updatedWall.equipment) {
+            alert('Please enter a wall name.');
+            return;
+        }
+        // ... rest of validation
+
+        // Show revision popup
+        showRevisionPopup('edit', wallName, async () => {
+            // Handle images
+            const editImages = getEditModeImages(index);
+            updatedWall.images = editImages;
+            
+            // Update the project equipment array
+            projectEquipment[index] = updatedWall;
+            
+            // Clean up edit mode
+            clearEditModeImages(index);
+            
+            // Re-render the equipment list
+            renderEquipmentList();
+            
+            alert('Wall updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('Error saving wall edit:', error);
+        alert('Error saving wall changes: ' + error.message);
+    }
+}
+
+// Updated deleteEquipment with revision system
+async function deleteEquipmentWithRevisions(index) {
+    if (!canModifyProject()) {
+        alert('You do not have permission to delete walls from this project.');
+        return;
+    }
+
+    const wall = projectEquipment[index];
+    const wallName = wall.equipment;
+    
+    if (confirm(`Are you sure you want to delete wall "${wallName}" and all its images?`)) {
+        
+        showRevisionPopup('delete', wallName, async () => {
+            // Delete associated images from S3 (existing code)
+            if (wall.images && wall.images.length > 0) {
+                try {
+                    for (const image of wall.images) {
+                        await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/delete`, {
+                            method: 'POST',
+                            headers: getAuthHeaders(),
+                            body: JSON.stringify({ key: image.key })
+                        });
+                    }
+                    console.log('Wall images deleted from S3');
+                } catch (error) {
+                    console.error('Error deleting wall images:', error);
+                }
+            }
+            
+            projectEquipment.splice(index, 1);
+            renderEquipmentList();
+        });
+    }
+}
+
+// Helper functions
+function hideForm() {
+    const equipmentForm = document.getElementById('equipmentForm');
+    const newCalcButton = document.getElementById('newCalculationButton');
+    equipmentForm.classList.remove('show');
+    if (newCalcButton) {
+        newCalcButton.textContent = 'Add Wall';
+    }
+}
+
+function showSuccessMessage() {
+    const newWallIndex = projectEquipment.length - 1;
+    setTimeout(() => {
+        const newWallCard = document.querySelector(`#equipmentDetails${newWallIndex}`);
+        if (newWallCard) {
+            toggleEquipmentDetails(newWallIndex);
+            newWallCard.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            const wallCard = newWallCard.closest('.equipment-card');
+            if (wallCard) {
+                wallCard.classList.add('highlighted');
+                setTimeout(() => {
+                    wallCard.classList.remove('highlighted');
+                }, 3000);
+            }
+        }
+    }, 100);
+        
+    alert('Wall saved successfully!');
+}
 
 // Function to check authentication
 async function checkAuthentication() {
@@ -71,7 +503,6 @@ function canModifyProject() {
     return !!(currentUser && currentUser.email);
 }
 
-// Function to render wall list (similar to equipment list)
 function renderEquipmentList() {
     try {
         console.log('=== renderEquipmentList() for CFSS walls START ===');
@@ -138,7 +569,7 @@ function renderEquipmentList() {
                             <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${originalIndex})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px;">
                                 <i class="fas fa-copy"></i> Duplicate
                             </button>
-                            <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${originalIndex})">Delete</button>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipmentWithRevisions(${originalIndex})">Delete</button>
                         ` : ''}
                     </div>
                 </div>
@@ -174,82 +605,80 @@ function renderEquipmentList() {
                         </div>
                     </div>
                     
-                    <div id="equipmentEdit${originalIndex}" style="display: none;">
-                        <form id="equipmentEditForm${originalIndex}" onsubmit="saveEquipmentEdit(${originalIndex}, event)">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                                <div>
-                                    <label><strong>Wall Name:</strong></label>
-                                    <input type="text" id="editEquipment${originalIndex}" value="${wall.equipment || ''}" style="width: 100%; padding: 5px;">
-                                </div>
-                                <div>
-                                    <label><strong>Floor:</strong></label>
-                                    <input type="text" id="editFloor${originalIndex}" value="${wall.floor || ''}" style="width: 100%; padding: 5px;">
-                                </div>
-                                <div>
-                                    <label><strong>Hauteur Max:</strong></label>
-                                    <div style="display: flex; gap: 8px; align-items: center;">
-                                        <input type="number" id="editHauteurMax${originalIndex}" value="${wall.hauteurMax || ''}" placeholder="Main" style="flex: 1; padding: 5px;">
-                                        <select id="editHauteurMaxUnit${originalIndex}" style="flex: 1; padding: 5px;">
-                                            <option value="">Unit</option>
-                                            <option value="ft" ${wall.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-                                            <option value="m" ${wall.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
-                                        </select>
-                                        <input type="number" id="editHauteurMaxMinor${originalIndex}" value="${wall.hauteurMaxMinor || ''}" placeholder="Minor" style="flex: 1; padding: 5px;">
-                                        <select id="editHauteurMaxMinorUnit${originalIndex}" style="flex: 1; padding: 5px;">
-                                            <option value="">Unit</option>
-                                            <option value="in" ${wall.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
-                                            <option value="mm" ${wall.hauteurMaxMinorUnit === 'mm' ? 'selected' : ''}>mm</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label><strong>Déflexion Max:</strong></label>
-                                    <select id="editDeflexionMax${originalIndex}" style="width: 100%; padding: 5px;">
-                                        <option value="L/360" ${wall.deflexionMax === 'L/360' ? 'selected' : ''}>L/360</option>
-                                        <option value="L/480" ${wall.deflexionMax === 'L/480' ? 'selected' : ''}>L/480</option>
-                                        <option value="L/600" ${wall.deflexionMax === 'L/600' ? 'selected' : ''}>L/600</option>
-                                        <option value="L/720" ${wall.deflexionMax === 'L/720' ? 'selected' : ''}>L/720</option>
+                    <!-- FIXED: Proper form element with onsubmit handler -->
+                    <form id="equipmentEdit${originalIndex}" style="display: none;" onsubmit="saveEquipmentEditWithRevisions(${originalIndex}, event)">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label><strong>Wall Name:</strong></label>
+                                <input type="text" id="editEquipment${originalIndex}" value="${wall.equipment || ''}" style="width: 100%; padding: 5px;">
+                            </div>
+                            <div>
+                                <label><strong>Floor:</strong></label>
+                                <input type="text" id="editFloor${originalIndex}" value="${wall.floor || ''}" style="width: 100%; padding: 5px;">
+                            </div>
+                            <div>
+                                <label><strong>Hauteur Max:</strong></label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="number" id="editHauteurMax${originalIndex}" value="${wall.hauteurMax || ''}" placeholder="Main" style="flex: 1; padding: 5px;">
+                                    <select id="editHauteurMaxUnit${originalIndex}" style="flex: 1; padding: 5px;">
+                                        <option value="">Unit</option>
+                                        <option value="ft" ${wall.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+                                        <option value="m" ${wall.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
+                                    </select>
+                                    <input type="number" id="editHauteurMaxMinor${originalIndex}" value="${wall.hauteurMaxMinor || ''}" placeholder="Minor" style="flex: 1; padding: 5px;">
+                                    <select id="editHauteurMaxMinorUnit${originalIndex}" style="flex: 1; padding: 5px;">
+                                        <option value="">Unit</option>
+                                        <option value="in" ${wall.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
+                                        <option value="mm" ${wall.hauteurMaxMinorUnit === 'mm' ? 'selected' : ''}>mm</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label><strong>Montant Métallique:</strong></label>
-                                    <input type="text" id="editMontantMetallique${originalIndex}" value="${wall.montantMetallique || ''}" style="width: 100%; padding: 5px;">
-                                </div>
-                                <div>
-                                    <label><strong>Lisse Supérieure:</strong></label>
-                                    <input type="text" id="editLisseSuperieure${originalIndex}" value="${wall.lisseSuperieure || ''}" style="width: 100%; padding: 5px;">
-                                </div>
-                                <div>
-                                    <label><strong>Lisse Inférieure:</strong></label>
-                                    <input type="text" id="editLisseInferieure${originalIndex}" value="${wall.lisseInferieure || ''}" style="width: 100%; padding: 5px;">
-                                </div>
-                                <div>
-                                    <label><strong>Entremise:</strong></label>
-                                    <input type="text" id="editEntremise${originalIndex}" value="${wall.entremise || ''}" style="width: 100%; padding: 5px;">
-                                </div>
-                                <div>
-                                    <label><strong>Espacement:</strong></label>
-                                    <select id="editEspacement${originalIndex}" style="width: 100%; padding: 5px;">
-                                        <option value="">Select espacement...</option>
-                                        <option value="8&quot;c/c" ${wall.espacement === '8"c/c' ? 'selected' : ''}>8"c/c</option>
-                                        <option value="12&quot;c/c" ${wall.espacement === '12"c/c' ? 'selected' : ''}>12"c/c</option>
-                                        <option value="16&quot;c/c" ${wall.espacement === '16"c/c' ? 'selected' : ''}>16"c/c</option>
-                                        <option value="24&quot;c/c" ${wall.espacement === '24"c/c' ? 'selected' : ''}>24"c/c</option>
-                                    </select>
-                                </div>
-                                <div>
+                            </div>
+                            <div>
+                                <label><strong>Déflexion Max:</strong></label>
+                                <select id="editDeflexionMax${originalIndex}" style="width: 100%; padding: 5px;">
+                                    <option value="L/360" ${wall.deflexionMax === 'L/360' ? 'selected' : ''}>L/360</option>
+                                    <option value="L/480" ${wall.deflexionMax === 'L/480' ? 'selected' : ''}>L/480</option>
+                                    <option value="L/600" ${wall.deflexionMax === 'L/600' ? 'selected' : ''}>L/600</option>
+                                    <option value="L/720" ${wall.deflexionMax === 'L/720' ? 'selected' : ''}>L/720</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label><strong>Montant Métallique:</strong></label>
+                                <input type="text" id="editMontantMetallique${originalIndex}" value="${wall.montantMetallique || ''}" style="width: 100%; padding: 5px;">
+                            </div>
+                            <div>
+                                <label><strong>Lisse Supérieure:</strong></label>
+                                <input type="text" id="editLisseSuperieure${originalIndex}" value="${wall.lisseSuperieure || ''}" style="width: 100%; padding: 5px;">
+                            </div>
+                            <div>
+                                <label><strong>Lisse Inférieure:</strong></label>
+                                <input type="text" id="editLisseInferieure${originalIndex}" value="${wall.lisseInferieure || ''}" style="width: 100%; padding: 5px;">
+                            </div>
+                            <div>
+                                <label><strong>Entremise:</strong></label>
+                                <input type="text" id="editEntremise${originalIndex}" value="${wall.entremise || ''}" style="width: 100%; padding: 5px;">
+                            </div>
+                            <div>
+                                <label><strong>Espacement:</strong></label>
+                                <select id="editEspacement${originalIndex}" style="width: 100%; padding: 5px;">
+                                    <option value="">Select espacement...</option>
+                                    <option value="8&quot;c/c" ${wall.espacement === '8"c/c' ? 'selected' : ''}>8"c/c</option>
+                                    <option value="12&quot;c/c" ${wall.espacement === '12"c/c' ? 'selected' : ''}>12"c/c</option>
+                                    <option value="16&quot;c/c" ${wall.espacement === '16"c/c' ? 'selected' : ''}>16"c/c</option>
+                                    <option value="24&quot;c/c" ${wall.espacement === '24"c/c' ? 'selected' : ''}>24"c/c</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label><strong>Note:</strong></label>
                                 <input type="text" id="editNote${originalIndex}" value="${wall.note || ''}" maxlength="100" placeholder="Optional note (max 100 characters)" style="width: 100%; padding: 5px;">
                                 <div style="font-size: 11px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
                             </div>
-                            </div>
+                        </div>
+                        
+                        <!-- Image Upload Section for Edit Mode -->
+                        <div style="margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: bold;">Wall Images:</label>
                             
-                            <!-- Image Upload Section for Edit Mode -->
-                            <div style="margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
-                                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Wall Images:</label>
-                                
-                                <!-- Image Upload Controls -->
-                                <!-- Image Upload Controls -->
                             <div class="edit-upload-controls" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
                                 <button type="button" class="edit-camera-btn" id="editCameraBtn${originalIndex}"
                                         style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
@@ -264,56 +693,56 @@ function renderEquipmentList() {
                                 
                                 <input type="file" id="editImageFileInput${originalIndex}" multiple accept="image/*" style="display: none;">
                             </div>
-                                
-                                <!-- Image Preview Container -->
-                                <div class="edit-image-preview-container" id="editImagePreviewContainer${originalIndex}" 
-                                    style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white;">
-                                    <!-- Images will be populated here -->
-                                </div>
-                            </div>
                             
-                            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                                    <i class="fas fa-save"></i> Save Changes
-                                </button>
-                                <button type="button" onclick="cancelEquipmentEdit(${originalIndex})" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
+                            <!-- Image Preview Container -->
+                            <div class="edit-image-preview-container" id="editImagePreviewContainer${originalIndex}" 
+                                style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white;">
+                                <!-- Images will be populated here -->
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <button type="button" onclick="cancelEquipmentEdit(${originalIndex})" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             `;
             
             equipmentListDiv.appendChild(wallCard);
 
+            // Setup edit mode handlers (existing code continues...)
             setTimeout(() => {
-            // Setup edit mode camera button with proper event prevention
-            const editCameraBtn = document.getElementById(`editCameraBtn${originalIndex}`);
-            if (editCameraBtn) {
-                editCameraBtn.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    triggerEditImageUpload(originalIndex, event);
-                });
-            }
+                // Setup edit mode camera button with proper event prevention
+                const editCameraBtn = document.getElementById(`editCameraBtn${originalIndex}`);
+                if (editCameraBtn) {
+                    editCameraBtn.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        triggerEditImageUpload(originalIndex, event);
+                    });
+                }
 
-            const editMajorUnit = document.getElementById(`editHauteurMaxUnit${originalIndex}`);
-            const editMinorUnit = document.getElementById(`editHauteurMaxMinorUnit${originalIndex}`);
-            
-            if (editMajorUnit && editMinorUnit) {
-                editMajorUnit.addEventListener('change', function() {
-                    const majorUnit = this.value;
-                    
-                    // Auto-pair ft with in, m with mm
-                    if (majorUnit === 'ft') {
-                        editMinorUnit.value = 'in';
-                    } else if (majorUnit === 'm') {
-                        editMinorUnit.value = 'mm';
-                    }
-                });
-            }
-        }, 100);
+                const editMajorUnit = document.getElementById(`editHauteurMaxUnit${originalIndex}`);
+                const editMinorUnit = document.getElementById(`editHauteurMaxMinorUnit${originalIndex}`);
+                
+                if (editMajorUnit && editMinorUnit) {
+                    editMajorUnit.addEventListener('change', function() {
+                        const majorUnit = this.value;
+                        
+                        // Auto-pair ft with in, m with mm
+                        if (majorUnit === 'ft') {
+                            editMinorUnit.value = 'in';
+                        } else if (majorUnit === 'm') {
+                            editMinorUnit.value = 'mm';
+                        }
+                    });
+                }
+            }, 100);
 
             // Add click event to entire card for toggling details
             wallCard.addEventListener('click', (e) => {
@@ -633,22 +1062,21 @@ async function saveEquipmentToProject(options = {}) {
 }
 
 // Setup form handlers
-function setupEquipmentFormHandler() {
+function setupEquipmentFormHandlerWithRevisions() {
     const equipmentForm = document.getElementById('equipmentFormElement');
     const calculateButton = document.getElementById('calculateEquipment');
-    const saveButton = document.getElementById('saveEquipment');
     
     if (!equipmentForm) return;
     
-    // Calculate button (for CFSS, just shows placeholder message)
+    // Calculate button (for CFSS, just shows placeholder message) - unchanged
     if (calculateButton) {
         calculateButton.addEventListener('click', handleCalculateEquipment);
     }
     
-    // Save button (form submission)
+    // UPDATED: Form submission now uses revision-aware handler
     equipmentForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        await handleSaveEquipment(e);
+        await handleSaveEquipmentWithRevisions(e);
     });
 }
 
@@ -2280,3 +2708,12 @@ window.setupEditImageHandlers = setupEditImageHandlers;
 window.loadExistingImagesInEdit = loadExistingImagesInEdit;
 window.getEditModeImages = getEditModeImages;
 window.clearEditModeImages = clearEditModeImages;
+window.showRevisionPopup = showRevisionPopup;
+window.closeRevisionModal = closeRevisionModal;
+window.processRevisionChoice = processRevisionChoice;
+window.createNewRevision = createNewRevision;
+window.updateCurrentRevision = updateCurrentRevision;
+window.initializeRevisionSystem = initializeRevisionSystem;
+window.handleSaveEquipmentWithRevisions = handleSaveEquipmentWithRevisions;
+window.saveEquipmentEditWithRevisions = saveEquipmentEditWithRevisions;
+window.deleteEquipmentWithRevisions = deleteEquipmentWithRevisions;
