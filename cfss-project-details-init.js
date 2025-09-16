@@ -1,6 +1,5 @@
 // ============================================================================
-// CFSS PROJECT DETAILS INITIALIZATION UPDATES FOR REVISION SYSTEM
-// Replace the existing cfss-project-details-init.js content with this updated version:
+// CFSS PROJECT DETAILS INITIALIZATION - CORRECTED VERSION
 // ============================================================================
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -70,12 +69,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ].filter(Boolean).join(', ');
                 document.getElementById("projectAddress").textContent = projectAddress;
 
-                // INITIALIZE REVISION SYSTEM FIRST
-                console.log('🔄 Initializing CFSS revision system...');
-                initializeRevisionSystem(project);
+                // INITIALIZE WALL DATA - UNIFIED APPROACH
+                console.log('🔄 Initializing CFSS wall data...');
+                await initializeWallData(project, projectId);
 
-                // Load CFSS data
-                console.log('🔍 Checking for CFSS data in project:', project.cfssWindData);
+                // Load CFSS wind data
+                console.log('🔍 Loading CFSS wind data...');
                 if (project.cfssWindData && project.cfssWindData.length > 0) {
                     console.log('✅ CFSS data found, loading display...');
                     cfssWindData = project.cfssWindData;
@@ -96,6 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 }
 
+                // Display admin info if admin
                 if (isAdmin && project.createdBy) {
                     const ownerInfo = document.getElementById('projectOwnerInfo');
                     ownerInfo.innerHTML = `
@@ -111,43 +111,17 @@ document.addEventListener("DOMContentLoaded", async () => {
                     `;
                 }
 
-                // Load equipment data ONLY if no revisions exist (legacy projects)
-                if (!project.wallRevisions || project.wallRevisions.length === 0) {
-                    console.log('🔋 No wall revisions found, loading legacy equipment data...');
-                    
-                    if (project.equipment && project.equipment.length > 0) {
-                        projectEquipment = project.equipment;
-                    } else {
-                        try {
-                            const equipmentResponse = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${projectId}/equipment`, {
-                                headers: getAuthHeaders()
-                            });
-                            if (equipmentResponse.ok) {
-                                const equipmentData = await equipmentResponse.json();
-                                projectEquipment = equipmentData || [];
-                            }
-                        } catch (error) {
-                            console.log('No existing walls found or error fetching walls:', error);
-                            projectEquipment = [];
-                        }
-                    }
-                } else {
-                    console.log('✅ Wall revisions exist, equipment loaded from revision system');
-                }
-
-                // Setup form handlers and render equipment list with revision support
+                // Setup form handlers and render
                 setupNewCalculationButton();
-                setupEquipmentFormHandlerWithRevisions(); // Use revision-aware handler
-                
-                // FIXED: Use the revision-aware report setup function
-                setupCFSSReportButtonWithRevisions(); // This ensures revisions are included in report
+                setupEquipmentFormHandlerWithRevisions();
+                setupCFSSReportButtonWithRevisions();
                 
                 renderEquipmentList();
                 initializeImageUpload();
 
                 const newCalcButton = document.getElementById('newCalculationButton');
                 newCalcButton.style.display = 'block';
-                console.log('✅ Add Wall button shown');
+                console.log('✅ CFSS initialization completed successfully');
 
             } else {
                 console.error("CFSS Project not found.");
@@ -167,6 +141,64 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+async function initializeWallData(project, projectId) {
+    console.log('📋 Starting wall data initialization...');
+    
+    // Check if project has revision system
+    if (project.wallRevisions && project.wallRevisions.length > 0) {
+        console.log('✅ Project has revision system - initializing revisions');
+        initializeRevisionSystem(project);
+        
+        if (projectEquipment && projectEquipment.length > 0) {
+            console.log(`✅ Loaded ${projectEquipment.length} walls from revision system`);
+            return;
+        } else {
+            console.warn('⚠️ Revision system initialized but no walls loaded');
+        }
+    } else {
+        console.log('📋 No revision system found - checking for legacy data to migrate');
+        
+        // Try to migrate legacy data if it exists
+        if (project.equipment && project.equipment.length > 0) {
+            console.log('📋 Found legacy walls, creating initial revision...');
+            
+            // Create first revision from legacy data
+            const firstRevision = {
+                id: `rev_${Date.now()}`,
+                number: 1,
+                description: 'Migrated from legacy data',
+                createdAt: new Date().toISOString(),
+                createdBy: 'system-migration',
+                walls: [...project.equipment]
+            };
+            
+            projectRevisions = [firstRevision];
+            currentRevisionId = firstRevision.id;
+            projectEquipment = [...project.equipment];
+            
+            // Save the migration to database
+            try {
+                await saveRevisionsToDatabase();
+                console.log('✅ Legacy data migrated to revision system');
+            } catch (error) {
+                console.error('❌ Failed to migrate legacy data:', error);
+                // Continue with local data even if save failed
+            }
+            
+            return;
+        }
+    }
+    
+    // Initialize empty state
+    console.log('📋 No wall data found - initializing empty state');
+    projectEquipment = [];
+    projectRevisions = [];
+    currentRevisionId = null;
+    
+    console.log('✅ Wall data initialization completed');
+}
+
+// FIXED: Report generation uses ONLY revision system
 async function generateCFSSProjectReportWithRevisions() {
     if (!currentProjectId) {
         alert('Error: No project selected');
@@ -179,50 +211,28 @@ async function generateCFSSProjectReportWithRevisions() {
         generateButton.disabled = true;
         generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating CFSS PDF... (up to 30 seconds)';
         
-        // FIXED: Get current revision data for the report
-        let cfssProjectData;
+        // ALWAYS use current projectEquipment array for report
+        // This ensures the report reflects the current UI state
+        const cfssProjectData = {
+            ...projectData,
+            walls: [...projectEquipment], // Current walls from UI
+            wallRevisions: [...projectRevisions], // Current revisions
+            currentWallRevisionId: currentRevisionId,
+            cfssWindData: cfssWindData
+        };
         
-        if (projectRevisions && projectRevisions.length > 0) {
-            // Use current revision data
-            const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
-            
-            console.log('🔍 Current revision info:', {
-                currentRevisionId,
-                totalRevisions: projectRevisions.length,
-                currentRevision: currentRevision ? `Revision ${currentRevision.number}` : 'None found'
-            });
-            
-            cfssProjectData = {
-                ...projectData,
-                // FIXED: Use walls from current revision, not old projectEquipment
-                walls: currentRevision ? currentRevision.walls : projectEquipment,
-                wallRevisions: projectRevisions, // Include ALL revision history for PDF
-                currentWallRevisionId: currentRevisionId,
-                cfssWindData: cfssWindData
-            };
-            
-            console.log('📊 Using revision data for report:', {
-                name: cfssProjectData.name,
-                currentRevision: currentRevision?.number || 'None',
-                wallsCount: cfssProjectData.walls?.length || 0,
-                totalRevisions: projectRevisions.length,
-                windDataCount: cfssProjectData.cfssWindData?.length || 0
-            });
-        } else {
-            // Legacy project without revisions
-            cfssProjectData = {
-                ...projectData,
-                walls: projectEquipment,
-                wallRevisions: [], // No revisions
-                currentWallRevisionId: null,
-                cfssWindData: cfssWindData
-            };
-            
-            console.log('📊 Using legacy data for report (no revisions):', {
-                name: cfssProjectData.name,
-                wallsCount: cfssProjectData.walls?.length || 0,
-                windDataCount: cfssProjectData.cfssWindData?.length || 0
-            });
+        console.log('📊 Report data being sent:', {
+            name: cfssProjectData.name,
+            wallsCount: cfssProjectData.walls?.length || 0,
+            revisionsCount: cfssProjectData.wallRevisions?.length || 0,
+            currentRevisionId: cfssProjectData.currentWallRevisionId,
+            windDataCount: cfssProjectData.cfssWindData?.length || 0
+        });
+        
+        // Validate we have walls to report on
+        if (!cfssProjectData.walls || cfssProjectData.walls.length === 0) {
+            alert('No walls found to include in the report. Please add walls first.');
+            return;
         }
         
         const controller = new AbortController();
@@ -235,7 +245,7 @@ async function generateCFSSProjectReportWithRevisions() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                projectData: cfssProjectData // Send the correct revision data
+                projectData: cfssProjectData
             }),
             signal: controller.signal
         });
@@ -263,8 +273,6 @@ async function generateCFSSProjectReportWithRevisions() {
         console.log('✅ Opening CFSS download URL:', result.downloadUrl);
         window.location.href = result.downloadUrl;
         
-        console.log('✅ CFSS PDF download completed successfully');
-        
     } catch (error) {
         console.error('❌ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
@@ -278,14 +286,14 @@ async function generateCFSSProjectReportWithRevisions() {
     }
 }
 
-// Setup function for CFSS Report button with revision support
+// Setup function for CFSS Report button
 function setupCFSSReportButtonWithRevisions() {
     const generateButton = document.getElementById('generateCFSSReportButton');
     if (generateButton) {
-        // Remove any existing listeners first
+        // Remove any existing listeners
         generateButton.removeEventListener('click', generateCFSSProjectReport);
         
-        // Add the revision-aware listener
+        // Add revision-aware listener
         generateButton.addEventListener('click', generateCFSSProjectReportWithRevisions);
         console.log('✅ CFSS Report button setup completed with revision support');
     } else {
@@ -294,6 +302,6 @@ function setupCFSSReportButtonWithRevisions() {
 }
 
 // Make functions globally available
+window.initializeWallData = initializeWallData;
 window.setupCFSSReportButtonWithRevisions = setupCFSSReportButtonWithRevisions;
 window.generateCFSSProjectReportWithRevisions = generateCFSSProjectReportWithRevisions;
-window.setupEquipmentFormHandlerWithRevisions = setupEquipmentFormHandlerWithRevisions;

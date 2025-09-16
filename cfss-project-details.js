@@ -218,44 +218,235 @@ async function updateCurrentRevision(callback) {
     if (callback) callback();
 }
 
-// Save revisions to database - FIXED VERSION
 async function saveRevisionsToDatabase() {
     try {
-        console.log('💾 Saving revisions to database...');
+        console.log('💾 Saving revisions to database...', {
+            totalRevisions: projectRevisions.length,
+            currentRevisionId: currentRevisionId,
+            projectId: currentProjectId,
+            wallCount: projectEquipment.length
+        });
+        
+        // Validate data before sending
+        if (!currentProjectId) {
+            throw new Error('No project ID available');
+        }
+        
+        if (!projectRevisions || projectRevisions.length === 0) {
+            throw new Error('No revisions to save');
+        }
+        
+        // Ensure current revision exists and has the latest walls
+        const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
+        if (currentRevision) {
+            currentRevision.walls = [...projectEquipment]; // Sync with current state
+            currentRevision.lastModified = new Date().toISOString();
+            currentRevision.lastModifiedBy = currentUser?.email || 'unknown';
+        }
+        
+        const requestBody = {
+            wallRevisions: projectRevisions,
+            currentWallRevisionId: currentRevisionId
+        };
+        
+        console.log('📤 Sending revision data:', {
+            revisionsCount: projectRevisions.length,
+            currentRevisionId: currentRevisionId,
+            wallsInCurrentRevision: currentRevision?.walls?.length || 0
+        });
         
         const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/wall-revisions`, {
             method: 'PUT',
             headers: getAuthHeaders(),
-            body: JSON.stringify({
-                wallRevisions: projectRevisions,
-                currentWallRevisionId: currentRevisionId
-            })
+            body: JSON.stringify(requestBody)
+        });
+        
+        console.log('📥 Server response:', {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
         });
         
         if (!response.ok) {
-            // READ THE RESPONSE BODY TO GET THE DETAILED ERROR MESSAGE
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
             try {
                 const errorData = await response.json();
                 if (errorData.error) {
                     errorMessage = errorData.error;
                 }
+                console.error('❌ Server error details:', errorData);
             } catch (parseError) {
-                // If we can't parse the error response, use the status text
-                console.error('Could not parse error response:', parseError);
+                try {
+                    const errorText = await response.text();
+                    console.error('❌ Server error text:', errorText);
+                    if (errorText) {
+                        errorMessage += ` - ${errorText}`;
+                    }
+                } catch (textError) {
+                    console.error('❌ Could not parse error response:', parseError);
+                }
             }
             throw new Error(errorMessage);
         }
         
-        console.log('✅ Revisions saved successfully');
+        // Try to parse success response
+        let responseData;
+        try {
+            responseData = await response.json();
+            console.log('✅ Save response data:', responseData);
+        } catch (parseError) {
+            console.warn('⚠️ Could not parse success response as JSON, but save appears successful');
+        }
+        
+        console.log('✅ Revisions saved successfully to database');
+        return true;
         
     } catch (error) {
         console.error('❌ Error saving revisions:', error);
-        alert('Error saving revisions: ' + error.message);
+        
+        // Show user-friendly error message
+        let userMessage = 'Error saving wall revisions: ';
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+            userMessage += 'Network connection issue. Please check your internet and try again.';
+        } else if (error.message.includes('403') || error.message.includes('Access denied')) {
+            userMessage += 'You do not have permission to save walls for this project.';
+        } else if (error.message.includes('404')) {
+            userMessage += 'Project not found. The project may have been deleted.';
+        } else {
+            userMessage += error.message;
+        }
+        
+        alert(userMessage);
+        return false;
     }
 }
 
-// Updated handleSaveEquipment with revision system
+function debugWallState() {
+    console.log('=== WALL STATE DEBUG ===');
+    console.log('projectEquipment:', projectEquipment?.length || 0, 'walls');
+    console.log('projectRevisions:', projectRevisions?.length || 0, 'revisions');
+    console.log('currentRevisionId:', currentRevisionId);
+    
+    if (projectRevisions && projectRevisions.length > 0) {
+        const currentRev = projectRevisions.find(r => r.id === currentRevisionId);
+        console.log('Current revision walls:', currentRev?.walls?.length || 0);
+        console.log('Revision numbers:', projectRevisions.map(r => r.number));
+    }
+    
+    console.log('cfssWindData:', cfssWindData?.length || 0, 'entries');
+    console.log('========================');
+}
+
+// Debug function to check current state
+function debugCurrentState() {
+    console.log('=== CFSS DEBUG STATE ===');
+    console.log('Current Project ID:', currentProjectId);
+    console.log('Project Data:', projectData);
+    console.log('Project Equipment (walls):', projectEquipment);
+    console.log('Project Revisions:', projectRevisions);
+    console.log('Current Revision ID:', currentRevisionId);
+    console.log('CFSS Wind Data:', cfssWindData);
+    
+    if (projectRevisions && projectRevisions.length > 0) {
+        console.log('--- REVISION DETAILS ---');
+        projectRevisions.forEach((rev, index) => {
+            console.log(`Revision ${index + 1}:`, {
+                id: rev.id,
+                number: rev.number,
+                description: rev.description || '(no description)',
+                wallCount: rev.walls?.length || 0,
+                createdAt: rev.createdAt,
+                createdBy: rev.createdBy,
+                isCurrentRevision: rev.id === currentRevisionId
+            });
+            
+            if (rev.walls && rev.walls.length > 0) {
+                console.log(`  Walls in revision ${rev.number}:`, rev.walls.map(wall => ({
+                    name: wall.equipment,
+                    floor: wall.floor,
+                    images: wall.images?.length || 0
+                })));
+            }
+        });
+    }
+    console.log('=== END DEBUG ===');
+}
+
+// Function to manually reload project data
+async function reloadProjectData() {
+    try {
+        console.log('🔄 Manually reloading project data...');
+        
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects?id=${currentProjectId}`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const projectResponse = await response.json();
+        
+        if (projectResponse.length > 0) {
+            const project = projectResponse[0];
+            window.projectData = project;
+            projectData = project;
+            
+            console.log('📊 Reloaded project data:', {
+                name: project.name,
+                hasRevisions: !!(project.wallRevisions && project.wallRevisions.length > 0),
+                revisionCount: project.wallRevisions?.length || 0,
+                currentRevisionId: project.currentWallRevisionId,
+                hasEquipment: !!(project.equipment && project.equipment.length > 0),
+                equipmentCount: project.equipment?.length || 0,
+                hasCFSSData: !!(project.cfssWindData && project.cfssWindData.length > 0)
+            });
+            
+            // Re-initialize revision system
+            initializeRevisionSystem(project);
+            
+            // Re-render everything
+            renderEquipmentList();
+            updateRevisionIndicator();
+            
+            // Load CFSS data
+            if (project.cfssWindData && project.cfssWindData.length > 0) {
+                cfssWindData = project.cfssWindData;
+                updateCFSSDataDisplay(project.cfssWindData);
+            }
+            
+            console.log('✅ Project data reloaded successfully');
+            alert('Project data reloaded successfully');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error reloading project data:', error);
+        alert('Error reloading project data: ' + error.message);
+    }
+}
+
+// Function to force save current state
+async function forceSaveCurrentState() {
+    try {
+        console.log('💾 Force saving current state...');
+        
+        // Save both revisions and equipment
+        const revisionSaveResult = await saveRevisionsToDatabase();
+        const equipmentSaveResult = await saveEquipmentToProject({ silent: true });
+        
+        if (revisionSaveResult && equipmentSaveResult !== false) {
+            console.log('✅ Force save completed successfully');
+            alert('Current state saved successfully');
+        } else {
+            throw new Error('One or more save operations failed');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error force saving:', error);
+        alert('Error saving current state: ' + error.message);
+    }
+}
+
 async function handleSaveEquipmentWithRevisions(e) {
     if (!canModifyProject()) {
         alert('You do not have permission to add walls to this project.');
@@ -272,11 +463,13 @@ async function handleSaveEquipmentWithRevisions(e) {
 
         console.log('Wall data to save:', wallData);
 
+        // Add wall to projectEquipment FIRST (before saving)
+        projectEquipment.push(wallData);
+        console.log('Wall added to projectEquipment, current count:', projectEquipment.length);
+
         // Check if this is the first wall (auto-create Revision 1)
-        if (projectEquipment.length === 0 && projectRevisions.length === 0) {
-            console.log('🔄 First wall - auto-creating Revision 1');
-            
-            projectEquipment.push(wallData);
+        if (projectRevisions.length === 0) {
+            console.log('📄 First wall - auto-creating Revision 1');
             
             // Auto-create first revision
             const firstRevision = {
@@ -285,16 +478,35 @@ async function handleSaveEquipmentWithRevisions(e) {
                 description: '', // No description for auto-created first revision
                 createdAt: new Date().toISOString(),
                 createdBy: currentUser?.email || 'unknown',
-                walls: [...projectEquipment]
+                walls: [...projectEquipment] // Copy current projectEquipment
             };
             
             projectRevisions.push(firstRevision);
             currentRevisionId = firstRevision.id;
             
-            await saveRevisionsToDatabase();
+            console.log('🔄 Saving first revision to database...', {
+                revisionId: firstRevision.id,
+                wallCount: firstRevision.walls.length,
+                wallName: wallData.equipment
+            });
+            
+            // SINGLE SAVE OPERATION - revisions only
+            const saveResult = await saveRevisionsToDatabase();
+            
+            if (saveResult === false) {
+                // Save failed, revert changes
+                projectEquipment.pop();
+                projectRevisions.pop();
+                currentRevisionId = null;
+                alert('Failed to save wall. Please try again.');
+                return;
+            }
+            
+            console.log('✅ First revision saved successfully');
+            
+            // Success path
             renderEquipmentList();
             updateRevisionIndicator();
-            
             clearWallForm();
             hideForm();
             showSuccessMessage();
@@ -302,7 +514,19 @@ async function handleSaveEquipmentWithRevisions(e) {
         } else {
             // Show revision popup for subsequent saves
             showRevisionPopup('add', wallData.equipment, async () => {
-                projectEquipment.push(wallData);
+                console.log('🔄 Saving wall to existing revision system...');
+                
+                // SINGLE SAVE OPERATION - revisions only
+                const saveResult = await saveRevisionsToDatabase();
+                if (saveResult === false) {
+                    // Save failed, revert changes
+                    projectEquipment.pop();
+                    alert('Failed to save wall. Please try again.');
+                    return;
+                }
+                
+                console.log('✅ Wall saved to revision successfully');
+                
                 renderEquipmentList();
                 clearWallForm();
                 hideForm();
@@ -312,6 +536,12 @@ async function handleSaveEquipmentWithRevisions(e) {
         
     } catch (error) {
         console.error('Error saving wall:', error);
+        
+        // Revert projectEquipment if error occurred
+        if (projectEquipment.length > 0 && projectEquipment[projectEquipment.length - 1] === wallData) {
+            projectEquipment.pop();
+        }
+        
         alert('Error saving wall: ' + error.message);
     }
 }
@@ -2717,3 +2947,7 @@ window.initializeRevisionSystem = initializeRevisionSystem;
 window.handleSaveEquipmentWithRevisions = handleSaveEquipmentWithRevisions;
 window.saveEquipmentEditWithRevisions = saveEquipmentEditWithRevisions;
 window.deleteEquipmentWithRevisions = deleteEquipmentWithRevisions;
+window.debugCurrentState = debugCurrentState;
+window.reloadProjectData = reloadProjectData;
+window.forceSaveCurrentState = forceSaveCurrentState;
+window.debugWallState = debugWallState;
