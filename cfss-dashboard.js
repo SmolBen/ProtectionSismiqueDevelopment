@@ -461,35 +461,38 @@ async function handleCFSSProjectSearch() {
     }
 }
 
-// Delete CFSS project function
+// Simplified delete CFSS project function
 async function deleteCFSSProject(id) {
     if (!confirm('Are you sure you want to delete this CFSS project?')) {
         return;
     }
 
     try {
-        const authHeaders = authHelper.getAuthHeaders();
         const response = await fetch(apiUrl, {
             method: 'DELETE',
             headers: {
-                ...authHeaders,
+                ...authHelper.getAuthHeaders(),
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ id })
         });
 
-        if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to delete project: ${errorText || response.statusText}`);
+        }
 
-        // Refresh project list
+        // Refresh the dashboard
         await Promise.all([
             fetchCFSSProjects(),
             loadCFSSDashboardStats()
         ]);
         
         alert('CFSS Project deleted successfully!');
+        
     } catch (error) {
         console.error('Error deleting CFSS project:', error);
-        alert('Error deleting CFSS project. Please try again.');
+        alert('Error deleting CFSS project: ' + error.message);
     }
 }
 
