@@ -355,11 +355,26 @@ function showRevisionSelectionModal() {
                 Generate CFSS Report
             </h3>
             
+            <p style="margin-bottom: 20px; color: #555; line-height: 1.5;">
+                Select which revision to generate the report for. The report will include all revision history up to and including the selected revision.
+            </p>
+            
             <div style="margin-bottom: 25px; max-height: 300px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 15px;">
                 <div style="font-weight: 500; margin-bottom: 15px; color: #495057; border-bottom: 1px solid #e9ecef; padding-bottom: 8px;">
                     Available Revisions (${sortedRevisions.length})
                 </div>
                 ${revisionsHTML}
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 3px solid #17a2b8;">
+                <div style="font-size: 13px; color: #495057;">
+                    <strong>Report will include:</strong>
+                    <ul style="margin: 8px 0 0 20px; padding: 0;">
+                        <li>Walls from the selected revision</li>
+                        <li>Complete revision history up to selected revision</li>
+                        <li>CFSS wind data and project specifications</li>
+                    </ul>
+                </div>
             </div>
             
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -481,6 +496,7 @@ async function generateCFSSReportForRevision(selectedRevision) {
             walls: [...selectedRevision.walls], // Walls from selected revision
             wallRevisions: [...revisionsUpToSelected], // All revisions up to selected
             currentWallRevisionId: selectedRevision.id, // Set selected as "current" for report
+            selectedRevisionNumber: selectedRevision.number, // Add revision number for filename
             cfssWindData: cfssWindData
         };
         
