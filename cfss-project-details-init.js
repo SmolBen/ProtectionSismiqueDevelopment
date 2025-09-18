@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // Setup form handlers and render
                 setupNewCalculationButton();
                 setupEquipmentFormHandlerWithRevisions();
-                setupCFSSReportButtonWithRevisions();
+                setupCFSSReportButtonWithRevisionModal();
                 
                 renderEquipmentList();
                 initializeImageUpload();
@@ -287,15 +287,20 @@ async function generateCFSSProjectReportWithRevisions() {
 }
 
 // Setup function for CFSS Report button
-function setupCFSSReportButtonWithRevisions() {
+function setupCFSSReportButtonWithRevisionModal() {
     const generateButton = document.getElementById('generateCFSSReportButton');
     if (generateButton) {
         // Remove any existing listeners
+        generateButton.removeEventListener('click', generateCFSSProjectReportWithRevisions);
         generateButton.removeEventListener('click', generateCFSSProjectReport);
         
-        // Add revision-aware listener
-        generateButton.addEventListener('click', generateCFSSProjectReportWithRevisions);
-        console.log('✅ CFSS Report button setup completed with revision support');
+        // Add modal-based listener
+        generateButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRevisionSelectionModal();
+        });
+        
+        console.log('✅ CFSS Report button setup completed with revision selection modal');
     } else {
         console.warn('⚠️ CFSS Report button not found');
     }
@@ -303,5 +308,5 @@ function setupCFSSReportButtonWithRevisions() {
 
 // Make functions globally available
 window.initializeWallData = initializeWallData;
-window.setupCFSSReportButtonWithRevisions = setupCFSSReportButtonWithRevisions;
+window.setupCFSSReportButtonWithRevisionModal = setupCFSSReportButtonWithRevisionModal;
 window.generateCFSSProjectReportWithRevisions = generateCFSSProjectReportWithRevisions;

@@ -59,8 +59,7 @@ function updateRevisionIndicator() {
     }
 }
 
-// Show revision decision popup
-function showRevisionPopup(actionType, wallName = '', callback) {
+function showRevisionPopup(actionType, wallName = '', callback, isFirstRevision = false) {
     const modal = document.createElement('div');
     modal.className = 'revision-modal';
     modal.style.cssText = `
@@ -69,75 +68,129 @@ function showRevisionPopup(actionType, wallName = '', callback) {
         justify-content: center; z-index: 2000;
     `;
     
-    const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
-    const currentRevInfo = currentRevision ? 
-        `Revision ${currentRevision.number}${currentRevision.description ? ': ' + currentRevision.description : ''}` : 
-        'No current revision';
-    
     const actionText = {
         'add': `add wall "${wallName}"`,
         'edit': `save changes to wall "${wallName}"`,
         'delete': `delete wall "${wallName}"`
     };
     
-    modal.innerHTML = `
-        <div style="background: white; padding: 25px; border-radius: 8px; min-width: 400px; max-width: 500px;">
-            <h3 style="margin: 0 0 15px 0; color: #333;">Save Wall Changes</h3>
-            <p style="margin-bottom: 20px; color: #555;">
-                Choose how to ${actionText[actionType]}:
-            </p>
-            
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 10px; cursor: pointer;">
-                    <input type="radio" name="revisionChoice" value="current" checked style="margin-right: 8px;">
-                    <strong>Update current revision</strong> (${currentRevInfo})
-                </label>
-                
-                <label style="display: block; cursor: pointer;">
-                    <input type="radio" name="revisionChoice" value="new" style="margin-right: 8px;">
-                    <strong>Create new revision</strong>
-                </label>
-            </div>
-            
-            <div id="newRevisionOptions" style="margin-left: 20px; margin-bottom: 20px; display: none;">
-                <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #555;">
-                    Optional description:
-                </label>
-                <input type="text" id="revisionDescription" maxlength="100" 
-                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                <div style="font-size: 12px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
-            </div>
-            
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button onclick="closeRevisionModal()" 
-                        style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    Cancel
-                </button>
-                <button onclick="processRevisionChoice()" 
-                        style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    Save
-                </button>
-            </div>
-        </div>
-    `;
+    let modalContent;
     
+    if (isFirstRevision) {
+        // First revision modal - simpler, only asks for description
+        modalContent = `
+            <div style="background: white; padding: 25px; border-radius: 8px; min-width: 400px; max-width: 500px;">
+                <h3 style="margin: 0 0 15px 0; color: #333;">Create First Revision</h3>
+                <p style="margin-bottom: 20px; color: #555;">
+                    You're about to ${actionText[actionType]} and create the first revision for this project.
+                </p>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #555; font-weight: 500;">
+                        Revision description (optional):
+                    </label>
+                    <input type="text" id="revisionDescription" maxlength="100" 
+                           placeholder="e.g., Initial wall layout, Preliminary design..."
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    <div style="font-size: 12px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-bottom: 20px; border-left: 3px solid #28a745;">
+                    <div style="font-size: 13px; color: #495057;">
+                        <strong>This will create:</strong> Revision 1
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button onclick="closeRevisionModal()" 
+                            style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button onclick="processRevisionChoice()" 
+                            style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                        Create Revision 1
+                    </button>
+                </div>
+            </div>
+        `;
+    } else {
+        // Existing modal content for subsequent revisions
+        const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
+        const currentRevInfo = currentRevision ? 
+            `Revision ${currentRevision.number}${currentRevision.description ? ': ' + currentRevision.description : ''}` : 
+            'No current revision';
+            
+        modalContent = `
+            <div style="background: white; padding: 25px; border-radius: 8px; min-width: 400px; max-width: 500px;">
+                <h3 style="margin: 0 0 15px 0; color: #333;">Save Wall Changes</h3>
+                <p style="margin-bottom: 20px; color: #555;">
+                    Choose how to ${actionText[actionType]}:
+                </p>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 10px; cursor: pointer;">
+                        <input type="radio" name="revisionChoice" value="current" checked style="margin-right: 8px;">
+                        <strong>Update current revision</strong> (${currentRevInfo})
+                    </label>
+                    
+                    <label style="display: block; cursor: pointer;">
+                        <input type="radio" name="revisionChoice" value="new" style="margin-right: 8px;">
+                        <strong>Create new revision</strong>
+                    </label>
+                </div>
+                
+                <div id="newRevisionOptions" style="margin-left: 20px; margin-bottom: 20px; display: none;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #555;">
+                        Optional description:
+                    </label>
+                    <input type="text" id="revisionDescription" maxlength="100" 
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    <div style="font-size: 12px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button onclick="closeRevisionModal()" 
+                            style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button onclick="processRevisionChoice()" 
+                            style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                        Save
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    modal.innerHTML = modalContent;
     document.body.appendChild(modal);
     
-    // Store callback for processing
+    // Store callback and first revision flag for processing
     modal.revisionCallback = callback;
+    modal.isFirstRevision = isFirstRevision;
     
-    // Handle radio button changes
-    const radioButtons = modal.querySelectorAll('input[name="revisionChoice"]');
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            const newRevisionOptions = modal.querySelector('#newRevisionOptions');
-            if (this.value === 'new') {
-                newRevisionOptions.style.display = 'block';
-            } else {
-                newRevisionOptions.style.display = 'none';
-            }
+    // Handle radio button changes (only for non-first revision)
+    if (!isFirstRevision) {
+        const radioButtons = modal.querySelectorAll('input[name="revisionChoice"]');
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const newRevisionOptions = modal.querySelector('#newRevisionOptions');
+                if (this.value === 'new') {
+                    newRevisionOptions.style.display = 'block';
+                } else {
+                    newRevisionOptions.style.display = 'none';
+                }
+            });
         });
-    });
+    }
+    
+    // Focus on description input for better UX
+    setTimeout(() => {
+        const descInput = modal.querySelector('#revisionDescription');
+        if (descInput) {
+            descInput.focus();
+        }
+    }, 100);
     
     // Make functions globally accessible for this modal
     window.currentRevisionModal = modal;
@@ -156,24 +209,344 @@ function processRevisionChoice() {
     const modal = window.currentRevisionModal;
     if (!modal) return;
     
-    const selectedChoice = modal.querySelector('input[name="revisionChoice"]:checked').value;
+    const isFirstRevision = modal.isFirstRevision;
     const description = modal.querySelector('#revisionDescription').value.trim();
     
-    if (selectedChoice === 'new') {
-        // Check if we're at max revisions
-        if (projectRevisions.length >= 5) {
-            alert('Maximum of 5 revisions allowed. Please delete an old revision first.');
-            return;
-        }
-        
-        // Create new revision
-        createNewRevision(description, modal.revisionCallback);
+    if (isFirstRevision) {
+        // Create the first revision
+        createFirstRevision(description, modal.revisionCallback);
     } else {
-        // Update current revision
-        updateCurrentRevision(modal.revisionCallback);
+        // Existing logic for subsequent revisions
+        const selectedChoice = modal.querySelector('input[name="revisionChoice"]:checked').value;
+        
+        if (selectedChoice === 'new') {
+            // Check if we're at max revisions
+            if (projectRevisions.length >= 5) {
+                alert('Maximum of 5 revisions allowed. Please delete an old revision first.');
+                return;
+            }
+            
+            // Create new revision
+            createNewRevision(description, modal.revisionCallback);
+        } else {
+            // Update current revision
+            updateCurrentRevision(modal.revisionCallback);
+        }
     }
     
     closeRevisionModal();
+}
+
+// New function specifically for creating the first revision
+async function createFirstRevision(description, callback) {
+    console.log('📄 Creating first revision with description:', description);
+    
+    try {
+        const firstRevision = {
+            id: `rev_${Date.now()}`,
+            number: 1,
+            description: description || '',
+            createdAt: new Date().toISOString(),
+            createdBy: currentUser?.email || 'unknown',
+            walls: [...projectEquipment] // Current walls state
+        };
+        
+        projectRevisions.push(firstRevision);
+        currentRevisionId = firstRevision.id;
+        
+        console.log('📄 Saving first revision to database...', {
+            revisionId: firstRevision.id,
+            wallCount: firstRevision.walls.length,
+            description: description || '(no description)'
+        });
+        
+        const saveResult = await saveRevisionsToDatabase();
+        
+        if (saveResult === false) {
+            // Save failed, revert changes
+            projectEquipment.pop();
+            projectRevisions.pop();
+            currentRevisionId = null;
+            alert('Failed to save wall. Please try again.');
+            return;
+        }
+        
+        console.log('✅ First revision created successfully');
+        
+        // Success path
+        renderEquipmentList();
+        updateRevisionIndicator();
+        clearWallForm();
+        hideForm();
+        showSuccessMessage();
+        
+        if (callback) callback();
+        
+    } catch (error) {
+        console.error('Error creating first revision:', error);
+        
+        // Revert changes on error
+        if (projectEquipment.length > 0) {
+            projectEquipment.pop();
+        }
+        if (projectRevisions.length > 0) {
+            projectRevisions.pop();
+        }
+        currentRevisionId = null;
+        
+        alert('Error creating first revision: ' + error.message);
+    }
+}
+
+// Function to show revision selection modal
+function showRevisionSelectionModal() {
+    // Check if we have any revisions
+    if (!projectRevisions || projectRevisions.length === 0) {
+        alert('No revisions found. Please add walls to create revisions first.');
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'revision-selection-modal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+        justify-content: center; z-index: 2000;
+    `;
+
+    // Sort revisions by number
+    const sortedRevisions = [...projectRevisions].sort((a, b) => a.number - b.number);
+    
+    let revisionsHTML = '';
+    sortedRevisions.forEach((revision, index) => {
+        const isLatest = revision.id === currentRevisionId;
+        const wallCount = revision.walls?.length || 0;
+        const createdDate = new Date(revision.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        const description = revision.description || '(no description)';
+        const latestBadge = isLatest ? '<span style="background: #28a745; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-left: 8px;">CURRENT</span>' : '';
+        
+        revisionsHTML += `
+            <label style="display: block; margin-bottom: 12px; cursor: pointer; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: ${isLatest ? '#f8fff8' : '#fff'}; transition: all 0.2s;">
+                <input type="radio" name="selectedRevision" value="${revision.id}" ${isLatest ? 'checked' : ''} style="margin-right: 12px;">
+                <div style="display: inline-block; vertical-align: top; width: calc(100% - 30px);">
+                    <div style="font-weight: 500; color: #333; margin-bottom: 4px;">
+                        Revision ${revision.number}${latestBadge}
+                    </div>
+                    <div style="font-size: 13px; color: #666; margin-bottom: 4px;">
+                        ${description}
+                    </div>
+                    <div style="font-size: 12px; color: #888;">
+                        ${createdDate} • ${wallCount} wall${wallCount !== 1 ? 's' : ''} • by ${revision.createdBy}
+                    </div>
+                </div>
+            </label>
+        `;
+    });
+
+    modal.innerHTML = `
+        <div style="background: white; padding: 25px; border-radius: 8px; min-width: 500px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <h3 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center;">
+                <i class="fas fa-file-pdf" style="margin-right: 10px; color: #dc3545;"></i>
+                Generate CFSS Report
+            </h3>
+            
+            <div style="margin-bottom: 25px; max-height: 300px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 15px;">
+                <div style="font-weight: 500; margin-bottom: 15px; color: #495057; border-bottom: 1px solid #e9ecef; padding-bottom: 8px;">
+                    Available Revisions (${sortedRevisions.length})
+                </div>
+                ${revisionsHTML}
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 12px; color: #6c757d;">
+                    <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
+                    PDF generation may take up to 30 seconds
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="closeRevisionSelectionModal()" 
+                            style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button onclick="generateSelectedRevisionReport()" 
+                            style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-file-pdf"></i>
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add hover effects for revision options
+    const labels = modal.querySelectorAll('label');
+    labels.forEach(label => {
+        label.addEventListener('mouseenter', () => {
+            if (!label.querySelector('input').checked) {
+                label.style.backgroundColor = '#f8f9fa';
+                label.style.borderColor = '#007bff';
+            }
+        });
+        
+        label.addEventListener('mouseleave', () => {
+            if (!label.querySelector('input').checked) {
+                label.style.backgroundColor = '#fff';
+                label.style.borderColor = '#ddd';
+            }
+        });
+        
+        // Update styling when selection changes
+        const radio = label.querySelector('input');
+        radio.addEventListener('change', () => {
+            labels.forEach(l => {
+                const isSelected = l.querySelector('input').checked;
+                l.style.backgroundColor = isSelected ? '#f8fff8' : '#fff';
+                l.style.borderColor = isSelected ? '#28a745' : '#ddd';
+            });
+        });
+    });
+
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeRevisionSelectionModal();
+        }
+    });
+
+    // Store modal reference
+    window.currentRevisionSelectionModal = modal;
+}
+
+// Function to close revision selection modal
+function closeRevisionSelectionModal() {
+    if (window.currentRevisionSelectionModal) {
+        window.currentRevisionSelectionModal.remove();
+        window.currentRevisionSelectionModal = null;
+    }
+}
+
+// Function to generate report for selected revision
+async function generateSelectedRevisionReport() {
+    const modal = window.currentRevisionSelectionModal;
+    if (!modal) return;
+
+    const selectedRadio = modal.querySelector('input[name="selectedRevision"]:checked');
+    if (!selectedRadio) {
+        alert('Please select a revision to generate the report for.');
+        return;
+    }
+
+    const selectedRevisionId = selectedRadio.value;
+    const selectedRevision = projectRevisions.find(rev => rev.id === selectedRevisionId);
+    
+    if (!selectedRevision) {
+        alert('Selected revision not found.');
+        return;
+    }
+
+    // Close the modal
+    closeRevisionSelectionModal();
+
+    // Generate report for selected revision
+    await generateCFSSReportForRevision(selectedRevision);
+}
+
+// Main function to generate CFSS report for a specific revision
+async function generateCFSSReportForRevision(selectedRevision) {
+    if (!currentProjectId) {
+        alert('Error: No project selected');
+        return;
+    }
+
+    const generateButton = document.getElementById('generateCFSSReportButton');
+    
+    try {
+        generateButton.disabled = true;
+        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating Revision ${selectedRevision.number} PDF...`;
+        
+        // Get all revisions up to and including the selected revision
+        const revisionsUpToSelected = projectRevisions
+            .filter(rev => rev.number <= selectedRevision.number)
+            .sort((a, b) => a.number - b.number);
+        
+        // Prepare CFSS project data with selected revision
+        const cfssProjectData = {
+            ...projectData,
+            walls: [...selectedRevision.walls], // Walls from selected revision
+            wallRevisions: [...revisionsUpToSelected], // All revisions up to selected
+            currentWallRevisionId: selectedRevision.id, // Set selected as "current" for report
+            cfssWindData: cfssWindData
+        };
+        
+        console.log('📊 Report data for revision', selectedRevision.number, ':', {
+            name: cfssProjectData.name,
+            selectedRevision: selectedRevision.number,
+            wallsCount: cfssProjectData.walls?.length || 0,
+            revisionsIncluded: revisionsUpToSelected.map(r => `Rev ${r.number}`).join(', '),
+            windDataCount: cfssProjectData.cfssWindData?.length || 0
+        });
+        
+        // Validate we have walls to report on
+        if (!cfssProjectData.walls || cfssProjectData.walls.length === 0) {
+            alert(`Revision ${selectedRevision.number} contains no walls. Please select a revision with walls.`);
+            return;
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-report`, {
+            method: 'POST',
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                projectData: cfssProjectData
+            }),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            if (response.status === 504) {
+                throw new Error('CFSS PDF generation timed out. Please try again.');
+            }
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'CFSS PDF generation failed');
+        }
+
+        if (!result.downloadUrl) {
+            throw new Error('No download URL received from server');
+        }
+
+        console.log(`✅ Opening CFSS download URL for Revision ${selectedRevision.number}:`, result.downloadUrl);
+        window.location.href = result.downloadUrl;
+        
+    } catch (error) {
+        console.error('❌ CFSS PDF generation error:', error);
+        if (error.name === 'AbortError' || error.message.includes('504')) {
+            alert('CFSS PDF generation timed out. Please try again in a few minutes.');
+        } else {
+            alert('Error generating CFSS report: ' + error.message);
+        }
+    } finally {
+        generateButton.disabled = false;
+        generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
+    }
 }
 
 // Create new revision
@@ -467,54 +840,24 @@ async function handleSaveEquipmentWithRevisions(e) {
         projectEquipment.push(wallData);
         console.log('Wall added to projectEquipment, current count:', projectEquipment.length);
 
-        // Check if this is the first wall (auto-create Revision 1)
-        if (projectRevisions.length === 0) {
-            console.log('📄 First wall - auto-creating Revision 1');
+        // Check if this is the first wall
+        const isFirstWall = projectRevisions.length === 0;
+        
+        if (isFirstWall) {
+            console.log('📄 First wall - showing revision popup for Revision 1');
             
-            // Auto-create first revision
-            const firstRevision = {
-                id: `rev_${Date.now()}`,
-                number: 1,
-                description: '', // No description for auto-created first revision
-                createdAt: new Date().toISOString(),
-                createdBy: currentUser?.email || 'unknown',
-                walls: [...projectEquipment] // Copy current projectEquipment
-            };
-            
-            projectRevisions.push(firstRevision);
-            currentRevisionId = firstRevision.id;
-            
-            console.log('🔄 Saving first revision to database...', {
-                revisionId: firstRevision.id,
-                wallCount: firstRevision.walls.length,
-                wallName: wallData.equipment
-            });
-            
-            // SINGLE SAVE OPERATION - revisions only
-            const saveResult = await saveRevisionsToDatabase();
-            
-            if (saveResult === false) {
-                // Save failed, revert changes
-                projectEquipment.pop();
-                projectRevisions.pop();
-                currentRevisionId = null;
-                alert('Failed to save wall. Please try again.');
-                return;
-            }
-            
-            console.log('✅ First revision saved successfully');
-            
-            // Success path
-            renderEquipmentList();
-            updateRevisionIndicator();
-            clearWallForm();
-            hideForm();
-            showSuccessMessage();
+            // Show revision popup for first wall
+            showRevisionPopup('add', wallData.equipment, async () => {
+                console.log('📄 Creating first revision...');
+                
+                // This will be handled by processRevisionChoice
+                // No additional logic needed here since the callback handles success
+            }, true); // Pass true to indicate this is the first revision
             
         } else {
             // Show revision popup for subsequent saves
             showRevisionPopup('add', wallData.equipment, async () => {
-                console.log('🔄 Saving wall to existing revision system...');
+                console.log('📄 Saving wall to existing revision system...');
                 
                 // SINGLE SAVE OPERATION - revisions only
                 const saveResult = await saveRevisionsToDatabase();
@@ -2951,3 +3294,8 @@ window.debugCurrentState = debugCurrentState;
 window.reloadProjectData = reloadProjectData;
 window.forceSaveCurrentState = forceSaveCurrentState;
 window.debugWallState = debugWallState;
+window.showRevisionSelectionModal = showRevisionSelectionModal;
+window.closeRevisionSelectionModal = closeRevisionSelectionModal;
+window.generateSelectedRevisionReport = generateSelectedRevisionReport;
+window.generateCFSSReportForRevision = generateCFSSReportForRevision;
+window.setupCFSSReportButtonWithRevisionModal = setupCFSSReportButtonWithRevisionModal;
