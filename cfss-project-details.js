@@ -11,14 +11,14 @@ let currentRevisionId = null;
 // Available CFSS options in logical order
 const CFSS_OPTIONS = [
     // Mounting types
-    'five-beton-lisse-basse',
-    'five-beton-lisse-troue', 
-    'five-bois-lisse-basse',
-    'five-bois-lisse-troue',
-    'five-structure-dacier-lisse-basse',
-    'five-structure-dacier-lisse-troue',
-    'five-tablier-metallique-lisse-basse',
-    'five-tablier-metallique-lisse-troue',
+    'fixe-beton-lisse-basse',
+    'fixe-beton-lisse-troue', 
+    'fixe-bois-lisse-basse',
+    'fixe-bois-lisse-troue',
+    'fixe-structure-dacier-lisse-basse',
+    'fixe-structure-dacier-lisse-troue',
+    'fixe-tablier-metallique-lisse-basse',
+    'fixe-tablier-metallique-lisse-troue',
     
     // Detail types
     'detail-double-lisse',
