@@ -12,19 +12,19 @@ let currentRevisionId = null;
 const CFSS_OPTIONS = [
     // Mounting types
     'fixe-beton-lisse-basse',
-    'fixe-beton-lisse-troue', 
+    'fixe-beton-lisse-trouee', 
     'fixe-bois-lisse-basse',
-    'fixe-bois-lisse-troue',
+    'fixe-bois-lisse-trouee',
     'fixe-structure-dacier-lisse-basse',
-    'fixe-structure-dacier-lisse-troue',
-    'fixe-tablier-metallique-lisse-basse',
-    'fixe-tablier-metallique-lisse-troue',
+    'fixe-structure-dacier-lisse-trouee',
+    'fixe-tabler-metallique-lisse-basse',
+    'fixe-tabler-metallique-lisse-trouee',
     
     // Detail types
     'detail-double-lisse',
     'detail-entremise',
     'detail-lisse-basse', 
-    'detail-lisse-troue',
+    'detail-lisse-trouee',
     'detail-structure',
     
     // Parapet types
