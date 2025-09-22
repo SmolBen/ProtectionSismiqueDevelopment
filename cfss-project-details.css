@@ -625,15 +625,17 @@
         max-height: 500px;
     }
     
-    .option-item {
-        padding: 10px 8px;
+    .option-thumbnail {
+        width: 80px !important;
+        height: 64px !important;
+        font-size: 10px;
     }
     
-    .option-thumbnail {
-        width: 40px;
-        height: 32px;
-        font-size: 9px;
+    .option-item {
+        gap: 12px !important;
+        padding: 8px 10px !important;
     }
+}
     
     .option-name {
         font-size: 13px;
@@ -661,7 +663,6 @@
     .image-preview-container {
         grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
     }
-}
 
 /* Right section layout adjustments */
 .right-section {
@@ -679,9 +680,10 @@
     min-height: 0; /* Allow flexbox to shrink */
 }
 
+/* Default desktop/tablet size - 150px x 120px */
 .option-thumbnail {
-    width: 150px;
-    height: 120px;
+    width: 150px !important;
+    height: 120px !important;
     border-radius: 4px;
     border: 1px solid #ddd;
     background: #f5f5f5;
@@ -691,6 +693,8 @@
     overflow: hidden;
     flex-shrink: 0;
     font-weight: 500;
+    font-size: 12px;
+    color: #666;
 }
 
 .option-thumbnail img {
@@ -757,5 +761,19 @@
     .drop-zone {
         height: 40px;
         flex: 1;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    .option-thumbnail {
+        width: 60px !important;
+        height: 48px !important;
+        font-size: 9px;
+    }
+    
+    .option-item {
+        gap: 10px !important;
+        padding: 6px 8px !important;
     }
 }
