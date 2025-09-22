@@ -126,6 +126,279 @@ class CDNLoader {
     }
 }
 
+// Store the email for password reset
+let resetPasswordEmail = '';
+
+// Setup forgot password handler
+function setupForgotPasswordHandler() {
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    if (!forgotPasswordForm) return;
+    
+    forgotPasswordForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('forgotEmail').value;
+        
+        if (!email) {
+            showMessage('Please enter your email address', 'error');
+            return;
+        }
+        
+        // Check if libraries are loaded
+        if (typeof AmazonCognitoIdentity === 'undefined') {
+            showMessage('Authentication system not ready. Please wait or refresh the page.', 'error');
+            return;
+        }
+        
+        try {
+            showLoading(true);
+            updateDebugInfo('Initiating password reset...');
+            
+            resetPasswordEmail = email; // Store email for later use
+            
+            const userData = {
+                Username: email,
+                Pool: window.userPool
+            };
+            
+            const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+            
+            cognitoUser.forgotPassword({
+                onSuccess: function(data) {
+                    console.log('Password reset code sent successfully');
+                    updateDebugInfo('✅ Reset code sent to email');
+                    showMessage('Verification code sent to your email!', 'success');
+                    
+                    // Switch to step 2 of forgot password
+                    document.getElementById('forgotPasswordStep1').style.display = 'none';
+                    document.getElementById('forgotPasswordStep2').style.display = 'block';
+                    
+                    showLoading(false);
+                },
+                onFailure: function(err) {
+                    console.error('❌ Password reset initiation failed:', err);
+                    updateDebugInfo('❌ Failed to send reset code: ' + err.code);
+                    
+                    let errorMessage = 'Failed to send reset code';
+                    
+                    if (err.code === 'UserNotFoundException') {
+                        errorMessage = 'No account found with this email address';
+                    } else if (err.code === 'InvalidParameterException') {
+                        errorMessage = 'Email address is invalid';
+                    } else if (err.code === 'LimitExceededException') {
+                        errorMessage = 'Too many attempts. Please try again later';
+                    } else {
+                        errorMessage = err.message || 'Failed to send reset code';
+                    }
+                    
+                    showMessage(errorMessage, 'error');
+                    showLoading(false);
+                },
+                inputVerificationCode: function(data) {
+                    console.log('Verification code input requested');
+                    updateDebugInfo('✅ Reset code sent - check your email');
+                    showMessage('Verification code sent! Check your email.', 'success');
+                    
+                    // Switch to step 2 of forgot password
+                    document.getElementById('forgotPasswordStep1').style.display = 'none';
+                    document.getElementById('forgotPasswordStep2').style.display = 'block';
+                    
+                    showLoading(false);
+                }
+            });
+            
+        } catch (error) {
+            console.error('❌ Error initiating password reset:', error);
+            updateDebugInfo('❌ Reset error: ' + error.message);
+            showMessage('Error: ' + error.message, 'error');
+            showLoading(false);
+        }
+    });
+}
+
+// Setup reset password handler (Step 2)
+function setupResetPasswordHandler() {
+    const resetPasswordForm = document.getElementById('resetPasswordForm');
+    if (!resetPasswordForm) return;
+    
+    resetPasswordForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const code = document.getElementById('resetCode').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+        
+        // Validation
+        if (!code || !newPassword || !confirmNewPassword) {
+            showMessage('Please fill in all fields', 'error');
+            return;
+        }
+        
+        if (newPassword !== confirmNewPassword) {
+            showMessage('Passwords do not match', 'error');
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            showMessage('Password must be at least 8 characters', 'error');
+            return;
+        }
+        
+        // Check if libraries are loaded
+        if (typeof AmazonCognitoIdentity === 'undefined') {
+            showMessage('Authentication system not ready. Please wait or refresh the page.', 'error');
+            return;
+        }
+        
+        try {
+            showLoading(true);
+            updateDebugInfo('Confirming new password...');
+            
+            const userData = {
+                Username: resetPasswordEmail,
+                Pool: window.userPool
+            };
+            
+            const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+            
+            cognitoUser.confirmPassword(code, newPassword, {
+                onSuccess: function() {
+                    console.log('✅ Password reset successful');
+                    updateDebugInfo('✅ Password reset successful');
+                    showMessage('Password reset successful! You can now log in with your new password.', 'success');
+                    
+                    // Reset form and switch to login tab
+                    document.getElementById('resetPasswordForm').reset();
+                    document.getElementById('forgotPasswordForm').reset();
+                    document.getElementById('forgotPasswordStep1').style.display = 'block';
+                    document.getElementById('forgotPasswordStep2').style.display = 'none';
+                    
+                    setTimeout(() => {
+                        switchTab('login');
+                    }, 2000);
+                    
+                    showLoading(false);
+                },
+                onFailure: function(err) {
+                    console.error('❌ Password reset confirmation failed:', err);
+                    updateDebugInfo('❌ Reset failed: ' + err.code);
+                    
+                    let errorMessage = 'Password reset failed';
+                    
+                    if (err.code === 'CodeMismatchException') {
+                        errorMessage = 'Invalid verification code. Please check and try again';
+                    } else if (err.code === 'ExpiredCodeException') {
+                        errorMessage = 'Verification code has expired. Please request a new one';
+                    } else if (err.code === 'InvalidPasswordException') {
+                        errorMessage = 'Password must contain uppercase, lowercase, numbers and special characters';
+                    } else if (err.code === 'InvalidParameterException') {
+                        errorMessage = 'Invalid password format. Please check requirements';
+                    } else {
+                        errorMessage = err.message || 'Password reset failed';
+                    }
+                    
+                    showMessage(errorMessage, 'error');
+                    showLoading(false);
+                }
+            });
+            
+        } catch (error) {
+            console.error('❌ Error resetting password:', error);
+            updateDebugInfo('❌ Reset error: ' + error.message);
+            showMessage('Error: ' + error.message, 'error');
+            showLoading(false);
+        }
+    });
+}
+
+// Resend reset code function
+function resendResetCode() {
+    if (!resetPasswordEmail) {
+        showMessage('Please initiate password reset first', 'error');
+        return;
+    }
+    
+    showLoading(true);
+    updateDebugInfo('Resending reset code...');
+    
+    const userData = {
+        Username: resetPasswordEmail,
+        Pool: window.userPool
+    };
+    
+    const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+    
+    cognitoUser.forgotPassword({
+        onSuccess: function(data) {
+            console.log('Reset code resent successfully');
+            updateDebugInfo('✅ Reset code resent');
+            showMessage('New verification code sent!', 'success');
+            showLoading(false);
+        },
+        onFailure: function(err) {
+            console.error('❌ Failed to resend reset code:', err);
+            updateDebugInfo('❌ Resend failed: ' + err.code);
+            
+            let errorMessage = 'Failed to resend code';
+            
+            if (err.code === 'LimitExceededException') {
+                errorMessage = 'Too many attempts. Please wait a few minutes and try again';
+            } else {
+                errorMessage = err.message || 'Failed to resend code';
+            }
+            
+            showMessage(errorMessage, 'error');
+            showLoading(false);
+        },
+        inputVerificationCode: function(data) {
+            console.log('Reset code resent successfully');
+            updateDebugInfo('✅ Reset code resent');
+            showMessage('New verification code sent! Check your email.', 'success');
+            showLoading(false);
+        }
+    });
+}
+
+// Update the switchTab function to handle forgot password tab
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    const targetTab = document.getElementById(tabName + 'Tab');
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    // Update tab button
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(btn => {
+        if (btn.textContent.toLowerCase().includes(tabName.toLowerCase()) || 
+            (tabName === 'forgotPassword' && btn.textContent.includes('Reset'))) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Reset forgot password steps when switching tabs
+    if (tabName === 'forgotPassword') {
+        document.getElementById('forgotPasswordStep1').style.display = 'block';
+        document.getElementById('forgotPasswordStep2').style.display = 'none';
+        document.getElementById('forgotPasswordForm').reset();
+        document.getElementById('resetPasswordForm').reset();
+    }
+    
+    // Clear messages
+    const messageContainer = document.getElementById('messageContainer');
+    if (messageContainer) {
+        messageContainer.innerHTML = '';
+    }
+}
+
 // Initialize authentication with enhanced loading
 async function initializeAuth() {
     try {
@@ -613,6 +886,8 @@ window.addEventListener('load', function() {
     initializeAuth();
     setupLoginHandler();
     setupSignupHandler();
+    setupForgotPasswordHandler(); 
+    setupResetPasswordHandler(); 
 });
 
 // Make functions globally available
@@ -620,3 +895,4 @@ window.togglePassword = togglePassword;
 window.switchTab = switchTab;
 window.verifyEmail = verifyEmail;
 window.resendVerificationCode = resendVerificationCode;
+window.resendResetCode = resendResetCode;

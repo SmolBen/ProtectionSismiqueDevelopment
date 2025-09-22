@@ -27,6 +27,7 @@
         <div class="tab-buttons">
             <button class="tab-button active" onclick="switchTab('login')">Login</button>
             <button class="tab-button" onclick="switchTab('signup')">Sign Up</button>
+            <button class="tab-button" onclick="switchTab('forgotPassword')">Reset Password</button>
         </div>
         
         <!-- Login Tab -->
@@ -46,6 +47,9 @@
                     </div>
                 </div>
                 <button type="submit" id="loginBtn">Login</button>
+                <div class="form-links">
+                    <a href="#" onclick="switchTab('forgotPassword'); return false;">Forgot Password?</a>
+                </div>
             </form>
         </div>
         
@@ -99,6 +103,58 @@
                 </div>
                 <button type="submit" id="signupBtn">Create Account</button>
             </form>
+        </div>
+        
+        <!-- Forgot Password Tab -->
+        <div id="forgotPasswordTab" class="tab-content">
+            <div id="forgotPasswordStep1">
+                <h3>Reset Password</h3>
+                <p>Enter your email address and we'll send you a verification code to reset your password.</p>
+                <form id="forgotPasswordForm">
+                    <div class="form-group">
+                        <label for="forgotEmail">Email:</label>
+                        <input type="email" id="forgotEmail" required placeholder="Enter your email">
+                    </div>
+                    <button type="submit">Send Reset Code</button>
+                </form>
+                <div class="form-links">
+                    <a href="#" onclick="switchTab('login'); return false;">Back to Login</a>
+                </div>
+            </div>
+            
+            <div id="forgotPasswordStep2" style="display: none;">
+                <h3>Enter New Password</h3>
+                <p>Enter the verification code sent to your email and choose a new password.</p>
+                <form id="resetPasswordForm">
+                    <div class="form-group">
+                        <label for="resetCode">Verification Code:</label>
+                        <input type="text" id="resetCode" required placeholder="Enter 6-digit code" maxlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password:</label>
+                        <div class="password-input-container">
+                            <input type="password" id="newPassword" required minlength="8">
+                            <button type="button" class="password-toggle" onclick="togglePassword('newPassword', this)">
+                                <i class="fas fa-eye" aria-label="Show password"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password:</label>
+                        <div class="password-input-container">
+                            <input type="password" id="confirmNewPassword" required minlength="8">
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirmNewPassword', this)">
+                                <i class="fas fa-eye" aria-label="Show password"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit">Reset Password</button>
+                    <button type="button" onclick="resendResetCode()">Resend Code</button>
+                </form>
+                <div class="form-links">
+                    <a href="#" onclick="switchTab('login'); return false;">Back to Login</a>
+                </div>
+            </div>
         </div>
         
         <!-- Verification Tab -->

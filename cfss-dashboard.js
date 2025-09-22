@@ -351,6 +351,10 @@ function renderCFSSProjects(filteredProjects) {
                         <i class="fas fa-eye"></i>
                         View
                     </button>
+                    <button class="duplicate-project" data-id="${project.id}" title="Duplicate">
+                        <i class="fas fa-copy"></i>
+                        Copy
+                    </button>
                     ${authHelper.canModifyProject(project) ? `
                         <button class="delete-project" data-id="${project.id}" title="Delete">
                             <i class="fas fa-trash"></i>
@@ -378,6 +382,14 @@ function renderCFSSProjects(filteredProjects) {
             e.stopPropagation();
             window.location.href = `cfss-project-details.html?id=${project.id}`;
         });
+
+        const duplicateButton = projectCard.querySelector('.duplicate-project');
+        if (duplicateButton) {
+            duplicateButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                duplicateCFSSProject(project.id);
+            });
+        }
 
         const deleteButton = projectCard.querySelector('.delete-project');
         if (deleteButton) {
@@ -493,6 +505,40 @@ async function deleteCFSSProject(id) {
     } catch (error) {
         console.error('Error deleting CFSS project:', error);
         alert('Error deleting CFSS project: ' + error.message);
+    }
+}
+
+async function duplicateCFSSProject(id) {
+    try {
+        console.log('📋 Duplicating CFSS project:', id);
+        
+        const response = await fetch(`${apiUrl}/${id}/duplicate`, {
+            method: 'POST',
+            headers: {
+                ...authHelper.getAuthHeaders(),
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to duplicate CFSS project: ${errorText || response.statusText}`);
+        }
+
+        const duplicatedProject = await response.json();
+        console.log('✅ CFSS Project duplicated successfully:', duplicatedProject.id);
+
+        // Refresh the dashboard - use the correct function names for CFSS
+        await Promise.all([
+            fetchCFSSProjects(),  // Changed from fetchProjects()
+            loadCFSSDashboardStats()  // This one was already correct
+        ]);
+        
+        alert('CFSS Project duplicated successfully!');
+        
+    } catch (error) {
+        console.error('Error duplicating CFSS project:', error);
+        alert('Error duplicating CFSS project: ' + error.message);
     }
 }
 

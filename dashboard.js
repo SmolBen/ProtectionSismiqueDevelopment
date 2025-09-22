@@ -217,6 +217,10 @@ function renderProjects(filteredProjects) {
                         <i class="fas fa-eye"></i>
                         View
                     </button>
+                    <button class="duplicate-project" data-id="${project.id}" title="Duplicate">
+                        <i class="fas fa-copy"></i>
+                        Copy
+                    </button>
                     ${authHelper.canModifyProject(project) ? `
                         <button class="delete-project" data-id="${project.id}" title="Delete">
                             <i class="fas fa-trash"></i>
@@ -244,6 +248,14 @@ function renderProjects(filteredProjects) {
             e.stopPropagation(); // Prevent card click
             window.location.href = `project-details.html?id=${project.id}`;
         });
+
+            const duplicateButton = projectCard.querySelector('.duplicate-project');
+        if (duplicateButton) {
+            duplicateButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent card click
+                duplicateProject(project.id);
+            });
+        }
 
         const deleteButton = projectCard.querySelector('.delete-project');
         if (deleteButton) {
@@ -346,6 +358,40 @@ async function deleteProject(id) {
     } catch (error) {
         console.error('Error deleting project:', error);
         alert('Error deleting project. Please try again.');
+    }
+}
+
+async function duplicateProject(id) {
+    try {
+        console.log('📋 Duplicating seismic project:', id);
+        
+        const response = await fetch(`${apiUrl}/${id}/duplicate`, {
+            method: 'POST',
+            headers: {
+                ...authHelper.getAuthHeaders(),
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to duplicate project: ${errorText || response.statusText}`);
+        }
+
+        const duplicatedProject = await response.json();
+        console.log('✅ Project duplicated successfully:', duplicatedProject.id);
+
+        // Refresh project list to show the new duplicate
+        await Promise.all([
+            fetchProjects(),
+            loadDashboardStats()
+        ]);
+        
+        alert('Project duplicated successfully!');
+        
+    } catch (error) {
+        console.error('Error duplicating project:', error);
+        alert('Error duplicating project: ' + error.message);
     }
 }
 

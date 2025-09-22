@@ -325,57 +325,6 @@
     color: var(--text-secondary);
 }
 
-.project-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-    min-width: 140px;
-    justify-content: flex-end;
-}
-
-.project-card:hover .project-actions {
-    opacity: 1;
-}
-
-.project-card .view-details,
-.project-card .delete-project {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.2s ease;
-    min-width: 60px;
-    justify-content: center;
-    color: white;
-}
-
-.project-card .view-details {
-    background: var(--primary-color);
-    color: white;
-}
-
-.project-card .view-details:hover {
-    background: #1d4ed8;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
-}
-
-.project-card .delete-project {
-    background: var(--danger-color);
-    color: white;
-}
-
-.project-card .delete-project:hover {
-    background: #dc2626;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
-}
-
 .meta-separator {
     color: var(--border-color);
 }
@@ -472,4 +421,112 @@
     margin: 0 !important;
     grid-column: none !important;
     grid-row: none !important;
+}
+
+/* ============================================= */
+/* BUTTON ALIGNMENT FIX - Place at END of file  */
+/* ============================================= */
+
+/* Fix the parent container */
+.project-actions {
+    display: flex !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    min-width: 200px !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    height: 32px !important;
+}
+
+/* Complete reset and rebuild for all three buttons */
+.project-card button.view-details,
+.project-card button.duplicate-project,
+.project-card button.delete-project {
+    /* Nuclear reset - removes ALL inherited styles */
+    all: unset !important;
+    
+    /* Rebuild as flex container */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    /* Fixed dimensions */
+    width: 70px !important;
+    height: 32px !important;
+    
+    /* Typography */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: white !important;
+    
+    /* Appearance */
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    
+    /* Ensure no margins or padding */
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    /* Box model */
+    box-sizing: border-box !important;
+    
+    /* Remove any transforms that might affect alignment */
+    transform: none !important;
+    
+    /* Transition for hover effects */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+}
+
+/* Icon alignment within buttons */
+.project-card button.view-details i,
+.project-card button.duplicate-project i,
+.project-card button.delete-project i {
+    font-size: 12px !important;
+    margin-right: 4px !important;
+    display: inline-block !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+}
+
+/* Individual button colors */
+.project-card button.view-details {
+    background: #2563eb !important;
+}
+
+.project-card button.duplicate-project {
+    background: #10b981 !important;
+}
+
+.project-card button.delete-project {
+    background: #ef4444 !important;
+}
+
+/* Hover states */
+.project-card button.view-details:hover {
+    background: #1d4ed8 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3) !important;
+}
+
+.project-card button.duplicate-project:hover {
+    background: #059669 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
+}
+
+.project-card button.delete-project:hover {
+    background: #dc2626 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Ensure the status indicator doesn't affect button alignment */
+.project-status {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 80px !important;
+    flex-shrink: 0 !important;
+    height: 32px !important;
 }
