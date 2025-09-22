@@ -8,6 +8,37 @@ let cfssWindData = []; // Store wind data
 let projectRevisions = [];
 let currentRevisionId = null;
 
+// Available CFSS options in logical order
+const CFSS_OPTIONS = [
+    // Mounting types
+    'five-beton-lisse-basse',
+    'five-beton-lisse-troue', 
+    'five-bois-lisse-basse',
+    'five-bois-lisse-troue',
+    'five-structure-dacier-lisse-basse',
+    'five-structure-dacier-lisse-troue',
+    'five-tablier-metallique-lisse-basse',
+    'five-tablier-metallique-lisse-troue',
+    
+    // Detail types
+    'detail-double-lisse',
+    'detail-entremise',
+    'detail-lisse-basse', 
+    'detail-lisse-troue',
+    'detail-structure',
+    
+    // Parapet types
+    'parapet-1',
+    'parapet-2',
+    'parapet-3', 
+    'parapet-4',
+    'parapet-5',
+    'parapet-6',
+    'parapet-7',
+    'parapet-8',
+    'parapet-9',
+    'parapet-10'
+];
 
 // Initialize revision system when project loads
 function initializeRevisionSystem(project) {
@@ -298,7 +329,6 @@ async function createFirstRevision(description, callback) {
     }
 }
 
-// Function to show revision selection modal
 function showRevisionSelectionModal() {
     // Check if we have any revisions
     if (!projectRevisions || projectRevisions.length === 0) {
@@ -352,11 +382,11 @@ function showRevisionSelectionModal() {
         <div style="background: white; padding: 25px; border-radius: 8px; min-width: 500px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
             <h3 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center;">
                 <i class="fas fa-file-pdf" style="margin-right: 10px; color: #dc3545;"></i>
-                Generate CFSS Report
+                Generate CFSS Report - Step 1
             </h3>
             
             <p style="margin-bottom: 20px; color: #555; line-height: 1.5;">
-                Select which revision to generate the report for. The report will include all revision history up to and including the selected revision.
+                Select which revision to generate the report for:
             </p>
             
             <div style="margin-bottom: 25px; max-height: 300px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 15px;">
@@ -366,31 +396,20 @@ function showRevisionSelectionModal() {
                 ${revisionsHTML}
             </div>
             
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 3px solid #17a2b8;">
-                <div style="font-size: 13px; color: #495057;">
-                    <strong>Report will include:</strong>
-                    <ul style="margin: 8px 0 0 20px; padding: 0;">
-                        <li>Walls from the selected revision</li>
-                        <li>Complete revision history up to selected revision</li>
-                        <li>CFSS wind data and project specifications</li>
-                    </ul>
-                </div>
-            </div>
-            
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="font-size: 12px; color: #6c757d;">
                     <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
-                    PDF generation may take up to 30 seconds
+                    Next: Select construction options
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button onclick="closeRevisionSelectionModal()" 
                             style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
                         Cancel
                     </button>
-                    <button onclick="generateSelectedRevisionReport()" 
-                            style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-file-pdf"></i>
-                        Generate Report
+                    <button onclick="proceedToOptionsSelection()" 
+                            style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        Next: Select Options
+                        <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
             </div>
@@ -436,6 +455,297 @@ function showRevisionSelectionModal() {
 
     // Store modal reference
     window.currentRevisionSelectionModal = modal;
+}
+
+// New function to proceed to options selection
+function proceedToOptionsSelection() {
+    const modal = window.currentRevisionSelectionModal;
+    if (!modal) return;
+
+    const selectedRadio = modal.querySelector('input[name="selectedRevision"]:checked');
+    if (!selectedRadio) {
+        alert('Please select a revision.');
+        return;
+    }
+
+    const selectedRevisionId = selectedRadio.value;
+    const selectedRevision = projectRevisions.find(rev => rev.id === selectedRevisionId);
+    
+    if (!selectedRevision) {
+        alert('Selected revision not found.');
+        return;
+    }
+
+    // Close revision modal
+    closeRevisionSelectionModal();
+    
+    // Show options selection modal
+    showCFSSOptionsSelectionModal(selectedRevision);
+}
+
+// New function to show CFSS options selection modal
+function showCFSSOptionsSelectionModal(selectedRevision) {
+    const modal = document.createElement('div');
+    modal.className = 'cfss-options-selection-modal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+        justify-content: center; z-index: 2000;
+    `;
+
+    // Create checkboxes for all options
+    let optionsHTML = '';
+    CFSS_OPTIONS.forEach(option => {
+        const displayName = option.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        optionsHTML += `
+            <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;">
+                <input type="checkbox" name="cfssOption" value="${option}" style="margin-right: 10px; transform: scale(1.1);">
+                <span style="font-size: 14px;">${displayName}</span>
+            </label>
+        `;
+    });
+
+    modal.innerHTML = `
+        <div style="background: white; padding: 25px; border-radius: 8px; min-width: 600px; max-width: 700px; max-height: 80vh; overflow-y: auto;">
+            <h3 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center;">
+                <i class="fas fa-cogs" style="margin-right: 10px; color: #007bff;"></i>
+                Generate CFSS Report - Step 2
+            </h3>
+            
+            <p style="margin-bottom: 20px; color: #555; line-height: 1.5;">
+                Select construction options to include in the report for <strong>Revision ${selectedRevision.number}</strong>:
+            </p>
+            
+            <div style="margin-bottom: 25px; max-height: 400px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 15px; background: #f8f9fa;">
+                <div style="font-weight: 500; margin-bottom: 15px; color: #495057; border-bottom: 1px solid #e9ecef; padding-bottom: 8px;">
+                    Available Options (${CFSS_OPTIONS.length})
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                    ${optionsHTML}
+                </div>
+            </div>
+            
+            <div style="background: #e7f3ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 3px solid #007bff;">
+                <div style="font-size: 13px; color: #495057;">
+                    <strong>Note:</strong> Selected options will be arranged in a 3×3 grid. If you select more than 9 options, additional pages will be created.
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="selectAllCFSSOptions()" 
+                            style="background: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        Select All
+                    </button>
+                    <button onclick="clearAllCFSSOptions()" 
+                            style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        Clear All
+                    </button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="backToRevisionSelection()" 
+                            style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button onclick="generateCFSSReportWithOptions()" 
+                            style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-file-pdf"></i>
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add hover effects for options
+    const labels = modal.querySelectorAll('label');
+    labels.forEach(label => {
+        label.addEventListener('mouseenter', () => {
+            label.style.backgroundColor = '#e9ecef';
+        });
+        
+        label.addEventListener('mouseleave', () => {
+            label.style.backgroundColor = 'transparent';
+        });
+    });
+
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeCFSSOptionsSelectionModal();
+        }
+    });
+
+    // Store modal and selected revision reference
+    window.currentCFSSOptionsModal = modal;
+    window.selectedRevisionForReport = selectedRevision;
+}
+
+// Helper functions for options modal
+function selectAllCFSSOptions() {
+    const modal = window.currentCFSSOptionsModal;
+    if (!modal) return;
+    
+    const checkboxes = modal.querySelectorAll('input[name="cfssOption"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+function clearAllCFSSOptions() {
+    const modal = window.currentCFSSOptionsModal;
+    if (!modal) return;
+    
+    const checkboxes = modal.querySelectorAll('input[name="cfssOption"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+
+function backToRevisionSelection() {
+    closeCFSSOptionsSelectionModal();
+    showRevisionSelectionModal();
+}
+
+function closeCFSSOptionsSelectionModal() {
+    if (window.currentCFSSOptionsModal) {
+        window.currentCFSSOptionsModal.remove();
+        window.currentCFSSOptionsModal = null;
+    }
+}
+
+// Updated function to generate report with selected options
+async function generateCFSSReportWithOptions() {
+    const modal = window.currentCFSSOptionsModal;
+    const selectedRevision = window.selectedRevisionForReport;
+    
+    if (!modal || !selectedRevision) {
+        alert('Error: Missing modal or revision data');
+        return;
+    }
+
+    // Get selected options
+    const selectedOptions = [];
+    const checkboxes = modal.querySelectorAll('input[name="cfssOption"]:checked');
+    checkboxes.forEach(checkbox => {
+        selectedOptions.push(checkbox.value);
+    });
+
+    console.log('Selected options:', selectedOptions);
+    console.log('Selected revision:', selectedRevision.number);
+
+    // Close options modal
+    closeCFSSOptionsSelectionModal();
+
+    // Show loading state
+    const generateButton = document.getElementById('generateCFSSReportButton');
+    if (generateButton) {
+        generateButton.disabled = true;
+        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating CFSS Report with Options...`;
+    }
+
+    try {
+        // Generate report with options
+        await generateCFSSReportForRevisionWithOptions(selectedRevision, selectedOptions);
+        
+    } catch (error) {
+        console.error('Error generating CFSS report with options:', error);
+        alert('Error generating CFSS report: ' + error.message);
+    } finally {
+        if (generateButton) {
+            generateButton.disabled = false;
+            generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
+        }
+    }
+}
+
+// Updated report generation function that includes options
+async function generateCFSSReportForRevisionWithOptions(selectedRevision, selectedOptions) {
+    if (!currentProjectId) {
+        alert('Error: No project selected');
+        return;
+    }
+
+    try {
+        // Get all revisions up to and including the selected revision
+        const revisionsUpToSelected = projectRevisions
+            .filter(rev => rev.number <= selectedRevision.number)
+            .sort((a, b) => a.number - b.number);
+        
+        // Prepare CFSS project data with selected revision and options
+        const cfssProjectData = {
+            ...projectData,
+            walls: [...selectedRevision.walls],
+            wallRevisions: [...revisionsUpToSelected],
+            currentWallRevisionId: selectedRevision.id,
+            selectedRevisionNumber: selectedRevision.number,
+            cfssWindData: cfssWindData,
+            selectedOptions: selectedOptions // NEW: Include selected options
+        };
+        
+        console.log('CFSS Report data with options:', {
+            name: cfssProjectData.name,
+            selectedRevision: selectedRevision.number,
+            wallsCount: cfssProjectData.walls?.length || 0,
+            revisionsIncluded: revisionsUpToSelected.map(r => `Rev ${r.number}`).join(', '),
+            windDataCount: cfssProjectData.cfssWindData?.length || 0,
+            selectedOptionsCount: selectedOptions.length
+        });
+        
+        // Validate we have walls to report on
+        if (!cfssProjectData.walls || cfssProjectData.walls.length === 0) {
+            alert(`Revision ${selectedRevision.number} contains no walls. Please select a revision with walls.`);
+            return;
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-report`, {
+            method: 'POST',
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                projectData: cfssProjectData
+            }),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            if (response.status === 504) {
+                throw new Error('CFSS PDF generation timed out. Please try again.');
+            }
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'CFSS PDF generation failed');
+        }
+
+        if (!result.downloadUrl) {
+            throw new Error('No download URL received from server');
+        }
+
+        console.log(`Opening CFSS download URL for Revision ${selectedRevision.number} with ${selectedOptions.length} options:`, result.downloadUrl);
+        window.location.href = result.downloadUrl;
+        
+    } catch (error) {
+        console.error('CFSS PDF generation error with options:', error);
+        if (error.name === 'AbortError' || error.message.includes('504')) {
+            alert('CFSS PDF generation timed out. Please try again in a few minutes.');
+        } else {
+            alert('Error generating CFSS report: ' + error.message);
+        }
+    }
 }
 
 // Function to close revision selection modal
@@ -2339,17 +2649,40 @@ function populateCFSSForm(windData) {
         setupImageUploadHandlers();
     }
 
-// Fix 4: Update the camera button to prevent form submission
 function setupImageUploadHandlers() {
     const cameraBtn = document.getElementById('cameraBtn');
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('imageFileInput');
     
+    // Add better error handling and retry logic
     if (!cameraBtn || !dropZone || !fileInput) {
-        console.error('Image upload elements not found');
+        console.warn('Image upload elements not found, retrying in 500ms...');
+        console.log('Looking for elements:', {
+            cameraBtn: !!cameraBtn,
+            dropZone: !!dropZone, 
+            fileInput: !!fileInput
+        });
+        
+        // Retry after a short delay in case elements are still being created
+        setTimeout(() => {
+            const retryBtn = document.getElementById('cameraBtn');
+            const retryZone = document.getElementById('dropZone');
+            const retryInput = document.getElementById('imageFileInput');
+            
+            if (!retryBtn || !retryZone || !retryInput) {
+                console.error('Image upload elements still not found after retry');
+                return;
+            }
+            
+            setupImageHandlersInternal(retryBtn, retryZone, retryInput);
+        }, 500);
         return;
     }
     
+    setupImageHandlersInternal(cameraBtn, dropZone, fileInput);
+}
+
+function setupImageHandlersInternal(cameraBtn, dropZone, fileInput) {
     // Camera button click - prevent form submission
     cameraBtn.addEventListener('click', (event) => {
         event.preventDefault(); // Prevent form submission
@@ -2373,6 +2706,8 @@ function setupImageUploadHandlers() {
         dropZone.style.borderColor = '#ccc';
         dropZone.style.boxShadow = 'none';
     });
+    
+    console.log('Image upload handlers setup successfully');
 }
 
 // Array to store current wall images
@@ -3315,3 +3650,11 @@ window.closeRevisionSelectionModal = closeRevisionSelectionModal;
 window.generateSelectedRevisionReport = generateSelectedRevisionReport;
 window.generateCFSSReportForRevision = generateCFSSReportForRevision;
 window.setupCFSSReportButtonWithRevisionModal = setupCFSSReportButtonWithRevisionModal;
+window.proceedToOptionsSelection = proceedToOptionsSelection;
+window.showCFSSOptionsSelectionModal = showCFSSOptionsSelectionModal;
+window.selectAllCFSSOptions = selectAllCFSSOptions;
+window.clearAllCFSSOptions = clearAllCFSSOptions;
+window.backToRevisionSelection = backToRevisionSelection;
+window.closeCFSSOptionsSelectionModal = closeCFSSOptionsSelectionModal;
+window.generateCFSSReportWithOptions = generateCFSSReportWithOptions;
+window.generateCFSSReportForRevisionWithOptions = generateCFSSReportForRevisionWithOptions;
