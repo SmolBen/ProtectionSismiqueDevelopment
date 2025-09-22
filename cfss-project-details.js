@@ -10,34 +10,42 @@ let currentRevisionId = null;
 
 // Available CFSS options in logical order
 const CFSS_OPTIONS = [
-    // Mounting types
-    'fixe-beton-lisse-basse',
-    'fixe-beton-lisse-trouee', 
-    'fixe-bois-lisse-basse',
+    // Page S-2: Lisse trouée options
+    'fixe-beton-lisse-trouee',
+    'fixe-structure-dacier-lisse-trouee', 
+    'fixe-tabiler-metallique-lisse-trouee',
     'fixe-bois-lisse-trouee',
-    'fixe-structure-dacier-lisse-basse',
-    'fixe-structure-dacier-lisse-trouee',
-    'fixe-tabler-metallique-lisse-basse',
-    'fixe-tabler-metallique-lisse-trouee',
-    
-    // Detail types
-    'detail-double-lisse',
-    'detail-entremise',
-    'detail-lisse-basse', 
     'detail-lisse-trouee',
-    'detail-structure',
+    'detail-entremise',
     
-    // Parapet types
+    // Page S-3: Double lisse options
+    'fixe-beton-double-lisse',
+    'fixe-structure-dacier-double-lisse',
+    'fixe-tabiler-metallique-double-lisse',
+    'detail-double-lisse',
+    
+    // Page S-4: Lisse basse options
+    'fixe-beton-lisse-basse',
+    'fixe-structure-dacier-lisse-basse',
+    'fixe-bois-lisse-basse',
+    'detail-lisse-basse',
+    
+    // Page S-5: Parapet types 1-6
     'parapet-1',
     'parapet-2',
-    'parapet-3', 
+    'parapet-3',
     'parapet-4',
     'parapet-5',
     'parapet-6',
+    
+    // Page S-6: Parapet types 7-10
     'parapet-7',
     'parapet-8',
     'parapet-9',
-    'parapet-10'
+    'parapet-10',
+    
+    // Page S-7: Structure detail
+    'detail-structure'
 ];
 
 // Initialize revision system when project loads
