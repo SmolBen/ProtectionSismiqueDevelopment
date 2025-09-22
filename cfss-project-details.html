@@ -42,6 +42,157 @@
             margin-top: 4px;
             font-style: italic;
         }
+
+        /* Tab Interface Styles */
+        .tab-header {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 15px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button.active {
+            background: white;
+            border-bottom-color: #007bff;
+            color: #007bff;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .tab-content {
+            padding: 20px;
+            height: 600px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .options-category {
+            margin-bottom: 25px;
+        }
+
+        .category-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+            margin-bottom: 4px;
+        }
+
+        .option-item:hover {
+            background: #f8f9fa;
+        }
+
+        .option-item.selected {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+        }
+
+        .option-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .option-thumbnail {
+            width: 50px;
+            height: 40px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        .option-name {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .save-options-btn {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            margin: -20px -20px 0;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+        }
+
+        .selection-summary {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #155724;
+        }
+
+        .wall-list-content {
+            /* Keep existing wall list styles */
+        }
+
+        .options-list-content {
+            /* Options-specific content styles */
+        }
+
+        .tab-content-section {
+            display: none;
+        }
+
+        .tab-content-section.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -111,12 +262,98 @@
                 </div>
             </div>
             <div class="right-section">
-                <h1>Wall List</h1>
-                <div id="equipmentList"></div>
-                <div class="equipment-actions" style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                    <button id="generateCFSSReportButton" class="button primary" style="background: #28a745;">
-                        <i class="fas fa-file-pdf"></i> Generate CFSS Report
+                <!-- NEW: Tab Interface -->
+                <div class="tab-header">
+                    <button class="tab-button active" data-tab="wall-list">
+                        <i class="fas fa-wall-brick"></i>
+                        Wall List
                     </button>
+                    <button class="tab-button" data-tab="option-list">
+                        <i class="fas fa-cogs"></i>
+                        Option List
+                    </button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Wall List Tab Content -->
+                    <div id="wall-list-content" class="tab-content-section active">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h1 style="margin: 0;">Wall List</h1>
+                            <button id="generateCFSSReportButton" class="button primary" style="background: #28a745;">
+                                <i class="fas fa-file-pdf"></i> Generate CFSS Report
+                            </button>
+                        </div>
+                        <div id="equipmentList"></div>
+                    </div>
+
+                    <!-- Options List Tab Content -->
+                    <div id="option-list-content" class="tab-content-section">
+                        <div class="selection-summary" id="selectionSummary">
+                            <i class="fas fa-check-circle"></i> 0 options selected
+                        </div>
+
+                        <!-- Category 1: Lisse Trouée -->
+                        <div class="options-category">
+                            <div class="category-header">
+                                <i class="fas fa-grip-horizontal"></i>
+                                Lisse Trouée
+                            </div>
+                            <div id="lisse-trouee-options">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Category 2: Double Lisse -->
+                        <div class="options-category">
+                            <div class="category-header">
+                                <i class="fas fa-equals"></i>
+                                Double Lisse
+                            </div>
+                            <div id="double-lisse-options">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Category 3: Lisse Basse -->
+                        <div class="options-category">
+                            <div class="category-header">
+                                <i class="fas fa-minus"></i>
+                                Lisse Basse
+                            </div>
+                            <div id="lisse-basse-options">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Category 4: Parapet -->
+                        <div class="options-category">
+                            <div class="category-header">
+                                <i class="fas fa-building"></i>
+                                Parapet
+                            </div>
+                            <div id="parapet-options">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Category 5: Detail Structure -->
+                        <div class="options-category">
+                            <div class="category-header">
+                                <i class="fas fa-drafting-compass"></i>
+                                Detail Structure
+                            </div>
+                            <div id="detail-structure-options">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="save-options-btn">
+                            <button class="save-btn" id="saveOptionsBtn">
+                                <i class="fas fa-save"></i>
+                                Save Options
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -464,6 +701,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         initializeMontantDropdown();
         setupMontantChangeHandler();
+        initializeTabSystem();
+        initializeOptionsSystem();
     });
 
     // Populate the Montant Métallique dropdown

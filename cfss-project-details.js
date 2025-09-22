@@ -386,16 +386,32 @@ function showRevisionSelectionModal() {
         `;
     });
 
+    // UPDATED: Show selected options count in modal
+    const optionsCount = selectedCFSSOptions.length;
+    const optionsSummary = optionsCount > 0 ? 
+        `<div style="background: #e7f3ff; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 3px solid #007bff;">
+            <div style="font-size: 13px; color: #495057;">
+                <strong>Selected Options:</strong> ${optionsCount} construction option${optionsCount !== 1 ? 's' : ''} will be included from the Option List tab.
+            </div>
+        </div>` : 
+        `<div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 3px solid #ffc107;">
+            <div style="font-size: 13px; color: #856404;">
+                <strong>Note:</strong> No construction options selected. You can select options in the Option List tab before generating the report.
+            </div>
+        </div>`;
+
     modal.innerHTML = `
         <div style="background: white; padding: 25px; border-radius: 8px; min-width: 500px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
             <h3 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center;">
                 <i class="fas fa-file-pdf" style="margin-right: 10px; color: #dc3545;"></i>
-                Generate CFSS Report - Step 1
+                Generate CFSS Report
             </h3>
             
             <p style="margin-bottom: 20px; color: #555; line-height: 1.5;">
                 Select which revision to generate the report for:
             </p>
+            
+            ${optionsSummary}
             
             <div style="margin-bottom: 25px; max-height: 300px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 15px;">
                 <div style="font-weight: 500; margin-bottom: 15px; color: #495057; border-bottom: 1px solid #e9ecef; padding-bottom: 8px;">
@@ -407,7 +423,7 @@ function showRevisionSelectionModal() {
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="font-size: 12px; color: #6c757d;">
                     <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
-                    Next: Select construction options
+                    Construction options from the Option List tab will be included
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button onclick="closeRevisionSelectionModal()" 
@@ -415,9 +431,9 @@ function showRevisionSelectionModal() {
                         Cancel
                     </button>
                     <button onclick="proceedToOptionsSelection()" 
-                            style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        Next: Select Options
-                        <i class="fas fa-arrow-right"></i>
+                            style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-file-pdf"></i>
+                        Generate Report
                     </button>
                 </div>
             </div>
@@ -465,7 +481,7 @@ function showRevisionSelectionModal() {
     window.currentRevisionSelectionModal = modal;
 }
 
-// New function to proceed to options selection
+// UPDATED: Proceed directly to report generation using tab-selected options
 function proceedToOptionsSelection() {
     const modal = window.currentRevisionSelectionModal;
     if (!modal) return;
@@ -487,179 +503,33 @@ function proceedToOptionsSelection() {
     // Close revision modal
     closeRevisionSelectionModal();
     
-    // Show options selection modal
-    showCFSSOptionsSelectionModal(selectedRevision);
+    // CHANGED: Skip options modal and directly generate report with tab-selected options
+    generateCFSSReportDirectlyWithTabOptions(selectedRevision);
 }
 
-// New function to show CFSS options selection modal
-function showCFSSOptionsSelectionModal(selectedRevision) {
-    const modal = document.createElement('div');
-    modal.className = 'cfss-options-selection-modal';
-    modal.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; 
-        justify-content: center; z-index: 2000;
-    `;
-
-    // Create checkboxes for all options
-    let optionsHTML = '';
-    CFSS_OPTIONS.forEach(option => {
-        const displayName = option.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        optionsHTML += `
-            <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;">
-                <input type="checkbox" name="cfssOption" value="${option}" style="margin-right: 10px; transform: scale(1.1);">
-                <span style="font-size: 14px;">${displayName}</span>
-            </label>
-        `;
-    });
-
-    modal.innerHTML = `
-        <div style="background: white; padding: 25px; border-radius: 8px; min-width: 600px; max-width: 700px; max-height: 80vh; overflow-y: auto;">
-            <h3 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center;">
-                <i class="fas fa-cogs" style="margin-right: 10px; color: #007bff;"></i>
-                Generate CFSS Report - Step 2
-            </h3>
-            
-            <p style="margin-bottom: 20px; color: #555; line-height: 1.5;">
-                Select construction options to include in the report for <strong>Revision ${selectedRevision.number}</strong>:
-            </p>
-            
-            <div style="margin-bottom: 25px; max-height: 400px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 15px; background: #f8f9fa;">
-                <div style="font-weight: 500; margin-bottom: 15px; color: #495057; border-bottom: 1px solid #e9ecef; padding-bottom: 8px;">
-                    Available Options (${CFSS_OPTIONS.length})
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-                    ${optionsHTML}
-                </div>
-            </div>
-            
-            <div style="background: #e7f3ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 3px solid #007bff;">
-                <div style="font-size: 13px; color: #495057;">
-                    <strong>Note:</strong> Selected options will be arranged in a 3×3 grid. If you select more than 9 options, additional pages will be created.
-                </div>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="selectAllCFSSOptions()" 
-                            style="background: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                        Select All
-                    </button>
-                    <button onclick="clearAllCFSSOptions()" 
-                            style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                        Clear All
-                    </button>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="backToRevisionSelection()" 
-                            style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button onclick="generateCFSSReportWithOptions()" 
-                            style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-file-pdf"></i>
-                        Generate Report
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    // Add hover effects for options
-    const labels = modal.querySelectorAll('label');
-    labels.forEach(label => {
-        label.addEventListener('mouseenter', () => {
-            label.style.backgroundColor = '#e9ecef';
-        });
-        
-        label.addEventListener('mouseleave', () => {
-            label.style.backgroundColor = 'transparent';
-        });
-    });
-
-    // Close on outside click
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeCFSSOptionsSelectionModal();
-        }
-    });
-
-    // Store modal and selected revision reference
-    window.currentCFSSOptionsModal = modal;
-    window.selectedRevisionForReport = selectedRevision;
-}
-
-// Helper functions for options modal
-function selectAllCFSSOptions() {
-    const modal = window.currentCFSSOptionsModal;
-    if (!modal) return;
+// NEW: Direct report generation using tab-selected options
+async function generateCFSSReportDirectlyWithTabOptions(selectedRevision) {
+    console.log('Generating CFSS report with tab-selected options...');
     
-    const checkboxes = modal.querySelectorAll('input[name="cfssOption"]');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = true;
-    });
-}
-
-function clearAllCFSSOptions() {
-    const modal = window.currentCFSSOptionsModal;
-    if (!modal) return;
+    // Get options from the tab interface
+    const selectedOptions = [...selectedCFSSOptions]; // Use global array from tab selections
     
-    const checkboxes = modal.querySelectorAll('input[name="cfssOption"]');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = false;
-    });
-}
-
-function backToRevisionSelection() {
-    closeCFSSOptionsSelectionModal();
-    showRevisionSelectionModal();
-}
-
-function closeCFSSOptionsSelectionModal() {
-    if (window.currentCFSSOptionsModal) {
-        window.currentCFSSOptionsModal.remove();
-        window.currentCFSSOptionsModal = null;
-    }
-}
-
-// Updated function to generate report with selected options
-async function generateCFSSReportWithOptions() {
-    const modal = window.currentCFSSOptionsModal;
-    const selectedRevision = window.selectedRevisionForReport;
-    
-    if (!modal || !selectedRevision) {
-        alert('Error: Missing modal or revision data');
-        return;
-    }
-
-    // Get selected options
-    const selectedOptions = [];
-    const checkboxes = modal.querySelectorAll('input[name="cfssOption"]:checked');
-    checkboxes.forEach(checkbox => {
-        selectedOptions.push(checkbox.value);
-    });
-
-    console.log('Selected options:', selectedOptions);
+    console.log('Selected options from tab:', selectedOptions);
     console.log('Selected revision:', selectedRevision.number);
-
-    // Close options modal
-    closeCFSSOptionsSelectionModal();
 
     // Show loading state
     const generateButton = document.getElementById('generateCFSSReportButton');
     if (generateButton) {
         generateButton.disabled = true;
-        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating CFSS Report with Options...`;
+        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating CFSS Report...`;
     }
 
     try {
-        // Generate report with options
+        // Generate report with tab-selected options
         await generateCFSSReportForRevisionWithOptions(selectedRevision, selectedOptions);
         
     } catch (error) {
-        console.error('Error generating CFSS report with options:', error);
+        console.error('Error generating CFSS report:', error);
         alert('Error generating CFSS report: ' + error.message);
     } finally {
         if (generateButton) {
@@ -3622,6 +3492,466 @@ function clearEditModeImages(wallIndex) {
     }
 }
 
+// Global variable to store selected options
+let selectedCFSSOptions = [];
+
+// Initialize the tab system
+function initializeTabSystem() {
+    console.log('🔄 Initializing CFSS tab system...');
+    
+    // Get tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabSections = document.querySelectorAll('.tab-content-section');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            switchTab(targetTab);
+        });
+    });
+    
+    console.log('✅ Tab system initialized');
+}
+
+// Call preload when options tab is first opened
+function switchTab(tabId) {
+    console.log(`Switching to tab: ${tabId}`);
+    
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    
+    // Update tab content sections
+    document.querySelectorAll('.tab-content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById(`${tabId}-content`).classList.add('active');
+    
+    // Preload images when switching to options tab
+    if (tabId === 'option-list') {
+        setTimeout(() => {
+            preloadOptionImages();
+        }, 200);
+    }
+    
+    console.log(`Switched to ${tabId} tab`);
+}
+
+// Initialize the options system
+function initializeOptionsSystem() {
+    console.log('🔧 Initializing CFSS options system...');
+    
+    // Populate options by category
+    populateOptionsCategories();
+    
+    // Setup save options button
+    const saveOptionsBtn = document.getElementById('saveOptionsBtn');
+    if (saveOptionsBtn) {
+        saveOptionsBtn.addEventListener('click', saveCFSSOptions);
+    }
+    
+    console.log('✅ Options system initialized');
+}
+
+// Populate options by categories
+function populateOptionsCategories() {
+    // Define option categories and their corresponding options
+    const optionCategories = {
+        'lisse-trouee': {
+            container: 'lisse-trouee-options',
+            options: [
+                'fixe-beton-lisse-trouee',
+                'fixe-structure-dacier-lisse-trouee', 
+                'fixe-tabiler-metallique-lisse-trouee',
+                'fixe-bois-lisse-trouee',
+                'detail-lisse-trouee',
+                'detail-entremise'
+            ]
+        },
+        'double-lisse': {
+            container: 'double-lisse-options',
+            options: [
+                'fixe-beton-double-lisse',
+                'fixe-structure-dacier-double-lisse',
+                'fixe-tabiler-metallique-double-lisse',
+                'detail-double-lisse'
+            ]
+        },
+        'lisse-basse': {
+            container: 'lisse-basse-options',
+            options: [
+                'fixe-beton-lisse-basse',
+                'fixe-structure-dacier-lisse-basse',
+                'fixe-bois-lisse-basse',
+                'detail-lisse-basse'
+            ]
+        },
+        'parapet': {
+            container: 'parapet-options',
+            options: [
+                'parapet-1', 'parapet-2', 'parapet-3', 'parapet-4', 'parapet-5',
+                'parapet-6', 'parapet-7', 'parapet-8', 'parapet-9', 'parapet-10'
+            ]
+        },
+        'detail-structure': {
+            container: 'detail-structure-options',
+            options: [
+                'detail-structure'
+            ]
+        }
+    };
+
+    // Populate each category
+    Object.entries(optionCategories).forEach(([categoryKey, categoryData]) => {
+        const container = document.getElementById(categoryData.container);
+        if (!container) {
+            console.warn(`Container not found: ${categoryData.container}`);
+            return;
+        }
+
+        categoryData.options.forEach(option => {
+            const optionElement = createOptionElement(option);
+            container.appendChild(optionElement);
+        });
+    });
+
+    console.log('✅ Option categories populated');
+}
+
+// Updated createOptionElement function with actual image loading
+function createOptionElement(optionName) {
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'option-item';
+    optionDiv.setAttribute('data-option', optionName);
+
+    const displayName = formatOptionDisplayName(optionName);
+    
+    optionDiv.innerHTML = `
+        <input type="checkbox" class="option-checkbox" id="option-${optionName}" value="${optionName}">
+        <div class="option-thumbnail" id="thumbnail-${optionName}">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='40'%3E%3Crect width='50' height='40' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='8'%3ELoading...%3C/text%3E%3C/svg%3E" 
+                alt="${displayName}" 
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 3px;"
+                id="img-${optionName}">
+        </div>
+        <div class="option-name">${displayName}</div>
+    `;
+
+    // Add event listeners
+    const checkbox = optionDiv.querySelector('.option-checkbox');
+    checkbox.addEventListener('change', function() {
+        handleOptionToggle(optionName, this.checked);
+    });
+
+    // Make the entire row clickable
+    optionDiv.addEventListener('click', function(e) {
+        if (e.target.type !== 'checkbox') {
+            checkbox.click();
+        }
+    });
+
+    // Load the actual image after the element is created
+    setTimeout(() => {
+        loadOptionThumbnail(optionName);
+    }, 100);
+
+    return optionDiv;
+}
+
+// Function to load option thumbnail images
+async function loadOptionThumbnail(optionName) {
+    const imgElement = document.getElementById(`img-${optionName}`);
+    
+    if (!imgElement) {
+        console.warn(`Image element not found for ${optionName}`);
+        return;
+    }
+
+    console.log(`Loading thumbnail for option: ${optionName}`);
+    
+    // Direct image loading - no CORS issues
+    const pngUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionName}.png`;
+    const jpgUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionName}.jpg`;
+    
+    imgElement.onload = () => {
+        console.log(`Thumbnail loaded successfully: ${optionName}`);
+    };
+    
+    imgElement.onerror = () => {
+        console.log(`PNG failed for ${optionName}, trying JPG...`);
+        // Try JPG as fallback
+        imgElement.onerror = () => {
+            console.log(`Both formats failed for ${optionName}, showing placeholder`);
+            showThumbnailPlaceholder(optionName, 'No Image');
+        };
+        imgElement.src = jpgUrl;
+    };
+    
+    // Start with PNG
+    imgElement.src = pngUrl;
+}
+
+// Function to get option image URL from S3
+async function getOptionImageUrl(optionName) {
+    try {
+        // First, check if the image exists in S3 by trying to get a signed URL
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(`cfss-options/${optionName}.png`)}`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            return data.url;
+        } else {
+            // Try JPG format as fallback
+            const jpgResponse = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(`cfss-options/${optionName}.jpg`)}`, {
+                headers: getAuthHeaders()
+            });
+            
+            if (jpgResponse.ok) {
+                const jpgData = await jpgResponse.json();
+                return jpgData.url;
+            }
+        }
+        
+        return null;
+    } catch (error) {
+        console.error(`Error getting image URL for ${optionName}:`, error);
+        return null;
+    }
+}
+
+// Function to show placeholder when image can't be loaded
+function showThumbnailPlaceholder(optionName, message = 'IMG') {
+    const imgElement = document.getElementById(`img-${optionName}`);
+    if (imgElement) {
+        imgElement.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='40'%3E%3Crect width='50' height='40' fill='%23f5f5f5' stroke='%23ddd'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='8'%3E${encodeURIComponent(message)}%3C/text%3E%3C/svg%3E`;
+    }
+}
+
+// Alternative: If you want to load images directly from a public URL without signed URLs
+async function getOptionImageUrlDirect(optionName) {
+    try {
+        // Try PNG first
+        let imageUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionName}.png`;
+        
+        // Check if the image exists by trying to fetch it
+        const response = await fetch(imageUrl, { method: 'HEAD' });
+        if (response.ok) {
+            return imageUrl;
+        }
+        
+        // Try JPG as fallback
+        imageUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionName}.jpg`;
+        const jpgResponse = await fetch(imageUrl, { method: 'HEAD' });
+        if (jpgResponse.ok) {
+            return imageUrl;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error(`Error checking image existence for ${optionName}:`, error);
+        return null;
+    }
+}
+
+// Function to preload all option images when the tab is opened
+async function preloadOptionImages() {
+    console.log('Preloading CFSS option images...');
+    
+    const allOptions = [
+        // Lisse trouée options
+        'fixe-beton-lisse-trouee',
+        'fixe-structure-dacier-lisse-trouee', 
+        'fixe-tabiler-metallique-lisse-trouee',
+        'fixe-bois-lisse-trouee',
+        'detail-lisse-trouee',
+        'detail-entremise',
+        
+        // Double lisse options
+        'fixe-beton-double-lisse',
+        'fixe-structure-dacier-double-lisse',
+        'fixe-tabiler-metallique-double-lisse',
+        'detail-double-lisse',
+        
+        // Lisse basse options
+        'fixe-beton-lisse-basse',
+        'fixe-structure-dacier-lisse-basse',
+        'fixe-bois-lisse-basse',
+        'detail-lisse-basse',
+        
+        // Parapet options
+        'parapet-1', 'parapet-2', 'parapet-3', 'parapet-4', 'parapet-5',
+        'parapet-6', 'parapet-7', 'parapet-8', 'parapet-9', 'parapet-10',
+        
+        // Detail structure
+        'detail-structure'
+    ];
+    
+    // Load images in batches to avoid overwhelming the server
+    const batchSize = 5;
+    for (let i = 0; i < allOptions.length; i += batchSize) {
+        const batch = allOptions.slice(i, i + batchSize);
+        await Promise.allSettled(
+            batch.map(option => loadOptionThumbnail(option))
+        );
+        
+        // Small delay between batches
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    console.log('Option image preloading completed');
+}
+
+// Format option display name
+function formatOptionDisplayName(optionName) {
+    return optionName
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase())
+        .replace(/Dacier/g, "D'acier")
+        .replace(/Tabiler/g, 'Tablier');
+}
+
+// Handle option toggle
+function handleOptionToggle(optionName, isSelected) {
+    console.log(`🔧 Option ${optionName} ${isSelected ? 'selected' : 'deselected'}`);
+    
+    const optionItem = document.querySelector(`[data-option="${optionName}"]`);
+    
+    if (isSelected) {
+        // Add to selected options
+        if (!selectedCFSSOptions.includes(optionName)) {
+            selectedCFSSOptions.push(optionName);
+        }
+        optionItem.classList.add('selected');
+    } else {
+        // Remove from selected options
+        selectedCFSSOptions = selectedCFSSOptions.filter(opt => opt !== optionName);
+        optionItem.classList.remove('selected');
+    }
+    
+    updateSelectionSummary();
+}
+
+// Update selection summary
+function updateSelectionSummary() {
+    const summaryElement = document.getElementById('selectionSummary');
+    if (summaryElement) {
+        const count = selectedCFSSOptions.length;
+        summaryElement.innerHTML = `
+            <i class="fas fa-check-circle"></i> ${count} option${count !== 1 ? 's' : ''} selected
+        `;
+    }
+}
+
+// Save CFSS options
+async function saveCFSSOptions() {
+    if (!canModifyProject()) {
+        alert('You do not have permission to modify options for this project.');
+        return;
+    }
+
+    console.log('💾 Saving CFSS options:', selectedCFSSOptions);
+
+    try {
+        // Here you can save the options to your project data
+        // For now, we'll just store them locally and show a success message
+        
+        // You can integrate this with your existing project saving functionality
+        // For example, add the options to the project data structure
+        if (window.projectData) {
+            window.projectData.selectedCFSSOptions = [...selectedCFSSOptions];
+        }
+
+        // Show success message
+        alert(`Successfully saved ${selectedCFSSOptions.length} CFSS construction options!`);
+        console.log('✅ CFSS options saved successfully');
+        
+    } catch (error) {
+        console.error('❌ Error saving CFSS options:', error);
+        alert('Error saving CFSS options: ' + error.message);
+    }
+}
+
+// Load saved options (call this when initializing the page)
+function loadSavedCFSSOptions() {
+    if (window.projectData && window.projectData.selectedCFSSOptions) {
+        selectedCFSSOptions = [...window.projectData.selectedCFSSOptions];
+        
+        // Update checkboxes and UI to reflect saved selections
+        selectedCFSSOptions.forEach(optionName => {
+            const checkbox = document.getElementById(`option-${optionName}`);
+            const optionItem = document.querySelector(`[data-option="${optionName}"]`);
+            
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+            if (optionItem) {
+                optionItem.classList.add('selected');
+            }
+        });
+        
+        updateSelectionSummary();
+        console.log(`✅ Loaded ${selectedCFSSOptions.length} saved CFSS options`);
+    }
+}
+
+// Utility functions for option management
+function selectAllOptions() {
+    console.log('🔧 Selecting all CFSS options...');
+    
+    // Get all option checkboxes
+    const checkboxes = document.querySelectorAll('.option-checkbox');
+    checkboxes.forEach(checkbox => {
+        if (!checkbox.checked) {
+            checkbox.click(); // This will trigger the change event and update our arrays
+        }
+    });
+}
+
+function clearAllOptions() {
+    console.log('🔧 Clearing all CFSS options...');
+    
+    // Get all checked option checkboxes
+    const checkboxes = document.querySelectorAll('.option-checkbox:checked');
+    checkboxes.forEach(checkbox => {
+        checkbox.click(); // This will trigger the change event and update our arrays
+    });
+}
+
+// Integration with existing report generation
+// Update your existing generateCFSSReportWithOptions function to use the tab-based selections
+function getSelectedOptionsFromTabs() {
+    return [...selectedCFSSOptions];
+}
+
+// Replace the modal-based report generation with tab-based
+async function generateCFSSReportFromTabs() {
+    // Check if we have revisions
+    if (!projectRevisions || projectRevisions.length === 0) {
+        alert('No revisions found. Please add walls to create revisions first.');
+        return;
+    }
+
+    // For simplicity, use the current/latest revision
+    const latestRevision = projectRevisions[projectRevisions.length - 1];
+    const selectedOptions = getSelectedOptionsFromTabs();
+    
+    console.log('Generating report with:', {
+        revision: latestRevision.number,
+        optionsCount: selectedOptions.length
+    });
+
+    try {
+        await generateCFSSReportForRevisionWithOptions(latestRevision, selectedOptions);
+    } catch (error) {
+        console.error('Error generating report from tabs:', error);
+        alert('Error generating CFSS report: ' + error.message);
+    }
+}
+
 // Make functions globally available
 window.logout = logout;
 window.deleteEquipment = deleteEquipment;
@@ -3666,3 +3996,22 @@ window.backToRevisionSelection = backToRevisionSelection;
 window.closeCFSSOptionsSelectionModal = closeCFSSOptionsSelectionModal;
 window.generateCFSSReportWithOptions = generateCFSSReportWithOptions;
 window.generateCFSSReportForRevisionWithOptions = generateCFSSReportForRevisionWithOptions;
+
+window.initializeTabSystem = initializeTabSystem;
+window.initializeOptionsSystem = initializeOptionsSystem;
+window.switchTab = switchTab;
+window.handleOptionToggle = handleOptionToggle;
+window.saveCFSSOptions = saveCFSSOptions;
+window.loadSavedCFSSOptions = loadSavedCFSSOptions;
+window.selectAllOptions = selectAllOptions;
+window.clearAllOptions = clearAllOptions;
+window.getSelectedOptionsFromTabs = getSelectedOptionsFromTabs;
+window.generateCFSSReportFromTabs = generateCFSSReportFromTabs;
+window.selectedCFSSOptions = selectedCFSSOptions;
+window.generateCFSSReportDirectlyWithTabOptions = generateCFSSReportDirectlyWithTabOptions;
+
+window.loadOptionThumbnail = loadOptionThumbnail;
+window.getOptionImageUrl = getOptionImageUrl;
+window.getOptionImageUrlDirect = getOptionImageUrlDirect;
+window.showThumbnailPlaceholder = showThumbnailPlaceholder;
+window.preloadOptionImages = preloadOptionImages;
