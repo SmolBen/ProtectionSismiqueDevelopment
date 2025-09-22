@@ -3846,37 +3846,65 @@ function updateSelectionSummary() {
     }
 }
 
-// Save CFSS options
+// Save CFSS options to database
 async function saveCFSSOptions() {
     if (!canModifyProject()) {
         alert('You do not have permission to modify options for this project.');
         return;
     }
 
-    console.log('💾 Saving CFSS options:', selectedCFSSOptions);
+    console.log('💾 Saving CFSS options to database:', selectedCFSSOptions);
 
     try {
-        // Here you can save the options to your project data
-        // For now, we'll just store them locally and show a success message
-        
-        // You can integrate this with your existing project saving functionality
-        // For example, add the options to the project data structure
+        const saveButton = document.getElementById('saveOptionsBtn');
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Options...';
+        }
+
+        // Save options as part of the project data
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                id: currentProjectId,
+                selectedCFSSOptions: [...selectedCFSSOptions]  // Save the selected options array
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        // Update local project data
         if (window.projectData) {
             window.projectData.selectedCFSSOptions = [...selectedCFSSOptions];
         }
 
         // Show success message
         alert(`Successfully saved ${selectedCFSSOptions.length} CFSS construction options!`);
-        console.log('✅ CFSS options saved successfully');
+        console.log('✅ CFSS options saved successfully to database');
+
+        // NEW: Automatically switch back to wall list tab after successful save
+        switchTab('wall-list');
         
     } catch (error) {
         console.error('❌ Error saving CFSS options:', error);
         alert('Error saving CFSS options: ' + error.message);
+    } finally {
+        const saveButton = document.getElementById('saveOptionsBtn');
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.innerHTML = '<i class="fas fa-save"></i> Save Options';
+        }
     }
 }
 
 // Load saved options (call this when initializing the page)
 function loadSavedCFSSOptions() {
+    console.log('🔄 Loading saved CFSS options...');
+    
     if (window.projectData && window.projectData.selectedCFSSOptions) {
         selectedCFSSOptions = [...window.projectData.selectedCFSSOptions];
         
@@ -3895,6 +3923,10 @@ function loadSavedCFSSOptions() {
         
         updateSelectionSummary();
         console.log(`✅ Loaded ${selectedCFSSOptions.length} saved CFSS options`);
+    } else {
+        console.log('ℹ️ No saved CFSS options found, starting with empty selection');
+        selectedCFSSOptions = [];
+        updateSelectionSummary();
     }
 }
 

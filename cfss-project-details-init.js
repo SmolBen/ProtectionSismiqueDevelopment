@@ -119,6 +119,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 renderEquipmentList();
                 initializeImageUpload();
 
+                // Load saved CFSS options after everything is initialized
+                setTimeout(() => {
+                    loadSavedCFSSOptions();
+                }, 500);
+
                 const newCalcButton = document.getElementById('newCalculationButton');
                 newCalcButton.style.display = 'block';
                 console.log('✅ CFSS initialization completed successfully');
