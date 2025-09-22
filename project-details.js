@@ -2881,6 +2881,9 @@ equipmentCard.innerHTML = `
         <div class="equipment-actions-compact">
             <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${index})">Details</button>
             ${canModifyProject() ? `
+                <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${index})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+            <i class="fas fa-copy"></i> Duplicate
+                </button>
                 ${!equipment.imageRequested ? `
                     <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">Upload Image</button>
                 ` : `
@@ -4855,6 +4858,172 @@ function generateEquipmentDetailsHTML(equipment, currentProject, cfsResult, late
     return html;
 }
 
+function duplicateEquipment(index) {
+    if (!canModifyProject()) {
+        alert('You do not have permission to add equipment to this project.');
+        return;
+    }
+
+    const equipmentToDuplicate = projectEquipment[index];
+    
+    // Clear existing form data
+    clearEquipmentForm();
+    
+    // Populate common fields
+    document.getElementById('equipment').value = equipmentToDuplicate.equipmentType || equipmentToDuplicate.equipment;
+    document.getElementById('model').value = equipmentToDuplicate.model || '';
+    document.getElementById('tag').value = equipmentToDuplicate.tag || '';
+    document.getElementById('level').value = equipmentToDuplicate.level || '';
+    document.getElementById('totalLevels').value = equipmentToDuplicate.totalLevels || '';
+    document.getElementById('installMethod').value = equipmentToDuplicate.installMethod || '';
+    document.getElementById('hn').value = equipmentToDuplicate.hn || '';
+    
+    // Set NBC Category
+    if (equipmentToDuplicate.nbcCategory) {
+        document.getElementById('nbcCategory').value = equipmentToDuplicate.nbcCategory;
+    }
+
+    // Handle equipment type-specific fields
+    if (equipmentToDuplicate.isPipe) {
+        // Pipe-specific fields
+        if (equipmentToDuplicate.pipeType) {
+            document.getElementById('pipeType').value = equipmentToDuplicate.pipeType;
+        }
+        if (equipmentToDuplicate.pipeWeightPerFoot) {
+            document.getElementById('pipeWeightPerFoot').value = equipmentToDuplicate.pipeWeightPerFoot;
+        }
+        if (equipmentToDuplicate.pipeDiameter) {
+            document.getElementById('pipeDiameter').value = equipmentToDuplicate.pipeDiameter;
+        }
+        if (equipmentToDuplicate.supportType) {
+            document.getElementById('supportType').value = equipmentToDuplicate.supportType;
+        }
+        if (equipmentToDuplicate.structureType) {
+            document.getElementById('structureType').value = equipmentToDuplicate.structureType;
+        }
+        
+        // Populate NBC Category options for pipes
+        populateNBCCategoryOptions(true);
+    } else {
+        // Traditional equipment fields
+        document.getElementById('weight').value = equipmentToDuplicate.weight || '';
+        document.getElementById('weightUnit').value = equipmentToDuplicate.weightUnit || 'lbs';
+        document.getElementById('height').value = equipmentToDuplicate.height || '';
+        document.getElementById('width').value = equipmentToDuplicate.width || '';
+        document.getElementById('length').value = equipmentToDuplicate.length || '';
+        document.getElementById('numberOfAnchors').value = equipmentToDuplicate.numberOfAnchors || '';
+        document.getElementById('anchorType').value = equipmentToDuplicate.anchorType || '';
+        document.getElementById('hx').value = equipmentToDuplicate.hx || '';
+        
+        // Update anchor diameter options based on anchor type
+        if (equipmentToDuplicate.anchorType) {
+            updateAnchorDiameterOptions();
+            if (equipmentToDuplicate.anchorDiameter) {
+                document.getElementById('anchorDiameter').value = equipmentToDuplicate.anchorDiameter;
+            }
+        }
+        
+        // Slab/ceiling specific fields
+        if (equipmentToDuplicate.slabThickness) {
+            document.getElementById('slabThickness').value = equipmentToDuplicate.slabThickness;
+        }
+        if (equipmentToDuplicate.fc) {
+            document.getElementById('fc').value = equipmentToDuplicate.fc;
+        }
+        
+        // Mounting type and ASHRAE fields - FIXED LOGIC
+        if (equipmentToDuplicate.mountingType) {
+            document.getElementById('mountingType').value = equipmentToDuplicate.mountingType;
+            toggleMountingTypeField(); // This will show/hide appropriate fields
+            
+            // Only populate ASHRAE fields if they're relevant for this mounting type
+            const mountingType = equipmentToDuplicate.mountingType;
+            
+            // Type 3-2, 3-5A, 3-10: Need isolator width and height (two-bolt arrangements)
+            if (['type-3-2', 'type-3-5a', 'type-3-10'].includes(mountingType)) {
+                if (equipmentToDuplicate.isolatorWidth) {
+                    document.getElementById('isolatorWidth').value = equipmentToDuplicate.isolatorWidth;
+                }
+                if (equipmentToDuplicate.restraintHeight) {
+                    document.getElementById('restraintHeight').value = equipmentToDuplicate.restraintHeight;
+                }
+                if (equipmentToDuplicate.numberOfIsolators) {
+                    document.getElementById('numberOfIsolators').value = equipmentToDuplicate.numberOfIsolators;
+                }
+            }
+            
+            // Type 3-5B, 3-5C, 3-5D, 3-11: Need edge distances and height (four-bolt arrangements)  
+            else if (['type-3-5b', 'type-3-5c', 'type-3-5d', 'type-3-11'].includes(mountingType)) {
+                if (equipmentToDuplicate.restraintHeight) {
+                    document.getElementById('restraintHeight').value = equipmentToDuplicate.restraintHeight;
+                }
+                if (equipmentToDuplicate.edgeDistanceA) {
+                    document.getElementById('edgeDistanceA').value = equipmentToDuplicate.edgeDistanceA;
+                }
+                if (equipmentToDuplicate.edgeDistanceB) {
+                    document.getElementById('edgeDistanceB').value = equipmentToDuplicate.edgeDistanceB;
+                }
+                if (equipmentToDuplicate.numberOfIsolators) {
+                    document.getElementById('numberOfIsolators').value = equipmentToDuplicated.numberOfIsolators;
+                }
+            }
+            
+            // Type 3-1: Only needs isolator count
+            else if (mountingType === 'type-3-1') {
+                if (equipmentToDuplicate.numberOfIsolators) {
+                    document.getElementById('numberOfIsolators').value = equipmentToDuplicate.numberOfIsolators;
+                }
+            }
+            
+            // For 'no-isolators' and other types: Don't populate any ASHRAE fields
+            // The toggleMountingTypeField() call above already hid these fields
+        }
+        
+        // Populate NBC Category options for traditional equipment
+        populateNBCCategoryOptions(false);
+    }
+    
+    // Trigger equipment change to show/hide appropriate form sections
+    handleEquipmentChange();
+    
+    // Trigger install method change to show/hide conditional fields
+    toggleSlabCeilingFields();
+    
+    // Update equipment image
+    setTimeout(() => {
+        updateEquipmentImage();
+    }, 100);
+    
+    // Show the form
+    const equipmentForm = document.getElementById('equipmentForm');
+    const newCalcButton = document.getElementById('newCalculationButton');
+    
+    if (equipmentForm && newCalcButton) {
+        equipmentForm.classList.add('show');
+        newCalcButton.textContent = 'Hide Form';
+        
+        // Scroll to form
+        equipmentForm.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+        
+        // Focus on a field that user is likely to want to modify
+        setTimeout(() => {
+            const focusField = equipmentToDuplicate.isPipe ? 
+                document.getElementById('pipeDiameter') : 
+                document.getElementById('model');
+                
+            if (focusField) {
+                focusField.focus();
+                focusField.select();
+            }
+        }, 100);
+    }
+    
+    console.log(`Duplicated equipment: ${equipmentToDuplicate.equipment}`);
+}
+
 // Function to add event listeners to calculation values in results
 function addCalculationEventListeners(container, equipment, currentProject) {
     // Basic calculation listeners
@@ -5220,3 +5389,4 @@ window.updateEditAnchorDiameters = updateEditAnchorDiameters;
 window.updateEditMountingTypeFields = updateEditMountingTypeFields;
 window.generateProjectReport = generateProjectReport;
 window.requestEquipmentImage = requestEquipmentImage;
+window.duplicateEquipment = duplicateEquipment;
