@@ -1553,11 +1553,16 @@ function duplicateEquipment(index) {
     document.getElementById('floor').value = wallToDuplicate.floor || '';
     document.getElementById('hauteurMax').value = wallToDuplicate.hauteurMax || '';
     document.getElementById('hauteurMaxUnit').value = wallToDuplicate.hauteurMaxUnit || '';
+    // FIX: Add the missing minor height values
+    document.getElementById('hauteurMaxMinor').value = wallToDuplicate.hauteurMaxMinor || '';
+    document.getElementById('hauteurMaxMinorUnit').value = wallToDuplicate.hauteurMaxMinorUnit || '';
     document.getElementById('deflexionMax').value = wallToDuplicate.deflexionMax || '';
     document.getElementById('montantMetallique').value = wallToDuplicate.montantMetallique || '';
     document.getElementById('lisseSuperieure').value = wallToDuplicate.lisseSuperieure || '';
     document.getElementById('lisseInferieure').value = wallToDuplicate.lisseInferieure || '';
     document.getElementById('entremise').value = wallToDuplicate.entremise || '';
+    // FIX: Add the missing espacement value
+    document.getElementById('espacement').value = wallToDuplicate.espacement || '';
     document.getElementById('note').value = wallToDuplicate.note || '';
     
     // Show the form
@@ -1582,7 +1587,6 @@ function duplicateEquipment(index) {
                 floorField.select(); // Select the text so user can easily change it
             }
         }, 100);
-
     }
     
     console.log(`Duplicated wall: ${wallToDuplicate.equipment}`);
