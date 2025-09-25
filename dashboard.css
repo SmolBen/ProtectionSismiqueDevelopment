@@ -235,7 +235,7 @@
 .project-card:hover {
     background: #f8fafc;
     transform: none;
-    border-color: #e2e8f0;
+    border-bottom-color: #e2e8f0;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
@@ -245,6 +245,47 @@
 
 .project-card::before {
     display: none;
+}
+
+/* Domain badge next to title */
+.domain-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--primary-color);
+    color: white;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.domain-badge.electricity {
+    background: #f59e0b; /* Orange */
+}
+
+.domain-badge.ventilation {
+    background: #3b82f6; /* Blue */
+}
+
+.domain-badge.plumbing {
+    background: #ef4444; /* Red */
+}
+
+.domain-badge.sprinkler {
+    background: #10b981; /* Green */
+}
+
+.domain-badge.interior-system {
+    background: #8b5cf6; /* Purple */
+}
+
+.domain-badge i {
+    font-size: 9px;
 }
 
 .project-main {
@@ -383,6 +424,21 @@
 
     .meta-separator {
         display: none;
+    }
+
+    .domain-label {
+        font-size: 8px;
+        padding: 1px 4px;
+    }
+
+    .domain-badge {
+        font-size: 9px;
+        padding: 1px 6px;
+        margin-left: 6px;
+    }
+
+    .domain-badge i {
+        font-size: 8px;
     }
 }
 
