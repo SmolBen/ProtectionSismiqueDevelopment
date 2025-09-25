@@ -431,6 +431,7 @@
     transition: all 0.3s ease;
 }
 
+
 .equipment-card.highlighted .equipment-header {
     background-color: #fff3cd !important;
 }
@@ -675,7 +676,7 @@
     transform: translateY(-50%);
     width: 28px; /* Explicit width for click area */
     height: 28px; /* Explicit height for click area */
-    display: flex !important; /* Always show and use flexbox */
+    display: flex;
     align-items: center;
     justify-content: center;
     color: #999;
@@ -685,6 +686,12 @@
     transition: all 0.2s ease;
     border-radius: 4px;
     z-index: 1; /* Ensure it's above other elements */
+}
+
+/* Hide drag handle when details are expanded */
+.equipment-card .equipment-details.show ~ .equipment-header .drag-handle,
+.equipment-card:has(.equipment-details.show) .drag-handle {
+    display: none !important;
 }
 
 .equipment-card .drag-handle:hover {
