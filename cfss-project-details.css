@@ -203,26 +203,26 @@
 .calculation-sections {
     display: flex;
     gap: 30px;
-    max-width: 1600px; /* Add back constraint, but larger than before */
-    width: 90%; /* Reduce from 95% */
+    max-width: 1600px;
+    width: 90%;
     margin: 0 auto;
     padding: 20px;
 }
 
 /* Left side: Form + Upload combined */
 .equipment-form-section {
-    flex: 3; /* Increased from 2 */
+    flex: 3;
     background: #f9f9f9;
-    padding: 30px; /* Increased padding */
+    padding: 30px;
     border-radius: 8px;
     display: flex;
-    gap: 25px; /* Increased gap */
+    gap: 25px;
     min-width: 0;
 }
 
 /* Form fields */
 .form-fields {
-    flex: 2; /* Adjusted ratio */
+    flex: 2;
     min-width: 0;
 }
 
@@ -247,17 +247,17 @@
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 12px; /* Increased padding */
+    padding: 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 15px; /* Slightly larger font */
+    font-size: 15px;
     box-sizing: border-box;
 }
 
 /* Image upload section */
 .image-upload-section {
     flex: 1;
-    min-width: 200px; /* Increased minimum width */
+    min-width: 200px;
     display: flex;
     flex-direction: column;
 }
@@ -276,8 +276,8 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 15px; /* Larger font */
-    height: 45px; /* Larger height */
+    font-size: 15px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -290,7 +290,7 @@
 }
 
 .drop-zone {
-    height: 80px; /* Much larger height */
+    height: 80px;
     border: 2px dashed #ccc;
     border-radius: 4px;
     background: white;
@@ -298,14 +298,14 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: 13px; /* Larger font */
+    font-size: 13px;
     color: #666;
     cursor: pointer;
     line-height: 1.3;
     transition: all 0.3s ease;
     outline: none;
     resize: none;
-    padding: 15px; /* Increased padding */
+    padding: 15px;
 }
 
 .drop-zone:hover {
@@ -327,13 +327,13 @@
 .image-preview-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 10px; /* Increased gap */
+    gap: 10px;
 }
 
 .image-preview {
     position: relative;
     width: 100%;
-    height: 80px; /* Larger height */
+    height: 80px;
     border-radius: 4px;
     overflow: hidden;
     border: 1px solid #ddd;
@@ -368,9 +368,9 @@
 
 /* Right side: Calculation results */
 .calculation-results-section {
-    flex: 2; /* Increased from 1.5 */
+    flex: 2;
     background: white;
-    padding: 30px; /* Increased padding */
+    padding: 30px;
     border-radius: 8px;
     border: 1px solid #e0e0e0;
     min-width: 0;
@@ -437,7 +437,6 @@
 
 /* ============================================================================
    CFSS TAB SYSTEM STYLES
-   Add these styles to your cfss-project-details.css file
    ============================================================================ */
 
 /* Tab Interface Styles */
@@ -513,11 +512,11 @@
 .option-item {
     display: flex !important;
     align-items: center !important;
-    gap: 20px !important;           /* Larger gap for bigger thumbnails */
-    padding: 15px 12px !important;  /* More padding */
+    gap: 20px !important;
+    padding: 15px 12px !important;
     border-radius: 8px;
     transition: all 0.2s ease;
-    margin-bottom: 8px !important;  /* More space between items */
+    margin-bottom: 8px !important;
     cursor: pointer;
     border: 1px solid #e9ecef;
     background: white;
@@ -607,80 +606,7 @@
     color: #333;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    /* Tab system styles */
-    .tab-button {
-        padding: 12px 15px;
-        font-size: 13px;
-    }
-    
-    .tab-button i {
-        display: none;
-    }
-    
-    .tab-content {
-        padding: 15px;
-        height: auto;
-        max-height: 500px;
-    }
-    
-    .option-thumbnail {
-        width: 80px !important;
-        height: 64px !important;
-        font-size: 10px;
-    }
-    
-    .option-item {
-        gap: 12px !important;
-        padding: 8px 10px !important;
-    }
-}
-    
-    .option-name {
-        font-size: 13px;
-    }
-    
-    .category-header {
-        font-size: 14px;
-    }
-
-    /* Form and layout styles */
-    .main-fields-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .field-group {
-        margin-bottom: 10px;
-    }
-
-    .remove-btn {
-        margin-left: 0;
-        align-self: stretch;
-    }
-    
-    .image-preview-container {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    }
-
-/* Right section layout adjustments */
-.right-section {
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* Allow flexbox to shrink */
-}
-
-.right-section .tab-header {
-    flex-shrink: 0;
-}
-
-.right-section .tab-content {
-    flex: 1;
-    min-height: 0; /* Allow flexbox to shrink */
-}
-
-/* Default desktop/tablet size - 150px x 120px */
+/* Option thumbnails */
 .option-thumbnail {
     width: 150px !important;
     height: 120px !important;
@@ -715,15 +641,224 @@
     box-shadow: 0 4px 16px rgba(33, 150, 243, 0.3);
 }
 
+/* Drag and Drop Styles */
+.equipment-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.equipment-card.sortable-ghost {
+    opacity: 0.4;
+    background: #f0f8ff;
+    transform: rotate(2deg);
+}
+
+.equipment-card.sortable-drag {
+    opacity: 0.9;
+    cursor: grabbing !important;
+}
+
+.equipment-card.sortable-chosen {
+    box-shadow: 0 5px 20px rgba(0, 123, 255, 0.3);
+    transform: scale(1.02);
+}
+
+.equipment-list-container {
+    min-height: 100px;
+}
+
+/* FIXED: Drag handle positioning and interaction */
+.equipment-card .drag-handle {
+    position: absolute;
+    left: 10px; /* Centered on equals icon */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px; /* Explicit width for click area */
+    height: 28px; /* Explicit height for click area */
+    display: flex !important; /* Always show and use flexbox */
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    cursor: grab;
+    font-size: 18px;
+    user-select: none;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    z-index: 1; /* Ensure it's above other elements */
+}
+
+.equipment-card .drag-handle:hover {
+    color: #666;
+    background: transparent;
+}
+
+.equipment-card .drag-handle:active {
+    cursor: grabbing;
+    color: #333;
+    background: transparent;
+}
+
+/* FIXED: Adjust card layout to prevent button cutoff */
+.equipment-card.draggable .equipment-header {
+    padding-left: 48px; /* Space for drag handle */
+    padding-right: 25px; /* FIXED: Extra padding on right to prevent cutoff */
+    position: relative;
+    min-height: 60px;
+}
+
+/* FIXED: Ensure buttons are not cut off */
+.equipment-actions-compact {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+    margin-left: auto;
+    margin-right: 45px; /* FIXED: Added margin to ensure space from edge */
+}
+
+.equipment-info-compact {
+    flex: 1;
+    min-width: 0;
+    margin-right: 15px;
+}
+
+/* FIXED: Ensure delete button is fully visible */
+.delete-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 65px; /* FIXED: Ensure minimum width */
+    padding: 4px 10px; /* Adequate padding */
+}
+
+/* Drop zone highlight */
+.sortable-drop-highlight {
+    background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.1), transparent);
+    height: 2px;
+    margin: 5px 0;
+    animation: dropHighlight 1s ease-in-out infinite;
+}
+
+@keyframes dropHighlight {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+/* Right section layout adjustments */
+.right-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.right-section .tab-header {
+    flex-shrink: 0;
+}
+
+.right-section .tab-content {
+    flex: 1;
+    min-height: 0;
+}
+
+.equipment-card.sortable-ghost {
+    opacity: 0.4;
+    background: #f0f8ff;
+}
+
+.equipment-card.sortable-ghost .equipment-header,
+.equipment-card.sortable-ghost .equipment-details,
+.equipment-card.sortable-ghost .drag-handle {
+    visibility: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    /* Tab system styles */
+    .tab-button {
+        padding: 12px 15px;
+        font-size: 13px;
+    }
+    
+    .tab-button i {
+        display: none;
+    }
+    
+    .tab-content {
+        padding: 15px;
+        height: auto;
+        max-height: 500px;
+    }
+    
+    .option-thumbnail {
+        width: 80px !important;
+        height: 64px !important;
+        font-size: 10px;
+    }
+    
+    .option-item {
+        gap: 12px !important;
+        padding: 8px 10px !important;
+    }
+    
+    .option-name {
+        font-size: 13px;
+    }
+    
+    .category-header {
+        font-size: 14px;
+    }
+
+    /* Form and layout styles */
+    .main-fields-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .field-group {
+        margin-bottom: 10px;
+    }
+
+    .remove-btn {
+        margin-left: 0;
+        align-self: stretch;
+    }
+    
+    .image-preview-container {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    }
+    
+    .equipment-card.draggable .equipment-header {
+        padding-left: 40px;
+        padding-right: 15px; /* Still maintain right padding on mobile */
+    }
+    
+    .equipment-actions-compact {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    .option-thumbnail {
+        width: 60px !important;
+        height: 48px !important;
+        font-size: 9px;
+    }
+    
+    .option-item {
+        gap: 10px !important;
+        padding: 6px 8px !important;
+    }
+}
+
 /* Remove any width constraints from parent containers */
 @media (min-width: 1200px) {
     .calculation-sections {
-        width: 98%; /* Even wider on large screens */
-        gap: 40px; /* Larger gap on big screens */
+        width: 98%;
+        gap: 40px;
     }
     
     .equipment-form-section {
-        padding: 40px; /* More padding on large screens */
+        padding: 40px;
     }
     
     .calculation-results-section {
@@ -761,19 +896,5 @@
     .drop-zone {
         height: 40px;
         flex: 1;
-    }
-}
-
-/* Very small screens */
-@media (max-width: 480px) {
-    .option-thumbnail {
-        width: 60px !important;
-        height: 48px !important;
-        font-size: 9px;
-    }
-    
-    .option-item {
-        gap: 10px !important;
-        padding: 6px 8px !important;
     }
 }
