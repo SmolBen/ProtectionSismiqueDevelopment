@@ -184,96 +184,98 @@
                     <span id="cfss-btn-text">Add CFSS Data</span>
                 </button>
                 
-<div id="cfss-form" class="cfss-form hidden">
-    <!-- Floor-specific sections (can have multiple) -->
-    <div id="floor-sections">
-        <div class="floor-section">
-            <div class="main-fields-row">
-                <div class="field-group floor-range">
-                    <label>Floor Range:</label>
-                    <input type="text" class="floor-input" placeholder="e.g., 1-4">
-                </div>
-                
-                <div class="field-group resistance">
-                    <label>Resistance:</label>
-                    <div class="field-with-unit">
-                        <input type="number" class="value-input" placeholder="0.0" step="0.1">
-                        <span class="unit-label">psf</span>
+                <div id="cfss-form" class="cfss-form hidden">
+                    <!-- Floor-specific sections (can have multiple) -->
+                    <div id="floor-sections">
+                        <div class="floor-section">
+                            <div class="main-fields-row">
+                                <div class="field-group floor-range">
+                                    <label>Floor Range:</label>
+                                    <input type="text" class="floor-input" placeholder="e.g., 1-4">
+                                </div>
+                                
+                                <div class="field-group resistance">
+                                    <label>Resistance:</label>
+                                    <div class="field-with-unit">
+                                        <input type="number" class="value-input" placeholder="0.0" step="0.1">
+                                        <span class="unit-label">psf</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="field-group deflection">
+                                    <label>Deflection:</label>
+                                    <div class="field-with-unit">
+                                        <input type="number" class="value-input" placeholder="0.0" step="0.1">
+                                        <span class="unit-label">psf</span>
+                                    </div>
+                                </div>
+                                
+                                <button class="remove-btn" onclick="removeCFSSSection(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="field-group deflection">
-                    <label>Deflection:</label>
-                    <div class="field-with-unit">
-                        <input type="number" class="value-input" placeholder="0.0" step="0.1">
-                        <span class="unit-label">psf</span>
-                    </div>
-                </div>
-                
-                <button class="remove-btn" onclick="removeCFSSSection(this)">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Floor Section Button -->
-    <button class="add-section-btn" onclick="addCFSSFloorSection()">
-        <i class="fas fa-plus"></i> Add Floor Section
-    </button>
-    
-    <!-- Project-wide fields (single instance) -->
-    <div class="project-fields">
-        <div class="field-row">
-            <label>La déflexion maximale permise pour les éléments d'ossature extérieure:</label>
-            <input type="text" id="maxDeflection" class="text-input" placeholder="Enter max deflection">
-        </div>
-        
-        <div class="field-row">
-            <label>La distance maximale  entre les entretoises:</label>
-            <input type="text" id="maxSpacing" class="text-input" placeholder="Enter max spacing">
-        </div>
-        
-        <div class="field-row">
-            <label>Assemblage des éléments d'ossature entre eux:</label>
-            <input type="text" id="framingAssembly" class="text-input" placeholder="Enter framing assembly">
-        </div>
-        
-        <div class="field-row">
-            <label>Ancrage des lisses au béton:</label>
-            <input type="text" id="concreteAnchor" class="text-input" placeholder="Enter concrete anchor">
-        </div>
-        
-        <div class="field-row">
-            <label>Ancrage des lisses à l'acier:</label>
-            <input type="text" id="steelAnchor" class="text-input" placeholder="Enter steel anchor">
-        </div>
-        
-        <div class="field-row">
-            <label>Épaisseur minimale du métal pour les éléments d'ossature:</label>
-            <input type="text" id="minMetalThickness" class="text-input" placeholder="Enter min thickness">
-        </div>
-        
+                    
+                    <!-- Add Floor Section Button -->
+                    <button class="add-section-btn" onclick="addCFSSFloorSection()">
+                        <i class="fas fa-plus"></i> Add Floor Section
+                    </button>
+                    
+                    <!-- Project-wide fields (single instance) -->
+                    <div class="project-fields">
+                        <div class="field-row">
+                            <label>La déflexion maximale permise pour les éléments d'ossature extérieure:</label>
+                            <input type="text" id="maxDeflection" class="text-input" placeholder="Enter max deflection">
+                        </div>
+                        
+                        <div class="field-row">
+                            <label>La distance maximale  entre les entretoises:</label>
+                            <input type="text" id="maxSpacing" class="text-input" placeholder="Enter max spacing">
+                        </div>
+                        
+                        <div class="field-row">
+                            <label>Assemblage des éléments d'ossature entre eux:</label>
+                            <input type="text" id="framingAssembly" class="text-input" placeholder="Enter framing assembly">
+                        </div>
+                        
+                        <div class="field-row">
+                            <label>Ancrage des lisses au béton:</label>
+                            <input type="text" id="concreteAnchor" class="text-input" placeholder="Enter concrete anchor">
+                        </div>
+                        
+                        <div class="field-row">
+                            <label>Ancrage des lisses à l'acier:</label>
+                            <input type="text" id="steelAnchor" class="text-input" placeholder="Enter steel anchor">
+                        </div>
+                        
+                        <div class="field-row">
+                            <label>Épaisseur minimale du métal pour les éléments d'ossature:</label>
+                            <input type="text" id="minMetalThickness" class="text-input" placeholder="Enter min thickness">
+                        </div>
+                        
 
-        <div class="field-row" style="display: flex; align-items: center; gap: 8px;">
-            <label>Lisses inférieures: semelles de</label>
-            <input type="text" id="cfssLisseInferieure" class="text-input" placeholder="10" style="width: 60px !important; max-width: 60px !important;">
-            <span style="font-size: 14px;">mm de hauteur</span>
-        </div>
-        
-        <div class="field-row" style="display: flex; align-items: center; gap: 8px;">
-            <label>Lisses supérieures: de type à fentes (trous oblongs); semelles de</label>
-            <input type="text" id="cfssLisseSuperieure" class="text-input" placeholder="20" style="width: 60px !important; max-width: 60px !important;">
-            <span style="font-size: 14px;">mm de hauteur</span>
-        </div>
-    
-    <!-- Save Button -->
-    <button class="save-cfss-btn" onclick="saveCFSSData()">
-        <i class="fas fa-save"></i> Save CFSS Data
-    </button>
-</div>
+                        <div class="field-row" style="display: flex; align-items: center; gap: 8px;">
+                            <label>Lisses inférieures: semelles de</label>
+                            <input type="text" id="cfssLisseInferieure" class="text-input" placeholder="10" style="width: 60px !important; max-width: 60px !important;">
+                            <span style="font-size: 14px;">mm de hauteur</span>
+                        </div>
+                        
+                        <div class="field-row" style="display: flex; align-items: center; gap: 8px;">
+                            <label>Lisses supérieures: de type à fentes (trous oblongs); semelles de</label>
+                            <input type="text" id="cfssLisseSuperieure" class="text-input" placeholder="20" style="width: 60px !important; max-width: 60px !important;">
+                            <span style="font-size: 14px;">mm de hauteur</span>
+                        </div>
                 
-            <button id="newCalculationButton">Add Wall</button>
+                    <!-- Save Button -->
+                    <button class="save-cfss-btn" onclick="saveCFSSData()">
+                        <i class="fas fa-save"></i> Save CFSS Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Moved OUTSIDE of cfss-data-section -->
+            <button id="newCalculationButton" style="display: block !important; margin: 20px 0;">Add Wall</button>
             <div id="equipmentForm">
                 <div class="calculation-sections">
                     <!-- Section 1: Wall Form -->
