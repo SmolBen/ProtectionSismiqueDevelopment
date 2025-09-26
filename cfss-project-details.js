@@ -31,6 +31,7 @@ const CFSS_OPTIONS = [
     'fixe-structure-dacier-lisse-basse',
     'fixe-bois-lisse-basse',
     'detail-lisse-basse',
+    'identification',
     
     // Page S-5: Parapet types 1-6
     'parapet-1',
@@ -3627,7 +3628,8 @@ function populateOptionsCategories() {
                 'fixe-beton-lisse-basse',
                 'fixe-structure-dacier-lisse-basse',
                 'fixe-bois-lisse-basse',
-                'detail-lisse-basse'
+                'detail-lisse-basse',
+                'identification'
             ]
         },
         'parapet': {
@@ -3823,6 +3825,7 @@ async function preloadOptionImages() {
         'fixe-structure-dacier-lisse-basse',
         'fixe-bois-lisse-basse',
         'detail-lisse-basse',
+        'identification',
         
         // Parapet options
         'parapet-1', 'parapet-2', 'parapet-3', 'parapet-4', 'parapet-5',
