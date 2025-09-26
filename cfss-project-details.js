@@ -3988,14 +3988,21 @@ function handleWindowSubmit(e) {
     const formData = new FormData(e.target);
     const windowData = {
         id: Date.now(),
-        name: formData.get('windowName'),
-        width: parseFloat(formData.get('windowWidth')),
-        height: parseFloat(formData.get('windowHeight')),
-        position: formData.get('windowPosition'),
-        jabageType: formData.get('jabageType'),
-        linteauType: formData.get('linteauType'),
-        seuilType: formData.get('seuilType'),
-        notes: formData.get('windowNotes'),
+        type: formData.get('windowType'),
+        largeurMax: parseFloat(formData.get('largeurMax')),
+        hauteurMax: parseFloat(formData.get('hauteurMax')),
+        jambage: {
+            type: formData.get('jambageType'),
+            composition: formData.get('jambageComposition')
+        },
+        linteau: {
+            type: formData.get('linteauType'),
+            composition: formData.get('linteauComposition')
+        },
+        seuil: {
+            type: formData.get('seuilType'),
+            composition: formData.get('seuilComposition')
+        },
         createdAt: new Date().toISOString()
     };
 
@@ -4011,11 +4018,13 @@ function handleWindowSubmit(e) {
     alert('Window saved successfully!');
 }
 
-// Render window list
 function renderWindowList() {
     const container = document.getElementById('windowList');
     
-    if (projectWindows.length === 0) {
+    // Filter out undefined/null windows before processing
+    const validWindows = projectWindows.filter(window => window && window.type);
+    
+    if (validWindows.length === 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #6c757d; padding: 40px;">
                 <i class="fas fa-window-maximize" style="font-size: 48px; margin-bottom: 10px;"></i>
@@ -4025,13 +4034,13 @@ function renderWindowList() {
         return;
     }
 
-    container.innerHTML = projectWindows.map(window => `
+    container.innerHTML = validWindows.map(window => `
         <div class="equipment-card">
             <div class="equipment-header">
                 <div>
-                    <div class="equipment-title">${window.name}</div>
+                    <div class="equipment-title">${window.type || 'Unknown Type'}</div>
                     <div class="equipment-meta">
-                        ${window.width}m × ${window.height}m | ${window.position || 'No position specified'}
+                        ${window.largeurMax || 0}m × ${window.hauteurMax || 0}m
                     </div>
                 </div>
                 <button class="button secondary" onclick="deleteWindow(${window.id})">
@@ -4039,10 +4048,9 @@ function renderWindowList() {
                 </button>
             </div>
             <div style="margin-top: 10px; font-size: 13px; color: #6c757d;">
-                <div><strong>Jabage:</strong> ${window.jabageType}</div>
-                <div><strong>Linteau:</strong> ${window.linteauType}</div>
-                <div><strong>Seuil:</strong> ${window.seuilType}</div>
-                ${window.notes ? `<div><strong>Notes:</strong> ${window.notes}</div>` : ''}
+                <div><strong>Jambage:</strong> ${window.jambage?.type || 'N/A'}${window.jambage?.composition ? ' - ' + window.jambage.composition : ''}</div>
+                <div><strong>Linteau:</strong> ${window.linteau?.type || 'N/A'}${window.linteau?.composition ? ' - ' + window.linteau.composition : ''}</div>
+                <div><strong>Seuil:</strong> ${window.seuil?.type || 'N/A'}${window.seuil?.composition ? ' - ' + window.seuil.composition : ''}</div>
             </div>
         </div>
     `).join('');
@@ -4578,9 +4586,13 @@ async function saveWindowsToDatabase(immediate = false) {
 }
 
 function loadWindowsFromProject(project) {
-  projectWindows = Array.isArray(project?.windows) ? [...project.windows] : [];
-  renderWindowList();
-  updateWindowSummary();
+    // Filter out undefined/null values and ensure each window has required properties
+    projectWindows = project.windows && Array.isArray(project.windows) 
+        ? project.windows.filter(window => window && typeof window === 'object' && window.type)
+        : [];
+    
+    renderWindowList();
+    updateWindowSummary();
 }
 
 // Make functions globally available

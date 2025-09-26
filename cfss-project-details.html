@@ -457,63 +457,95 @@
                 </div>
             </div>
 
+<!-- Updated Window Form with Fixed Column Spacing -->
 <div id="windowForm" class="equipment-form">
     <h3>Add New Window</h3>
     <form id="windowDataForm">
+        <!-- Basic Information -->
         <div class="form-group">
-            <label for="windowName">Window Name</label>
-            <input type="text" id="windowName" name="windowName" required>
+            <label for="windowType">Window Type</label>
+            <input type="text" id="windowType" name="windowType" required>
         </div>
-        <div class="form-group">
-            <label for="windowWidth">Width (m)</label>
-            <input type="number" id="windowWidth" name="windowWidth" step="0.1" required>
+        
+        <div class="row-compact">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <label for="largeurMax">Largeur Max (m)</label>
+                <input type="number" id="largeurMax" name="largeurMax" step="0.1" required>
+            </div>
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <label for="hauteurMax">Hauteur Max (m)</label>
+                <input type="number" id="hauteurMax" name="hauteurMax" step="0.1" required>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="windowHeight">Height (m)</label>
-            <input type="number" id="windowHeight" name="windowHeight" step="0.1" required>
+        
+        <!-- Jambage Section -->
+        <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+            <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 15px;">Jambage</div>
+            <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                <div class="form-group" style="width: 220px; margin-bottom: 0;">
+                    <label for="jambageType">Jambage Type</label>
+                    <select id="jambageType" name="jambageType" required>
+                        <option value="">Select Jambage Type</option>
+                        <option value="JA1">JA1</option>
+                        <option value="JA2">JA2</option>
+                        <option value="JA3">JA3</option>
+                        <option value="JA4">JA4</option>
+                        <option value="JA5">JA5</option>
+                    </select>
+                </div>
+                <div class="form-group" style="width: 250px; margin-bottom: 0;">
+                    <label for="jambageComposition">Jambage Composition</label>
+                    <input type="text" id="jambageComposition" name="jambageComposition">
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="windowPosition">Position</label>
-            <input type="text" id="windowPosition" name="windowPosition" placeholder="e.g., North wall, center">
+        
+        <!-- Linteau Section -->
+        <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+            <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 15px;">Linteau</div>
+            <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                <div class="form-group" style="width: 220px; margin-bottom: 0;">
+                    <label for="linteauType">Linteau Type</label>
+                    <select id="linteauType" name="linteauType" required>
+                        <option value="">Select Linteau Type</option>
+                        <option value="LT1">LT1</option>
+                        <option value="LT2">LT2</option>
+                        <option value="LT3">LT3</option>
+                        <option value="LT4">LT4</option>
+                        <option value="LT5">LT5</option>
+                    </select>
+                </div>
+                <div class="form-group" style="width: 250px; margin-bottom: 0;">
+                    <label for="linteauComposition">Linteau Composition</label>
+                    <input type="text" id="linteauComposition" name="linteauComposition">
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="jabageType">Jabage Type</label>
-            <select id="jabageType" name="jabageType" required>
-                <option value="">Select Jabage Type</option>
-                <option value="JA1">JA1</option>
-                <option value="JA2">JA2</option>
-                <option value="JA3">JA3</option>
-                <option value="JA4">JA4</option>
-                <option value="JA5">JA5</option>
-            </select>
+        
+        <!-- Seuil Section -->
+        <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+            <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 15px;">Seuil</div>
+            <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                <div class="form-group" style="width: 220px; margin-bottom: 0;">
+                    <label for="seuilType">Seuil Type</label>
+                    <select id="seuilType" name="seuilType" required>
+                        <option value="">Select Seuil Type</option>
+                        <option value="SE1">SE1</option>
+                        <option value="SE2">SE2</option>
+                        <option value="SE3">SE3</option>
+                        <option value="SE4">SE4</option>
+                        <option value="SE5">SE5</option>
+                        <option value="N/A">N/A</option>
+                    </select>
+                </div>
+                <div class="form-group" style="width: 250px; margin-bottom: 0;">
+                    <label for="seuilComposition">Seuil Composition</label>
+                    <input type="text" id="seuilComposition" name="seuilComposition">
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="linteauType">Linteau Type</label>
-            <select id="linteauType" name="linteauType" required>
-                <option value="">Select Linteau Type</option>
-                <option value="LT1">LT1</option>
-                <option value="LT2">LT2</option>
-                <option value="LT3">LT3</option>
-                <option value="LT4">LT4</option>
-                <option value="LT5">LT5</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="seuilType">Seuil Type</label>
-            <select id="seuilType" name="seuilType" required>
-                <option value="">Select Seuil Type</option>
-                <option value="SE1">SE1</option>
-                <option value="SE2">SE2</option>
-                <option value="SE3">SE3</option>
-                <option value="SE4">SE4</option>
-                <option value="SE5">SE5</option>
-                <option value="N/A">N/A</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="windowNotes">Notes</label>
-            <textarea id="windowNotes" name="windowNotes" rows="3" placeholder="Additional notes about the window"></textarea>
-        </div>
+        
+        <!-- Form Actions -->
         <div class="form-actions">
             <button type="submit" class="button success">
                 <i class="fas fa-save"></i> Save Window
