@@ -225,45 +225,47 @@
     <!-- Project-wide fields (single instance) -->
     <div class="project-fields">
         <div class="field-row">
-            <label>Max Deflection:</label>
+            <label>La déflexion maximale permise pour les éléments d'ossature extérieure:</label>
             <input type="text" id="maxDeflection" class="text-input" placeholder="Enter max deflection">
         </div>
         
         <div class="field-row">
-            <label>Max Spacing Between Braces:</label>
+            <label>La distance maximale  entre les entretoises:</label>
             <input type="text" id="maxSpacing" class="text-input" placeholder="Enter max spacing">
         </div>
         
         <div class="field-row">
-            <label>Framing Assembly:</label>
+            <label>Assemblage des éléments d'ossature entre eux:</label>
             <input type="text" id="framingAssembly" class="text-input" placeholder="Enter framing assembly">
         </div>
         
         <div class="field-row">
-            <label>Concrete Anchor:</label>
+            <label>Ancrage des lisses au béton:</label>
             <input type="text" id="concreteAnchor" class="text-input" placeholder="Enter concrete anchor">
         </div>
         
         <div class="field-row">
-            <label>Steel Anchor:</label>
+            <label>Ancrage des lisses à l'acier:</label>
             <input type="text" id="steelAnchor" class="text-input" placeholder="Enter steel anchor">
         </div>
         
         <div class="field-row">
-            <label>Min Metal Framing Thickness:</label>
+            <label>Épaisseur minimale du métal pour les éléments d'ossature:</label>
             <input type="text" id="minMetalThickness" class="text-input" placeholder="Enter min thickness">
         </div>
         
-        <div class="field-row">
-            <label>Lisse Inférieure:</label>
-            <input type="text" id="cfssLisseInferieure" class="text-input" placeholder="Enter lisse inférieure">
+
+        <div class="field-row" style="display: flex; align-items: center; gap: 8px;">
+            <label>Lisses inférieures: semelles de</label>
+            <input type="text" id="cfssLisseInferieure" class="text-input" placeholder="10" style="width: 60px !important; max-width: 60px !important;">
+            <span style="font-size: 14px;">mm de hauteur</span>
         </div>
         
-        <div class="field-row">
-            <label>Lisse Supérieure:</label>
-            <input type="text" id="cfssLisseSuperieure" class="text-input" placeholder="Enter lisse supérieure">
+        <div class="field-row" style="display: flex; align-items: center; gap: 8px;">
+            <label>Lisses supérieures: de type à fentes (trous oblongs); semelles de</label>
+            <input type="text" id="cfssLisseSuperieure" class="text-input" placeholder="20" style="width: 60px !important; max-width: 60px !important;">
+            <span style="font-size: 14px;">mm de hauteur</span>
         </div>
-    </div>
     
     <!-- Save Button -->
     <button class="save-cfss-btn" onclick="saveCFSSData()">
