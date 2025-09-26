@@ -114,6 +114,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // Setup form handlers and render
                 setupNewCalculationButton();
                 setupEquipmentFormHandlerWithRevisions();
+                setupWindowHandlers();
+                loadWindowsFromProject(project);
                 setupCFSSReportButtonWithRevisionModal();
                 
                 renderEquipmentList();

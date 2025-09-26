@@ -90,6 +90,10 @@
                         <i class="fas fa-cogs"></i>
                         Option List
                     </button>
+                    <button class="tab-button" data-tab="window-list">
+                        <i class="fas fa-window-maximize"></i>
+                        Window List
+                    </button>
                 </div>
 
                 <div class="tab-content">
@@ -172,6 +176,18 @@
                             </button>
                         </div>
                     </div>
+
+                    <div id="window-list-content" class="tab-content-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h1 style="margin: 0;">Window List</h1>
+                        <div class="selection-summary" id="windowSelectionSummary">
+                            <i class="fas fa-window-maximize"></i> 0 windows added
+                        </div>
+                    </div>
+                    <div id="windowList" class="equipment-list">
+                        <!-- Windows will be displayed here -->
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -276,6 +292,11 @@
             
             <!-- Moved OUTSIDE of cfss-data-section -->
             <button id="newCalculationButton" style="display: block !important; margin: 20px 0;">Add Wall</button>
+
+            <button id="addWindowButton" class="button secondary">
+                <i class="fas fa-window-maximize"></i> Add Window
+            </button>
+
             <div id="equipmentForm">
                 <div class="calculation-sections">
                     <!-- Section 1: Wall Form -->
@@ -435,6 +456,75 @@
                     </div>
                 </div>
             </div>
+
+<div id="windowForm" class="equipment-form">
+    <h3>Add New Window</h3>
+    <form id="windowDataForm">
+        <div class="form-group">
+            <label for="windowName">Window Name</label>
+            <input type="text" id="windowName" name="windowName" required>
+        </div>
+        <div class="form-group">
+            <label for="windowWidth">Width (m)</label>
+            <input type="number" id="windowWidth" name="windowWidth" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="windowHeight">Height (m)</label>
+            <input type="number" id="windowHeight" name="windowHeight" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="windowPosition">Position</label>
+            <input type="text" id="windowPosition" name="windowPosition" placeholder="e.g., North wall, center">
+        </div>
+        <div class="form-group">
+            <label for="jabageType">Jabage Type</label>
+            <select id="jabageType" name="jabageType" required>
+                <option value="">Select Jabage Type</option>
+                <option value="JA1">JA1</option>
+                <option value="JA2">JA2</option>
+                <option value="JA3">JA3</option>
+                <option value="JA4">JA4</option>
+                <option value="JA5">JA5</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="linteauType">Linteau Type</label>
+            <select id="linteauType" name="linteauType" required>
+                <option value="">Select Linteau Type</option>
+                <option value="LT1">LT1</option>
+                <option value="LT2">LT2</option>
+                <option value="LT3">LT3</option>
+                <option value="LT4">LT4</option>
+                <option value="LT5">LT5</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="seuilType">Seuil Type</label>
+            <select id="seuilType" name="seuilType" required>
+                <option value="">Select Seuil Type</option>
+                <option value="SE1">SE1</option>
+                <option value="SE2">SE2</option>
+                <option value="SE3">SE3</option>
+                <option value="SE4">SE4</option>
+                <option value="SE5">SE5</option>
+                <option value="N/A">N/A</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="windowNotes">Notes</label>
+            <textarea id="windowNotes" name="windowNotes" rows="3" placeholder="Additional notes about the window"></textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="button success">
+                <i class="fas fa-save"></i> Save Window
+            </button>
+            <button type="button" id="cancelWindow" class="button secondary">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        </div>
+    </form>
+</div>
+
         </div>
     </div>
     

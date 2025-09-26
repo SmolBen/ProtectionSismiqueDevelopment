@@ -763,6 +763,18 @@
     animation: dropHighlight 1s ease-in-out infinite;
 }
 
+/* Hide forms by default */
+#windowForm,
+#equipmentForm {
+    display: none;
+}
+
+/* Show forms when they have the 'show' class */
+#windowForm.show,
+#equipmentForm.show {
+    display: block;
+}
+
 @keyframes dropHighlight {
     0%, 100% { opacity: 0.3; }
     50% { opacity: 1; }

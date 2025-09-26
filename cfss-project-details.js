@@ -10,6 +10,14 @@ let currentRevisionId = null;
 
 let sortableInstance = null;
 
+let projectWindows = [];
+
+let saveInProgress = false;
+let pendingSaveTimeout = null;
+let lastSaveTimestamp = null;
+
+let windowsSaveTimer = null;
+
 // Available CFSS options in logical order
 const CFSS_OPTIONS = [
     // Page S-2: Lisse trouée options
@@ -3897,6 +3905,166 @@ function initializeTabSystem() {
     console.log('✅ Tab system initialized');
 }
 
+function setupWindowHandlers() {
+    // Add Window button with proper toggle
+    const addWindowButton = document.getElementById('addWindowButton');
+    if (addWindowButton) {
+        addWindowButton.addEventListener('click', function() {
+            const windowForm = document.getElementById('windowForm');
+            const isCurrentlyVisible = windowForm.classList.contains('show');
+            
+            if (isCurrentlyVisible) {
+                // Hide the form
+                windowForm.classList.remove('show');
+                this.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+            } else {
+                // Hide other forms first
+                hideAllForms();
+                // Show window form
+                windowForm.classList.add('show');
+                this.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+            }
+        });
+    }
+
+    // Window form handlers
+    const windowForm = document.getElementById('windowDataForm');
+    if (windowForm) {
+        windowForm.addEventListener('submit', handleWindowSubmit);
+    }
+    
+    const cancelButton = document.getElementById('cancelWindow');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', function() {
+            hideAllForms();
+        });
+    }
+}
+
+// Update your existing toggleForm function to handle windows
+function toggleForm(formType) {
+    hideAllForms();
+    
+    if (formType === 'wall') {
+        const form = document.getElementById('equipmentForm');
+        form.classList.add('show');
+        document.getElementById('newCalculationButton').textContent = 'Cancel';
+    } else if (formType === 'window') {
+        const form = document.getElementById('windowForm');
+        form.classList.add('show');
+        document.getElementById('addWindowButton').textContent = 'Cancel';
+    }
+}
+
+function hideAllForms() {
+    // Hide window form
+    const windowForm = document.getElementById('windowForm');
+    if (windowForm) {
+        windowForm.classList.remove('show');
+    }
+    
+    // Hide equipment form
+    const equipmentForm = document.getElementById('equipmentForm');
+    if (equipmentForm) {
+        equipmentForm.classList.remove('show');
+    }
+    
+    // Reset button texts
+    const addWindowButton = document.getElementById('addWindowButton');
+    if (addWindowButton) {
+        addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+    }
+    
+    const newCalcButton = document.getElementById('newCalculationButton');
+    if (newCalcButton) {
+        newCalcButton.textContent = 'Add Wall';
+    }
+}
+
+// Window form submission handler
+function handleWindowSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const windowData = {
+        id: Date.now(),
+        name: formData.get('windowName'),
+        width: parseFloat(formData.get('windowWidth')),
+        height: parseFloat(formData.get('windowHeight')),
+        position: formData.get('windowPosition'),
+        jabageType: formData.get('jabageType'),
+        linteauType: formData.get('linteauType'),
+        seuilType: formData.get('seuilType'),
+        notes: formData.get('windowNotes'),
+        createdAt: new Date().toISOString()
+    };
+
+    projectWindows.push(windowData);
+    renderWindowList();
+    updateWindowSummary();
+    saveWindowsToDatabase();
+    
+    // Reset form and hide it
+    e.target.reset();
+    hideAllForms();
+    
+    alert('Window saved successfully!');
+}
+
+// Render window list
+function renderWindowList() {
+    const container = document.getElementById('windowList');
+    
+    if (projectWindows.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; color: #6c757d; padding: 40px;">
+                <i class="fas fa-window-maximize" style="font-size: 48px; margin-bottom: 10px;"></i>
+                <p>No windows added yet. Click "Add Window" to get started.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = projectWindows.map(window => `
+        <div class="equipment-card">
+            <div class="equipment-header">
+                <div>
+                    <div class="equipment-title">${window.name}</div>
+                    <div class="equipment-meta">
+                        ${window.width}m × ${window.height}m | ${window.position || 'No position specified'}
+                    </div>
+                </div>
+                <button class="button secondary" onclick="deleteWindow(${window.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+                <div><strong>Jabage:</strong> ${window.jabageType}</div>
+                <div><strong>Linteau:</strong> ${window.linteauType}</div>
+                <div><strong>Seuil:</strong> ${window.seuilType}</div>
+                ${window.notes ? `<div><strong>Notes:</strong> ${window.notes}</div>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update window summary counter
+function updateWindowSummary() {
+    const summary = document.getElementById('windowSelectionSummary');
+    const count = projectWindows.length;
+    summary.innerHTML = `<i class="fas fa-window-maximize"></i> ${count} window${count !== 1 ? 's' : ''} added`;
+}
+
+// Delete window function
+function deleteWindow(id) {
+    if (confirm('Are you sure you want to delete this window?')) {
+        projectWindows = projectWindows.filter(window => window.id !== id);
+        renderWindowList();
+        updateWindowSummary();
+        saveWindowsToDatabase();
+    }
+}
+
 // Call preload when options tab is first opened
 function switchTab(tabId) {
     console.log(`Switching to tab: ${tabId}`);
@@ -3913,14 +4081,18 @@ function switchTab(tabId) {
     });
     document.getElementById(`${tabId}-content`).classList.add('active');
     
+    // Render window list when switching to window tab
+    if (tabId === 'window-list') {
+        renderWindowList();
+        updateWindowSummary();
+    }
+    
     // Preload images when switching to options tab
     if (tabId === 'option-list') {
         setTimeout(() => {
             preloadOptionImages();
         }, 200);
     }
-    
-    console.log(`Switched to ${tabId} tab`);
 }
 
 // Initialize the options system
@@ -4368,6 +4540,47 @@ async function generateCFSSReportFromTabs() {
         console.error('Error generating report from tabs:', error);
         alert('Error generating CFSS report: ' + error.message);
     }
+}
+
+async function saveWindowsToDatabase(immediate = false) {
+  if (!canModifyProject() || !currentProjectId) return;
+
+  const doSave = async () => {
+    try {
+      const resp = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          id: currentProjectId,
+          windows: projectWindows, // persist
+        })
+      });
+      if (!resp.ok) {
+        const t = await resp.text();
+        throw new Error(`HTTP ${resp.status}: ${t}`);
+      }
+      // keep local cache in sync
+      if (window.projectData) window.projectData.windows = [...projectWindows];
+      console.log(`✅ Saved ${projectWindows.length} windows to database`);
+    } catch (err) {
+      console.error('❌ Error saving windows:', err);
+      alert('Error saving windows: ' + err.message);
+    }
+  };
+
+  if (immediate) {
+    clearTimeout(windowsSaveTimer);
+    await doSave();
+  } else {
+    clearTimeout(windowsSaveTimer);
+    windowsSaveTimer = setTimeout(doSave, 400); // debounce
+  }
+}
+
+function loadWindowsFromProject(project) {
+  projectWindows = Array.isArray(project?.windows) ? [...project.windows] : [];
+  renderWindowList();
+  updateWindowSummary();
 }
 
 // Make functions globally available
