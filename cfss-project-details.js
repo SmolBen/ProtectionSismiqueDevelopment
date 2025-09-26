@@ -2985,6 +2985,26 @@ async function processFiles(files) {
         return;
     }
     
+    // NEW: Check current image count and limit to 2 max
+    const currentImageCount = window.currentWallImages?.length || 0;
+    const remainingSlots = 2 - currentImageCount;
+    
+    if (remainingSlots <= 0) {
+        alert('Maximum 2 images allowed per wall. Please remove existing images to add new ones.');
+        return;
+    }
+    
+    if (validFiles.length > remainingSlots) {
+        alert(`You can only add ${remainingSlots} more image(s). Maximum 2 images allowed per wall.`);
+        return;
+    }
+    
+    // Show loading state
+    const dropZone = document.getElementById('dropZone');
+    if (dropZone) {
+        dropZone.placeholder = `Uploading ${validFiles.length} image(s)...`;
+    }
+    
     // Initialize window.currentWallImages if it doesn't exist
     if (!window.currentWallImages) {
         window.currentWallImages = [];
@@ -2995,7 +3015,7 @@ async function processFiles(files) {
             // Upload to S3 and get URL
             const imageData = await uploadImageToS3(file);
             
-            // FIX: Add to WINDOW global array, not local array
+            // Add to current images array
             window.currentWallImages.push(imageData);
             
             // Show preview
@@ -3005,6 +3025,26 @@ async function processFiles(files) {
             console.error('Error uploading image:', error);
             alert(`Error uploading ${file.name}: ${error.message}`);
         }
+    }
+    
+    // Reset placeholder and update state
+    updateDropZoneState();
+}
+
+function updateDropZoneState() {
+    const dropZone = document.getElementById('dropZone');
+    if (!dropZone) return;
+    
+    const currentCount = window.currentWallImages?.length || 0;
+    
+    if (currentCount >= 2) {
+        dropZone.placeholder = 'Maximum 2 images reached. Remove images to add new ones.';
+        dropZone.style.background = '#fff5f5';
+        dropZone.style.borderColor = '#ffc107';
+    } else {
+        dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+        dropZone.style.background = 'white';
+        dropZone.style.borderColor = '#ccc';
     }
 }
 
@@ -3059,9 +3099,7 @@ function addImagePreview(imageData) {
     preview.className = 'image-preview';
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">
-            <i class="fas fa-times"></i>
-        </button>
+        <button type="button" class="image-remove" title="Remove image">×</button>
     `;
     
     container.appendChild(preview);
@@ -3073,6 +3111,10 @@ function addImagePreview(imageData) {
         event.stopPropagation();
         removeImage(imageData.key);
     });
+    
+    // Update layout and drop zone state
+    updateImagePreviewLayout();
+    updateDropZoneState();
     
     // Load the actual image
     loadImagePreview(preview.querySelector('img'), imageData.key);
@@ -3096,7 +3138,7 @@ async function loadImagePreview(imgElement, imageKey) {
 }
 
 function removeImage(imageKey) {
-    // FIX: Remove from window global array
+    // Remove from window global array
     if (!window.currentWallImages) {
         window.currentWallImages = [];
     }
@@ -3107,12 +3149,33 @@ function removeImage(imageKey) {
     const previews = container.querySelectorAll('.image-preview');
     previews.forEach(preview => {
         const removeBtn = preview.querySelector('.image-remove');
-        if (removeBtn && removeBtn.getAttribute('onclick').includes(imageKey)) {
+        if (removeBtn && removeBtn.getAttribute('onclick')?.includes(imageKey)) {
             preview.remove();
         }
     });
     
+    // Update layout and drop zone state
+    updateImagePreviewLayout();
+    updateDropZoneState();
+    
     console.log('Image removed, remaining count:', window.currentWallImages.length);
+}
+
+function updateImagePreviewLayout() {
+    const container = document.getElementById('imagePreviewContainer');
+    if (!container) return;
+    
+    const imageCount = window.currentWallImages?.length || 0;
+    
+    // Remove existing classes
+    container.classList.remove('one-image', 'two-images');
+    
+    // Add appropriate class based on count
+    if (imageCount === 1) {
+        container.classList.add('one-image');
+    } else if (imageCount === 2) {
+        container.classList.add('two-images');
+    }
 }
 
 function formatHauteurDisplay(wall) {
@@ -3277,30 +3340,34 @@ function renderWallImages(wall, index) {
     
     console.log(`Rendering ${wall.images.length} images for wall ${wall.equipment}`);
     
-    let imagesHTML = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">';
+    // Limit to first 2 images
+    const imagesToShow = wall.images.slice(0, 2);
     
-    wall.images.forEach((image, imgIndex) => {
+    let imagesHTML = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-width: 200px;">';
+    
+    imagesToShow.forEach((image, imgIndex) => {
         const imageId = `wall-image-${index}-${imgIndex}`;
+        const imageWidth = imagesToShow.length === 1 ? '100px' : '90px';
+        
         imagesHTML += `
-            <div style="position: relative; width: 80px; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
-                <img id="${imageId}"
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" 
-                    alt="${image.filename || 'Wall image'}" 
-                    style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-                    onclick="openImageModal('${image.key}', '${image.filename || 'Wall image'}')"
-                    data-image-key="${image.key}">
+            <div style="position: relative; width: ${imageWidth}; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd; background: #f5f5f5; flex: ${imagesToShow.length === 1 ? '0 0 100px' : '1'};">
+                <img id="${imageId}" 
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" 
+                     alt="${image.filename || 'Wall image'}"
+                     style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                     onclick="openImageModal('${image.key}', '${image.filename || 'Wall image'}')">
             </div>
         `;
     });
     
     imagesHTML += '</div>';
     
-    // Load images after DOM is updated
+    // Load actual images
     setTimeout(() => {
-        wall.images.forEach((image, imgIndex) => {
+        imagesToShow.forEach((image, imgIndex) => {
             const imageId = `wall-image-${index}-${imgIndex}`;
             const imgElement = document.getElementById(imageId);
-            if (imgElement && image.key) {
+            if (imgElement) {
                 loadWallImage(imgElement, image.key);
             }
         });
@@ -3651,6 +3718,20 @@ async function processEditFiles(files, wallIndex) {
         return;
     }
     
+    // NEW: Check current image count in edit mode and limit to 2 max
+    const currentEditImages = editModeImages[wallIndex] || [];
+    const remainingSlots = 2 - currentEditImages.length;
+    
+    if (remainingSlots <= 0) {
+        alert('Maximum 2 images allowed per wall. Please remove existing images to add new ones.');
+        return;
+    }
+    
+    if (validFiles.length > remainingSlots) {
+        alert(`You can only add ${remainingSlots} more image(s). Maximum 2 images allowed per wall.`);
+        return;
+    }
+    
     // Show loading state
     const dropZone = document.getElementById(`editDropZone${wallIndex}`);
     if (dropZone) {
@@ -3677,9 +3758,18 @@ async function processEditFiles(files, wallIndex) {
         }
     }
     
-    // Reset placeholder
+    // Reset placeholder and update based on image count
     if (dropZone) {
-        dropZone.placeholder = 'Drop, paste, or browse images';
+        const newCount = editModeImages[wallIndex]?.length || 0;
+        if (newCount >= 2) {
+            dropZone.placeholder = 'Maximum 2 images reached. Remove images to add new ones.';
+            dropZone.style.background = '#fff5f5';
+            dropZone.style.borderColor = '#ffc107';
+        } else {
+            dropZone.placeholder = 'Drop, paste, or browse images';
+            dropZone.style.background = 'white';
+            dropZone.style.borderColor = '#ccc';
+        }
     }
 }
 

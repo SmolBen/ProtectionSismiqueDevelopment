@@ -328,6 +328,17 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     gap: 10px;
+    max-width: 200px;
+}
+
+/* When there are exactly 2 images, force them side by side */
+.image-preview-container.two-images {
+    grid-template-columns: 1fr 1fr;
+}
+
+.image-preview-container.one-image {
+    grid-template-columns: 1fr;
+    max-width: 100px;
 }
 
 .image-preview {
@@ -338,6 +349,14 @@
     overflow: hidden;
     border: 1px solid #ddd;
 }
+
+/* Drop zone warning state */
+.drop-zone.max-reached {
+    background: #fff5f5 !important;
+    border-color: #ffc107 !important;
+    color: #856404;
+}
+
 
 .image-preview img {
     width: 100%;
