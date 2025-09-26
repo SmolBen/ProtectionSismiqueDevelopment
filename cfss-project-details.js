@@ -4018,6 +4018,7 @@ function handleWindowSubmit(e) {
     alert('Window saved successfully!');
 }
 
+// Function to render window list with edit capability
 function renderWindowList() {
     const container = document.getElementById('windowList');
     
@@ -4034,27 +4035,265 @@ function renderWindowList() {
         return;
     }
 
-    container.innerHTML = validWindows.map(window => `
-        <div class="equipment-card">
-            <div class="equipment-header">
-                <div>
-                    <div class="equipment-title">${window.type || 'Unknown Type'}</div>
-                    <div class="equipment-meta">
-                        ${window.largeurMax || 0}m × ${window.hauteurMax || 0}m
+    container.innerHTML = validWindows.map((window, index) => `
+        <div class="equipment-card" id="windowCard${window.id}">
+            <!-- View Mode -->
+            <div id="windowView${window.id}" class="window-view-mode">
+                <div class="equipment-header">
+                    <div>
+                        <div class="equipment-title">${window.type || 'Unknown Type'}</div>
+                        <div class="equipment-meta">
+                            ${window.largeurMax || 0}m × ${window.hauteurMax || 0}m
+                        </div>
+                    </div>
+                    <div class="equipment-actions">
+                        <button class="button primary" onclick="editWindow(${window.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="button secondary" onclick="deleteWindow(${window.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
-                <button class="button secondary" onclick="deleteWindow(${window.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+                    <div><strong>Jambage:</strong> ${window.jambage?.type || 'N/A'}${window.jambage?.composition ? ' - ' + window.jambage.composition : ''}</div>
+                    <div><strong>Linteau:</strong> ${window.linteau?.type || 'N/A'}${window.linteau?.composition ? ' - ' + window.linteau.composition : ''}</div>
+                    <div><strong>Seuil:</strong> ${window.seuil?.type || 'N/A'}${window.seuil?.composition ? ' - ' + window.seuil.composition : ''}</div>
+                </div>
             </div>
-            <div style="margin-top: 10px; font-size: 13px; color: #6c757d;">
-                <div><strong>Jambage:</strong> ${window.jambage?.type || 'N/A'}${window.jambage?.composition ? ' - ' + window.jambage.composition : ''}</div>
-                <div><strong>Linteau:</strong> ${window.linteau?.type || 'N/A'}${window.linteau?.composition ? ' - ' + window.linteau.composition : ''}</div>
-                <div><strong>Seuil:</strong> ${window.seuil?.type || 'N/A'}${window.seuil?.composition ? ' - ' + window.seuil.composition : ''}</div>
+
+            <!-- Edit Mode - Matches the new window form layout -->
+            <div id="windowEdit${window.id}" class="equipment-form" style="display: none; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                <h3>Edit Window</h3>
+                <form onsubmit="saveWindowEdit(${window.id}, event); return false;">
+                    <!-- Basic Information -->
+                    <div class="form-group">
+                        <label for="editWindowType${window.id}">Window Type</label>
+                        <input type="text" 
+                               id="editWindowType${window.id}" 
+                               value="${window.type || ''}" 
+                               required>
+                    </div>
+                    
+                    <div class="row-compact">
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label for="editLargeurMax${window.id}">Largeur Max (m)</label>
+                            <input type="number" 
+                                   id="editLargeurMax${window.id}" 
+                                   value="${window.largeurMax || ''}" 
+                                   step="0.1" 
+                                   required>
+                        </div>
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label for="editHauteurMax${window.id}">Hauteur Max (m)</label>
+                            <input type="number" 
+                                   id="editHauteurMax${window.id}" 
+                                   value="${window.hauteurMax || ''}" 
+                                   step="0.1" 
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <!-- Jambage Section -->
+                    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+                        <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                            <div class="form-group" style="width: 220px; margin-bottom: 0;">
+                                <label for="editJambageType${window.id}">Jambage Type</label>
+                                <select id="editJambageType${window.id}" required>
+                                    <option value="">Select Jambage Type</option>
+                                    <option value="JA1" ${window.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
+                                    <option value="JA2" ${window.jambage?.type === 'JA2' ? 'selected' : ''}>JA2</option>
+                                    <option value="JA3" ${window.jambage?.type === 'JA3' ? 'selected' : ''}>JA3</option>
+                                    <option value="JA4" ${window.jambage?.type === 'JA4' ? 'selected' : ''}>JA4</option>
+                                    <option value="JA5" ${window.jambage?.type === 'JA5' ? 'selected' : ''}>JA5</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="width: 250px; margin-bottom: 0;">
+                                <label for="editJambageComposition${window.id}">Jambage Composition</label>
+                                <input type="text" 
+                                       id="editJambageComposition${window.id}" 
+                                       value="${window.jambage?.composition || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Linteau Section -->
+                    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+                        <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                            <div class="form-group" style="width: 220px; margin-bottom: 0;">
+                                <label for="editLinteauType${window.id}">Linteau Type</label>
+                                <select id="editLinteauType${window.id}" required>
+                                    <option value="">Select Linteau Type</option>
+                                    <option value="LT1" ${window.linteau?.type === 'LT1' ? 'selected' : ''}>LT1</option>
+                                    <option value="LT2" ${window.linteau?.type === 'LT2' ? 'selected' : ''}>LT2</option>
+                                    <option value="LT3" ${window.linteau?.type === 'LT3' ? 'selected' : ''}>LT3</option>
+                                    <option value="LT4" ${window.linteau?.type === 'LT4' ? 'selected' : ''}>LT4</option>
+                                    <option value="LT5" ${window.linteau?.type === 'LT5' ? 'selected' : ''}>LT5</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="width: 250px; margin-bottom: 0;">
+                                <label for="editLinteauComposition${window.id}">Linteau Composition</label>
+                                <input type="text" 
+                                       id="editLinteauComposition${window.id}" 
+                                       value="${window.linteau?.composition || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seuil Section -->
+                    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+                        <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                            <div class="form-group" style="width: 220px; margin-bottom: 0;">
+                                <label for="editSeuilType${window.id}">Seuil Type</label>
+                                <select id="editSeuilType${window.id}" required>
+                                    <option value="">Select Seuil Type</option>
+                                    <option value="SE1" ${window.seuil?.type === 'SE1' ? 'selected' : ''}>SE1</option>
+                                    <option value="SE2" ${window.seuil?.type === 'SE2' ? 'selected' : ''}>SE2</option>
+                                    <option value="SE3" ${window.seuil?.type === 'SE3' ? 'selected' : ''}>SE3</option>
+                                    <option value="SE4" ${window.seuil?.type === 'SE4' ? 'selected' : ''}>SE4</option>
+                                    <option value="SE5" ${window.seuil?.type === 'SE5' ? 'selected' : ''}>SE5</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="width: 250px; margin-bottom: 0;">
+                                <label for="editSeuilComposition${window.id}">Seuil Composition</label>
+                                <input type="text" 
+                                       id="editSeuilComposition${window.id}" 
+                                       value="${window.seuil?.composition || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="save-btn">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button type="button" class="button secondary" onclick="cancelWindowEdit(${window.id})">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     `).join('');
 }
+
+// Function to enter edit mode for a window
+function editWindow(windowId) {
+    if (!canModifyProject()) {
+        alert('You do not have permission to edit windows in this project.');
+        return;
+    }
+
+    const window = projectWindows.find(w => w.id === windowId);
+    if (!window) {
+        console.error('Window not found:', windowId);
+        return;
+    }
+
+    console.log(`Entering edit mode for window ID: ${windowId}`);
+    
+    // Hide view mode and show edit mode
+    document.getElementById(`windowView${windowId}`).style.display = 'none';
+    document.getElementById(`windowEdit${windowId}`).style.display = 'block';
+}
+
+// Function to cancel window edit
+function cancelWindowEdit(windowId) {
+    console.log(`Cancelling edit for window ID: ${windowId}`);
+    
+    // Show view mode and hide edit mode
+    document.getElementById(`windowView${windowId}`).style.display = 'block';
+    document.getElementById(`windowEdit${windowId}`).style.display = 'none';
+}
+
+// Function to save window edit
+async function saveWindowEdit(windowId, event) {
+    event.preventDefault();
+    
+    if (!canModifyProject()) {
+        alert('You do not have permission to edit windows in this project.');
+        return;
+    }
+
+    try {
+        // Find the window to update
+        const windowIndex = projectWindows.findIndex(w => w.id === windowId);
+        if (windowIndex === -1) {
+            throw new Error('Window not found');
+        }
+
+        // Get updated values from form
+        const updatedWindow = {
+            ...projectWindows[windowIndex],
+            type: document.getElementById(`editWindowType${windowId}`).value,
+            largeurMax: parseFloat(document.getElementById(`editLargeurMax${windowId}`).value),
+            hauteurMax: parseFloat(document.getElementById(`editHauteurMax${windowId}`).value),
+            jambage: {
+                type: document.getElementById(`editJambageType${windowId}`).value,
+                composition: document.getElementById(`editJambageComposition${windowId}`).value
+            },
+            linteau: {
+                type: document.getElementById(`editLinteauType${windowId}`).value,
+                composition: document.getElementById(`editLinteauComposition${windowId}`).value
+            },
+            seuil: {
+                type: document.getElementById(`editSeuilType${windowId}`).value,
+                composition: document.getElementById(`editSeuilComposition${windowId}`).value
+            },
+            lastModified: new Date().toISOString(),
+            modifiedBy: currentUser?.email || 'unknown'
+        };
+
+        // Validation
+        if (!updatedWindow.type) {
+            alert('Please select a window type.');
+            return;
+        }
+
+        if (!updatedWindow.largeurMax || !updatedWindow.hauteurMax) {
+            alert('Please enter valid dimensions.');
+            return;
+        }
+
+        // Update the window in the array
+        projectWindows[windowIndex] = updatedWindow;
+        
+        // Save to database
+        await saveWindowsToDatabase();
+        
+        // Re-render the window list
+        renderWindowList();
+        updateWindowSummary();
+        
+        alert('Window updated successfully!');
+        
+    } catch (error) {
+        console.error('Error saving window edit:', error);
+        alert('Error saving window changes: ' + error.message);
+    }
+}
+
+async function saveWindowsToDatabase() {
+    if (!currentProjectId) {
+        console.error('No project ID found');
+        return;
+    }
+
+    try {
+        // Update the project document with the new windows array
+        await firebase.firestore().collection('projects').doc(currentProjectId).update({
+            windows: projectWindows,
+            lastModified: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('Windows saved to database successfully');
+    } catch (error) {
+        console.error('Error saving windows to database:', error);
+        throw error;
+    }
+}
+
 
 // Update window summary counter
 function updateWindowSummary() {
@@ -4669,3 +4908,8 @@ window.generateEditForm = generateEditForm;
 window.generateMontantOptions = generateMontantOptions;
 window.setupEditHauteurPreview = setupEditHauteurPreview;
 window.setupEditMontantChangeHandler = setupEditMontantChangeHandler;
+
+window.editWindow = editWindow;
+window.cancelWindowEdit = cancelWindowEdit;
+window.saveWindowEdit = saveWindowEdit;
+
