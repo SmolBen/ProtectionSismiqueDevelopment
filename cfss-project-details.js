@@ -1500,25 +1500,185 @@ function generateWallDetailsContent(wall, originalIndex) {
 function generateEditForm(wall, originalIndex) {
     return `
         <form id="equipmentEdit${originalIndex}" style="display: none;" onsubmit="saveEquipmentEditWithRevisions(${originalIndex}, event)">
-            <!-- Edit form content (same as before) -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <!-- Form fields here - same as in your existing code -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                
+                <!-- Left Column -->
                 <div>
-                    <label><strong>Wall Name:</strong></label>
-                    <input type="text" id="editEquipment${originalIndex}" value="${wall.equipment || ''}" style="width: 100%; padding: 5px;">
+                    <!-- Wall Name -->
+                    <div class="form-group">
+                        <label for="editEquipment${originalIndex}"><strong>Wall Name:</strong></label>
+                        <input type="text" id="editEquipment${originalIndex}" value="${wall.equipment || ''}" 
+                               required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- Floor -->
+                    <div class="form-group">
+                        <label for="editFloor${originalIndex}"><strong>Floor:</strong></label>
+                        <input type="text" id="editFloor${originalIndex}" value="${wall.floor || ''}" 
+                               required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- Hauteur Max with Units -->
+                    <div class="form-group">
+                        <label for="editHauteurMax${originalIndex}"><strong>Hauteur Max:</strong></label>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                            <input type="number" id="editHauteurMax${originalIndex}" 
+                                   value="${wall.hauteurMax || ''}" min="0" step="1"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                                   placeholder="Main height">
+                            <select id="editHauteurMaxUnit${originalIndex}" 
+                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <option value="ft" ${wall.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+                                <option value="m" ${wall.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
+                            </select>
+                            <input type="number" id="editHauteurMaxMinor${originalIndex}" 
+                                   value="${wall.hauteurMaxMinor || ''}" min="0" step="1"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                                   placeholder="Minor height">
+                            <select id="editHauteurMaxMinorUnit${originalIndex}"
+                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <option value="in" ${wall.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
+                                <option value="mm" ${wall.hauteurMaxMinorUnit === 'mm' ? 'selected' : ''}>mm</option>
+                            </select>
+                        </div>
+                        <div id="editHauteurPreview${originalIndex}" style="font-size: 12px; color: #666; font-style: italic;">
+                            Preview: ${formatHauteurDisplay(wall)}
+                        </div>
+                    </div>
+
+                    <!-- Déflexion Max -->
+                    <div class="form-group">
+                        <label for="editDeflexionMax${originalIndex}"><strong>Déflexion Max:</strong></label>
+                        <select id="editDeflexionMax${originalIndex}" required 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">Select déflexion max...</option>
+                            <option value="L/360" ${wall.deflexionMax === 'L/360' ? 'selected' : ''}>L/360</option>
+                            <option value="L/480" ${wall.deflexionMax === 'L/480' ? 'selected' : ''}>L/480</option>
+                            <option value="L/600" ${wall.deflexionMax === 'L/600' ? 'selected' : ''}>L/600</option>
+                            <option value="L/720" ${wall.deflexionMax === 'L/720' ? 'selected' : ''}>L/720</option>
+                        </select>
+                    </div>
+
+                    <!-- Montant Métallique -->
+                    <div class="form-group">
+                        <label for="editMontantMetallique${originalIndex}"><strong>Montant Métallique:</strong></label>
+                        <select id="editMontantMetallique${originalIndex}" required 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">Select montant métallique...</option>
+                            ${generateMontantOptions(wall.montantMetallique)}
+                        </select>
+                    </div>
                 </div>
-                <!-- ... rest of the form fields ... -->
+
+                <!-- Right Column -->
+                <div>
+                    <!-- Lisse Supérieure -->
+                    <div class="form-group">
+                        <label for="editLisseSuperieure${originalIndex}"><strong>Lisse Supérieure:</strong></label>
+                        <input type="text" id="editLisseSuperieure${originalIndex}" value="${wall.lisseSuperieure || ''}" 
+                               required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- Lisse Inférieure -->
+                    <div class="form-group">
+                        <label for="editLisseInferieure${originalIndex}"><strong>Lisse Inférieure:</strong></label>
+                        <input type="text" id="editLisseInferieure${originalIndex}" value="${wall.lisseInferieure || ''}" 
+                               required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- Espacement -->
+                    <div class="form-group">
+                        <label for="editEspacement${originalIndex}"><strong>Espacement:</strong></label>
+                        <select id="editEspacement${originalIndex}" required 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">Select espacement...</option>
+                            <option value="8&quot;c/c" ${wall.espacement === '8"c/c' ? 'selected' : ''}>8"c/c</option>
+                            <option value="12&quot;c/c" ${wall.espacement === '12"c/c' ? 'selected' : ''}>12"c/c</option>
+                            <option value="16&quot;c/c" ${wall.espacement === '16"c/c' ? 'selected' : ''}>16"c/c</option>
+                            <option value="24&quot;c/c" ${wall.espacement === '24"c/c' ? 'selected' : ''}>24"c/c</option>
+                        </select>
+                    </div>
+
+                    <!-- Entremise -->
+                    <div class="form-group">
+                        <label for="editEntremise${originalIndex}"><strong>Entremise:</strong></label>
+                        <select id="editEntremise${originalIndex}" required 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">Select entremise...</option>
+                            <option value="150U75-43" ${wall.entremise === '150U75-43' ? 'selected' : ''}>150U75-43</option>
+                            <option value="N/A" ${wall.entremise === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </div>
+
+                    <!-- Note -->
+                    <div class="form-group">
+                        <label for="editNote${originalIndex}"><strong>Note:</strong></label>
+                        <input type="text" id="editNote${originalIndex}" value="${wall.note || ''}" 
+                               maxlength="100" placeholder="Optional note (max 100 characters)..."
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <div style="font-size: 12px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
+                    </div>
+                </div>
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+
+            <!-- Image Upload Section for Edit Mode -->
+            <div class="edit-image-section" style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #333; font-size: 16px;">Wall Images</h4>
+                    <button type="button" class="camera-btn" onclick="triggerEditImageUpload(${originalIndex}, event)"
+                            style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-camera"></i> Add Images
+                    </button>
+                </div>
+                
+                <input 
+                    class="drop-zone" 
+                    id="editDropZone${originalIndex}"
+                    placeholder="Drop, paste, or browse images (Ctrl+V to paste)"
+                    readonly
+                    tabindex="0"
+                    style="width: 100%; height: 60px; border: 2px dashed #ccc; border-radius: 4px; background: white; 
+                           text-align: center; padding: 20px; cursor: pointer; font-size: 13px; color: #666;
+                           box-sizing: border-box; outline: none;">
+                
+                <div class="edit-image-preview-container" id="editImagePreviewContainer${originalIndex}" 
+                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; margin-top: 15px;">
+                    <!-- Image previews will be populated here -->
+                </div>
+                
+                <input type="file" id="editImageFileInput${originalIndex}" multiple accept="image/*" style="display: none;">
+            </div>
+
+            <!-- Form Actions -->
+            <div style="display: flex; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                <button type="submit" 
+                        style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-save"></i> Save Changes
                 </button>
-                <button type="button" onclick="cancelEquipmentEdit(${originalIndex})" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                <button type="button" onclick="cancelEquipmentEdit(${originalIndex})" 
+                        style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-times"></i> Cancel
                 </button>
             </div>
         </form>
     `;
+}
+
+// Helper function to generate montant options with current selection
+function generateMontantOptions(currentSelection) {
+    if (typeof window.colombageData === 'undefined') {
+        return '<option value="">Loading options...</option>';
+    }
+    
+    const sortedKeys = Object.keys(window.colombageData).sort();
+    let optionsHtml = '';
+    
+    sortedKeys.forEach(montant => {
+        const selected = montant === currentSelection ? 'selected' : '';
+        optionsHtml += `<option value="${montant}" ${selected}>${montant}</option>`;
+    });
+    
+    return optionsHtml;
 }
 
 // Initialize SortableJS
@@ -1650,7 +1810,7 @@ function toggleEquipmentDetails(index) {
     }
 }
 
-// Function to edit wall
+// Enhanced editEquipment function with better setup
 function editEquipment(index) {
     if (!canModifyProject()) {
         alert('You do not have permission to edit walls in this project.');
@@ -1675,15 +1835,106 @@ function editEquipment(index) {
         }
     }
     
-    // Setup image upload handlers for this edit form (with slight delay to ensure DOM is ready)
+    // Setup enhanced height preview for edit mode
     setTimeout(() => {
+        setupEditHauteurPreview(index);
+        setupEditMontantChangeHandler(index);
         setupEditImageHandlers(index);
-        
-        // Load existing images into edit mode
         loadExistingImagesInEdit(wall, index);
         
         console.log(`Edit mode setup complete for wall ${index}`);
     }, 100);
+}
+
+// Setup height preview for edit mode
+function setupEditHauteurPreview(wallIndex) {
+    const majorInput = document.getElementById(`editHauteurMax${wallIndex}`);
+    const majorUnitSelect = document.getElementById(`editHauteurMaxUnit${wallIndex}`);
+    const minorInput = document.getElementById(`editHauteurMaxMinor${wallIndex}`);
+    const minorUnitSelect = document.getElementById(`editHauteurMaxMinorUnit${wallIndex}`);
+    const preview = document.getElementById(`editHauteurPreview${wallIndex}`);
+    
+    if (!majorInput || !majorUnitSelect || !minorInput || !minorUnitSelect || !preview) {
+        return;
+    }
+    
+    function updateEditPreview() {
+        const major = majorInput.value || '0';
+        const majorUnit = majorUnitSelect.value || 'ft';
+        const minor = minorInput.value || '0';
+        const minorUnit = minorUnitSelect.value || 'in';
+        
+        if (major === '0' && minor === '0') {
+            preview.textContent = 'Preview: --';
+            preview.style.color = '#666';
+        } else {
+            const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+            preview.textContent = `Preview: ${formatted}`;
+            preview.style.color = '#2c5aa0';
+        }
+    }
+    
+    // AUTO-PAIRING: ft with in, m with mm
+    majorUnitSelect.addEventListener('change', function() {
+        const majorUnit = this.value;
+        
+        if (majorUnit === 'ft') {
+            minorUnitSelect.value = 'in';
+        } else if (majorUnit === 'm') {
+            minorUnitSelect.value = 'mm';
+        }
+        
+        updateEditPreview();
+    });
+    
+    minorUnitSelect.addEventListener('change', updateEditPreview);
+    majorInput.addEventListener('input', updateEditPreview);
+    minorInput.addEventListener('input', updateEditPreview);
+    
+    // Initial preview
+    updateEditPreview();
+}
+
+// Setup montant change handler for edit mode
+function setupEditMontantChangeHandler(wallIndex) {
+    const montantSelect = document.getElementById(`editMontantMetallique${wallIndex}`);
+    const lisseSuperieureInput = document.getElementById(`editLisseSuperieure${wallIndex}`);
+    const lisseInferieureInput = document.getElementById(`editLisseInferieure${wallIndex}`);
+
+    if (!montantSelect || !lisseSuperieureInput || !lisseInferieureInput) {
+        return;
+    }
+
+    montantSelect.addEventListener('change', function() {
+        const selectedMontant = this.value;
+        
+        if (selectedMontant && window.colombageData && window.colombageData[selectedMontant]) {
+            const data = window.colombageData[selectedMontant];
+            
+            // Auto-fill the lisse fields
+            lisseSuperieureInput.value = data.lisseSuperieur;
+            lisseInferieureInput.value = data.lisseInferieure;
+            
+            // Add visual indication that these fields were auto-filled
+            lisseSuperieureInput.style.backgroundColor = '#e3f2fd';
+            lisseInferieureInput.style.backgroundColor = '#e3f2fd';
+            
+            console.log(`Auto-filled lisse fields for ${selectedMontant} in edit mode`);
+            
+            // Remove auto-filled styling when user starts typing
+            [lisseSuperieureInput, lisseInferieureInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    this.style.backgroundColor = '';
+                }, { once: true });
+            });
+        } else if (!selectedMontant) {
+            // Clear the fields if no valid selection
+            lisseSuperieureInput.value = '';
+            lisseInferieureInput.value = '';
+            lisseSuperieureInput.style.backgroundColor = '';
+            lisseInferieureInput.style.backgroundColor = '';
+        }
+    });
 }
 
 // Function to cancel wall edit
@@ -4098,3 +4349,8 @@ window.saveWallDisplayOrder = saveWallDisplayOrder;
 window.getWallDisplayOrder = getWallDisplayOrder;
 window.generateWallDetailsContent = generateWallDetailsContent;
 window.generateEditForm = generateEditForm;
+
+window.generateEditForm = generateEditForm;
+window.generateMontantOptions = generateMontantOptions;
+window.setupEditHauteurPreview = setupEditHauteurPreview;
+window.setupEditMontantChangeHandler = setupEditMontantChangeHandler;
