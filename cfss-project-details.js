@@ -59,36 +59,36 @@ const CFSS_OPTIONS = [
     'detail-structure'
 ];
 
-function createCompositionBuilder(containerId, hiddenInputId, initialValue = null) {
+function createCompositionBuilder(containerId, hiddenInputId, existingValue = '') {
   const container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container) {
+    console.error(`Container ${containerId} not found`);
+    return;
+  }
 
-  // Parse initial value if provided
-  let defaultQuantity = '1', defaultSize = '600', defaultType = 'S', defaultDimension = '125', defaultVariant = '33';
-  if (initialValue) {
-    try {
-      const parts = initialValue.split('x ');
-      defaultQuantity = parts[0];
-      const rest = parts[1];
-      const sizeMatch = rest.match(/(\d+)/);
-      if (sizeMatch) defaultSize = sizeMatch[1];
-      defaultType = rest.includes('S') ? 'S' : 'T';
-      const afterType = rest.split(/[ST]/)[1];
-      if (afterType) {
-        const dimensionPart = afterType.split('-')[0];
-        const variantPart = afterType.split('-')[1];
-        if (dimensionPart) defaultDimension = dimensionPart;
-        if (variantPart) defaultVariant = variantPart;
-      }
-    } catch (e) {
-      console.log('Could not parse initial value:', initialValue);
+  // Parse existing value if provided
+  let defaultQuantity = '1';
+  let defaultSize = '162';
+  let defaultType = 'S';
+  let defaultDimension = '125';
+  let defaultVariant = '18';
+  
+  if (existingValue) {
+    // Parse format like "1x 162S125-18"
+    const match = existingValue.match(/(\d+)x\s*(\d+)([A-Z])(\d+)-(\d+)/);
+    if (match) {
+      defaultQuantity = match[1];
+      defaultSize = match[2];
+      defaultType = match[3];
+      defaultDimension = match[4];
+      defaultVariant = match[5];
     }
   }
 
-  // Create the HTML structure
+  // Create the composition builder UI
   container.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-      <select id="${containerId}_quantity" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 50px; background: white; color: black;">
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <select id="${containerId}_quantity" style="width: 60px;">
         <option value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>
@@ -96,9 +96,9 @@ function createCompositionBuilder(containerId, hiddenInputId, initialValue = nul
         <option value="5">5</option>
       </select>
       
-      <span style="color: #666; font-size: 14px;">x</span>
+      <span>x</span>
       
-      <select id="${containerId}_size" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 70px; background: white; color: black;">
+      <select id="${containerId}_size" style="width: 80px;">
         <option value="162">162</option>
         <option value="212">212</option>
         <option value="250">250</option>
@@ -111,12 +111,12 @@ function createCompositionBuilder(containerId, hiddenInputId, initialValue = nul
         <option value="1000">1000</option>
       </select>
       
-      <select id="${containerId}_type" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 50px; background: white; color: black;">
+      <select id="${containerId}_type" style="width: 70px;">
         <option value="S">S</option>
         <option value="T">T</option>
       </select>
       
-      <select id="${containerId}_dimension" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 70px; background: white; color: black;">
+      <select id="${containerId}_dimension" style="width: 80px;">
         <option value="125">125</option>
         <option value="162">162</option>
         <option value="200">200</option>
@@ -124,9 +124,9 @@ function createCompositionBuilder(containerId, hiddenInputId, initialValue = nul
         <option value="350">350</option>
       </select>
       
-      <span style="color: #666; font-size: 14px;">-</span>
+      <span>-</span>
       
-      <select id="${containerId}_variant" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 60px; background: white; color: black;">
+      <select id="${containerId}_variant" style="width: 70px;">
         <option value="18">18</option>
         <option value="33">33</option>
         <option value="34">34</option>
@@ -138,13 +138,25 @@ function createCompositionBuilder(containerId, hiddenInputId, initialValue = nul
     </div>
   `;
 
-  // Set initial values after creating the HTML
+  // Set the default/existing values after a brief delay
   setTimeout(() => {
-    document.getElementById(`${containerId}_quantity`).value = defaultQuantity;
-    document.getElementById(`${containerId}_size`).value = defaultSize;
-    document.getElementById(`${containerId}_type`).value = defaultType;
-    document.getElementById(`${containerId}_dimension`).value = defaultDimension;
-    document.getElementById(`${containerId}_variant`).value = defaultVariant;
+    // Set values, checking if options exist
+    const setSelectValue = (elementId, value) => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        // Check if the value exists in options, otherwise keep default
+        const optionExists = Array.from(element.options).some(opt => opt.value === value);
+        if (optionExists) {
+          element.value = value;
+        }
+      }
+    };
+
+    setSelectValue(`${containerId}_quantity`, defaultQuantity);
+    setSelectValue(`${containerId}_size`, defaultSize);
+    setSelectValue(`${containerId}_type`, defaultType);
+    setSelectValue(`${containerId}_dimension`, defaultDimension);
+    setSelectValue(`${containerId}_variant`, defaultVariant);
     
     // Initial update after setting values
     updateComposition();
@@ -152,11 +164,11 @@ function createCompositionBuilder(containerId, hiddenInputId, initialValue = nul
 
   // Function to update the composition
   function updateComposition() {
-    const quantity = document.getElementById(`${containerId}_quantity`).value;
-    const size = document.getElementById(`${containerId}_size`).value;
-    const type = document.getElementById(`${containerId}_type`).value;
-    const dimension = document.getElementById(`${containerId}_dimension`).value;
-    const variant = document.getElementById(`${containerId}_variant`).value;
+    const quantity = document.getElementById(`${containerId}_quantity`)?.value || '1';
+    const size = document.getElementById(`${containerId}_size`)?.value || '162';
+    const type = document.getElementById(`${containerId}_type`)?.value || 'S';
+    const dimension = document.getElementById(`${containerId}_dimension`)?.value || '125';
+    const variant = document.getElementById(`${containerId}_variant`)?.value || '18';
     
     const composition = `${quantity}x ${size}${type}${dimension}-${variant}`;
     
@@ -192,21 +204,47 @@ function initializeCompositionBuilders() {
 function initializeEditCompositionBuilders(windowId, window) {
   // Wait a bit for the DOM to be ready
   setTimeout(() => {
-    createCompositionBuilder(
-      `editJambageCompositionBuilder${windowId}`, 
-      `editJambageComposition${windowId}`,
-      window.jambage?.composition
-    );
-    createCompositionBuilder(
-      `editLinteauCompositionBuilder${windowId}`, 
-      `editLinteauComposition${windowId}`,
-      window.linteau?.composition
-    );
-    createCompositionBuilder(
-      `editSeuilCompositionBuilder${windowId}`, 
-      `editSeuilComposition${windowId}`,
-      window.seuil?.composition
-    );
+    // Create composition builder for Jambage with existing value
+    if (window.jambage?.composition) {
+      createCompositionBuilder(
+        `editJambageCompositionBuilder${windowId}`, 
+        `editJambageComposition${windowId}`,
+        window.jambage.composition
+      );
+    } else {
+      createCompositionBuilder(
+        `editJambageCompositionBuilder${windowId}`, 
+        `editJambageComposition${windowId}`
+      );
+    }
+
+    // Create composition builder for Linteau with existing value
+    if (window.linteau?.composition) {
+      createCompositionBuilder(
+        `editLinteauCompositionBuilder${windowId}`, 
+        `editLinteauComposition${windowId}`,
+        window.linteau.composition
+      );
+    } else {
+      createCompositionBuilder(
+        `editLinteauCompositionBuilder${windowId}`, 
+        `editLinteauComposition${windowId}`
+      );
+    }
+
+    // Create composition builder for Seuil with existing value
+    if (window.seuil?.composition) {
+      createCompositionBuilder(
+        `editSeuilCompositionBuilder${windowId}`, 
+        `editSeuilComposition${windowId}`,
+        window.seuil.composition
+      );
+    } else {
+      createCompositionBuilder(
+        `editSeuilCompositionBuilder${windowId}`, 
+        `editSeuilComposition${windowId}`
+      );
+    }
   }, 100);
 }
 
@@ -297,16 +335,6 @@ function getSeuilEditSection(window) {
   `;
 }
 
-// Function to initialize edit composition builders after edit form is rendered
-function initializeEditCompositionBuilders(windowId, window) {
-  // Wait a bit for the DOM to be ready
-  setTimeout(() => {
-    createEditCompositionBuilder(windowId, 'Jambage', window.jambage?.composition);
-    createEditCompositionBuilder(windowId, 'Linteau', window.linteau?.composition);
-    createEditCompositionBuilder(windowId, 'Seuil', window.seuil?.composition);
-  }, 100);
-}
-
 window.editWindow = function(windowId) {
   if (!canModifyProject()) {
     alert('You do not have permission to edit windows in this project.');
@@ -319,13 +347,13 @@ window.editWindow = function(windowId) {
     return;
   }
 
-  console.log(`Entering edit mode for window ID: ${windowId}`);
+  console.log(`Entering edit mode for window ID: ${windowId}`, window);
   
   // Hide view mode and show edit mode
   document.getElementById(`windowView${windowId}`).style.display = 'none';
   document.getElementById(`windowEdit${windowId}`).style.display = 'block';
   
-  // Initialize composition builders
+  // Initialize composition builders with existing values
   initializeEditCompositionBuilders(windowId, window);
 };
 
