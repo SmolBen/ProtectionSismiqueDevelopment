@@ -59,6 +59,282 @@ const CFSS_OPTIONS = [
     'detail-structure'
 ];
 
+function createCompositionBuilder(containerId, hiddenInputId, initialValue = null) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Parse initial value if provided
+  let defaultQuantity = '1', defaultSize = '600', defaultType = 'S', defaultDimension = '125', defaultVariant = '33';
+  if (initialValue) {
+    try {
+      const parts = initialValue.split('x ');
+      defaultQuantity = parts[0];
+      const rest = parts[1];
+      const sizeMatch = rest.match(/(\d+)/);
+      if (sizeMatch) defaultSize = sizeMatch[1];
+      defaultType = rest.includes('S') ? 'S' : 'T';
+      const afterType = rest.split(/[ST]/)[1];
+      if (afterType) {
+        const dimensionPart = afterType.split('-')[0];
+        const variantPart = afterType.split('-')[1];
+        if (dimensionPart) defaultDimension = dimensionPart;
+        if (variantPart) defaultVariant = variantPart;
+      }
+    } catch (e) {
+      console.log('Could not parse initial value:', initialValue);
+    }
+  }
+
+  // Create the HTML structure
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+      <select id="${containerId}_quantity" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 50px; background: white; color: black;">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      
+      <span style="color: #666; font-size: 14px;">x</span>
+      
+      <select id="${containerId}_size" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 70px; background: white; color: black;">
+        <option value="162">162</option>
+        <option value="212">212</option>
+        <option value="250">250</option>
+        <option value="300">300</option>
+        <option value="350">350</option>
+        <option value="362">362</option>
+        <option value="400">400</option>
+        <option value="600">600</option>
+        <option value="800">800</option>
+        <option value="1000">1000</option>
+      </select>
+      
+      <select id="${containerId}_type" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 50px; background: white; color: black;">
+        <option value="S">S</option>
+        <option value="T">T</option>
+      </select>
+      
+      <select id="${containerId}_dimension" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 70px; background: white; color: black;">
+        <option value="125">125</option>
+        <option value="162">162</option>
+        <option value="200">200</option>
+        <option value="250">250</option>
+        <option value="350">350</option>
+      </select>
+      
+      <span style="color: #666; font-size: 14px;">-</span>
+      
+      <select id="${containerId}_variant" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 60px; background: white; color: black;">
+        <option value="18">18</option>
+        <option value="33">33</option>
+        <option value="34">34</option>
+        <option value="43">43</option>
+        <option value="54">54</option>
+        <option value="68">68</option>
+        <option value="97">97</option>
+      </select>
+    </div>
+  `;
+
+  // Set initial values after creating the HTML
+  setTimeout(() => {
+    document.getElementById(`${containerId}_quantity`).value = defaultQuantity;
+    document.getElementById(`${containerId}_size`).value = defaultSize;
+    document.getElementById(`${containerId}_type`).value = defaultType;
+    document.getElementById(`${containerId}_dimension`).value = defaultDimension;
+    document.getElementById(`${containerId}_variant`).value = defaultVariant;
+    
+    // Initial update after setting values
+    updateComposition();
+  }, 10);
+
+  // Function to update the composition
+  function updateComposition() {
+    const quantity = document.getElementById(`${containerId}_quantity`).value;
+    const size = document.getElementById(`${containerId}_size`).value;
+    const type = document.getElementById(`${containerId}_type`).value;
+    const dimension = document.getElementById(`${containerId}_dimension`).value;
+    const variant = document.getElementById(`${containerId}_variant`).value;
+    
+    const composition = `${quantity}x ${size}${type}${dimension}-${variant}`;
+    
+    // Update hidden input
+    const hiddenInput = document.getElementById(hiddenInputId);
+    if (hiddenInput) {
+      hiddenInput.value = composition;
+    }
+    
+    return composition;
+  }
+
+  // Add event listeners to all dropdowns
+  ['quantity', 'size', 'type', 'dimension', 'variant'].forEach(field => {
+    const element = document.getElementById(`${containerId}_${field}`);
+    if (element) {
+      element.addEventListener('change', updateComposition);
+    }
+  });
+
+  // Initial update
+  updateComposition();
+}
+
+// Replace the React-based initialization functions with these simpler ones
+function initializeCompositionBuilders() {
+  // Initialize composition builders for new window form
+  createCompositionBuilder('jambageCompositionBuilder', 'jambageComposition');
+  createCompositionBuilder('linteauCompositionBuilder', 'linteauComposition');
+  createCompositionBuilder('seuilCompositionBuilder', 'seuilComposition');
+}
+
+function initializeEditCompositionBuilders(windowId, window) {
+  // Wait a bit for the DOM to be ready
+  setTimeout(() => {
+    createCompositionBuilder(
+      `editJambageCompositionBuilder${windowId}`, 
+      `editJambageComposition${windowId}`,
+      window.jambage?.composition
+    );
+    createCompositionBuilder(
+      `editLinteauCompositionBuilder${windowId}`, 
+      `editLinteauComposition${windowId}`,
+      window.linteau?.composition
+    );
+    createCompositionBuilder(
+      `editSeuilCompositionBuilder${windowId}`, 
+      `editSeuilComposition${windowId}`,
+      window.seuil?.composition
+    );
+  }, 100);
+}
+
+// Update the renderWindowList function to include composition builders in edit mode
+// Add this to the existing renderWindowList function, replace the edit form sections
+
+// Modified section for Jambage in edit form:
+function getJambageEditSection(window) {
+  return `
+    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+      <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+        <div class="form-group" style="width: 220px; margin-bottom: 0;">
+          <label for="editJambageType${window.id}">Jambage Type</label>
+          <select id="editJambageType${window.id}" required>
+            <option value="">Select Jambage Type</option>
+            <option value="JA1" ${window.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
+            <option value="JA2" ${window.jambage?.type === 'JA2' ? 'selected' : ''}>JA2</option>
+            <option value="JA3" ${window.jambage?.type === 'JA3' ? 'selected' : ''}>JA3</option>
+            <option value="JA4" ${window.jambage?.type === 'JA4' ? 'selected' : ''}>JA4</option>
+            <option value="JA5" ${window.jambage?.type === 'JA5' ? 'selected' : ''}>JA5</option>
+          </select>
+        </div>
+        <div class="form-group" style="width: 250px; margin-bottom: 0;">
+          <label for="editJambageComposition${window.id}">Jambage Composition</label>
+          <div id="editJambageCompositionBuilder${window.id}"></div>
+          <input type="hidden" 
+                 id="editJambageComposition${window.id}" 
+                 value="${window.jambage?.composition || ''}">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Modified section for Linteau in edit form:
+function getLinteauEditSection(window) {
+  return `
+    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+      <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+        <div class="form-group" style="width: 220px; margin-bottom: 0;">
+          <label for="editLinteauType${window.id}">Linteau Type</label>
+          <select id="editLinteauType${window.id}" required>
+            <option value="">Select Linteau Type</option>
+            <option value="LT1" ${window.linteau?.type === 'LT1' ? 'selected' : ''}>LT1</option>
+            <option value="LT2" ${window.linteau?.type === 'LT2' ? 'selected' : ''}>LT2</option>
+            <option value="LT3" ${window.linteau?.type === 'LT3' ? 'selected' : ''}>LT3</option>
+            <option value="LT4" ${window.linteau?.type === 'LT4' ? 'selected' : ''}>LT4</option>
+            <option value="LT5" ${window.linteau?.type === 'LT5' ? 'selected' : ''}>LT5</option>
+          </select>
+        </div>
+        <div class="form-group" style="width: 250px; margin-bottom: 0;">
+          <label for="editLinteauComposition${window.id}">Linteau Composition</label>
+          <div id="editLinteauCompositionBuilder${window.id}"></div>
+          <input type="hidden" 
+                 id="editLinteauComposition${window.id}" 
+                 value="${window.linteau?.composition || ''}">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Modified section for Seuil in edit form:
+function getSeuilEditSection(window) {
+  return `
+    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+      <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+        <div class="form-group" style="width: 220px; margin-bottom: 0;">
+          <label for="editSeuilType${window.id}">Seuil Type</label>
+          <select id="editSeuilType${window.id}" required>
+            <option value="">Select Seuil Type</option>
+            <option value="SE1" ${window.seuil?.type === 'SE1' ? 'selected' : ''}>SE1</option>
+            <option value="SE2" ${window.seuil?.type === 'SE2' ? 'selected' : ''}>SE2</option>
+            <option value="SE3" ${window.seuil?.type === 'SE3' ? 'selected' : ''}>SE3</option>
+            <option value="SE4" ${window.seuil?.type === 'SE4' ? 'selected' : ''}>SE4</option>
+            <option value="SE5" ${window.seuil?.type === 'SE5' ? 'selected' : ''}>SE5</option>
+          </select>
+        </div>
+        <div class="form-group" style="width: 250px; margin-bottom: 0;">
+          <label for="editSeuilComposition${window.id}">Seuil Composition</label>
+          <div id="editSeuilCompositionBuilder${window.id}"></div>
+          <input type="hidden" 
+                 id="editSeuilComposition${window.id}" 
+                 value="${window.seuil?.composition || ''}">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Function to initialize edit composition builders after edit form is rendered
+function initializeEditCompositionBuilders(windowId, window) {
+  // Wait a bit for the DOM to be ready
+  setTimeout(() => {
+    createEditCompositionBuilder(windowId, 'Jambage', window.jambage?.composition);
+    createEditCompositionBuilder(windowId, 'Linteau', window.linteau?.composition);
+    createEditCompositionBuilder(windowId, 'Seuil', window.seuil?.composition);
+  }, 100);
+}
+
+window.editWindow = function(windowId) {
+  if (!canModifyProject()) {
+    alert('You do not have permission to edit windows in this project.');
+    return;
+  }
+
+  const window = projectWindows.find(w => w.id === windowId);
+  if (!window) {
+    console.error('Window not found:', windowId);
+    return;
+  }
+
+  console.log(`Entering edit mode for window ID: ${windowId}`);
+  
+  // Hide view mode and show edit mode
+  document.getElementById(`windowView${windowId}`).style.display = 'none';
+  document.getElementById(`windowEdit${windowId}`).style.display = 'block';
+  
+  // Initialize composition builders
+  initializeEditCompositionBuilders(windowId, window);
+};
+
+// Call initialization when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize composition builders for new window form
+  initializeCompositionBuilders();
+});
+
 function getWallDisplayOrder() {
     // Check if current revision has a display order
     const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
@@ -4070,27 +4346,27 @@ function renderWindowList() {
                     <div class="form-group">
                         <label for="editWindowType${window.id}">Window Type</label>
                         <input type="text" 
-                               id="editWindowType${window.id}" 
-                               value="${window.type || ''}" 
-                               required>
+                            id="editWindowType${window.id}" 
+                            value="${window.type || ''}" 
+                            required>
                     </div>
                     
                     <div class="row-compact">
                         <div class="form-group" style="flex: 1; margin-bottom: 0;">
                             <label for="editLargeurMax${window.id}">Largeur Max (m)</label>
                             <input type="number" 
-                                   id="editLargeurMax${window.id}" 
-                                   value="${window.largeurMax || ''}" 
-                                   step="0.1" 
-                                   required>
+                                id="editLargeurMax${window.id}" 
+                                value="${window.largeurMax || ''}" 
+                                step="0.1" 
+                                required>
                         </div>
                         <div class="form-group" style="flex: 1; margin-bottom: 0;">
                             <label for="editHauteurMax${window.id}">Hauteur Max (m)</label>
                             <input type="number" 
-                                   id="editHauteurMax${window.id}" 
-                                   value="${window.hauteurMax || ''}" 
-                                   step="0.1" 
-                                   required>
+                                id="editHauteurMax${window.id}" 
+                                value="${window.hauteurMax || ''}" 
+                                step="0.1" 
+                                required>
                         </div>
                     </div>
                     
@@ -4110,9 +4386,10 @@ function renderWindowList() {
                             </div>
                             <div class="form-group" style="width: 250px; margin-bottom: 0;">
                                 <label for="editJambageComposition${window.id}">Jambage Composition</label>
-                                <input type="text" 
-                                       id="editJambageComposition${window.id}" 
-                                       value="${window.jambage?.composition || ''}">
+                                <div id="editJambageCompositionBuilder${window.id}"></div>
+                                <input type="hidden" 
+                                    id="editJambageComposition${window.id}" 
+                                    value="${window.jambage?.composition || ''}">
                             </div>
                         </div>
                     </div>
@@ -4133,9 +4410,10 @@ function renderWindowList() {
                             </div>
                             <div class="form-group" style="width: 250px; margin-bottom: 0;">
                                 <label for="editLinteauComposition${window.id}">Linteau Composition</label>
-                                <input type="text" 
-                                       id="editLinteauComposition${window.id}" 
-                                       value="${window.linteau?.composition || ''}">
+                                <div id="editLinteauCompositionBuilder${window.id}"></div>
+                                <input type="hidden" 
+                                    id="editLinteauComposition${window.id}" 
+                                    value="${window.linteau?.composition || ''}">
                             </div>
                         </div>
                     </div>
@@ -4156,9 +4434,10 @@ function renderWindowList() {
                             </div>
                             <div class="form-group" style="width: 250px; margin-bottom: 0;">
                                 <label for="editSeuilComposition${window.id}">Seuil Composition</label>
-                                <input type="text" 
-                                       id="editSeuilComposition${window.id}" 
-                                       value="${window.seuil?.composition || ''}">
+                                <div id="editSeuilCompositionBuilder${window.id}"></div>
+                                <input type="hidden" 
+                                    id="editSeuilComposition${window.id}" 
+                                    value="${window.seuil?.composition || ''}">
                             </div>
                         </div>
                     </div>

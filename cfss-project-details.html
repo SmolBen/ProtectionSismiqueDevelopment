@@ -12,6 +12,9 @@
         <!-- SortableJS for drag-and-drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script> 
+
 </head>
 <body>
     <nav class="navbar">
@@ -480,7 +483,6 @@
         
         <!-- Jambage Section -->
         <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-            <!-- <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 15px;">Jambage</div> -->
             <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
                 <div class="form-group" style="width: 220px; margin-bottom: 0;">
                     <label for="jambageType">Jambage Type</label>
@@ -495,14 +497,15 @@
                 </div>
                 <div class="form-group" style="width: 250px; margin-bottom: 0;">
                     <label for="jambageComposition">Jambage Composition</label>
-                    <input type="text" id="jambageComposition" name="jambageComposition">
+                    <!-- Replace input with composition builder -->
+                    <div id="jambageCompositionBuilder"></div>
+                    <input type="hidden" id="jambageComposition" name="jambageComposition">
                 </div>
             </div>
         </div>
         
         <!-- Linteau Section -->
         <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-            <!-- <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 15px;">Linteau</div> -->
             <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
                 <div class="form-group" style="width: 220px; margin-bottom: 0;">
                     <label for="linteauType">Linteau Type</label>
@@ -517,14 +520,15 @@
                 </div>
                 <div class="form-group" style="width: 250px; margin-bottom: 0;">
                     <label for="linteauComposition">Linteau Composition</label>
-                    <input type="text" id="linteauComposition" name="linteauComposition">
+                    <!-- Replace input with composition builder -->
+                    <div id="linteauCompositionBuilder"></div>
+                    <input type="hidden" id="linteauComposition" name="linteauComposition">
                 </div>
             </div>
         </div>
         
         <!-- Seuil Section -->
         <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-            <!-- <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 15px;">Seuil</div> -->
             <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
                 <div class="form-group" style="width: 220px; margin-bottom: 0;">
                     <label for="seuilType">Seuil Type</label>
@@ -535,12 +539,13 @@
                         <option value="SE3">SE3</option>
                         <option value="SE4">SE4</option>
                         <option value="SE5">SE5</option>
-                        <option value="N/A">N/A</option>
                     </select>
                 </div>
                 <div class="form-group" style="width: 250px; margin-bottom: 0;">
                     <label for="seuilComposition">Seuil Composition</label>
-                    <input type="text" id="seuilComposition" name="seuilComposition">
+                    <!-- Replace input with composition builder -->
+                    <div id="seuilCompositionBuilder"></div>
+                    <input type="hidden" id="seuilComposition" name="seuilComposition">
                 </div>
             </div>
         </div>
