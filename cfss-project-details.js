@@ -4394,8 +4394,8 @@ function handleWindowSubmit(e) {
     const windowData = {
         id: Date.now(),
         type: formData.get('windowType'),
-        largeurMax: parseFloat(formData.get('largeurMax')),
-        hauteurMax: parseFloat(formData.get('hauteurMax')),
+        largeurMax: parseFloat(formData.get('windowLargeurMax')),
+        hauteurMax: parseFloat(formData.get('windowHauteurMax')),
         jambage: {
             type: formData.get('jambageType'),
             compositions: parseComposition(formData.get('jambageComposition'))
@@ -4454,6 +4454,9 @@ function renderWindowList() {
                     <div class="equipment-actions">
                         <button class="button primary" onclick="editWindow(${window.id})">
                             <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="duplicate-btn" onclick="duplicateWindow(${window.id})" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="fas fa-copy"></i> Duplicate
                         </button>
                         <button class="button secondary" onclick="deleteWindow(${window.id})">
                             <i class="fas fa-trash"></i>
@@ -4731,6 +4734,112 @@ function updateWindowSummary() {
     const summary = document.getElementById('windowSelectionSummary');
     const count = projectWindows.length;
     summary.innerHTML = `<i class="fas fa-window-maximize"></i> ${count} window${count !== 1 ? 's' : ''} added`;
+}
+
+function duplicateWindow(id) {
+    console.log(`Duplicating window with id: ${id}`);
+    
+    // Find the window to duplicate
+    const windowToDuplicate = projectWindows.find(w => w.id === id);
+    
+    if (!windowToDuplicate) {
+        alert('Window not found.');
+        return;
+    }
+    
+    // Hide any open forms first
+    hideAllForms();
+    
+    // Get the window form
+    const windowForm = document.getElementById('windowForm');
+    const addWindowButton = document.getElementById('addWindowButton');
+    
+    if (!windowForm) {
+        alert('Window form not found.');
+        return;
+    }
+    
+    // Clear the form first (to reset any previous data)
+    const form = document.getElementById('windowDataForm');
+    if (form) {
+        form.reset();
+    }
+    
+    // Populate basic window information
+    document.getElementById('windowType').value = windowToDuplicate.type || '';
+    document.getElementById('windowLargeurMax').value = windowToDuplicate.largeurMax || '';
+    document.getElementById('windowHauteurMax').value = windowToDuplicate.hauteurMax || '';
+    
+    // Populate Jambage data
+    if (windowToDuplicate.jambage) {
+        document.getElementById('jambageType').value = windowToDuplicate.jambage.type || '';
+        
+        // Set compositions using composition builder
+        setTimeout(() => {
+            if (windowToDuplicate.jambage.compositions && windowToDuplicate.jambage.compositions.length > 0) {
+                createCompositionBuilder(
+                    'jambageCompositionBuilder',
+                    'jambageComposition',
+                    windowToDuplicate.jambage.compositions
+                );
+            }
+        }, 100);
+    }
+    
+    // Populate Linteau data
+    if (windowToDuplicate.linteau) {
+        document.getElementById('linteauType').value = windowToDuplicate.linteau.type || '';
+        
+        // Set compositions using composition builder
+        setTimeout(() => {
+            if (windowToDuplicate.linteau.compositions && windowToDuplicate.linteau.compositions.length > 0) {
+                createCompositionBuilder(
+                    'linteauCompositionBuilder',
+                    'linteauComposition',
+                    windowToDuplicate.linteau.compositions
+                );
+            }
+        }, 100);
+    }
+    
+    // Populate Seuil data
+    if (windowToDuplicate.seuil) {
+        document.getElementById('seuilType').value = windowToDuplicate.seuil.type || '';
+        
+        // Set compositions using composition builder
+        setTimeout(() => {
+            if (windowToDuplicate.seuil.compositions && windowToDuplicate.seuil.compositions.length > 0) {
+                createCompositionBuilder(
+                    'seuilCompositionBuilder',
+                    'seuilComposition',
+                    windowToDuplicate.seuil.compositions
+                );
+            }
+        }, 100);
+    }
+    
+    // Show the form
+    windowForm.classList.add('show');
+    if (addWindowButton) {
+        addWindowButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+    }
+    
+    // Scroll to the form
+    windowForm.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+    
+    // Focus on window type field for user to modify
+    setTimeout(() => {
+        const windowTypeField = document.getElementById('windowType');
+        if (windowTypeField) {
+            windowTypeField.focus();
+            windowTypeField.select();
+        }
+    }, 300);
+    
+    console.log('Window form populated with duplicate data');
 }
 
 // Delete window function
@@ -5343,6 +5452,7 @@ window.setupEditMontantChangeHandler = setupEditMontantChangeHandler;
 window.editWindow = editWindow;
 window.cancelWindowEdit = cancelWindowEdit;
 window.saveWindowEdit = saveWindowEdit;
+window.deleteWindow = deleteWindow;
 
 window.addCompositionItem = addCompositionItem;
 window.deleteCompositionItem = deleteCompositionItem;
