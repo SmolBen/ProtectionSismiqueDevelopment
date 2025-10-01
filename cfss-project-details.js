@@ -59,6 +59,8 @@ const CFSS_OPTIONS = [
     'detail-structure'
 ];
 
+const compositionBuilderCounts = {};
+
 function createCompositionBuilder(containerId, hiddenInputId, existingValue = '') {
   const container = document.getElementById(containerId);
   if (!container) {
@@ -66,15 +68,56 @@ function createCompositionBuilder(containerId, hiddenInputId, existingValue = ''
     return;
   }
 
-  // Parse existing value if provided
+  // Initialize count for this builder
+  if (!compositionBuilderCounts[containerId]) {
+    compositionBuilderCounts[containerId] = 0;
+  }
+
+  // Parse existing value(s) if provided - can be single string or array
+  let existingCompositions = [];
+  if (existingValue) {
+    if (Array.isArray(existingValue)) {
+      existingCompositions = existingValue;
+    } else if (typeof existingValue === 'string' && existingValue.trim()) {
+      existingCompositions = [existingValue];
+    }
+  }
+
+  // Clear container
+  container.innerHTML = '';
+  compositionBuilderCounts[containerId] = 0;
+
+  // Add existing compositions or at least one default
+  if (existingCompositions.length > 0) {
+    existingCompositions.forEach(comp => {
+      addCompositionItem(containerId, hiddenInputId, comp);
+    });
+  } else {
+    addCompositionItem(containerId, hiddenInputId, '');
+  }
+}
+
+
+function addCompositionItem(containerId, hiddenInputId, existingValue = '') {
+  const MAX_COMPOSITIONS = 5;
+  
+  if (compositionBuilderCounts[containerId] >= MAX_COMPOSITIONS) {
+    alert(`Maximum ${MAX_COMPOSITIONS} compositions reached`);
+    return;
+  }
+
+  const container = document.getElementById(containerId);
+  const isFirst = compositionBuilderCounts[containerId] === 0;
+  const itemId = `${containerId}_item_${Date.now()}_${Math.random()}`;
+
+  // Parse existing value
   let defaultQuantity = '1';
   let defaultSize = '162';
   let defaultType = 'S';
   let defaultDimension = '125';
   let defaultVariant = '18';
-  
+
   if (existingValue) {
-    // Parse format like "1x 162S125-18"
     const match = existingValue.match(/(\d+)x\s*(\d+)([A-Z])(\d+)-(\d+)/);
     if (match) {
       defaultQuantity = match[1];
@@ -85,112 +128,140 @@ function createCompositionBuilder(containerId, hiddenInputId, existingValue = ''
     }
   }
 
-  // Create the composition builder UI
-  container.innerHTML = `
-    <div style="display: flex; gap: 8px; align-items: center;">
-      <select id="${containerId}_quantity" style="width: 60px;">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
+  const compositionItem = document.createElement('div');
+  compositionItem.className = 'composition-item';
+  compositionItem.id = itemId;
+  // FIXED: Changed align-items from 'center' to 'flex-start' to prevent layout shift
+  compositionItem.style.cssText = 'display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px;';
+
+  // FIXED: Wrapped selects in a container with fixed height to prevent shifting
+  compositionItem.innerHTML = `
+    <div style="display: flex; gap: 6px; align-items: center; flex: 1; flex-wrap: nowrap; min-height: 38px;">
+      <select style="width: 60px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
+        <option value="1" ${defaultQuantity === '1' ? 'selected' : ''}>1</option>
+        <option value="2" ${defaultQuantity === '2' ? 'selected' : ''}>2</option>
+        <option value="3" ${defaultQuantity === '3' ? 'selected' : ''}>3</option>
+        <option value="4" ${defaultQuantity === '4' ? 'selected' : ''}>4</option>
+        <option value="5" ${defaultQuantity === '5' ? 'selected' : ''}>5</option>
       </select>
       
-      <span>x</span>
+      <span style="color: #666; font-weight: 500;">x</span>
       
-      <select id="${containerId}_size" style="width: 80px;">
-        <option value="162">162</option>
-        <option value="212">212</option>
-        <option value="250">250</option>
-        <option value="300">300</option>
-        <option value="350">350</option>
-        <option value="362">362</option>
-        <option value="400">400</option>
-        <option value="600">600</option>
-        <option value="800">800</option>
-        <option value="1000">1000</option>
+      <select style="width: 75px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
+        <option value="162" ${defaultSize === '162' ? 'selected' : ''}>162</option>
+        <option value="212" ${defaultSize === '212' ? 'selected' : ''}>212</option>
+        <option value="250" ${defaultSize === '250' ? 'selected' : ''}>250</option>
+        <option value="300" ${defaultSize === '300' ? 'selected' : ''}>300</option>
+        <option value="350" ${defaultSize === '350' ? 'selected' : ''}>350</option>
+        <option value="362" ${defaultSize === '362' ? 'selected' : ''}>362</option>
+        <option value="400" ${defaultSize === '400' ? 'selected' : ''}>400</option>
+        <option value="600" ${defaultSize === '600' ? 'selected' : ''}>600</option>
+        <option value="800" ${defaultSize === '800' ? 'selected' : ''}>800</option>
+        <option value="1000" ${defaultSize === '1000' ? 'selected' : ''}>1000</option>
       </select>
       
-      <select id="${containerId}_type" style="width: 70px;">
-        <option value="S">S</option>
-        <option value="T">T</option>
+      <select style="width: 55px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
+        <option value="S" ${defaultType === 'S' ? 'selected' : ''}>S</option>
+        <option value="U" ${defaultType === 'U' ? 'selected' : ''}>U</option>
       </select>
       
-      <select id="${containerId}_dimension" style="width: 80px;">
-        <option value="125">125</option>
-        <option value="162">162</option>
-        <option value="200">200</option>
-        <option value="250">250</option>
-        <option value="350">350</option>
+      <select style="width: 70px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
+        <option value="125" ${defaultDimension === '125' ? 'selected' : ''}>125</option>
+        <option value="150" ${defaultDimension === '150' ? 'selected' : ''}>150</option>
+        <option value="200" ${defaultDimension === '200' ? 'selected' : ''}>200</option>
       </select>
       
-      <span>-</span>
+      <span style="color: #666; font-weight: 500;">-</span>
       
-      <select id="${containerId}_variant" style="width: 70px;">
-        <option value="18">18</option>
-        <option value="33">33</option>
-        <option value="34">34</option>
-        <option value="43">43</option>
-        <option value="54">54</option>
-        <option value="68">68</option>
-        <option value="97">97</option>
+      <select style="width: 60px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
+        <option value="18" ${defaultVariant === '18' ? 'selected' : ''}>18</option>
+        <option value="33" ${defaultVariant === '33' ? 'selected' : ''}>33</option>
+        <option value="34" ${defaultVariant === '34' ? 'selected' : ''}>34</option>
+        <option value="43" ${defaultVariant === '43' ? 'selected' : ''}>43</option>
+        <option value="54" ${defaultVariant === '54' ? 'selected' : ''}>54</option>
+        <option value="68" ${defaultVariant === '68' ? 'selected' : ''}>68</option>
+        <option value="97" ${defaultVariant === '97' ? 'selected' : ''}>97</option>
       </select>
     </div>
+    
+    ${isFirst ? `
+      <button type="button" class="button primary" style="padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; flex-shrink: 0;" 
+              onclick="addCompositionItem('${containerId}', '${hiddenInputId}')" 
+              id="${containerId}_addBtn">
+        <i class="fas fa-plus"></i> Add
+      </button>
+    ` : `
+      <button type="button" class="button secondary" style="padding: 6px 10px; font-size: 12px; flex-shrink: 0;" 
+              onclick="deleteCompositionItem('${itemId}', '${containerId}', '${hiddenInputId}')">
+        <i class="fas fa-trash"></i>
+      </button>
+    `}
   `;
 
-  // Set the default/existing values after a brief delay
-  setTimeout(() => {
-    // Set values, checking if options exist
-    const setSelectValue = (elementId, value) => {
-      const element = document.getElementById(elementId);
-      if (element) {
-        // Check if the value exists in options, otherwise keep default
-        const optionExists = Array.from(element.options).some(opt => opt.value === value);
-        if (optionExists) {
-          element.value = value;
-        }
-      }
-    };
+  container.appendChild(compositionItem);
+  compositionBuilderCounts[containerId]++;
+  
+  updateAllCompositions(containerId, hiddenInputId);
+  updateAddButton(containerId);
+}
 
-    setSelectValue(`${containerId}_quantity`, defaultQuantity);
-    setSelectValue(`${containerId}_size`, defaultSize);
-    setSelectValue(`${containerId}_type`, defaultType);
-    setSelectValue(`${containerId}_dimension`, defaultDimension);
-    setSelectValue(`${containerId}_variant`, defaultVariant);
-    
-    // Initial update after setting values
-    updateComposition();
-  }, 10);
-
-  // Function to update the composition
-  function updateComposition() {
-    const quantity = document.getElementById(`${containerId}_quantity`)?.value || '1';
-    const size = document.getElementById(`${containerId}_size`)?.value || '162';
-    const type = document.getElementById(`${containerId}_type`)?.value || 'S';
-    const dimension = document.getElementById(`${containerId}_dimension`)?.value || '125';
-    const variant = document.getElementById(`${containerId}_variant`)?.value || '18';
-    
-    const composition = `${quantity}x ${size}${type}${dimension}-${variant}`;
-    
-    // Update hidden input
-    const hiddenInput = document.getElementById(hiddenInputId);
-    if (hiddenInput) {
-      hiddenInput.value = composition;
-    }
-    
-    return composition;
+function deleteCompositionItem(itemId, containerId, hiddenInputId) {
+  if (compositionBuilderCounts[containerId] <= 1) {
+    alert('You must have at least one composition');
+    return;
   }
 
-  // Add event listeners to all dropdowns
-  ['quantity', 'size', 'type', 'dimension', 'variant'].forEach(field => {
-    const element = document.getElementById(`${containerId}_${field}`);
-    if (element) {
-      element.addEventListener('change', updateComposition);
+  const element = document.getElementById(itemId);
+  if (element) {
+    element.remove();
+    compositionBuilderCounts[containerId]--;
+    updateAllCompositions(containerId, hiddenInputId);
+    updateAddButton(containerId);
+  }
+}
+
+function updateAddButton(containerId) {
+  const MAX_COMPOSITIONS = 5;
+  const btn = document.getElementById(`${containerId}_addBtn`);
+  if (!btn) return;
+
+  if (compositionBuilderCounts[containerId] >= MAX_COMPOSITIONS) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-check"></i> Max (${MAX_COMPOSITIONS})`;
+    btn.style.opacity = '0.6';
+    btn.style.cursor = 'not-allowed';
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-plus"></i> Add`;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  }
+}
+
+function updateAllCompositions(containerId, hiddenInputId) {
+  const container = document.getElementById(containerId);
+  const hiddenInput = document.getElementById(hiddenInputId);
+  
+  if (!container || !hiddenInput) return;
+
+  const items = container.querySelectorAll('.composition-item');
+  const compositions = [];
+
+  items.forEach(item => {
+    const selects = item.querySelectorAll('select');
+    if (selects.length >= 5) {
+      const quantity = selects[0].value;
+      const size = selects[1].value;
+      const type = selects[2].value;
+      const dimension = selects[3].value;
+      const variant = selects[4].value;
+      
+      compositions.push(`${quantity}x ${size}${type}${dimension}-${variant}`);
     }
   });
 
-  // Initial update
-  updateComposition();
+  // Store as JSON array
+  hiddenInput.value = JSON.stringify(compositions);
 }
 
 // Replace the React-based initialization functions with these simpler ones
@@ -202,14 +273,20 @@ function initializeCompositionBuilders() {
 }
 
 function initializeEditCompositionBuilders(windowId, window) {
-  // Wait a bit for the DOM to be ready
   setTimeout(() => {
-    // Create composition builder for Jambage with existing value
-    if (window.jambage?.composition) {
+    // Jambage
+    if (window.jambage?.compositions) {
       createCompositionBuilder(
         `editJambageCompositionBuilder${windowId}`, 
         `editJambageComposition${windowId}`,
-        window.jambage.composition
+        window.jambage.compositions // Pass the array
+      );
+    } else if (window.jambage?.composition) {
+      // Backward compatibility for old single composition format
+      createCompositionBuilder(
+        `editJambageCompositionBuilder${windowId}`, 
+        `editJambageComposition${windowId}`,
+        [window.jambage.composition] // Convert to array
       );
     } else {
       createCompositionBuilder(
@@ -218,12 +295,18 @@ function initializeEditCompositionBuilders(windowId, window) {
       );
     }
 
-    // Create composition builder for Linteau with existing value
-    if (window.linteau?.composition) {
+    // Linteau
+    if (window.linteau?.compositions) {
       createCompositionBuilder(
         `editLinteauCompositionBuilder${windowId}`, 
         `editLinteauComposition${windowId}`,
-        window.linteau.composition
+        window.linteau.compositions
+      );
+    } else if (window.linteau?.composition) {
+      createCompositionBuilder(
+        `editLinteauCompositionBuilder${windowId}`, 
+        `editLinteauComposition${windowId}`,
+        [window.linteau.composition]
       );
     } else {
       createCompositionBuilder(
@@ -232,12 +315,18 @@ function initializeEditCompositionBuilders(windowId, window) {
       );
     }
 
-    // Create composition builder for Seuil with existing value
-    if (window.seuil?.composition) {
+    // Seuil
+    if (window.seuil?.compositions) {
       createCompositionBuilder(
         `editSeuilCompositionBuilder${windowId}`, 
         `editSeuilComposition${windowId}`,
-        window.seuil.composition
+        window.seuil.compositions
+      );
+    } else if (window.seuil?.composition) {
+      createCompositionBuilder(
+        `editSeuilCompositionBuilder${windowId}`, 
+        `editSeuilComposition${windowId}`,
+        [window.seuil.composition]
       );
     } else {
       createCompositionBuilder(
@@ -247,7 +336,6 @@ function initializeEditCompositionBuilders(windowId, window) {
     }
   }, 100);
 }
-
 // Update the renderWindowList function to include composition builders in edit mode
 // Add this to the existing renderWindowList function, replace the edit form sections
 
@@ -4290,6 +4378,19 @@ function handleWindowSubmit(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
+    
+    // FIXED: Parse composition JSON strings to arrays
+    const parseComposition = (compositionStr) => {
+        if (!compositionStr) return [];
+        try {
+            const parsed = JSON.parse(compositionStr);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            console.warn('Failed to parse composition:', compositionStr);
+            return [];
+        }
+    };
+    
     const windowData = {
         id: Date.now(),
         type: formData.get('windowType'),
@@ -4297,15 +4398,15 @@ function handleWindowSubmit(e) {
         hauteurMax: parseFloat(formData.get('hauteurMax')),
         jambage: {
             type: formData.get('jambageType'),
-            composition: formData.get('jambageComposition')
+            compositions: parseComposition(formData.get('jambageComposition'))
         },
         linteau: {
             type: formData.get('linteauType'),
-            composition: formData.get('linteauComposition')
+            compositions: parseComposition(formData.get('linteauComposition'))
         },
         seuil: {
             type: formData.get('seuilType'),
-            composition: formData.get('seuilComposition')
+            compositions: parseComposition(formData.get('seuilComposition'))
         },
         createdAt: new Date().toISOString()
     };
@@ -4360,9 +4461,18 @@ function renderWindowList() {
                     </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 13px; color: #6c757d;">
-                    <div><strong>Jambage:</strong> ${window.jambage?.type || 'N/A'}${window.jambage?.composition ? ' - ' + window.jambage.composition : ''}</div>
-                    <div><strong>Linteau:</strong> ${window.linteau?.type || 'N/A'}${window.linteau?.composition ? ' - ' + window.linteau.composition : ''}</div>
-                    <div><strong>Seuil:</strong> ${window.seuil?.type || 'N/A'}${window.seuil?.composition ? ' - ' + window.seuil.composition : ''}</div>
+                    <div><strong>Jambage:</strong> ${window.jambage?.type || 'N/A'}
+    ${window.jambage?.compositions && window.jambage.compositions.length > 0 
+      ? '<br/>&nbsp;&nbsp;• ' + window.jambage.compositions.join('<br/>&nbsp;&nbsp;• ') 
+      : ''}</div>
+  <div><strong>Linteau:</strong> ${window.linteau?.type || 'N/A'}
+    ${window.linteau?.compositions && window.linteau.compositions.length > 0 
+      ? '<br/>&nbsp;&nbsp;• ' + window.linteau.compositions.join('<br/>&nbsp;&nbsp;• ') 
+      : ''}</div>
+  <div><strong>Seuil:</strong> ${window.seuil?.type || 'N/A'}
+    ${window.seuil?.compositions && window.seuil.compositions.length > 0 
+      ? '<br/>&nbsp;&nbsp;• ' + window.seuil.compositions.join('<br/>&nbsp;&nbsp;• ') 
+      : ''}</div>
                 </div>
             </div>
 
@@ -4400,7 +4510,7 @@ function renderWindowList() {
                     
                     <!-- Jambage Section -->
                     <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-                        <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                        <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
                             <div class="form-group" style="width: 220px; margin-bottom: 0;">
                                 <label for="editJambageType${window.id}">Jambage Type</label>
                                 <select id="editJambageType${window.id}" required>
@@ -4424,7 +4534,7 @@ function renderWindowList() {
                     
                     <!-- Linteau Section -->
                     <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-                        <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                        <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
                             <div class="form-group" style="width: 220px; margin-bottom: 0;">
                                 <label for="editLinteauType${window.id}">Linteau Type</label>
                                 <select id="editLinteauType${window.id}" required>
@@ -4448,7 +4558,7 @@ function renderWindowList() {
                     
                     <!-- Seuil Section -->
                     <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-                        <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
+                        <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
                             <div class="form-group" style="width: 220px; margin-bottom: 0;">
                                 <label for="editSeuilType${window.id}">Seuil Type</label>
                                 <select id="editSeuilType${window.id}" required>
@@ -4530,6 +4640,18 @@ async function saveWindowEdit(windowId, event) {
             throw new Error('Window not found');
         }
 
+        // FIXED: Parse composition JSON strings to arrays
+        const parseComposition = (compositionStr) => {
+            if (!compositionStr) return [];
+            try {
+                const parsed = JSON.parse(compositionStr);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.warn('Failed to parse composition:', compositionStr);
+                return [];
+            }
+        };
+
         // Get updated values from form
         const updatedWindow = {
             ...projectWindows[windowIndex],
@@ -4538,15 +4660,15 @@ async function saveWindowEdit(windowId, event) {
             hauteurMax: parseFloat(document.getElementById(`editHauteurMax${windowId}`).value),
             jambage: {
                 type: document.getElementById(`editJambageType${windowId}`).value,
-                composition: document.getElementById(`editJambageComposition${windowId}`).value
+                compositions: parseComposition(document.getElementById(`editJambageComposition${windowId}`).value)
             },
             linteau: {
                 type: document.getElementById(`editLinteauType${windowId}`).value,
-                composition: document.getElementById(`editLinteauComposition${windowId}`).value
+                compositions: parseComposition(document.getElementById(`editLinteauComposition${windowId}`).value)
             },
             seuil: {
                 type: document.getElementById(`editSeuilType${windowId}`).value,
-                composition: document.getElementById(`editSeuilComposition${windowId}`).value
+                compositions: parseComposition(document.getElementById(`editSeuilComposition${windowId}`).value)
             },
             lastModified: new Date().toISOString(),
             modifiedBy: currentUser?.email || 'unknown'
@@ -4563,21 +4685,23 @@ async function saveWindowEdit(windowId, event) {
             return;
         }
 
+        console.log('Saving updated window:', updatedWindow);
+
         // Update the window in the array
         projectWindows[windowIndex] = updatedWindow;
-        
+
         // Save to database
         await saveWindowsToDatabase();
-        
+
         // Re-render the window list
         renderWindowList();
         updateWindowSummary();
-        
+
         alert('Window updated successfully!');
-        
+
     } catch (error) {
-        console.error('Error saving window edit:', error);
-        alert('Error saving window changes: ' + error.message);
+        console.error('Error updating window:', error);
+        alert('Error updating window: ' + error.message);
     }
 }
 
@@ -5219,4 +5343,8 @@ window.setupEditMontantChangeHandler = setupEditMontantChangeHandler;
 window.editWindow = editWindow;
 window.cancelWindowEdit = cancelWindowEdit;
 window.saveWindowEdit = saveWindowEdit;
+
+window.addCompositionItem = addCompositionItem;
+window.deleteCompositionItem = deleteCompositionItem;
+window.updateAllCompositions = updateAllCompositions;
 
