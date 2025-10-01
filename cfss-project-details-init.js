@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const project = projectResponse[0];
                 window.projectData = project;
                 projectData = project;
+                window.currentProject = project;
 
                 // Check if this is actually a CFSS project (no domain field)
                 if (project.domain) {
@@ -116,6 +117,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setupEquipmentFormHandlerWithRevisions();
                 setupWindowHandlers();
                 loadWindowsFromProject(project);
+                initializeCustomPages();
+                loadCustomPagesFromProject(); 
                 setupCFSSReportButtonWithRevisionModal();
                 
                 renderEquipmentList();

@@ -448,7 +448,8 @@ window.editWindow = function(windowId) {
 // Call initialization when the page loads
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize composition builders for new window form
-  initializeCompositionBuilders();
+    initializeCompositionBuilders();
+    initializeCustomPages();
 });
 
 function getWallDisplayOrder() {
