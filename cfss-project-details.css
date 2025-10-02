@@ -1291,4 +1291,8 @@ overflow: hidden;
 }
 
 #customPageCanvas .canvas-element { position: absolute; box-sizing: border-box; }
-#customPageCanvas .canvas-empty-state { display: none !important; }
+#customPageCanvas .canvas-empty-state { margin-left: -77px; }
+
+.properties-card {
+  height: 132px !important;   /* set to your filled-state height */
+}

@@ -660,11 +660,26 @@ function cancelCustomPageEdit() {
     isEditingCustomPage = false;
 }
 
+// Show an empty-state hint when the canvas has no elements
+function showCanvasEmptyState(msg = 'Drag and drop elements to customize this page') {
+    const canvas = document.getElementById('customPageCanvas');
+    if (!canvas || canvas.querySelector('.canvas-empty-state')) return;
+
+    const hint = document.createElement('div');
+    hint.className = 'canvas-empty-state';
+    hint.innerHTML = `
+    <i class="bi bi-hand-index-thumb"></i>
+    <div>${msg}</div>
+    `;
+    canvas.appendChild(hint);
+}
+
 // Clear canvas
 function clearCustomPageCanvas() {
-const canvas = document.getElementById('customPageCanvas');
-canvas.innerHTML = ''; // no overlay text/cursor
-customPageElementCounter = 0;
+    const canvas = document.getElementById('customPageCanvas');
+    canvas.innerHTML = '';
+    customPageElementCounter = 0;
+    showCanvasEmptyState(); // <-- add the hint on a fresh/blank canvas
 }
 
 async function signImageForPreview(key) {
@@ -679,16 +694,20 @@ return url || null;
 
 // Load custom page elements onto canvas
 async function loadCustomPageElements(elements) {
-const canvas = document.getElementById('customPageCanvas');
-clearCustomPageCanvas();
+  const canvas = document.getElementById('customPageCanvas');
+  clearCustomPageCanvas();            // clears and adds the empty-state
 
-if (!elements || elements.length === 0) return;
+  // If nothing to load, leave the empty-state visible
+  if (!elements || elements.length === 0) {
+    showCanvasEmptyState();           // <-- key change vs. early return with no hint
+    return;
+  }
 
-// Remove empty state
-const emptyState = canvas.querySelector('.canvas-empty-state');
-if (emptyState) emptyState.remove();
+  // We have elements: remove the empty-state before rendering
+  const emptyState = canvas.querySelector('.canvas-empty-state');
+  if (emptyState) emptyState.remove();
 
-for (const elementData of elements) {
+  for (const elementData of elements) {
     customPageElementCounter++;
 
     const element = document.createElement('div');
@@ -696,20 +715,18 @@ for (const elementData of elements) {
     element.dataset.id = customPageElementCounter;
     element.dataset.type = elementData.type;
 
-    element.style.left = elementData.position.x + 'px';
-    element.style.top  = elementData.position.y + 'px';
+    element.style.left   = elementData.position.x + 'px';
+    element.style.top    = elementData.position.y + 'px';
     element.style.width  = elementData.size.width + 'px';
     element.style.height = elementData.size.height + 'px';
 
     const controls = `
-    <div class="drag-handle">
-        <i class="fas fa-grip-vertical"></i>
-    </div>
-    <div class="element-controls">
+      <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
+      <div class="element-controls">
         <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">Edit</button>
         <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">Delete</button>
-    </div>
-    <div class="resize-handles">
+      </div>
+      <div class="resize-handles">
         <div class="resize-handle corner top-left"></div>
         <div class="resize-handle corner top-right"></div>
         <div class="resize-handle corner bottom-left"></div>
@@ -718,51 +735,51 @@ for (const elementData of elements) {
         <div class="resize-handle edge bottom"></div>
         <div class="resize-handle edge left"></div>
         <div class="resize-handle edge right"></div>
-    </div>
+      </div>
     `;
 
     if (elementData.type === 'heading') {
-    element.innerHTML = controls +
+      element.innerHTML = controls +
         `<div class="canvas-heading-element" contenteditable="true"
-            style="font-size:${elementData.fontSize}; text-align:${elementData.textAlign}">
-        ${elementData.content}
-        </div>`;
+             style="font-size:${elementData.fontSize}; text-align:${elementData.textAlign}">
+          ${elementData.content}
+         </div>`;
     } else if (elementData.type === 'text') {
-    element.innerHTML = controls +
+      element.innerHTML = controls +
         `<div class="canvas-text-element" contenteditable="true"
-            style="font-size:${elementData.fontSize}; text-align:${elementData.textAlign}">
-        ${elementData.content}
-        </div>`;
+             style="font-size:${elementData.fontSize}; text-align:${elementData.textAlign}">
+          ${elementData.content}
+         </div>`;
     } else if (elementData.type === 'image') {
-    const key = elementData.imageKey || null;
-    let src = elementData.imageUrl || null;
+      const key = elementData.imageKey || null;
+      let src = elementData.imageUrl || null;
 
-    // Prefer the stable S3 key for preview; re-sign to avoid expired URLs
-    if (key) {
+      // Prefer stable S3 key; re-sign for fresh preview
+      if (key) {
         const fresh = await signImageForPreview(key).catch(() => null);
         if (fresh) src = fresh;
-    }
+      }
 
-    const keyAttr = key ? `data-s3-key="${key}"` : '';
-    element.innerHTML = controls +
+      const keyAttr = key ? `data-s3-key="${key}"` : '';
+      element.innerHTML = controls +
         `<div class="canvas-image-element" onclick="uploadCanvasImage(this)">
-        <img ${keyAttr} src="${src || ''}" alt="Custom page image">
-        </div>`;
+           <img ${keyAttr} src="${src || ''}" alt="Custom page image">
+         </div>`;
     }
 
     element.addEventListener('click', (e) => {
-    if (!e.target.closest('.element-controls') &&
-        !e.target.closest('.drag-handle') &&
-        !e.target.closest('[contenteditable]')) {
+      if (!e.target.closest('.element-controls') &&
+          !e.target.closest('.drag-handle') &&
+          !e.target.closest('[contenteditable]')) {
         selectCanvasElement(element);
-    }
+      }
     });
 
     setupCanvasElementDragging(element);
     setupCanvasElementResizing(element);
 
     canvas.appendChild(element);
-}
+  }
 }
 
 // Render custom pages list
