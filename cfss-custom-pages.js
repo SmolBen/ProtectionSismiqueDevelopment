@@ -232,9 +232,40 @@ function createCanvasElement(type, x, y) {
         element.innerHTML = controls + '<div class="canvas-heading-element" contenteditable="true">New Heading</div>';
     } else if (type === 'text') {
         element.innerHTML = controls + '<div class="canvas-text-element" contenteditable="true">Click to edit text.</div>';
-    } else if (type === 'image') {
-        element.innerHTML = controls + '<div class="canvas-image-element" onclick="uploadCanvasImage(this)"><i class="fas fa-upload"></i><br>Click to upload image</div>';
-    }
+} else if (type === 'image') {
+    const uploadId = 'canvasImageUpload_' + customPageElementCounter;
+    element.innerHTML = controls + `
+        <div class="canvas-image-element">
+            <div class="canvas-image-upload-container">
+                <div class="upload-controls" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}" 
+                            style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <i class="fas fa-camera"></i>
+                        Browse
+                    </button>
+                    
+                    <input 
+                        class="canvas-drop-zone" 
+                        id="dropZone_${uploadId}" 
+                        placeholder="Drop or paste here (Ctrl+V)"
+                        readonly
+                        tabindex="0"
+                        style="flex: 1; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
+                </div>
+                
+                <input type="file" id="fileInput_${uploadId}" accept="image/*" style="display: none;">
+            </div>
+        </div>
+    `;
+    
+    // Setup upload handlers immediately
+    setTimeout(() => {
+        const imageElement = element.querySelector('.canvas-image-element');
+        if (imageElement) {
+            setupCanvasImageUploadHandlers(imageElement, uploadId);
+        }
+    }, 0);
+}
     
     element.addEventListener('click', (e) => {
         if (!e.target.closest('.element-controls') && 
@@ -515,38 +546,153 @@ function deleteCanvasElement(id) {
     }
 }
 
+// New function to setup upload handlers for canvas images
+function setupCanvasImageUploadHandlers(element, uploadId) {
+    const cameraBtn = document.getElementById(`cameraBtn_${uploadId}`);
+    const dropZone = document.getElementById(`dropZone_${uploadId}`);
+    const fileInput = document.getElementById(`fileInput_${uploadId}`);
 
-// Upload image to canvas element
-async function uploadCanvasImage(element) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    if (!cameraBtn || !dropZone || !fileInput) {
+        console.error('Canvas image upload elements not found');
+        return;
+    }
 
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    // Browse button click
+    cameraBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+    });
 
-        try {
-            // 1) Upload to S3 (this returns { key, ... })
-            const uploaded = await uploadImageToS3(file); // from cfss-project-details.js
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        handleCanvasImageFileSelect(e, element);
+    });
 
-            // 2) Get a short-lived signed URL for preview
-            const signResp = await fetch(
-                `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(uploaded.key)}`,
-                { headers: getAuthHeaders() }
-            );
-            if (!signResp.ok) throw new Error('Failed to sign image preview URL');
-            const { url } = await signResp.json();
+    // Drop zone click
+    dropZone.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropZone.focus();
+    });
 
-            // 3) Render <img> for preview and keep the stable S3 key on data-s3-key
-            element.innerHTML = `<img data-s3-key="${uploaded.key}" src="${url}" alt="Custom page image">`;
-        } catch (err) {
-            console.error('Error uploading image:', err);
-            alert('Error uploading image: ' + err.message);
+    // Paste event
+    dropZone.addEventListener('paste', (e) => {
+        handleCanvasImagePaste(e, element);
+    });
+
+    // Drag and drop events
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '#007bff';
+        dropZone.style.backgroundColor = '#f0f8ff';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.stopPropagation();
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.backgroundColor = 'white';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.backgroundColor = 'white';
+        
+        const files = Array.from(e.dataTransfer.files);
+        processCanvasImageFiles(files, element);
+    });
+
+    // Focus/blur styling
+    dropZone.addEventListener('focus', () => {
+        dropZone.style.borderColor = '#007bff';
+        dropZone.style.boxShadow = '0 0 0 2px rgba(0, 123, 255, 0.25)';
+    });
+
+    dropZone.addEventListener('blur', () => {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.boxShadow = 'none';
+    });
+}
+
+// Handle file selection
+function handleCanvasImageFileSelect(event, element) {
+    const files = Array.from(event.target.files);
+    processCanvasImageFiles(files, element);
+}
+
+// Handle paste
+function handleCanvasImagePaste(event, element) {
+    const items = event.clipboardData.items;
+    const files = [];
+    
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
         }
-    };
+    }
+    
+    if (files.length > 0) {
+        event.preventDefault();
+        processCanvasImageFiles(files, element);
+        
+        // Visual feedback
+        const dropZone = element.querySelector('.canvas-drop-zone');
+        if (dropZone) {
+            dropZone.value = '';
+            dropZone.placeholder = 'Image pasted successfully!';
+            setTimeout(() => {
+                dropZone.placeholder = 'Drop or paste here (Ctrl+V)';
+            }, 2000);
+        }
+    }
+}
 
-    input.click();
+// Process uploaded files
+async function processCanvasImageFiles(files, element) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select a valid image file.');
+        return;
+    }
+
+    // Take only the first file (single image only)
+    const file = validFiles[0];
+
+    // Show loading state
+    const dropZone = element.querySelector('.canvas-drop-zone');
+    if (dropZone) {
+        dropZone.placeholder = 'Uploading...';
+    }
+
+    try {
+        // 1) Upload to S3
+        const uploaded = await uploadImageToS3(file);
+
+        // 2) Get signed URL for preview
+        const signResp = await fetch(
+            `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(uploaded.key)}`,
+            { headers: getAuthHeaders() }
+        );
+        if (!signResp.ok) throw new Error('Failed to sign image preview URL');
+        const { url } = await signResp.json();
+
+        // 3) Replace upload UI with image
+        element.innerHTML = `<img data-s3-key="${uploaded.key}" src="${url}" alt="Custom page image">`;
+        
+        console.log('✅ Canvas image uploaded successfully');
+        
+    } catch (err) {
+        console.error('Error uploading canvas image:', err);
+        alert('Error uploading image: ' + err.message);
+        
+        // Reset on error
+        if (dropZone) {
+            dropZone.placeholder = 'Drop or paste here (Ctrl+V)';
+        }
+    }
 }
 
 // Save custom page
@@ -699,7 +845,7 @@ async function loadCustomPageElements(elements) {
 
   // If nothing to load, leave the empty-state visible
   if (!elements || elements.length === 0) {
-    showCanvasEmptyState();           // <-- key change vs. early return with no hint
+    showCanvasEmptyState();           
     return;
   }
 
@@ -760,11 +906,47 @@ async function loadCustomPageElements(elements) {
         if (fresh) src = fresh;
       }
 
-      const keyAttr = key ? `data-s3-key="${key}"` : '';
-      element.innerHTML = controls +
-        `<div class="canvas-image-element" onclick="uploadCanvasImage(this)">
-           <img ${keyAttr} src="${src || ''}" alt="Custom page image">
-         </div>`;
+      // If we have an image, render it; otherwise show upload UI immediately
+      if (key && src) {
+        const keyAttr = `data-s3-key="${key}"`;
+        element.innerHTML = controls +
+          `<div class="canvas-image-element">
+             <img ${keyAttr} src="${src}" alt="Custom page image">
+           </div>`;
+      } else {
+        // No image yet, show the upload UI immediately
+        const uploadId = 'canvasImageUpload_' + customPageElementCounter;
+        element.innerHTML = controls +
+          `<div class="canvas-image-element">
+              <div class="canvas-image-upload-container">
+                  <div class="upload-controls" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                      <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}" 
+                              style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                          <i class="fas fa-camera"></i>
+                          Browse
+                      </button>
+                      
+                      <input 
+                          class="canvas-drop-zone" 
+                          id="dropZone_${uploadId}" 
+                          placeholder="Drop or paste here (Ctrl+V)"
+                          readonly
+                          tabindex="0"
+                          style="flex: 1; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
+                  </div>
+                  
+                  <input type="file" id="fileInput_${uploadId}" accept="image/*" style="display: none;">
+              </div>
+           </div>`;
+        
+        // Setup upload handlers
+        setTimeout(() => {
+            const imageElement = element.querySelector('.canvas-image-element');
+            if (imageElement) {
+                setupCanvasImageUploadHandlers(imageElement, uploadId);
+            }
+        }, 0);
+      }
     }
 
     element.addEventListener('click', (e) => {
@@ -911,7 +1093,6 @@ window.saveCustomPage = saveCustomPage;
 window.cancelCustomPageEdit = cancelCustomPageEdit;
 window.editCanvasElement = editCanvasElement;
 window.deleteCanvasElement = deleteCanvasElement;
-window.uploadCanvasImage = uploadCanvasImage;
 window.updateCanvasElementPositionX = updateCanvasElementPositionX;
 window.updateCanvasElementPositionY = updateCanvasElementPositionY;
 window.updateCanvasElementWidth = updateCanvasElementWidth;

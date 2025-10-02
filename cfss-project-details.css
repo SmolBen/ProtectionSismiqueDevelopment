@@ -1296,3 +1296,74 @@ overflow: hidden;
 .properties-card {
   height: 132px !important;   /* set to your filled-state height */
 }
+
+/* Canvas Image Upload UI */
+.canvas-image-upload-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.canvas-camera-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.canvas-camera-btn:hover {
+    background: #0056b3;
+}
+
+.canvas-camera-btn:active {
+    background: #004085;
+}
+
+.canvas-drop-zone {
+    flex: 1;
+    padding: 10px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.canvas-drop-zone:hover {
+    border-color: #999;
+    background: #fafafa;
+}
+
+.canvas-drop-zone:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.canvas-drop-zone.dragover {
+    border-color: #007bff;
+    background: #f0f8ff;
+}
+
+/* Make sure the uploaded image fills the element properly */
+.canvas-image-element img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
