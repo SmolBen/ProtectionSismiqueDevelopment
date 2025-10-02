@@ -1294,7 +1294,7 @@ overflow: hidden;
 #customPageCanvas .canvas-empty-state { margin-left: -77px; }
 
 .properties-card {
-  height: 132px !important;   /* set to your filled-state height */
+    height: 132px !important;   /* set to your filled-state height */
 }
 
 /* Canvas Image Upload UI */

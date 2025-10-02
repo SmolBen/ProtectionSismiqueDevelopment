@@ -228,10 +228,30 @@ function createCanvasElement(type, x, y) {
         </div>
     `;
     
-    if (type === 'heading') {
-        element.innerHTML = controls + '<div class="canvas-heading-element" contenteditable="true">New Heading</div>';
-    } else if (type === 'text') {
-        element.innerHTML = controls + '<div class="canvas-text-element" contenteditable="true">Click to edit text.</div>';
+if (type === 'heading') {
+    element.innerHTML = controls + '<div class="canvas-heading-element" contenteditable="true" data-default="true">New Heading</div>';
+    
+    // Clear default text on first focus
+    const headingEl = element.querySelector('.canvas-heading-element');
+    headingEl.addEventListener('focus', function clearDefaultOnce() {
+        if (this.getAttribute('data-default') === 'true') {
+            this.textContent = '';
+            this.removeAttribute('data-default');
+        }
+        headingEl.removeEventListener('focus', clearDefaultOnce);
+    });
+} else if (type === 'text') {
+    element.innerHTML = controls + '<div class="canvas-text-element" contenteditable="true" data-default="true">Click to edit text.</div>';
+    
+    // Clear default text on first focus
+    const textEl = element.querySelector('.canvas-text-element');
+    textEl.addEventListener('focus', function clearDefaultOnce() {
+        if (this.getAttribute('data-default') === 'true') {
+            this.textContent = '';
+            this.removeAttribute('data-default');
+        }
+        textEl.removeEventListener('focus', clearDefaultOnce);
+    });
 } else if (type === 'image') {
     const uploadId = 'canvasImageUpload_' + customPageElementCounter;
     element.innerHTML = controls + `
@@ -269,8 +289,7 @@ function createCanvasElement(type, x, y) {
     
     element.addEventListener('click', (e) => {
         if (!e.target.closest('.element-controls') && 
-            !e.target.closest('.drag-handle') &&
-            !e.target.closest('[contenteditable]')) {
+            !e.target.closest('.drag-handle')) {
             selectCanvasElement(element);
         }
     });
@@ -427,53 +446,184 @@ function deselectAllCanvasElements() {
     `;
 }
 
-// Show element properties
 function showCanvasElementProperties(element) {
     const content = document.getElementById('customPageProperties');
     const hasText = element.querySelector('.canvas-text-element, .canvas-heading-element');
     
-    content.innerHTML = `
-        <div class="property-row">
-            <div class="property-group">
-                <label>Position X</label>
-                <input type="number" value="${parseInt(element.style.left)}" onchange="updateCanvasElementPositionX(this.value)">
-            </div>
-            <div class="property-group">
-                <label>Position Y</label>
-                <input type="number" value="${parseInt(element.style.top)}" onchange="updateCanvasElementPositionY(this.value)">
-            </div>
-        </div>
+    if (hasText) {
+        // Text/Heading elements: show font, typeface styling, and color
+        const textEl = element.querySelector('.canvas-text-element, .canvas-heading-element');
+        const currentFont = textEl.style.fontFamily || 'Arial, sans-serif';
+        const currentColor = textEl.style.color || '#000000';
+        const isBold = textEl.style.fontWeight === 'bold';
+        const isItalic = textEl.style.fontStyle === 'italic';
+        const isUnderline = textEl.style.textDecoration === 'underline';
         
-        <div class="property-row">
-            <div class="property-group">
-                <label>Width</label>
-                <input type="number" value="${element.offsetWidth}" onchange="updateCanvasElementWidth(this.value)">
+        content.innerHTML = `
+            <div class="property-row" style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <div class="property-group" style="flex: 1;">
+                    <label>Font</label>
+                    <select onchange="updateCanvasElementFont(this.value)" style="width: 100%;">
+                        <option value="Arial, sans-serif" ${currentFont.includes('Arial') ? 'selected' : ''}>Arial</option>
+                        <option value="'Times New Roman', serif" ${currentFont.includes('Times') ? 'selected' : ''}>Times New Roman</option>
+                        <option value="'Courier New', monospace" ${currentFont.includes('Courier') ? 'selected' : ''}>Courier New</option>
+                        <option value="Georgia, serif" ${currentFont.includes('Georgia') ? 'selected' : ''}>Georgia</option>
+                        <option value="Verdana, sans-serif" ${currentFont.includes('Verdana') ? 'selected' : ''}>Verdana</option>
+                        <option value="'Trebuchet MS', sans-serif" ${currentFont.includes('Trebuchet') ? 'selected' : ''}>Trebuchet MS</option>
+                        <option value="Impact, sans-serif" ${currentFont.includes('Impact') ? 'selected' : ''}>Impact</option>
+                    </select>
+                </div>
+                
+                <div class="property-group" style="flex: 1;">
+                    <label>Typeface</label>
+                    <div style="display: flex; gap: 5px;">
+                        <button type="button" onclick="toggleCanvasElementBold()" 
+                                style="flex: 1; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; background: ${isBold ? '#007bff' : 'white'}; color: ${isBold ? 'white' : '#333'}; font-weight: bold; cursor: pointer;">
+                            B
+                        </button>
+                        <button type="button" onclick="toggleCanvasElementItalic()" 
+                                style="flex: 1; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; background: ${isItalic ? '#007bff' : 'white'}; color: ${isItalic ? 'white' : '#333'}; font-style: italic; cursor: pointer;">
+                            I
+                        </button>
+                        <button type="button" onclick="toggleCanvasElementUnderline()" 
+                                style="flex: 1; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; background: ${isUnderline ? '#007bff' : 'white'}; color: ${isUnderline ? 'white' : '#333'}; text-decoration: underline; cursor: pointer;">
+                            U
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="property-group" style="flex: 0 0 80px;">
+                    <label>Color</label>
+                    <input type="color" value="${rgbToHex(currentColor)}" oninput="updateCanvasElementColor(this.value)" style="width: 100%; height: 32px; cursor: pointer; border: 1px solid #dee2e6; border-radius: 4px;">
+                </div>
             </div>
-            <div class="property-group">
-                <label>Height</label>
-                <input type="number" value="${element.offsetHeight}" onchange="updateCanvasElementHeight(this.value)">
+            
+            <div class="property-row">
+                <div class="property-group">
+                    <label>Font Size</label>
+                    <select onchange="updateCanvasElementFontSize(this.value)">
+                        <option value="12px">12px</option>
+                        <option value="14px">14px</option>
+                        <option value="16px" selected>16px</option>
+                        <option value="18px">18px</option>
+                        <option value="20px">20px</option>
+                        <option value="24px">24px</option>
+                        <option value="28px">28px</option>
+                        <option value="32px">32px</option>
+                    </select>
+                </div>
+                <div class="property-group">
+                    <label>Alignment</label>
+                    <select onchange="updateCanvasElementAlignment(this.value)">
+                        <option value="left" selected>Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
             </div>
-            ${hasText ? `
-            <div class="property-group">
-                <label>Font Size</label>
-                <select onchange="updateCanvasElementFontSize(this.value)">
-                    <option value="14px">Small</option>
-                    <option value="16px" selected>Medium</option>
-                    <option value="20px">Large</option>
-                    <option value="24px">X-Large</option>
-                </select>
+        `;
+    } else {
+        // Image elements: show position and dimensions
+        content.innerHTML = `
+            <div class="property-row">
+                <div class="property-group">
+                    <label>Position X</label>
+                    <input type="number" value="${parseInt(element.style.left)}" onchange="updateCanvasElementPositionX(this.value)">
+                </div>
+                <div class="property-group">
+                    <label>Position Y</label>
+                    <input type="number" value="${parseInt(element.style.top)}" onchange="updateCanvasElementPositionY(this.value)">
+                </div>
             </div>
-            <div class="property-group">
-                <label>Alignment</label>
-                <select onchange="updateCanvasElementAlignment(this.value)">
-                    <option value="left" selected>Left</option>
-                    <option value="center">Center</option>
-                    <option value="right">Right</option>
-                </select>
+            
+            <div class="property-row">
+                <div class="property-group">
+                    <label>Width</label>
+                    <input type="number" value="${element.offsetWidth}" onchange="updateCanvasElementWidth(this.value)">
+                </div>
+                <div class="property-group">
+                    <label>Height</label>
+                    <input type="number" value="${element.offsetHeight}" onchange="updateCanvasElementHeight(this.value)">
+                </div>
             </div>
-            ` : ''}
-        </div>
-    `;
+        `;
+    }
+}
+
+// Helper function to convert RGB to HEX
+function rgbToHex(rgb) {
+    // If already hex, return it
+    if (rgb.startsWith('#')) return rgb;
+    
+    // Handle rgb() format
+    if (rgb.startsWith('rgb')) {
+        const values = rgb.match(/\d+/g);
+        if (values && values.length >= 3) {
+            const r = parseInt(values[0]).toString(16).padStart(2, '0');
+            const g = parseInt(values[1]).toString(16).padStart(2, '0');
+            const b = parseInt(values[2]).toString(16).padStart(2, '0');
+            return `#${r}${g}${b}`;
+        }
+    }
+    
+    // Default to black
+    return '#000000';
+}
+
+// Update font family
+function updateCanvasElementFont(value) {
+    if (selectedCanvasElement) {
+        const contentEl = selectedCanvasElement.querySelector('.canvas-text-element, .canvas-heading-element');
+        if (contentEl) {
+            contentEl.style.fontFamily = value;
+        }
+    }
+}
+
+// Update color
+function updateCanvasElementColor(value) {
+    if (selectedCanvasElement) {
+        const contentEl = selectedCanvasElement.querySelector('.canvas-text-element, .canvas-heading-element');
+        if (contentEl) {
+            contentEl.style.color = value;
+        }
+    }
+}
+
+// Toggle bold
+function toggleCanvasElementBold() {
+    if (selectedCanvasElement) {
+        const contentEl = selectedCanvasElement.querySelector('.canvas-text-element, .canvas-heading-element');
+        if (contentEl) {
+            const isBold = contentEl.style.fontWeight === 'bold';
+            contentEl.style.fontWeight = isBold ? 'normal' : 'bold';
+            showCanvasElementProperties(selectedCanvasElement);
+        }
+    }
+}
+
+// Toggle italic
+function toggleCanvasElementItalic() {
+    if (selectedCanvasElement) {
+        const contentEl = selectedCanvasElement.querySelector('.canvas-text-element, .canvas-heading-element');
+        if (contentEl) {
+            const isItalic = contentEl.style.fontStyle === 'italic';
+            contentEl.style.fontStyle = isItalic ? 'normal' : 'italic';
+            showCanvasElementProperties(selectedCanvasElement);
+        }
+    }
+}
+
+// Toggle underline
+function toggleCanvasElementUnderline() {
+    if (selectedCanvasElement) {
+        const contentEl = selectedCanvasElement.querySelector('.canvas-text-element, .canvas-heading-element');
+        if (contentEl) {
+            const isUnderline = contentEl.style.textDecoration === 'underline';
+            contentEl.style.textDecoration = isUnderline ? 'none' : 'underline';
+            showCanvasElementProperties(selectedCanvasElement);
+        }
+    }
 }
 
 // Property update functions
@@ -719,12 +869,17 @@ async function saveCustomPage() {
             }
         };
 
-        if (el.dataset.type === 'heading' || el.dataset.type === 'text') {
-            const contentEl = el.querySelector('[contenteditable]');
-            elementData.content = contentEl.innerHTML;
-            elementData.fontSize = contentEl.style.fontSize || '16px';
-            elementData.textAlign = contentEl.style.textAlign || 'left';
-        } else if (el.dataset.type === 'image') {
+if (el.dataset.type === 'heading' || el.dataset.type === 'text') {
+    const contentEl = el.querySelector('[contenteditable]');
+    elementData.content = contentEl.innerHTML;
+    elementData.fontSize = contentEl.style.fontSize || '16px';
+    elementData.textAlign = contentEl.style.textAlign || 'left';
+    elementData.fontFamily = contentEl.style.fontFamily || 'Arial, sans-serif';
+    elementData.color = contentEl.style.color || '#000000';
+    elementData.fontWeight = contentEl.style.fontWeight || 'normal';
+    elementData.fontStyle = contentEl.style.fontStyle || 'normal';
+    elementData.textDecoration = contentEl.style.textDecoration || 'none';
+} else if (el.dataset.type === 'image') {
             const img = el.querySelector('img');
             if (img) {
             // 1) prefer the DOM's key
@@ -884,19 +1039,19 @@ async function loadCustomPageElements(elements) {
       </div>
     `;
 
-    if (elementData.type === 'heading') {
-      element.innerHTML = controls +
-        `<div class="canvas-heading-element" contenteditable="true"
-             style="font-size:${elementData.fontSize}; text-align:${elementData.textAlign}">
-          ${elementData.content}
-         </div>`;
-    } else if (elementData.type === 'text') {
-      element.innerHTML = controls +
-        `<div class="canvas-text-element" contenteditable="true"
-             style="font-size:${elementData.fontSize}; text-align:${elementData.textAlign}">
-          ${elementData.content}
-         </div>`;
-    } else if (elementData.type === 'image') {
+if (elementData.type === 'heading') {
+  element.innerHTML = controls +
+    `<div class="canvas-heading-element" contenteditable="true"
+         style="font-size:${elementData.fontSize || '16px'}; text-align:${elementData.textAlign || 'left'}; font-family:${elementData.fontFamily || 'Arial, sans-serif'}; color:${elementData.color || '#000000'}; font-weight:${elementData.fontWeight || 'normal'}; font-style:${elementData.fontStyle || 'normal'}; text-decoration:${elementData.textDecoration || 'none'}">
+      ${elementData.content}
+     </div>`;
+} else if (elementData.type === 'text') {
+  element.innerHTML = controls +
+    `<div class="canvas-text-element" contenteditable="true"
+         style="font-size:${elementData.fontSize || '16px'}; text-align:${elementData.textAlign || 'left'}; font-family:${elementData.fontFamily || 'Arial, sans-serif'}; color:${elementData.color || '#000000'}; font-weight:${elementData.fontWeight || 'normal'}; font-style:${elementData.fontStyle || 'normal'}; text-decoration:${elementData.textDecoration || 'none'}">
+      ${elementData.content}
+     </div>`;
+} else if (elementData.type === 'image') {
       const key = elementData.imageKey || null;
       let src = elementData.imageUrl || null;
 
@@ -950,11 +1105,10 @@ async function loadCustomPageElements(elements) {
     }
 
     element.addEventListener('click', (e) => {
-      if (!e.target.closest('.element-controls') &&
-          !e.target.closest('.drag-handle') &&
-          !e.target.closest('[contenteditable]')) {
+    if (!e.target.closest('.element-controls') &&
+        !e.target.closest('.drag-handle')) {
         selectCanvasElement(element);
-      }
+    }
     });
 
     setupCanvasElementDragging(element);
@@ -1104,3 +1258,10 @@ window.deleteCustomPage = deleteCustomPage;
 window.initializeCustomPages = initializeCustomPages;
 window.loadCustomPagesFromProject = loadCustomPagesFromProject;
 window.initializeCustomPagesWithData = initializeCustomPagesWithData;
+window.updateCanvasElementTypeface = updateCanvasElementTypeface;
+window.updateCanvasElementColor = updateCanvasElementColor;
+window.updateCanvasElementFont = updateCanvasElementFont;
+window.updateCanvasElementColor = updateCanvasElementColor;
+window.toggleCanvasElementBold = toggleCanvasElementBold;
+window.toggleCanvasElementItalic = toggleCanvasElementItalic;
+window.toggleCanvasElementUnderline = toggleCanvasElementUnderline;
