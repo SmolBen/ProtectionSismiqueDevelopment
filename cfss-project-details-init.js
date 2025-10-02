@@ -118,7 +118,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setupWindowHandlers();
                 loadWindowsFromProject(project);
                 initializeCustomPages();
-                loadCustomPagesFromProject(); 
                 setupCFSSReportButtonWithRevisionModal();
                 
                 renderEquipmentList();
@@ -128,6 +127,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setTimeout(() => {
                     loadSavedCFSSOptions();
                 }, 500);
+
+                console.log('📄 Initializing custom pages...');
+                initializeCustomPagesWithData(project);
+                setBlankCFSSBackground();
 
                 const newCalcButton = document.getElementById('newCalculationButton');
                 newCalcButton.style.display = 'block';
@@ -208,6 +211,18 @@ async function initializeWallData(project, projectId) {
     console.log('✅ Wall data initialization completed');
 }
 
+function initializeCustomPagesWithData(project) {
+    console.log('🎨 Initializing Custom Pages with project data...');
+    
+    // Initialize the UI
+    initializeCustomPages();
+    
+    // Load the pages
+    loadCustomPagesFromProject(project);
+    
+    console.log('✅ Custom pages initialization complete');
+}
+
 // FIXED: Report generation uses ONLY revision system
 async function generateCFSSProjectReportWithRevisions() {
     if (!currentProjectId) {
@@ -228,7 +243,10 @@ async function generateCFSSProjectReportWithRevisions() {
             walls: [...projectEquipment], // Current walls from UI
             wallRevisions: [...projectRevisions], // Current revisions
             currentWallRevisionId: currentRevisionId,
-            cfssWindData: cfssWindData
+            cfssWindData: cfssWindData,
+            customPages: (typeof projectCustomPages !== 'undefined' && Array.isArray(projectCustomPages))
+            ? projectCustomPages
+            : (projectData.customPages || [])
         };
         
         console.log('📊 Report data being sent:', {

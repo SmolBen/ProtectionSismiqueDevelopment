@@ -9,19 +9,81 @@ let currentCustomPage = null;
 let customPageElementCounter = 0;
 let selectedCanvasElement = null;
 let isEditingCustomPage = false;
+let isDropping = false;
 
 // Initialize Custom Pages system
 function initializeCustomPages() {
     console.log('🎨 Initializing Custom Pages system...');
+    setBlankCFSSBackground();
     
     const addButton = document.getElementById('addCustomPageButton');
     if (addButton) {
-        addButton.addEventListener('click', showCustomPageBuilder);
+        // FIXED: Don't pass the event as an argument
+        addButton.addEventListener('click', () => showCustomPageBuilder());
     }
     
     setupCustomPagePalette();
     
     console.log('✅ Custom Pages initialized');
+}
+
+// --- Custom Pages: load blank page background from S3 (PNG) ---
+// Canvas matches the template's aspect; template never stretched
+async function setBlankCFSSBackground() {
+  try {
+    const key = 'report/blank-cfss-page.png';
+    const signResp = await fetch(
+      `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/templates/sign?key=${encodeURIComponent(key)}`,
+      { headers: getAuthHeaders() }
+    );
+    if (!signResp.ok) throw new Error(`Signer failed: HTTP ${signResp.status}`);
+    const { url } = await signResp.json();
+
+    const canvasEl = document.getElementById('customPageCanvas');
+    if (!canvasEl) return;
+
+    // Preload to read natural size
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error('PNG failed to load'));
+      i.src = url;
+    });
+
+    // 1) Background = template (do NOT stretch it)
+    canvasEl.style.backgroundImage = `url("${url}")`;
+    canvasEl.style.backgroundRepeat = 'no-repeat';
+    canvasEl.style.backgroundPosition = 'left top';
+    canvasEl.style.backgroundSize = 'contain';      // <--- key: fit, don't stretch
+
+    // 2) Canvas resizes to the template's aspect and shrinks to the container if needed
+    canvasEl.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+    canvasEl.style.width = '100%';                  // fill container width
+    canvasEl.style.maxWidth = `${img.naturalWidth}px`; // but never larger than template
+    canvasEl.style.height = 'auto';
+
+    // 3) Remove any chrome so canvas IS the template
+    canvasEl.style.margin = '0';
+    canvasEl.style.boxShadow = 'none';
+    canvasEl.style.borderRadius = '0';
+    canvasEl.style.backgroundColor = 'transparent';
+
+    // 4) Persist the rendered size for 1:1 PDF mapping
+    const updateSize = () => {
+      if (typeof window.currentCustomPage !== 'object') window.currentCustomPage = {};
+      window.currentCustomPage.canvasWidth  = Math.round(canvasEl.clientWidth);
+      window.currentCustomPage.canvasHeight = Math.round(canvasEl.clientHeight);
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+
+    console.log('🖼️ Canvas fitted to template (no stretch)', {
+      natural: { w: img.naturalWidth, h: img.naturalHeight },
+      rendered: { w: canvasEl.clientWidth, h: canvasEl.clientHeight }
+    });
+  } catch (e) {
+    console.warn('Could not set blank CFSS background:', e);
+  }
 }
 
 // Setup palette drag events
@@ -82,7 +144,16 @@ function setupCanvasEvents() {
     
     canvas.addEventListener('drop', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         canvas.classList.remove('drag-over');
+        
+        // Prevent duplicate drops
+        if (isDropping) {
+            console.log('⚠️ Drop already in progress, ignoring duplicate');
+            return;
+        }
+        
+        isDropping = true;
         
         const type = e.dataTransfer.getData('elementType');
         if (type) {
@@ -97,6 +168,11 @@ function setupCanvasEvents() {
             
             createCanvasElement(type, x, y);
         }
+        
+        // Reset flag after a short delay
+        setTimeout(() => {
+            isDropping = false;
+        }, 100);
     });
     
     // Click canvas to deselect
@@ -420,54 +496,69 @@ function editCanvasElement(id) {
 }
 
 function deleteCanvasElement(id) {
+    console.log('🗑️ Deleting element:', id);
     const element = document.querySelector(`[data-id="${id}"]`);
-    if (element && confirm('Delete this element?')) {
+    
+    if (element) {
         element.remove();
         
         const canvas = document.getElementById('customPageCanvas');
-        if (!canvas.querySelector('.canvas-element')) {
-            canvas.innerHTML = '<div class="canvas-empty-state"><i class="fas fa-mouse-pointer"></i><p>Drag elements anywhere to build your custom page</p></div>';
+        
+        // Deselect if this was the selected element
+        if (selectedCanvasElement === element) {
+            deselectAllCanvasElements();
         }
+        
+        console.log('✅ Element deleted');
+    } else {
+        console.error('❌ Element not found:', id);
     }
 }
+
 
 // Upload image to canvas element
 async function uploadCanvasImage(element) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    
+
     input.onchange = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            // Upload to S3 (uses the uploadImageToS3 function from main file)
-            try {
-                // Access currentProjectId from main file
-                const imageUrl = await uploadImageToS3(file, currentProjectId);
-                element.innerHTML = `<img src="${imageUrl}" alt="Custom page image">`;
-            } catch (error) {
-                console.error('Error uploading image:', error);
-                alert('Error uploading image: ' + error.message);
-            }
+        if (!file) return;
+
+        try {
+            // 1) Upload to S3 (this returns { key, ... })
+            const uploaded = await uploadImageToS3(file); // from cfss-project-details.js
+
+            // 2) Get a short-lived signed URL for preview
+            const signResp = await fetch(
+                `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(uploaded.key)}`,
+                { headers: getAuthHeaders() }
+            );
+            if (!signResp.ok) throw new Error('Failed to sign image preview URL');
+            const { url } = await signResp.json();
+
+            // 3) Render <img> for preview and keep the stable S3 key on data-s3-key
+            element.innerHTML = `<img data-s3-key="${uploaded.key}" src="${url}" alt="Custom page image">`;
+        } catch (err) {
+            console.error('Error uploading image:', err);
+            alert('Error uploading image: ' + err.message);
         }
     };
-    
+
     input.click();
 }
 
 // Save custom page
 async function saveCustomPage() {
     const title = document.getElementById('customPageTitle').value.trim();
-    
-    if (!title) {
-        alert('Please enter a page title');
-        return;
-    }
-    
-    // Collect all elements from canvas
+    if (!title) { alert('Please enter a page title'); return; }
+
     const canvas = document.getElementById('customPageCanvas');
+    currentCustomPage.canvasWidth  = canvas.clientWidth;   // 816
+    currentCustomPage.canvasHeight = canvas.clientHeight;  // 1056
+
     const elements = [];
-    
     canvas.querySelectorAll('.canvas-element').forEach(el => {
         const elementData = {
             id: el.dataset.id,
@@ -481,8 +572,7 @@ async function saveCustomPage() {
                 height: el.offsetHeight
             }
         };
-        
-        // Get content based on type
+
         if (el.dataset.type === 'heading' || el.dataset.type === 'text') {
             const contentEl = el.querySelector('[contenteditable]');
             elementData.content = contentEl.innerHTML;
@@ -491,35 +581,70 @@ async function saveCustomPage() {
         } else if (el.dataset.type === 'image') {
             const img = el.querySelector('img');
             if (img) {
-                elementData.imageUrl = img.src;
+            // 1) prefer the DOM's key
+            let imageKey = img.dataset.s3Key || null;
+
+            // 2) if missing, try to recover from the existing element model
+            if (!imageKey && currentCustomPage?.elements?.length) {
+                const old = currentCustomPage.elements.find(e => e.id == el.dataset.id);
+                if (old?.imageKey) imageKey = old.imageKey;
             }
+                elementData.imageKey = imageKey;                 // <-- critical for Lambda
+                elementData.imageUrl = img.src || null;          // preview only
+                }
         }
-        
+
         elements.push(elementData);
     });
+
+    // NEW: store canvas dimensions so backend can scale precisely to PDF
+    currentCustomPage.canvasWidth  = canvas.clientWidth;
+    currentCustomPage.canvasHeight = canvas.clientHeight;
     
     currentCustomPage.title = title;
     currentCustomPage.elements = elements;
     currentCustomPage.lastModified = new Date().toISOString();
     
+    console.log('🔍 DEBUG: Updated currentCustomPage:', currentCustomPage);
+    
     // Add or update in array
     if (isEditingCustomPage) {
+        console.log('🔍 DEBUG: EDITING mode');
         const index = projectCustomPages.findIndex(p => p.id === currentCustomPage.id);
+        console.log('🔍 DEBUG: Found at index:', index);
         if (index !== -1) {
             projectCustomPages[index] = currentCustomPage;
+        } else {
+            console.log('⚠️ WARNING: Editing but page not found, adding instead');
+            projectCustomPages.push(currentCustomPage);
         }
     } else {
+        console.log('🔍 DEBUG: NEW page mode - pushing to array');
         projectCustomPages.push(currentCustomPage);
     }
     
-    // Save to database
-    await saveCustomPagesToDatabase();
+    console.log('🔍 DEBUG: projectCustomPages AFTER adding:', projectCustomPages.length, projectCustomPages);
+    console.log('📄 Saving custom pages:', projectCustomPages.length);
     
-    // Return to list view
-    cancelCustomPageEdit();
-    renderCustomPagesList();
-    
-    alert('Custom page saved successfully!');
+    try {
+        // Save to database
+        await saveCustomPagesToDatabase();
+        
+        console.log('🔍 DEBUG: After saveCustomPagesToDatabase, projectCustomPages:', projectCustomPages.length);
+        
+        // Return to list view
+        cancelCustomPageEdit();
+        
+        console.log('🔍 DEBUG: After cancelCustomPageEdit, projectCustomPages:', projectCustomPages.length);
+        
+        // Render the updated list
+        renderCustomPagesList();
+        
+        alert('Custom page saved successfully!');
+    } catch (error) {
+        console.error('Error saving custom page:', error);
+        alert('Error saving custom page: ' + error.message);
+    }
 }
 
 // Cancel custom page edit
@@ -537,82 +662,121 @@ function cancelCustomPageEdit() {
 
 // Clear canvas
 function clearCustomPageCanvas() {
-    const canvas = document.getElementById('customPageCanvas');
-    canvas.innerHTML = '<div class="canvas-empty-state"><i class="fas fa-mouse-pointer"></i><p>Drag elements anywhere to build your custom page</p></div>';
-    customPageElementCounter = 0;
+const canvas = document.getElementById('customPageCanvas');
+canvas.innerHTML = ''; // no overlay text/cursor
+customPageElementCounter = 0;
+}
+
+async function signImageForPreview(key) {
+const resp = await fetch(
+    `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(key)}`,
+    { headers: getAuthHeaders() }
+);
+if (!resp.ok) return null;
+const { url } = await resp.json();
+return url || null;
 }
 
 // Load custom page elements onto canvas
-function loadCustomPageElements(elements) {
-    const canvas = document.getElementById('customPageCanvas');
-    clearCustomPageCanvas();
-    
-    if (!elements || elements.length === 0) return;
-    
-    // Remove empty state
-    const emptyState = canvas.querySelector('.canvas-empty-state');
-    if (emptyState) emptyState.remove();
-    
-    elements.forEach(elementData => {
-        customPageElementCounter++;
-        const element = document.createElement('div');
-        element.className = 'canvas-element';
-        element.dataset.id = customPageElementCounter;
-        element.dataset.type = elementData.type;
-        
-        element.style.left = elementData.position.x + 'px';
-        element.style.top = elementData.position.y + 'px';
-        element.style.width = elementData.size.width + 'px';
-        element.style.height = elementData.size.height + 'px';
-        
-        const controls = `
-            <div class="drag-handle">
-                <i class="fas fa-grip-vertical"></i>
-            </div>
-            <div class="element-controls">
-                <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">Edit</button>
-                <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">Delete</button>
-            </div>
-            <div class="resize-handles">
-                <div class="resize-handle corner top-left"></div>
-                <div class="resize-handle corner top-right"></div>
-                <div class="resize-handle corner bottom-left"></div>
-                <div class="resize-handle corner bottom-right"></div>
-                <div class="resize-handle edge top"></div>
-                <div class="resize-handle edge bottom"></div>
-                <div class="resize-handle edge left"></div>
-                <div class="resize-handle edge right"></div>
-            </div>
-        `;
-        
-        if (elementData.type === 'heading') {
-            element.innerHTML = controls + `<div class="canvas-heading-element" contenteditable="true" style="font-size: ${elementData.fontSize}; text-align: ${elementData.textAlign}">${elementData.content}</div>`;
-        } else if (elementData.type === 'text') {
-            element.innerHTML = controls + `<div class="canvas-text-element" contenteditable="true" style="font-size: ${elementData.fontSize}; text-align: ${elementData.textAlign}">${elementData.content}</div>`;
-        } else if (elementData.type === 'image' && elementData.imageUrl) {
-            element.innerHTML = controls + `<div class="canvas-image-element" onclick="uploadCanvasImage(this)"><img src="${elementData.imageUrl}"></div>`;
-        }
-        
-        element.addEventListener('click', (e) => {
-            if (!e.target.closest('.element-controls') && 
-                !e.target.closest('.drag-handle') &&
-                !e.target.closest('[contenteditable]')) {
-                selectCanvasElement(element);
-            }
-        });
-        
-        setupCanvasElementDragging(element);
-        setupCanvasElementResizing(element);
-        
-        canvas.appendChild(element);
+async function loadCustomPageElements(elements) {
+const canvas = document.getElementById('customPageCanvas');
+clearCustomPageCanvas();
+
+if (!elements || elements.length === 0) return;
+
+// Remove empty state
+const emptyState = canvas.querySelector('.canvas-empty-state');
+if (emptyState) emptyState.remove();
+
+for (const elementData of elements) {
+    customPageElementCounter++;
+
+    const element = document.createElement('div');
+    element.className = 'canvas-element';
+    element.dataset.id = customPageElementCounter;
+    element.dataset.type = elementData.type;
+
+    element.style.left = elementData.position.x + 'px';
+    element.style.top  = elementData.position.y + 'px';
+    element.style.width  = elementData.size.width + 'px';
+    element.style.height = elementData.size.height + 'px';
+
+    const controls = `
+    <div class="drag-handle">
+        <i class="fas fa-grip-vertical"></i>
+    </div>
+    <div class="element-controls">
+        <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">Edit</button>
+        <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">Delete</button>
+    </div>
+    <div class="resize-handles">
+        <div class="resize-handle corner top-left"></div>
+        <div class="resize-handle corner top-right"></div>
+        <div class="resize-handle corner bottom-left"></div>
+        <div class="resize-handle corner bottom-right"></div>
+        <div class="resize-handle edge top"></div>
+        <div class="resize-handle edge bottom"></div>
+        <div class="resize-handle edge left"></div>
+        <div class="resize-handle edge right"></div>
+    </div>
+    `;
+
+    if (elementData.type === 'heading') {
+    element.innerHTML = controls +
+        `<div class="canvas-heading-element" contenteditable="true"
+            style="font-size:${elementData.fontSize}; text-align:${elementData.textAlign}">
+        ${elementData.content}
+        </div>`;
+    } else if (elementData.type === 'text') {
+    element.innerHTML = controls +
+        `<div class="canvas-text-element" contenteditable="true"
+            style="font-size:${elementData.fontSize}; text-align:${elementData.textAlign}">
+        ${elementData.content}
+        </div>`;
+    } else if (elementData.type === 'image') {
+    const key = elementData.imageKey || null;
+    let src = elementData.imageUrl || null;
+
+    // Prefer the stable S3 key for preview; re-sign to avoid expired URLs
+    if (key) {
+        const fresh = await signImageForPreview(key).catch(() => null);
+        if (fresh) src = fresh;
+    }
+
+    const keyAttr = key ? `data-s3-key="${key}"` : '';
+    element.innerHTML = controls +
+        `<div class="canvas-image-element" onclick="uploadCanvasImage(this)">
+        <img ${keyAttr} src="${src || ''}" alt="Custom page image">
+        </div>`;
+    }
+
+    element.addEventListener('click', (e) => {
+    if (!e.target.closest('.element-controls') &&
+        !e.target.closest('.drag-handle') &&
+        !e.target.closest('[contenteditable]')) {
+        selectCanvasElement(element);
+    }
     });
+
+    setupCanvasElementDragging(element);
+    setupCanvasElementResizing(element);
+
+    canvas.appendChild(element);
+}
 }
 
 // Render custom pages list
 function renderCustomPagesList() {
     const container = document.getElementById('customPagesList');
     
-    if (projectCustomPages.length === 0) {
+    console.log('🎨 Rendering custom pages list. Count:', projectCustomPages.length);
+    
+    if (!container) {
+        console.error('❌ customPagesList container not found!');
+        return;
+    }
+    
+    if (!projectCustomPages || projectCustomPages.length === 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #6c757d; padding: 60px 20px; background: white; border-radius: 8px;">
                 <i class="fas fa-file-alt" style="font-size: 64px; color: #dee2e6; margin-bottom: 20px; display: block;"></i>
@@ -638,6 +802,8 @@ function renderCustomPagesList() {
             </div>
         </div>
     `).join('');
+    
+    console.log('✅ Rendered', projectCustomPages.length, 'custom pages');
 }
 
 // Edit custom page
@@ -667,28 +833,59 @@ async function saveCustomPagesToDatabase() {
     }
     
     try {
-        await firebase.firestore().collection('projects').doc(currentProjectId).update({
-            customPages: projectCustomPages,
-            lastModified: firebase.firestore.FieldValue.serverTimestamp()
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                id: currentProjectId,
+                customPages: projectCustomPages
+            })
         });
-        
-        console.log('Custom pages saved to database');
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        // Update local project data
+        if (window.projectData) {
+            window.projectData.customPages = [...projectCustomPages];
+        }
+
+        console.log('✅ Custom pages saved to database');
     } catch (error) {
-        console.error('Error saving custom pages:', error);
+        console.error('❌ Error saving custom pages:', error);
         throw error;
     }
 }
 
 // Load custom pages from project
-function loadCustomPagesFromProject() {
-    // Access currentProject from main file
-    if (currentProject && currentProject.customPages) {
-        projectCustomPages = currentProject.customPages;
-        renderCustomPagesList();
+function loadCustomPagesFromProject(project) {
+    console.log('📥 Loading custom pages from project...');
+    
+    if (project && project.customPages && Array.isArray(project.customPages)) {
+        // Filter out any invalid/corrupted data
+        projectCustomPages = project.customPages.filter(page => {
+            const isValid = page && 
+                typeof page === 'object' && 
+                page.id && 
+                page.title && 
+                Array.isArray(page.elements) &&
+                !page.isTrusted; // Filter out PointerEvents
+            
+            if (!isValid) {
+                console.warn('⚠️ Filtering out invalid page:', page);
+            }
+            return isValid;
+        });
+        
+        console.log(`✅ Loaded ${projectCustomPages.length} valid custom pages`);
     } else {
         projectCustomPages = [];
-        renderCustomPagesList();
+        console.log('ℹ️ No custom pages found in project');
     }
+    
+    renderCustomPagesList();
 }
 
 // Make functions globally available
@@ -708,3 +905,4 @@ window.editCustomPage = editCustomPage;
 window.deleteCustomPage = deleteCustomPage;
 window.initializeCustomPages = initializeCustomPages;
 window.loadCustomPagesFromProject = loadCustomPagesFromProject;
+window.initializeCustomPagesWithData = initializeCustomPagesWithData;
