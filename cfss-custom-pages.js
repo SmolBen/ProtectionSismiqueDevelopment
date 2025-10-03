@@ -194,13 +194,13 @@ function createCanvasElement(type, x, y) {
     
     // Default sizes
     let width = 300;
-    let height = 100;
+    let height = 60;
     
     if (type === 'image') {
         width = 400;
         height = 300;
     } else if (type === 'heading') {
-        height = 60;
+        height = 72;
     }
     
     element.style.left = x + 'px';
@@ -227,12 +227,15 @@ function createCanvasElement(type, x, y) {
             <div class="resize-handle edge right"></div>
         </div>
     `;
-    
+
 if (type === 'heading') {
     element.innerHTML = controls + '<div class="canvas-heading-element" contenteditable="true" data-default="true">New Heading</div>';
     
-    // Clear default text on first focus
+    // Set default font size to 24px
     const headingEl = element.querySelector('.canvas-heading-element');
+    headingEl.style.fontSize = '24px';
+    
+    // Clear default text on first focus
     headingEl.addEventListener('focus', function clearDefaultOnce() {
         if (this.getAttribute('data-default') === 'true') {
             this.textContent = '';
@@ -240,7 +243,7 @@ if (type === 'heading') {
         }
         headingEl.removeEventListener('focus', clearDefaultOnce);
     });
-} else if (type === 'text') {
+}    else if (type === 'text') {
     element.innerHTML = controls + '<div class="canvas-text-element" contenteditable="true" data-default="true">Click to edit text.</div>';
     
     // Clear default text on first focus
@@ -517,6 +520,9 @@ function deselectAllCanvasElements() {
     `;
 }
 
+// In cfss-custom-pages.js, find the showCanvasElementProperties function
+// Replace the section where it shows text/heading properties with this updated version:
+
 function showCanvasElementProperties(element) {
     const content = document.getElementById('customPageProperties');
     const hasText = element.querySelector('.canvas-text-element, .canvas-heading-element');
@@ -526,6 +532,8 @@ function showCanvasElementProperties(element) {
         const textEl = element.querySelector('.canvas-text-element, .canvas-heading-element');
         const currentFont = textEl.style.fontFamily || 'Arial, sans-serif';
         const currentColor = textEl.style.color || '#000000';
+        const currentFontSize = textEl.style.fontSize || '16px';  // Get current font size
+        const currentAlignment = textEl.style.textAlign || 'left';  // Get current alignment
         const isBold = textEl.style.fontWeight === 'bold';
         const isItalic = textEl.style.fontStyle === 'italic';
         const isUnderline = textEl.style.textDecoration === 'underline';
@@ -569,27 +577,27 @@ function showCanvasElementProperties(element) {
                 <div class="property-group">
                     <label>Font Size</label>
                     <select onchange="updateCanvasElementFontSize(this.value)">
-                        <option value="12px">12px</option>
-                        <option value="14px">14px</option>
-                        <option value="16px" selected>16px</option>
-                        <option value="18px">18px</option>
-                        <option value="20px">20px</option>
-                        <option value="24px">24px</option>
-                        <option value="28px">28px</option>
-                        <option value="32px">32px</option>
+                        <option value="12px" ${currentFontSize === '12px' ? 'selected' : ''}>12px</option>
+                        <option value="14px" ${currentFontSize === '14px' ? 'selected' : ''}>14px</option>
+                        <option value="16px" ${currentFontSize === '16px' ? 'selected' : ''}>16px</option>
+                        <option value="18px" ${currentFontSize === '18px' ? 'selected' : ''}>18px</option>
+                        <option value="20px" ${currentFontSize === '20px' ? 'selected' : ''}>20px</option>
+                        <option value="24px" ${currentFontSize === '24px' ? 'selected' : ''}>24px</option>
+                        <option value="28px" ${currentFontSize === '28px' ? 'selected' : ''}>28px</option>
+                        <option value="32px" ${currentFontSize === '32px' ? 'selected' : ''}>32px</option>
                     </select>
                 </div>
                 <div class="property-group">
                     <label>Alignment</label>
                     <select onchange="updateCanvasElementAlignment(this.value)">
-                        <option value="left" selected>Left</option>
-                        <option value="center">Center</option>
-                        <option value="right">Right</option>
+                        <option value="left" ${currentAlignment === 'left' ? 'selected' : ''}>Left</option>
+                        <option value="center" ${currentAlignment === 'center' ? 'selected' : ''}>Center</option>
+                        <option value="right" ${currentAlignment === 'right' ? 'selected' : ''}>Right</option>
                     </select>
                 </div>
             </div>
         `;
-} else {
+    } else {
         // Image elements: show position, dimensions, and locked aspect ratio
         const aspectRatio = parseFloat(element.dataset.aspectRatio);
         const ratioText = aspectRatio ? ` (Aspect ratio locked: ${aspectRatio.toFixed(2)}:1)` : '';
@@ -932,10 +940,21 @@ async function processCanvasImageFiles(files, element) {
         // Create image and wait for it to load to get dimensions
         const img = new Image();
         img.onload = function() {
-            // Store aspect ratio on the parent canvas element
+            // Get the parent canvas element
             const canvasElement = element.closest('.canvas-element');
             if (canvasElement) {
+                // Store aspect ratio
                 storeImageAspectRatio(canvasElement, img);
+                
+                // Resize container to match image aspect ratio
+                // Keep the current width, adjust height to maintain aspect ratio
+                const currentWidth = canvasElement.offsetWidth;
+                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                const newHeight = currentWidth / aspectRatio;
+                
+                canvasElement.style.height = newHeight + 'px';
+                
+                console.log(`[RESIZE] Adjusted container: ${currentWidth}x${newHeight} (AR: ${aspectRatio.toFixed(2)})`);
             }
         };
         img.src = url;
@@ -982,7 +1001,11 @@ async function saveCustomPage() {
 if (el.dataset.type === 'heading' || el.dataset.type === 'text') {
     const contentEl = el.querySelector('[contenteditable]');
     elementData.content = contentEl.innerHTML;
-    elementData.fontSize = contentEl.style.fontSize || '16px';
+    
+    // Use different defaults for heading vs text
+    const defaultFontSize = el.dataset.type === 'heading' ? '24px' : '16px';
+    
+    elementData.fontSize = contentEl.style.fontSize || defaultFontSize;
     elementData.textAlign = contentEl.style.textAlign || 'left';
     elementData.fontFamily = contentEl.style.fontFamily || 'Arial, sans-serif';
     elementData.color = contentEl.style.color || '#000000';
@@ -1152,7 +1175,7 @@ async function loadCustomPageElements(elements) {
       
       // Set styles via JavaScript instead of inline
       const headingEl = element.querySelector('.canvas-heading-element');
-      headingEl.style.fontSize = elementData.fontSize || '16px';
+      headingEl.style.fontSize = elementData.fontSize || '24px';
       headingEl.style.textAlign = elementData.textAlign || 'left';
       headingEl.style.fontFamily = elementData.fontFamily || 'Arial, sans-serif';
       headingEl.style.color = elementData.color || '#000000';

@@ -1196,14 +1196,22 @@
     color: #6c757d;
     font-size: 14px;
     box-sizing: border-box;
-    min-height: 200px;
+    min-height: 50px;
     cursor: pointer;
 }
+
+.canvas-image-element:has(img) {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
 
 .canvas-image-element img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    display: block;
 }
 
 .custom-page-card {
