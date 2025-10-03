@@ -4293,6 +4293,9 @@ async function generateCFSSProjectReport() {
         }
 
         console.log('✅ Opening CFSS download URL:', result.downloadUrl);
+
+         await sendReportToMakeWebhook(result.downloadUrl);
+         
         window.location.href = result.downloadUrl;
         
         console.log('✅ CFSS PDF download completed successfully');
