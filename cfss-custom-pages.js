@@ -356,6 +356,7 @@ function setupCanvasElementDragging(element) {
 // Setup element resizing
 function setupCanvasElementResizing(element) {
     const resizeHandles = element.querySelectorAll('.resize-handle');
+    const isImage = element.dataset.type === 'image';
     
     resizeHandles.forEach(handle => {
         handle.addEventListener('mousedown', (e) => {
@@ -377,6 +378,9 @@ function setupCanvasElementResizing(element) {
             const startLeft = element.offsetLeft;
             const startTop = element.offsetTop;
             
+            // Get aspect ratio for images
+            const aspectRatio = isImage ? parseFloat(element.dataset.aspectRatio) || (startWidth / startHeight) : null;
+            
             element.classList.add('resizing');
             
             function onMouseMove(e) {
@@ -388,22 +392,89 @@ function setupCanvasElementResizing(element) {
                 let newLeft = startLeft;
                 let newTop = startTop;
                 
-                if (direction.includes('e')) {
-                    newWidth = Math.max(100, startWidth + deltaX);
-                }
-                if (direction.includes('w')) {
-                    newWidth = Math.max(100, startWidth - deltaX);
-                    if (newWidth > 100) {
-                        newLeft = startLeft + deltaX;
+                if (isImage && aspectRatio) {
+                    // For images, maintain aspect ratio
+                    // Use the dimension that changed more as the driver
+                    const widthChange = Math.abs(deltaX);
+                    const heightChange = Math.abs(deltaY);
+                    
+                    if (direction.includes('e') || direction.includes('w')) {
+                        // Horizontal resize - width drives height
+                        if (direction.includes('e')) {
+                            newWidth = Math.max(100, startWidth + deltaX);
+                        } else {
+                            newWidth = Math.max(100, startWidth - deltaX);
+                            if (newWidth > 100) {
+                                newLeft = startLeft + deltaX;
+                            }
+                        }
+                        newHeight = newWidth / aspectRatio;
+                    } else if (direction.includes('n') || direction.includes('s')) {
+                        // Vertical resize - height drives width
+                        if (direction.includes('s')) {
+                            newHeight = Math.max(50, startHeight + deltaY);
+                        } else {
+                            newHeight = Math.max(50, startHeight - deltaY);
+                            if (newHeight > 50) {
+                                newTop = startTop + deltaY;
+                            }
+                        }
+                        newWidth = newHeight * aspectRatio;
+                    } else {
+                        // Corner resize - use the larger change
+                        if (widthChange > heightChange) {
+                            // Width-driven
+                            if (direction.includes('e')) {
+                                newWidth = Math.max(100, startWidth + deltaX);
+                            } else {
+                                newWidth = Math.max(100, startWidth - deltaX);
+                                if (newWidth > 100) {
+                                    newLeft = startLeft + deltaX;
+                                }
+                            }
+                            newHeight = newWidth / aspectRatio;
+                            
+                            // Adjust top for north corners
+                            if (direction.includes('n')) {
+                                newTop = startTop + startHeight - newHeight;
+                            }
+                        } else {
+                            // Height-driven
+                            if (direction.includes('s')) {
+                                newHeight = Math.max(50, startHeight + deltaY);
+                            } else {
+                                newHeight = Math.max(50, startHeight - deltaY);
+                                if (newHeight > 50) {
+                                    newTop = startTop + deltaY;
+                                }
+                            }
+                            newWidth = newHeight * aspectRatio;
+                            
+                            // Adjust left for west corners
+                            if (direction.includes('w')) {
+                                newLeft = startLeft + startWidth - newWidth;
+                            }
+                        }
                     }
-                }
-                if (direction.includes('s')) {
-                    newHeight = Math.max(50, startHeight + deltaY);
-                }
-                if (direction.includes('n')) {
-                    newHeight = Math.max(50, startHeight - deltaY);
-                    if (newHeight > 50) {
-                        newTop = startTop + deltaY;
+                } else {
+                    // Non-image elements - free resize (existing logic)
+                    if (direction.includes('e')) {
+                        newWidth = Math.max(100, startWidth + deltaX);
+                    }
+                    if (direction.includes('w')) {
+                        newWidth = Math.max(100, startWidth - deltaX);
+                        if (newWidth > 100) {
+                            newLeft = startLeft + deltaX;
+                        }
+                    }
+                    if (direction.includes('s')) {
+                        newHeight = Math.max(50, startHeight + deltaY);
+                    }
+                    if (direction.includes('n')) {
+                        newHeight = Math.max(50, startHeight - deltaY);
+                        if (newHeight > 50) {
+                            newTop = startTop + deltaY;
+                        }
                     }
                 }
                 
@@ -518,8 +589,11 @@ function showCanvasElementProperties(element) {
                 </div>
             </div>
         `;
-    } else {
-        // Image elements: show position and dimensions
+} else {
+        // Image elements: show position, dimensions, and locked aspect ratio
+        const aspectRatio = parseFloat(element.dataset.aspectRatio);
+        const ratioText = aspectRatio ? ` (Aspect ratio locked: ${aspectRatio.toFixed(2)}:1)` : '';
+        
         content.innerHTML = `
             <div class="property-row">
                 <div class="property-group">
@@ -541,6 +615,10 @@ function showCanvasElementProperties(element) {
                     <label>Height</label>
                     <input type="number" value="${element.offsetHeight}" onchange="updateCanvasElementHeight(this.value)">
                 </div>
+            </div>
+            
+            <div style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px; color: #6c757d;">
+                <i class="fas fa-lock"></i> ${ratioText || 'Aspect ratio will be preserved'}
             </div>
         `;
     }
@@ -637,13 +715,35 @@ function updateCanvasElementPositionY(value) {
 
 function updateCanvasElementWidth(value) {
     if (selectedCanvasElement) {
+        const isImage = selectedCanvasElement.dataset.type === 'image';
+        const aspectRatio = parseFloat(selectedCanvasElement.dataset.aspectRatio);
+        
         selectedCanvasElement.style.width = value + 'px';
+        
+        if (isImage && aspectRatio) {
+            // Maintain aspect ratio
+            const newHeight = value / aspectRatio;
+            selectedCanvasElement.style.height = newHeight + 'px';
+            // Refresh properties panel to show updated height
+            showCanvasElementProperties(selectedCanvasElement);
+        }
     }
 }
 
 function updateCanvasElementHeight(value) {
     if (selectedCanvasElement) {
+        const isImage = selectedCanvasElement.dataset.type === 'image';
+        const aspectRatio = parseFloat(selectedCanvasElement.dataset.aspectRatio);
+        
         selectedCanvasElement.style.height = value + 'px';
+        
+        if (isImage && aspectRatio) {
+            // Maintain aspect ratio
+            const newWidth = value * aspectRatio;
+            selectedCanvasElement.style.width = newWidth + 'px';
+            // Refresh properties panel to show updated width
+            showCanvasElementProperties(selectedCanvasElement);
+        }
     }
 }
 
@@ -795,6 +895,12 @@ function handleCanvasImagePaste(event, element) {
     }
 }
 
+function storeImageAspectRatio(element, img) {
+    const aspectRatio = img.naturalWidth / img.naturalHeight;
+    element.dataset.aspectRatio = aspectRatio;
+    console.log(`[ASPECT] Stored aspect ratio: ${aspectRatio} (${img.naturalWidth}x${img.naturalHeight})`);
+}
+
 // Process uploaded files
 async function processCanvasImageFiles(files, element) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
@@ -804,20 +910,18 @@ async function processCanvasImageFiles(files, element) {
         return;
     }
 
-    // Take only the first file (single image only)
     const file = validFiles[0];
 
-    // Show loading state
     const dropZone = element.querySelector('.canvas-drop-zone');
     if (dropZone) {
         dropZone.placeholder = 'Uploading...';
     }
 
     try {
-        // 1) Upload to S3
+        // Upload to S3
         const uploaded = await uploadImageToS3(file);
 
-        // 2) Get signed URL for preview
+        // Get signed URL for preview
         const signResp = await fetch(
             `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/images/sign?key=${encodeURIComponent(uploaded.key)}`,
             { headers: getAuthHeaders() }
@@ -825,7 +929,18 @@ async function processCanvasImageFiles(files, element) {
         if (!signResp.ok) throw new Error('Failed to sign image preview URL');
         const { url } = await signResp.json();
 
-        // 3) Replace upload UI with image
+        // Create image and wait for it to load to get dimensions
+        const img = new Image();
+        img.onload = function() {
+            // Store aspect ratio on the parent canvas element
+            const canvasElement = element.closest('.canvas-element');
+            if (canvasElement) {
+                storeImageAspectRatio(canvasElement, img);
+            }
+        };
+        img.src = url;
+
+        // Replace upload UI with image
         element.innerHTML = `<img data-s3-key="${uploaded.key}" src="${url}" alt="Custom page image">`;
         
         console.log('[SUCCESS] Canvas image uploaded successfully');
@@ -834,7 +949,6 @@ async function processCanvasImageFiles(files, element) {
         console.error('Error uploading canvas image:', err);
         alert('Error uploading image: ' + err.message);
         
-        // Reset on error
         if (dropZone) {
             dropZone.placeholder = 'Drop or paste here (Ctrl+V)';
         }
@@ -1059,7 +1173,7 @@ async function loadCustomPageElements(elements) {
       textEl.style.fontStyle = elementData.fontStyle || 'normal';
       textEl.style.textDecoration = elementData.textDecoration || 'none';
       
-    } else if (elementData.type === 'image') {
+} else if (elementData.type === 'image') {
       const key = elementData.imageKey || null;
       let src = elementData.imageUrl || null;
 
@@ -1074,6 +1188,18 @@ async function loadCustomPageElements(elements) {
           `<div class="canvas-image-element">
              <img ${keyAttr} src="${src}" alt="Custom page image">
            </div>`;
+        
+        // Store aspect ratio when image loads
+        const img = element.querySelector('img');
+        if (img) {
+            img.onload = function() {
+                storeImageAspectRatio(element, img);
+            };
+            // If already loaded (cached)
+            if (img.complete) {
+                storeImageAspectRatio(element, img);
+            }
+        }
       } else {
         const uploadId = 'canvasImageUpload_' + customPageElementCounter;
         element.innerHTML = controls +
