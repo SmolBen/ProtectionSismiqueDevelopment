@@ -1375,3 +1375,18 @@ overflow: hidden;
     object-fit: contain;
     display: block;
 }
+
+#newCalculationButton,
+#addWindowButton {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 10px;
+}
+
+button.cfss-btn {
+        position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 10px;
+}

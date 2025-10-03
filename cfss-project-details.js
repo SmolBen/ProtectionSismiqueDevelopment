@@ -2411,6 +2411,9 @@ function toggleEquipmentDetails(index) {
             detailsButton.textContent = 'Details';
         }
     } else {
+        // Close all forms when opening details
+        hideAllForms();
+        
         detailsDiv.classList.add('show');
         if (detailsButton) {
             detailsButton.textContent = 'Hide Details';
@@ -2941,6 +2944,10 @@ function setupNewCalculationButton() {
                 equipmentForm.classList.remove('show');
                 newCalcButton.textContent = 'Add Wall';
             } else {
+                // Close all expanded details and other forms before showing form
+                closeAllExpandedDetails();
+                hideAllForms();
+                
                 equipmentForm.classList.add('show');
                 newCalcButton.textContent = 'Hide Form';
                 
@@ -2963,7 +2970,27 @@ function setupCFSSDataButton() {
                 return;
             }
             
-            toggleCFSSForm();
+            const cfssForm = document.getElementById('cfssForm');
+            const isCurrentlyVisible = cfssForm && !cfssForm.classList.contains('hidden');
+            
+            if (isCurrentlyVisible) {
+                // Hide the CFSS form
+                cfssForm.classList.add('hidden');
+                cfssButton.classList.remove('expanded');
+                const buttonText = cfssWindData && cfssWindData.length > 0 ? 'Edit CFSS Data' : 'Add CFSS Data';
+                cfssButton.innerHTML = `<i class="fas fa-wind"></i> ${buttonText}`;
+            } else {
+                // Close all expanded details and other forms before showing CFSS form
+                closeAllExpandedDetails();
+                hideAllForms();
+                
+                // Show CFSS form
+                if (cfssForm) {
+                    cfssForm.classList.remove('hidden');
+                    cfssButton.classList.add('expanded');
+                    cfssButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                }
+            }
         });
     }
 }
@@ -2993,6 +3020,26 @@ function toggleCFSSForm() {
     const btnText = document.getElementById('cfss-btn-text');
     
     if (form.classList.contains('hidden')) {
+        // Close all other forms and details before opening CFSS form
+        closeAllExpandedDetails();
+        
+        // Close other forms
+        const windowForm = document.getElementById('windowForm');
+        const equipmentForm = document.getElementById('equipmentForm');
+        if (windowForm) windowForm.classList.remove('show');
+        if (equipmentForm) equipmentForm.classList.remove('show');
+        
+        // Reset other button texts
+        const addWindowButton = document.getElementById('addWindowButton');
+        if (addWindowButton) {
+            addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+        }
+        const newCalcButton = document.getElementById('newCalculationButton');
+        if (newCalcButton) {
+            newCalcButton.textContent = 'Add Wall';
+        }
+        
+        // Show CFSS form
         form.classList.remove('hidden');
         btn.classList.add('expanded');
         
@@ -4587,6 +4634,9 @@ function setupWindowHandlers() {
                 windowForm.classList.remove('show');
                 this.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
             } else {
+                // Close all expanded details before showing form
+                closeAllExpandedDetails();
+                
                 // Hide other forms first
                 hideAllForms();
                 // Show window form
@@ -4625,6 +4675,19 @@ function toggleForm(formType) {
     }
 }
 
+// Close all expanded wall details
+function closeAllExpandedDetails() {
+    const allDetails = document.querySelectorAll('.equipment-details.show');
+    allDetails.forEach(detailsDiv => {
+        detailsDiv.classList.remove('show');
+        const wallCard = detailsDiv.closest('.equipment-card');
+        const detailsButton = wallCard?.querySelector('.details-btn');
+        if (detailsButton) {
+            detailsButton.textContent = 'Details';
+        }
+    });
+}
+
 function hideAllForms() {
     // Hide window form
     const windowForm = document.getElementById('windowForm');
@@ -4638,6 +4701,16 @@ function hideAllForms() {
         equipmentForm.classList.remove('show');
     }
     
+    // Hide CFSS form
+    const cfssForm = document.getElementById('cfss-form');
+    const cfssBtn = document.querySelector('.cfss-btn');
+    if (cfssForm && !cfssForm.classList.contains('hidden')) {
+        cfssForm.classList.add('hidden');
+        if (cfssBtn) {
+            cfssBtn.classList.remove('expanded');
+        }
+    }
+    
     // Reset button texts
     const addWindowButton = document.getElementById('addWindowButton');
     if (addWindowButton) {
@@ -4647,6 +4720,34 @@ function hideAllForms() {
     const newCalcButton = document.getElementById('newCalculationButton');
     if (newCalcButton) {
         newCalcButton.textContent = 'Add Wall';
+    }
+    
+    // Reset CFSS button text
+    const cfssBtnText = document.getElementById('cfss-btn-text');
+    if (cfssBtnText && typeof cfssWindData !== 'undefined') {
+        if (cfssWindData && cfssWindData.length > 0) {
+            const floorCount = cfssWindData.length;
+            const projectData = cfssWindData[0] || {};
+            const specifications = [
+                projectData.maxDeflection,
+                projectData.maxSpacing,
+                projectData.framingAssembly,
+                projectData.concreteAnchor,
+                projectData.steelAnchor,
+                projectData.minMetalThickness,
+                projectData.lisseInferieure,
+                projectData.lisseSuperieure
+            ];
+            const filledSpecs = specifications.filter(spec => spec && spec.trim() !== '').length;
+            
+            if (filledSpecs > 0) {
+                cfssBtnText.textContent = `Edit CFSS Data (${floorCount} floors, ${filledSpecs} specs)`;
+            } else {
+                cfssBtnText.textContent = `Edit CFSS Data (${floorCount} floors)`;
+            }
+        } else {
+            cfssBtnText.textContent = 'Add CFSS Data';
+        }
     }
 }
 
