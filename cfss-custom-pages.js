@@ -124,6 +124,7 @@ function showCustomPageBuilder(pageToEdit = null) {
     }
     
     setupCanvasEvents();
+    setupCanvasResizeHandler();
 }
 
 // Setup canvas drag and drop events
@@ -1129,15 +1130,24 @@ return url || null;
 // Load custom page elements onto canvas
 async function loadCustomPageElements(elements) {
   const canvas = document.getElementById('customPageCanvas');
-  clearCustomPageCanvas();
+  canvas.innerHTML = '';
 
-  if (!elements || elements.length === 0) {
-    showCanvasEmptyState();           
-    return;
-  }
+  if (!elements || elements.length === 0) return;
 
-  const emptyState = canvas.querySelector('.canvas-empty-state');
-  if (emptyState) emptyState.remove();
+  // Calculate scale factors based on saved canvas size vs current size
+  const savedWidth = currentCustomPage.canvasWidth || 816;
+  const savedHeight = currentCustomPage.canvasHeight || 1056;
+  const currentWidth = canvas.clientWidth;
+  const currentHeight = canvas.clientHeight;
+  
+  const scaleX = currentWidth / savedWidth;
+  const scaleY = currentHeight / savedHeight;
+  
+  console.log('[SCALE] Canvas scaling:', {
+    saved: { w: savedWidth, h: savedHeight },
+    current: { w: currentWidth, h: currentHeight },
+    scale: { x: scaleX, y: scaleY }
+  });
 
   for (const elementData of elements) {
     customPageElementCounter++;
@@ -1147,10 +1157,16 @@ async function loadCustomPageElements(elements) {
     element.dataset.id = customPageElementCounter;
     element.dataset.type = elementData.type;
 
-    element.style.left   = elementData.position.x + 'px';
-    element.style.top    = elementData.position.y + 'px';
-    element.style.width  = elementData.size.width + 'px';
-    element.style.height = elementData.size.height + 'px';
+    // Apply scaling to position and size
+    const scaledX = Math.round(elementData.position.x * scaleX);
+    const scaledY = Math.round(elementData.position.y * scaleY);
+    const scaledWidth = Math.round(elementData.size.width * scaleX);
+    const scaledHeight = Math.round(elementData.size.height * scaleY);
+
+    element.style.left = scaledX + 'px';
+    element.style.top = scaledY + 'px';
+    element.style.width = scaledWidth + 'px';
+    element.style.height = scaledHeight + 'px';
 
     const controls = `
       <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
@@ -1173,9 +1189,13 @@ async function loadCustomPageElements(elements) {
     if (elementData.type === 'heading') {
       element.innerHTML = controls + `<div class="canvas-heading-element" contenteditable="true">${elementData.content}</div>`;
       
-      // Set styles via JavaScript instead of inline
       const headingEl = element.querySelector('.canvas-heading-element');
-      headingEl.style.fontSize = elementData.fontSize || '24px';
+      
+      // Scale font size
+      const originalFontSize = parseFloat(elementData.fontSize) || 24;
+      const scaledFontSize = Math.round(originalFontSize * ((scaleX + scaleY) / 2));
+      
+      headingEl.style.fontSize = scaledFontSize + 'px';
       headingEl.style.textAlign = elementData.textAlign || 'left';
       headingEl.style.fontFamily = elementData.fontFamily || 'Arial, sans-serif';
       headingEl.style.color = elementData.color || '#000000';
@@ -1186,9 +1206,13 @@ async function loadCustomPageElements(elements) {
     } else if (elementData.type === 'text') {
       element.innerHTML = controls + `<div class="canvas-text-element" contenteditable="true">${elementData.content}</div>`;
       
-      // Set styles via JavaScript instead of inline
       const textEl = element.querySelector('.canvas-text-element');
-      textEl.style.fontSize = elementData.fontSize || '16px';
+      
+      // Scale font size
+      const originalFontSize = parseFloat(elementData.fontSize) || 16;
+      const scaledFontSize = Math.round(originalFontSize * ((scaleX + scaleY) / 2));
+      
+      textEl.style.fontSize = scaledFontSize + 'px';
       textEl.style.textAlign = elementData.textAlign || 'left';
       textEl.style.fontFamily = elementData.fontFamily || 'Arial, sans-serif';
       textEl.style.color = elementData.color || '#000000';
@@ -1196,7 +1220,7 @@ async function loadCustomPageElements(elements) {
       textEl.style.fontStyle = elementData.fontStyle || 'normal';
       textEl.style.textDecoration = elementData.textDecoration || 'none';
       
-} else if (elementData.type === 'image') {
+    } else if (elementData.type === 'image') {
       const key = elementData.imageKey || null;
       let src = elementData.imageUrl || null;
 
@@ -1212,13 +1236,11 @@ async function loadCustomPageElements(elements) {
              <img ${keyAttr} src="${src}" alt="Custom page image">
            </div>`;
         
-        // Store aspect ratio when image loads
         const img = element.querySelector('img');
         if (img) {
             img.onload = function() {
                 storeImageAspectRatio(element, img);
             };
-            // If already loaded (cached)
             if (img.complete) {
                 storeImageAspectRatio(element, img);
             }
@@ -1229,21 +1251,12 @@ async function loadCustomPageElements(elements) {
           `<div class="canvas-image-element">
               <div class="canvas-image-upload-container">
                   <div class="upload-controls" style="display: flex; gap: 10px; margin-bottom: 10px;">
-                      <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}" 
-                              style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                          <i class="fas fa-camera"></i>
-                          Browse
+                      <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}">
+                          <i class="fas fa-camera"></i> Browse
                       </button>
-                      
-                      <input 
-                          class="canvas-drop-zone" 
-                          id="dropZone_${uploadId}" 
-                          placeholder="Drop or paste here (Ctrl+V)"
-                          readonly
-                          tabindex="0"
-                          style="flex: 1; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
+                      <input class="canvas-drop-zone" id="dropZone_${uploadId}" 
+                          placeholder="Drop or paste here (Ctrl+V)" readonly tabindex="0">
                   </div>
-                  
                   <input type="file" id="fileInput_${uploadId}" accept="image/*" style="display: none;">
               </div>
            </div>`;
@@ -1269,6 +1282,21 @@ async function loadCustomPageElements(elements) {
 
     canvas.appendChild(element);
   }
+}
+
+let resizeTimeout;
+function setupCanvasResizeHandler() {
+    window.addEventListener('resize', () => {
+        // Debounce resize events
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            const canvas = document.getElementById('customPageCanvas');
+            if (!canvas || !currentCustomPage || !currentCustomPage.elements) return;
+            
+            // Reload elements with new scaling
+            loadCustomPageElements(currentCustomPage.elements);
+        }, 250);
+    });
 }
 
 // Render custom pages list
