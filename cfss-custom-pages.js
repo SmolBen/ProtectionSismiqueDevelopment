@@ -13,7 +13,7 @@ let isDropping = false;
 
 // Initialize Custom Pages system
 function initializeCustomPages() {
-    console.log('🎨 Initializing Custom Pages system...');
+    console.log('[INIT] Initializing Custom Pages system...');
     setBlankCFSSBackground();
     
     const addButton = document.getElementById('addCustomPageButton');
@@ -24,7 +24,7 @@ function initializeCustomPages() {
     
     setupCustomPagePalette();
     
-    console.log('✅ Custom Pages initialized');
+    console.log('[SUCCESS] Custom Pages initialized');
 }
 
 // --- Custom Pages: load blank page background from S3 (PNG) ---
@@ -77,7 +77,7 @@ async function setBlankCFSSBackground() {
     updateSize();
     window.addEventListener('resize', updateSize);
 
-    console.log('🖼️ Canvas fitted to template (no stretch)', {
+    console.log('[CANVAS] Canvas fitted to template (no stretch)', {
       natural: { w: img.naturalWidth, h: img.naturalHeight },
       rendered: { w: canvasEl.clientWidth, h: canvasEl.clientHeight }
     });
@@ -149,7 +149,7 @@ function setupCanvasEvents() {
         
         // Prevent duplicate drops
         if (isDropping) {
-            console.log('⚠️ Drop already in progress, ignoring duplicate');
+            console.log('[WARNING] Drop already in progress, ignoring duplicate');
             return;
         }
         
@@ -464,13 +464,9 @@ function showCanvasElementProperties(element) {
                 <div class="property-group" style="flex: 1;">
                     <label>Font</label>
                     <select onchange="updateCanvasElementFont(this.value)" style="width: 100%;">
-                        <option value="Arial, sans-serif" ${currentFont.includes('Arial') ? 'selected' : ''}>Arial</option>
+                        <option value="Arial, sans-serif" ${currentFont.includes('Arial') || currentFont.includes('Helvetica') ? 'selected' : ''}>Arial</option>
                         <option value="'Times New Roman', serif" ${currentFont.includes('Times') ? 'selected' : ''}>Times New Roman</option>
                         <option value="'Courier New', monospace" ${currentFont.includes('Courier') ? 'selected' : ''}>Courier New</option>
-                        <option value="Georgia, serif" ${currentFont.includes('Georgia') ? 'selected' : ''}>Georgia</option>
-                        <option value="Verdana, sans-serif" ${currentFont.includes('Verdana') ? 'selected' : ''}>Verdana</option>
-                        <option value="'Trebuchet MS', sans-serif" ${currentFont.includes('Trebuchet') ? 'selected' : ''}>Trebuchet MS</option>
-                        <option value="Impact, sans-serif" ${currentFont.includes('Impact') ? 'selected' : ''}>Impact</option>
                     </select>
                 </div>
                 
@@ -677,7 +673,7 @@ function editCanvasElement(id) {
 }
 
 function deleteCanvasElement(id) {
-    console.log('🗑️ Deleting element:', id);
+    console.log('[DELETE] Deleting element:', id);
     const element = document.querySelector(`[data-id="${id}"]`);
     
     if (element) {
@@ -690,9 +686,9 @@ function deleteCanvasElement(id) {
             deselectAllCanvasElements();
         }
         
-        console.log('✅ Element deleted');
+        console.log('[SUCCESS] Element deleted');
     } else {
-        console.error('❌ Element not found:', id);
+        console.error('[ERROR] Element not found:', id);
     }
 }
 
@@ -832,7 +828,7 @@ async function processCanvasImageFiles(files, element) {
         // 3) Replace upload UI with image
         element.innerHTML = `<img data-s3-key="${uploaded.key}" src="${url}" alt="Custom page image">`;
         
-        console.log('✅ Canvas image uploaded successfully');
+        console.log('[SUCCESS] Canvas image uploaded successfully');
         
     } catch (err) {
         console.error('Error uploading canvas image:', err);
@@ -906,37 +902,37 @@ if (el.dataset.type === 'heading' || el.dataset.type === 'text') {
     currentCustomPage.elements = elements;
     currentCustomPage.lastModified = new Date().toISOString();
     
-    console.log('🔍 DEBUG: Updated currentCustomPage:', currentCustomPage);
+    console.log('Updated currentCustomPage:', currentCustomPage);
     
     // Add or update in array
     if (isEditingCustomPage) {
-        console.log('🔍 DEBUG: EDITING mode');
+        console.log('EDITING mode');
         const index = projectCustomPages.findIndex(p => p.id === currentCustomPage.id);
-        console.log('🔍 DEBUG: Found at index:', index);
+        console.log('Found at index:', index);
         if (index !== -1) {
             projectCustomPages[index] = currentCustomPage;
         } else {
-            console.log('⚠️ WARNING: Editing but page not found, adding instead');
+            console.log('WARNING: Editing but page not found, adding instead');
             projectCustomPages.push(currentCustomPage);
         }
     } else {
-        console.log('🔍 DEBUG: NEW page mode - pushing to array');
+        console.log('DEBUG: NEW page mode - pushing to array');
         projectCustomPages.push(currentCustomPage);
     }
     
-    console.log('🔍 DEBUG: projectCustomPages AFTER adding:', projectCustomPages.length, projectCustomPages);
-    console.log('📄 Saving custom pages:', projectCustomPages.length);
+    console.log('DEBUG: projectCustomPages AFTER adding:', projectCustomPages.length, projectCustomPages);
+    console.log('[SAVE] Saving custom pages:', projectCustomPages.length);
     
     try {
         // Save to database
         await saveCustomPagesToDatabase();
         
-        console.log('🔍 DEBUG: After saveCustomPagesToDatabase, projectCustomPages:', projectCustomPages.length);
+        console.log('[DEBUG] After saveCustomPagesToDatabase, projectCustomPages:', projectCustomPages.length);
         
         // Return to list view
         cancelCustomPageEdit();
         
-        console.log('🔍 DEBUG: After cancelCustomPageEdit, projectCustomPages:', projectCustomPages.length);
+        console.log('[DEBUG] After cancelCustomPageEdit, projectCustomPages:', projectCustomPages.length);
         
         // Render the updated list
         renderCustomPagesList();
@@ -996,15 +992,13 @@ return url || null;
 // Load custom page elements onto canvas
 async function loadCustomPageElements(elements) {
   const canvas = document.getElementById('customPageCanvas');
-  clearCustomPageCanvas();            // clears and adds the empty-state
+  clearCustomPageCanvas();
 
-  // If nothing to load, leave the empty-state visible
   if (!elements || elements.length === 0) {
     showCanvasEmptyState();           
     return;
   }
 
-  // We have elements: remove the empty-state before rendering
   const emptyState = canvas.querySelector('.canvas-empty-state');
   if (emptyState) emptyState.remove();
 
@@ -1039,29 +1033,41 @@ async function loadCustomPageElements(elements) {
       </div>
     `;
 
-if (elementData.type === 'heading') {
-  element.innerHTML = controls +
-    `<div class="canvas-heading-element" contenteditable="true"
-         style="font-size:${elementData.fontSize || '16px'}; text-align:${elementData.textAlign || 'left'}; font-family:${elementData.fontFamily || 'Arial, sans-serif'}; color:${elementData.color || '#000000'}; font-weight:${elementData.fontWeight || 'normal'}; font-style:${elementData.fontStyle || 'normal'}; text-decoration:${elementData.textDecoration || 'none'}">
-      ${elementData.content}
-     </div>`;
-} else if (elementData.type === 'text') {
-  element.innerHTML = controls +
-    `<div class="canvas-text-element" contenteditable="true"
-         style="font-size:${elementData.fontSize || '16px'}; text-align:${elementData.textAlign || 'left'}; font-family:${elementData.fontFamily || 'Arial, sans-serif'}; color:${elementData.color || '#000000'}; font-weight:${elementData.fontWeight || 'normal'}; font-style:${elementData.fontStyle || 'normal'}; text-decoration:${elementData.textDecoration || 'none'}">
-      ${elementData.content}
-     </div>`;
-} else if (elementData.type === 'image') {
+    if (elementData.type === 'heading') {
+      element.innerHTML = controls + `<div class="canvas-heading-element" contenteditable="true">${elementData.content}</div>`;
+      
+      // Set styles via JavaScript instead of inline
+      const headingEl = element.querySelector('.canvas-heading-element');
+      headingEl.style.fontSize = elementData.fontSize || '16px';
+      headingEl.style.textAlign = elementData.textAlign || 'left';
+      headingEl.style.fontFamily = elementData.fontFamily || 'Arial, sans-serif';
+      headingEl.style.color = elementData.color || '#000000';
+      headingEl.style.fontWeight = elementData.fontWeight || 'normal';
+      headingEl.style.fontStyle = elementData.fontStyle || 'normal';
+      headingEl.style.textDecoration = elementData.textDecoration || 'none';
+      
+    } else if (elementData.type === 'text') {
+      element.innerHTML = controls + `<div class="canvas-text-element" contenteditable="true">${elementData.content}</div>`;
+      
+      // Set styles via JavaScript instead of inline
+      const textEl = element.querySelector('.canvas-text-element');
+      textEl.style.fontSize = elementData.fontSize || '16px';
+      textEl.style.textAlign = elementData.textAlign || 'left';
+      textEl.style.fontFamily = elementData.fontFamily || 'Arial, sans-serif';
+      textEl.style.color = elementData.color || '#000000';
+      textEl.style.fontWeight = elementData.fontWeight || 'normal';
+      textEl.style.fontStyle = elementData.fontStyle || 'normal';
+      textEl.style.textDecoration = elementData.textDecoration || 'none';
+      
+    } else if (elementData.type === 'image') {
       const key = elementData.imageKey || null;
       let src = elementData.imageUrl || null;
 
-      // Prefer stable S3 key; re-sign for fresh preview
       if (key) {
         const fresh = await signImageForPreview(key).catch(() => null);
         if (fresh) src = fresh;
       }
 
-      // If we have an image, render it; otherwise show upload UI immediately
       if (key && src) {
         const keyAttr = `data-s3-key="${key}"`;
         element.innerHTML = controls +
@@ -1069,7 +1075,6 @@ if (elementData.type === 'heading') {
              <img ${keyAttr} src="${src}" alt="Custom page image">
            </div>`;
       } else {
-        // No image yet, show the upload UI immediately
         const uploadId = 'canvasImageUpload_' + customPageElementCounter;
         element.innerHTML = controls +
           `<div class="canvas-image-element">
@@ -1094,7 +1099,6 @@ if (elementData.type === 'heading') {
               </div>
            </div>`;
         
-        // Setup upload handlers
         setTimeout(() => {
             const imageElement = element.querySelector('.canvas-image-element');
             if (imageElement) {
@@ -1105,10 +1109,10 @@ if (elementData.type === 'heading') {
     }
 
     element.addEventListener('click', (e) => {
-    if (!e.target.closest('.element-controls') &&
-        !e.target.closest('.drag-handle')) {
-        selectCanvasElement(element);
-    }
+      if (!e.target.closest('.element-controls') &&
+          !e.target.closest('.drag-handle')) {
+          selectCanvasElement(element);
+      }
     });
 
     setupCanvasElementDragging(element);
@@ -1122,10 +1126,10 @@ if (elementData.type === 'heading') {
 function renderCustomPagesList() {
     const container = document.getElementById('customPagesList');
     
-    console.log('🎨 Rendering custom pages list. Count:', projectCustomPages.length);
+    console.log('[RENDER] Rendering custom pages list. Count:', projectCustomPages.length);
     
     if (!container) {
-        console.error('❌ customPagesList container not found!');
+        console.error('[ERROR] customPagesList container not found!');
         return;
     }
     
@@ -1156,7 +1160,7 @@ function renderCustomPagesList() {
         </div>
     `).join('');
     
-    console.log('✅ Rendered', projectCustomPages.length, 'custom pages');
+    console.log('[SUCCESS] Rendered', projectCustomPages.length, 'custom pages');
 }
 
 // Edit custom page
@@ -1205,16 +1209,16 @@ async function saveCustomPagesToDatabase() {
             window.projectData.customPages = [...projectCustomPages];
         }
 
-        console.log('✅ Custom pages saved to database');
+        console.log('[SUCCESS] Custom pages saved to database');
     } catch (error) {
-        console.error('❌ Error saving custom pages:', error);
+        console.error('[ERROR] Error saving custom pages:', error);
         throw error;
     }
 }
 
 // Load custom pages from project
 function loadCustomPagesFromProject(project) {
-    console.log('📥 Loading custom pages from project...');
+    console.log('[LOAD] Loading custom pages from project...');
     
     if (project && project.customPages && Array.isArray(project.customPages)) {
         // Filter out any invalid/corrupted data
@@ -1227,15 +1231,15 @@ function loadCustomPagesFromProject(project) {
                 !page.isTrusted; // Filter out PointerEvents
             
             if (!isValid) {
-                console.warn('⚠️ Filtering out invalid page:', page);
+                console.warn('[WARNING] Filtering out invalid page:', page);
             }
             return isValid;
         });
         
-        console.log(`✅ Loaded ${projectCustomPages.length} valid custom pages`);
+        console.log(`[SUCCESS] Loaded ${projectCustomPages.length} valid custom pages`);
     } else {
         projectCustomPages = [];
-        console.log('ℹ️ No custom pages found in project');
+        console.log('[INFO] No custom pages found in project');
     }
     
     renderCustomPagesList();
