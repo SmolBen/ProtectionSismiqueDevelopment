@@ -1050,6 +1050,7 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
         }
 
         console.log(`Opening CFSS download URL for Revision ${selectedRevision.number} with ${selectedOptions.length} options:`, result.downloadUrl);
+        await sendReportToMakeWebhook(result.downloadUrl);
         window.location.href = result.downloadUrl;
         
     } catch (error) {
@@ -4295,7 +4296,7 @@ async function generateCFSSProjectReport() {
         console.log('✅ Opening CFSS download URL:', result.downloadUrl);
 
          await sendReportToMakeWebhook(result.downloadUrl);
-         
+
         window.location.href = result.downloadUrl;
         
         console.log('✅ CFSS PDF download completed successfully');
@@ -4310,6 +4311,30 @@ async function generateCFSSProjectReport() {
     } finally {
         generateButton.disabled = false;
         generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
+    }
+}
+
+async function sendReportToMakeWebhook(downloadUrl) {
+    // Only send webhook for specific user
+    if (currentUser?.email !== 'hoangminhduc.ite@gmail.com') {
+        console.log('Skipping webhook - not target user');
+        return; // Exit early for other users
+    }
+    
+    const webhookUrl = 'https://hook.us1.make.com/1e5j8oi1ogsfclp934ezdip5jt1ceenk';
+    
+    try {
+        console.log('📤 Sending report URL to Make.com webhook...');
+        
+        await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: downloadUrl
+        });
+
+        console.log('✅ Report URL sent to Google Drive successfully');
+    } catch (error) {
+        console.error('❌ Error sending to webhook:', error);
     }
 }
 
