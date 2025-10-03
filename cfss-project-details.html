@@ -452,48 +452,120 @@
                                     </select>
                                 </div>
 
-                                <!-- 5. Montant Métallique - NOW A DROPDOWN -->
-                                <div class="form-group">
-                                    <label for="montantMetallique">Montant Métallique:</label>
-                                    <select id="montantMetallique" name="montantMetallique" required>
-                                        <option value="">Select montant métallique...</option>
-                                        <!-- Options will be populated by JavaScript from CSV data -->
-                                    </select>
-                                </div>
+<!-- Dual Set Container -->
+<div id="dualSetContainer" style="position: relative;">
+    <!-- Set 1 and Set 2 Container -->
+    <div id="setsWrapper" style="display: flex; gap: 20px;">
+        
+        <!-- SET 1 -->
+        <div id="set1" style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 14px; color: #666;">Set 1</h4>
+                <button type="button" id="addSet2Btn" onclick="toggleSet2(true)" 
+                        style="background: #28a745; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;">
+                    +
+                </button>
+            </div>
 
-                                                                <!-- 9. NEW: Espacement - DROPDOWN -->
-                                <div class="form-group">
-                                    <label for="espacement">Espacement:</label>
-                                    <select id="espacement" name="espacement" required>
-                                        <option value="">Select espacement...</option>
-                                        <option value="8&quot;c/c">8"c/c</option>
-                                        <option value="12&quot;c/c">12"c/c</option>
-                                        <option value="16&quot;c/c">16"c/c</option>
-                                        <option value="24&quot;c/c">24"c/c</option>
-                                    </select>
-                                </div>
+            <!-- 5. Montant Métallique - NOW A DROPDOWN -->
+            <div class="form-group">
+                <label for="montantMetallique">Montant Métallique:</label>
+                <select id="montantMetallique" name="montantMetallique" required>
+                    <option value="">Select montant métallique...</option>
+                    <!-- Options will be populated by JavaScript from CSV data -->
+                </select>
+            </div>
 
-                                <!-- 6. Lisse Supérieure - AUTO-POPULATED BUT EDITABLE -->
-                                <div class="form-group">
-                                    <label for="lisseSuperieure">Lisse Supérieure:</label>
-                                    <input type="text" id="lisseSuperieure" name="lisseSuperieure" placeholder="Will be auto-filled based on montant selection..." required>
-                                </div>
+            <!-- 9. Espacement - DROPDOWN -->
+            <div class="form-group">
+                <label for="espacement">Espacement:</label>
+                <select id="espacement" name="espacement" required>
+                    <option value="">Select espacement...</option>
+                    <option value="8&quot;c/c">8"c/c</option>
+                    <option value="12&quot;c/c">12"c/c</option>
+                    <option value="16&quot;c/c">16"c/c</option>
+                    <option value="24&quot;c/c">24"c/c</option>
+                </select>
+            </div>
 
-                                <!-- 7. Lisse Inférieure - AUTO-POPULATED BUT EDITABLE -->
-                                <div class="form-group">
-                                    <label for="lisseInferieure">Lisse Inférieure:</label>
-                                    <input type="text" id="lisseInferieure" name="lisseInferieure" placeholder="Will be auto-filled based on montant selection..." required>
-                                </div>
+            <!-- 6. Lisse Supérieure - AUTO-POPULATED BUT EDITABLE -->
+            <div class="form-group">
+                <label for="lisseSuperieure">Lisse Supérieure:</label>
+                <input type="text" id="lisseSuperieure" name="lisseSuperieure" placeholder="Will be auto-filled based on montant selection..." required>
+            </div>
 
-                                <!-- 8. Entremise - NOW A DROPDOWN -->
-                                <div class="form-group">
-                                    <label for="entremise">Entremise:</label>
-                                    <select id="entremise" name="entremise" required>
-                                        <option value="">Select entremise...</option>
-                                        <option value="150U75-43">150U75-43</option>
-                                        <option value="N/A">N/A</option>
-                                    </select>
-                                </div>
+            <!-- 7. Lisse Inférieure - AUTO-POPULATED BUT EDITABLE -->
+            <div class="form-group">
+                <label for="lisseInferieure">Lisse Inférieure:</label>
+                <input type="text" id="lisseInferieure" name="lisseInferieure" placeholder="Will be auto-filled based on montant selection..." required>
+            </div>
+
+            <!-- 8. Entremise - NOW A DROPDOWN -->
+            <div class="form-group">
+                <label for="entremise">Entremise:</label>
+                <select id="entremise" name="entremise" required>
+                    <option value="">Select entremise...</option>
+                    <option value="150U75-43">150U75-43</option>
+                    <option value="N/A">N/A</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- SET 2 (Initially Hidden) -->
+        <div id="set2" style="flex: 1; min-width: 0; display: none;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 14px; color: #666;">Set 2</h4>
+                <button type="button" id="removeSet2Btn" onclick="toggleSet2(false)" 
+                        style="background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;">
+                    ×
+                </button>
+            </div>
+
+            <!-- Montant Métallique 2 -->
+            <div class="form-group">
+                <label for="montantMetallique2">Montant Métallique 2:</label>
+                <select id="montantMetallique2" name="montantMetallique2">
+                    <option value="">Select montant métallique...</option>
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+
+            <!-- Espacement 2 -->
+            <div class="form-group">
+                <label for="espacement2">Espacement 2:</label>
+                <select id="espacement2" name="espacement2">
+                    <option value="">Select espacement...</option>
+                    <option value="8&quot;c/c">8"c/c</option>
+                    <option value="12&quot;c/c">12"c/c</option>
+                    <option value="16&quot;c/c">16"c/c</option>
+                    <option value="24&quot;c/c">24"c/c</option>
+                </select>
+            </div>
+
+            <!-- Lisse Supérieure 2 -->
+            <div class="form-group">
+                <label for="lisseSuperieure2">Lisse Supérieure 2:</label>
+                <input type="text" id="lisseSuperieure2" name="lisseSuperieure2" placeholder="Will be auto-filled...">
+            </div>
+
+            <!-- Lisse Inférieure 2 -->
+            <div class="form-group">
+                <label for="lisseInferieure2">Lisse Inférieure 2:</label>
+                <input type="text" id="lisseInferieure2" name="lisseInferieure2" placeholder="Will be auto-filled...">
+            </div>
+
+            <!-- Entremise 2 -->
+            <div class="form-group">
+                <label for="entremise2">Entremise 2:</label>
+                <select id="entremise2" name="entremise2">
+                    <option value="">Select entremise...</option>
+                    <option value="150U75-43">150U75-43</option>
+                    <option value="N/A">N/A</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
 
                                 <div class="form-group">
                                     <label for="note">Note:</label>
@@ -727,58 +799,87 @@
         initializeOptionsSystem();
     });
 
+    function toggleSet2(show) {
+    const set2 = document.getElementById('set2');
+    const addBtn = document.getElementById('addSet2Btn');
+    
+    if (show) {
+        set2.style.display = 'block';
+        addBtn.style.display = 'none';
+    } else {
+        set2.style.display = 'none';
+        addBtn.style.display = 'inline-block';
+        
+        // Clear Set 2 fields
+        document.getElementById('montantMetallique2').value = '';
+        document.getElementById('espacement2').value = '';
+        document.getElementById('lisseSuperieure2').value = '';
+        document.getElementById('lisseInferieure2').value = '';
+        document.getElementById('entremise2').value = '';
+    }
+}
+
     // Populate the Montant Métallique dropdown
-    function initializeMontantDropdown() {
-        const montantSelect = document.getElementById('montantMetallique');
-        if (!montantSelect) return;
+function initializeMontantDropdown() {
+    const montantSelect = document.getElementById('montantMetallique');
+    const montantSelect2 = document.getElementById('montantMetallique2');
+    
+    if (!montantSelect) return;
 
-        // Clear existing options except the first one
-        montantSelect.innerHTML = '<option value="">Select montant métallique...</option>';
+    // Clear and populate Set 1
+    montantSelect.innerHTML = '<option value="">Select montant métallique...</option>';
+    
+    const sortedKeys = Object.keys(colombageData).sort();
+    sortedKeys.forEach(montant => {
+        const option = document.createElement('option');
+        option.value = montant;
+        option.textContent = montant;
+        montantSelect.appendChild(option);
+    });
 
-        // Sort the keys alphabetically and add options
-        const sortedKeys = Object.keys(colombageData).sort();
+    // Populate Set 2
+    if (montantSelect2) {
+        montantSelect2.innerHTML = '<option value="">Select montant métallique...</option>';
         sortedKeys.forEach(montant => {
             const option = document.createElement('option');
             option.value = montant;
             option.textContent = montant;
-            montantSelect.appendChild(option);
+            montantSelect2.appendChild(option);
         });
-
-        console.log(`Populated ${sortedKeys.length} montant métallique options`);
     }
 
+    console.log(`Populated ${sortedKeys.length} montant métallique options for both sets`);
+}
+
     // Setup change handler for montant selection
-    function setupMontantChangeHandler() {
-        const montantSelect = document.getElementById('montantMetallique');
-        const lisseSuperieureInput = document.getElementById('lisseSuperieure');
-        const lisseInferieureInput = document.getElementById('lisseInferieure');
+function setupMontantChangeHandler() {
+    const montantSelect = document.getElementById('montantMetallique');
+    const lisseSuperieureInput = document.getElementById('lisseSuperieure');
+    const lisseInferieureInput = document.getElementById('lisseInferieure');
+    
+    const montantSelect2 = document.getElementById('montantMetallique2');
+    const lisseSuperieureInput2 = document.getElementById('lisseSuperieure2');
+    const lisseInferieureInput2 = document.getElementById('lisseInferieure2');
 
-        if (!montantSelect || !lisseSuperieureInput || !lisseInferieureInput) return;
-
+    // Set 1 handler
+    if (montantSelect && lisseSuperieureInput && lisseInferieureInput) {
         montantSelect.addEventListener('change', function() {
             const selectedMontant = this.value;
             
             if (selectedMontant && colombageData[selectedMontant]) {
                 const data = colombageData[selectedMontant];
-                
-                // Auto-fill the lisse fields
                 lisseSuperieureInput.value = data.lisseSuperieur;
                 lisseInferieureInput.value = data.lisseInferieure;
                 
-                // Add visual indication that these fields were auto-filled
                 lisseSuperieureInput.classList.add('auto-filled');
                 lisseInferieureInput.classList.add('auto-filled');
                 
-                console.log(`Auto-filled lisse fields for ${selectedMontant}`);
-                
-                // Remove auto-filled styling when user starts typing
                 [lisseSuperieureInput, lisseInferieureInput].forEach(input => {
                     input.addEventListener('input', function() {
                         this.classList.remove('auto-filled');
                     }, { once: true });
                 });
             } else {
-                // Clear the fields if no valid selection
                 lisseSuperieureInput.value = '';
                 lisseInferieureInput.value = '';
                 lisseSuperieureInput.classList.remove('auto-filled');
@@ -786,6 +887,34 @@
             }
         });
     }
+
+    // Set 2 handler
+    if (montantSelect2 && lisseSuperieureInput2 && lisseInferieureInput2) {
+        montantSelect2.addEventListener('change', function() {
+            const selectedMontant = this.value;
+            
+            if (selectedMontant && colombageData[selectedMontant]) {
+                const data = colombageData[selectedMontant];
+                lisseSuperieureInput2.value = data.lisseSuperieur;
+                lisseInferieureInput2.value = data.lisseInferieure;
+                
+                lisseSuperieureInput2.classList.add('auto-filled');
+                lisseInferieureInput2.classList.add('auto-filled');
+                
+                [lisseSuperieureInput2, lisseInferieureInput2].forEach(input => {
+                    input.addEventListener('input', function() {
+                        this.classList.remove('auto-filled');
+                    }, { once: true });
+                });
+            } else {
+                lisseSuperieureInput2.value = '';
+                lisseInferieureInput2.value = '';
+                lisseSuperieureInput2.classList.remove('auto-filled');
+                lisseInferieureInput2.classList.remove('auto-filled');
+            }
+        });
+    }
+}
 
     // Update the form validation function to work with dropdowns
     function getWallFormDataWithImages() {
