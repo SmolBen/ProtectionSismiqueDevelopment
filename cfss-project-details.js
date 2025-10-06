@@ -821,15 +821,20 @@ async function saveParapetsToDatabase() {
     if (!currentProjectId) return;
     
     try {
-        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}`, {
-            method: 'PATCH',
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify({
+                id: currentProjectId,
                 parapets: projectParapets
             })
         });
         
-        if (!response.ok) throw new Error('Failed to save parapets');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to save parapets: ${errorText}`);
+        }
+        
         console.log('Parapets saved to database');
     } catch (error) {
         console.error('Error saving parapets:', error);
@@ -839,8 +844,18 @@ async function saveParapetsToDatabase() {
 
 // Load parapets from project data
 function loadParapetsFromProject(project) {
+    console.log('🔄 loadParapetsFromProject called');
+    console.log('Project has parapets?', !!project.parapets);
+    console.log('Parapets value:', project.parapets);
+    
     projectParapets = project.parapets || [];
-    console.log('Loaded parapets:', projectParapets.length);
+    
+    console.log(`✅ Loaded ${projectParapets.length} parapets from project`);
+    
+    if (projectParapets.length > 0) {
+        console.log('First parapet:', projectParapets[0]);
+    }
+    
     renderParapetList();
     updateParapetSummary();
 }
