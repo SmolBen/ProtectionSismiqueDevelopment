@@ -18,6 +18,8 @@ let lastSaveTimestamp = null;
 
 let windowsSaveTimer = null;
 
+let projectParapets = []; // Store parapets
+
 // Available CFSS options in logical order
 const CFSS_OPTIONS = [
     // Page S-2: Lisse trouée options
@@ -482,6 +484,365 @@ async function saveWallDisplayOrder(newOrder) {
     } catch (error) {
         console.error('❌ Error saving wall display order:', error);
     }
+}
+
+// Initialize parapet handlers
+function initializeParapetHandlers() {
+    const addParapetButton = document.getElementById('addParapetButton');
+    const parapetForm = document.getElementById('parapetForm');
+    const parapetFormElement = document.getElementById('parapetFormElement');
+    
+    if (addParapetButton && parapetForm) {
+        addParapetButton.addEventListener('click', function() {
+            if (parapetForm.style.display !== 'none') {
+                // Hide form
+                parapetForm.style.display = 'none';
+                addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+            } else {
+                // Close all other forms first
+                hideAllForms();
+                closeAllExpandedDetails();
+                
+                // Show form
+                clearParapetForm();
+                parapetForm.style.display = 'block';
+                addParapetButton.innerHTML = 'Hide Form';
+                parapetForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+    
+    if (parapetFormElement) {
+        parapetFormElement.addEventListener('submit', handleSaveParapet);
+    }
+    
+    // Setup montant auto-fill for parapets
+    setupParapetMontantAutoFill();
+}
+
+// Setup auto-fill for parapet lisse fields
+function setupParapetMontantAutoFill() {
+    const montantSelect = document.getElementById('parapetMontantMetallique');
+    const lisseInferieureInput = document.getElementById('parapetLisseInferieure');
+    const lisseSuperieureInput = document.getElementById('parapetLisseSuperieure');
+    
+    if (montantSelect && lisseInferieureInput && lisseSuperieureInput) {
+        montantSelect.addEventListener('change', function() {
+            const selectedMontant = this.value;
+            
+            if (selectedMontant && colombageData && colombageData[selectedMontant]) {
+                const data = colombageData[selectedMontant];
+                lisseInferieureInput.value = data.lisseInferieure;
+                // For parapets, lisse supérieure defaults to same as inférieure
+                lisseSuperieureInput.value = data.lisseInferieure;
+                
+                lisseInferieureInput.classList.add('auto-filled');
+                lisseSuperieureInput.classList.add('auto-filled');
+            } else {
+                lisseInferieureInput.value = '';
+                lisseSuperieureInput.value = '';
+                lisseInferieureInput.classList.remove('auto-filled');
+                lisseSuperieureInput.classList.remove('auto-filled');
+            }
+        });
+    }
+}
+
+// Save parapet
+async function handleSaveParapet(e) {
+    e.preventDefault();
+    
+    if (!canModifyProject()) {
+        alert('You do not have permission to add parapets to this project.');
+        return;
+    }
+    
+    try {
+        const parapetData = getParapetFormData();
+        if (!parapetData) return;
+        
+        projectParapets.push(parapetData);
+        await saveParapetsToDatabase();
+        renderParapetList();
+        updateParapetSummary();
+        clearParapetForm();
+        
+        document.getElementById('parapetForm').classList.remove('show');
+        document.getElementById('addParapetButton').innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+        
+        alert('Parapet saved successfully!');
+    } catch (error) {
+        console.error('Error saving parapet:', error);
+        alert('Error saving parapet: ' + error.message);
+    }
+}
+
+// Get parapet form data
+function getParapetFormData() {
+    const parapetName = document.getElementById('parapetName').value.trim();
+    const hauteurMax = document.getElementById('parapetHauteurMax').value.trim();
+    const hauteurMaxUnit = document.getElementById('parapetHauteurMaxUnit').value.trim();
+    const hauteurMaxMinor = document.getElementById('parapetHauteurMaxMinor').value.trim();
+    const hauteurMaxMinorUnit = document.getElementById('parapetHauteurMaxMinorUnit').value.trim();
+    const montantMetallique = document.getElementById('parapetMontantMetallique').value.trim();
+    const espacement = document.getElementById('parapetEspacement').value.trim();
+    const lisseInferieure = document.getElementById('parapetLisseInferieure').value.trim();
+    const lisseSuperieure = document.getElementById('parapetLisseSuperieure').value.trim();
+    const entremise = document.getElementById('parapetEntremise').value.trim();
+    const note = document.getElementById('parapetNote').value.trim();
+    
+    // Validation
+    if (!parapetName) {
+        alert('Please enter a parapet name.');
+        return null;
+    }
+    if (!hauteurMax) {
+        alert('Please enter hauteur max.');
+        return null;
+    }
+    if (!hauteurMaxUnit) {
+        alert('Please select a unit for hauteur max.');
+        return null;
+    }
+    if (!montantMetallique) {
+        alert('Please select montant métallique.');
+        return null;
+    }
+    if (!espacement) {
+        alert('Please select espacement.');
+        return null;
+    }
+    if (!lisseInferieure) {
+        alert('Please enter lisse inférieure.');
+        return null;
+    }
+    if (!lisseSuperieure) {
+        alert('Please enter lisse supérieure.');
+        return null;
+    }
+    if (!entremise) {
+        alert('Please select entremise.');
+        return null;
+    }
+    
+    return {
+        id: Date.now(),
+        parapetName,
+        hauteurMax,
+        hauteurMaxUnit,
+        hauteurMaxMinor: hauteurMaxMinor || '',
+        hauteurMaxMinorUnit: hauteurMaxMinorUnit || '',
+        montantMetallique,
+        espacement,
+        lisseInferieure,
+        lisseSuperieure,
+        entremise,
+        note: note || '',
+        dateAdded: new Date().toISOString(),
+        addedBy: currentUser?.email || 'unknown'
+    };
+}
+
+// Clear parapet form
+function clearParapetForm() {
+    document.getElementById('parapetName').value = '';
+    document.getElementById('parapetHauteurMax').value = '';
+    document.getElementById('parapetHauteurMaxUnit').value = '';
+    document.getElementById('parapetHauteurMaxMinor').value = '';
+    document.getElementById('parapetHauteurMaxMinorUnit').value = '';
+    document.getElementById('parapetMontantMetallique').value = '';
+    document.getElementById('parapetEspacement').value = '';
+    document.getElementById('parapetLisseInferieure').value = '';
+    document.getElementById('parapetLisseSuperieure').value = '';
+    document.getElementById('parapetEntremise').value = 'N/A';
+    document.getElementById('parapetNote').value = '';
+}
+
+// Render parapet list
+function renderParapetList() {
+    const container = document.getElementById('parapetList');
+    
+    if (projectParapets.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; color: #6c757d; padding: 40px;">
+                <i class="fas fa-building" style="font-size: 48px; margin-bottom: 10px;"></i>
+                <p>No parapets added yet. Click "Add Parapet" to get started.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = projectParapets.map((parapet, index) => {
+        // Format height display
+        let heightDisplay = '';
+        const major = parapet.hauteurMax;
+        const majorUnit = parapet.hauteurMaxUnit;
+        const minor = parapet.hauteurMaxMinor;
+        const minorUnit = parapet.hauteurMaxMinorUnit;
+        
+        if ((major === '0' || !major) && (minor === '0' || !minor)) {
+            heightDisplay = 'N/A';
+        } else if (major === '0' || !major) {
+            heightDisplay = `${minor} ${minorUnit}`;
+        } else if (minor === '0' || !minor) {
+            heightDisplay = `${major} ${majorUnit}`;
+        } else {
+            heightDisplay = `${major} ${majorUnit} - ${minor} ${minorUnit}`;
+        }
+        
+        return `
+        <div class="equipment-card" id="parapetCard${parapet.id}">
+            <div class="equipment-header">
+                <div>
+                    <div class="equipment-title">${parapet.parapetName}</div>
+                    <div class="equipment-meta">
+                        Height: ${heightDisplay}
+                    </div>
+                </div>
+                <div class="equipment-actions">
+                    <button class="button primary" onclick="editParapet(${parapet.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="duplicate-btn" onclick="duplicateParapet(${parapet.id})" style="background: #17a2b8;">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </button>
+                    <button class="button secondary" onclick="deleteParapet(${parapet.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+            <div class="equipment-details" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                <p><strong>Montant Métallique:</strong> ${parapet.montantMetallique}</p>
+                <p><strong>Espacement:</strong> ${parapet.espacement}</p>
+                <p><strong>Lisse Inférieure:</strong> ${parapet.lisseInferieure}</p>
+                <p><strong>Lisse Supérieure:</strong> ${parapet.lisseSuperieure}</p>
+                <p><strong>Entremise:</strong> ${parapet.entremise}</p>
+                ${parapet.note ? `<p><strong>Note:</strong> ${parapet.note}</p>` : ''}
+            </div>
+        </div>
+    `;
+    }).join('');
+}
+
+// Edit parapet
+function editParapet(id) {
+    const parapet = projectParapets.find(p => p.id === id);
+    if (!parapet) return;
+    
+    // Populate form
+    document.getElementById('parapetName').value = parapet.parapetName;
+    document.getElementById('parapetHauteurMax').value = parapet.hauteurMax || '';
+    document.getElementById('parapetHauteurMaxUnit').value = parapet.hauteurMaxUnit || 'ft';
+    document.getElementById('parapetHauteurMaxMinor').value = parapet.hauteurMaxMinor || '';
+    document.getElementById('parapetHauteurMaxMinorUnit').value = parapet.hauteurMaxMinorUnit || 'in';
+    document.getElementById('parapetMontantMetallique').value = parapet.montantMetallique;
+    document.getElementById('parapetEspacement').value = parapet.espacement;
+    document.getElementById('parapetLisseInferieure').value = parapet.lisseInferieure;
+    document.getElementById('parapetLisseSuperieure').value = parapet.lisseSuperieure;
+    document.getElementById('parapetEntremise').value = parapet.entremise;
+    document.getElementById('parapetNote').value = parapet.note || '';
+    
+    // Change form to edit mode
+    const parapetForm = document.getElementById('parapetForm');
+    const saveButton = document.getElementById('saveParapet');
+    parapetForm.classList.add('show');
+    saveButton.innerHTML = '<i class="fas fa-save"></i> Update Parapet';
+    
+    // Update form handler
+    document.getElementById('parapetFormElement').onsubmit = async function(e) {
+        e.preventDefault();
+        const updatedData = getParapetFormData();
+        if (!updatedData) return;
+        
+        const index = projectParapets.findIndex(p => p.id === id);
+        projectParapets[index] = { ...updatedData, id: parapet.id };
+        
+        await saveParapetsToDatabase();
+        renderParapetList();
+        updateParapetSummary();
+        clearParapetForm();
+        parapetForm.classList.remove('show');
+        document.getElementById('addParapetButton').innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+        
+        // Reset form handler
+        document.getElementById('parapetFormElement').onsubmit = handleSaveParapet;
+        saveButton.innerHTML = '<i class="fas fa-save"></i> Save Parapet';
+        
+        alert('Parapet updated successfully!');
+    };
+    
+    parapetForm.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Duplicate parapet
+function duplicateParapet(id) {
+    const parapet = projectParapets.find(p => p.id === id);
+    if (!parapet) return;
+    
+    const duplicated = {
+        ...parapet,
+        id: Date.now(),
+        parapetName: parapet.parapetName + ' (Copy)',
+        dateAdded: new Date().toISOString()
+    };
+    
+    projectParapets.push(duplicated);
+    saveParapetsToDatabase();
+    renderParapetList();
+    updateParapetSummary();
+    alert('Parapet duplicated successfully!');
+}
+
+// Delete parapet
+async function deleteParapet(id) {
+    const parapet = projectParapets.find(p => p.id === id);
+    if (!parapet) return;
+    
+    if (confirm(`Are you sure you want to delete parapet "${parapet.parapetName}"?`)) {
+        projectParapets = projectParapets.filter(p => p.id !== id);
+        await saveParapetsToDatabase();
+        renderParapetList();
+        updateParapetSummary();
+        alert('Parapet deleted successfully!');
+    }
+}
+
+// Update parapet summary
+function updateParapetSummary() {
+    const summary = document.getElementById('parapetSelectionSummary');
+    if (summary) {
+        const count = projectParapets.length;
+        summary.innerHTML = `<i class="fas fa-building"></i> ${count} parapet${count !== 1 ? 's' : ''} added`;
+    }
+}
+
+// Save parapets to database
+async function saveParapetsToDatabase() {
+    if (!currentProjectId) return;
+    
+    try {
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                parapets: projectParapets
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save parapets');
+        console.log('Parapets saved to database');
+    } catch (error) {
+        console.error('Error saving parapets:', error);
+        throw error;
+    }
+}
+
+// Load parapets from project data
+function loadParapetsFromProject(project) {
+    projectParapets = project.parapets || [];
+    console.log('Loaded parapets:', projectParapets.length);
+    renderParapetList();
+    updateParapetSummary();
 }
 
 // Initialize revision system when project loads
@@ -4729,6 +5090,12 @@ function hideAllForms() {
         equipmentForm.classList.remove('show');
     }
     
+    // Hide parapet form
+    const parapetForm = document.getElementById('parapetForm');
+    if (parapetForm) {
+        parapetForm.style.display = 'none';
+    }
+    
     // Hide CFSS form
     const cfssForm = document.getElementById('cfss-form');
     const cfssBtn = document.querySelector('.cfss-btn');
@@ -4750,33 +5117,13 @@ function hideAllForms() {
         newCalcButton.textContent = 'Add Wall';
     }
     
-    // Reset CFSS button text
-    const cfssBtnText = document.getElementById('cfss-btn-text');
-    if (cfssBtnText && typeof cfssWindData !== 'undefined') {
-        if (cfssWindData && cfssWindData.length > 0) {
-            const floorCount = cfssWindData.length;
-            const projectData = cfssWindData[0] || {};
-            const specifications = [
-                projectData.maxDeflection,
-                projectData.maxSpacing,
-                projectData.framingAssembly,
-                projectData.concreteAnchor,
-                projectData.steelAnchor,
-                projectData.minMetalThickness,
-                projectData.lisseInferieure,
-                projectData.lisseSuperieure
-            ];
-            const filledSpecs = specifications.filter(spec => spec && spec.trim() !== '').length;
-            
-            if (filledSpecs > 0) {
-                cfssBtnText.textContent = `Edit CFSS Data (${floorCount} floors, ${filledSpecs} specs)`;
-            } else {
-                cfssBtnText.textContent = `Edit CFSS Data (${floorCount} floors)`;
-            }
-        } else {
-            cfssBtnText.textContent = 'Add CFSS Data';
-        }
+    const addParapetButton = document.getElementById('addParapetButton');
+    if (addParapetButton) {
+        addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
     }
+    
+    // Reset CFSS button text
+    updateCFSSButtonText();
 }
 
 // Window form submission handler
@@ -5274,14 +5621,14 @@ function switchTab(tabId) {
     });
     document.getElementById(`${tabId}-content`).classList.add('active');
     
-    // Render window list when switching to window tab
+    // Render lists when switching tabs
     if (tabId === 'window-list') {
         renderWindowList();
         updateWindowSummary();
-    }
-    
-    // Preload images when switching to options tab
-    if (tabId === 'option-list') {
+    } else if (tabId === 'parapet-list') {
+        renderParapetList();
+        updateParapetSummary();
+    } else if (tabId === 'option-list') {
         setTimeout(() => {
             preloadOptionImages();
         }, 200);

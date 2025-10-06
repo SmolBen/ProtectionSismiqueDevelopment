@@ -54,6 +54,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("projectDescription").textContent = project.description;
                 document.getElementById("projectType").textContent = project.type;
                 document.getElementById("projectStatusDropdown").value = project.status;
+                if (project.parapets) {
+                    projectParapets = project.parapets;
+                    console.log('Loaded parapets:', projectParapets.length);
+                }
                 document.getElementById("projectStatusDropdown").addEventListener('change', function() {
                     if (canModifyProject()) {
                         saveProjectStatus(this.value);
@@ -117,6 +121,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setupEquipmentFormHandlerWithRevisions();
                 setupWindowHandlers();
                 loadWindowsFromProject(project);
+                loadParapetsFromProject(project);
+                renderParapetList();
+                updateParapetSummary();
+                initializeParapetHandlers();
                 initializeCustomPages();
                 setupCFSSReportButtonWithRevisionModal();
                 
