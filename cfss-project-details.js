@@ -508,6 +508,9 @@ function initializeParapetHandlers() {
                 parapetForm.style.display = 'block';
                 addParapetButton.innerHTML = 'Hide Form';
                 parapetForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => {
+                    setupParapetUnitAutoUpdate();
+                }, 100);
             }
         });
     }
@@ -692,86 +695,241 @@ function renderParapetList() {
         
         return `
         <div class="equipment-card" id="parapetCard${parapet.id}">
-            <div class="equipment-header">
-                <div>
-                    <div class="equipment-title">${parapet.parapetName}</div>
-                    <div class="equipment-meta">
-                        Height: ${heightDisplay}
+            <!-- View Mode -->
+            <div id="parapetView${parapet.id}" class="parapet-view-mode">
+                <div class="equipment-header">
+                    <div>
+                        <div class="equipment-title">${parapet.parapetName}</div>
+                        <div class="equipment-meta">
+                            Height: ${heightDisplay}
+                        </div>
+                    </div>
+                    <div class="equipment-actions">
+                        <button class="button primary" onclick="editParapet(${parapet.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="duplicate-btn" onclick="duplicateParapet(${parapet.id})" style="background: #17a2b8;">
+                            <i class="fas fa-copy"></i> Duplicate
+                        </button>
+                        <button class="button secondary" onclick="deleteParapet(${parapet.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
                     </div>
                 </div>
-                <div class="equipment-actions">
-                    <button class="button primary" onclick="editParapet(${parapet.id})">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="duplicate-btn" onclick="duplicateParapet(${parapet.id})" style="background: #17a2b8;">
-                        <i class="fas fa-copy"></i> Duplicate
-                    </button>
-                    <button class="button secondary" onclick="deleteParapet(${parapet.id})">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
+                <div class="equipment-details" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                    <p><strong>Montant Métallique:</strong> ${parapet.montantMetallique}</p>
+                    <p><strong>Espacement:</strong> ${parapet.espacement}</p>
+                    <p><strong>Lisse Inférieure:</strong> ${parapet.lisseInferieure}</p>
+                    <p><strong>Lisse Supérieure:</strong> ${parapet.lisseSuperieure}</p>
+                    <p><strong>Entremise:</strong> ${parapet.entremise}</p>
+                    ${parapet.note ? `<p><strong>Note:</strong> ${parapet.note}</p>` : ''}
                 </div>
             </div>
-            <div class="equipment-details" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
-                <p><strong>Montant Métallique:</strong> ${parapet.montantMetallique}</p>
-                <p><strong>Espacement:</strong> ${parapet.espacement}</p>
-                <p><strong>Lisse Inférieure:</strong> ${parapet.lisseInferieure}</p>
-                <p><strong>Lisse Supérieure:</strong> ${parapet.lisseSuperieure}</p>
-                <p><strong>Entremise:</strong> ${parapet.entremise}</p>
-                ${parapet.note ? `<p><strong>Note:</strong> ${parapet.note}</p>` : ''}
+
+            <!-- Edit Mode -->
+            <div id="parapetEdit${parapet.id}" class="parapet-edit-mode" style="display: none;">
+                <form onsubmit="saveParapetEdit(${parapet.id}, event)">
+<div class="form-group">
+    <label>Parapet Type:</label>
+    <select id="editParapetName${parapet.id}" required>
+        <option value="">Select parapet type...</option>
+        <option value="Parapet PA01" ${parapet.parapetName === 'Parapet PA01' ? 'selected' : ''}>Parapet PA01</option>
+        <option value="Parapet PA02" ${parapet.parapetName === 'Parapet PA02' ? 'selected' : ''}>Parapet PA02</option>
+        <option value="Parapet PA03" ${parapet.parapetName === 'Parapet PA03' ? 'selected' : ''}>Parapet PA03</option>
+        <option value="Parapet PA04" ${parapet.parapetName === 'Parapet PA04' ? 'selected' : ''}>Parapet PA04</option>
+        <option value="Parapet PA05" ${parapet.parapetName === 'Parapet PA05' ? 'selected' : ''}>Parapet PA05</option>
+        <option value="Parapet PA06" ${parapet.parapetName === 'Parapet PA06' ? 'selected' : ''}>Parapet PA06</option>
+        <option value="Parapet PA07" ${parapet.parapetName === 'Parapet PA07' ? 'selected' : ''}>Parapet PA07</option>
+        <option value="Parapet PA08" ${parapet.parapetName === 'Parapet PA08' ? 'selected' : ''}>Parapet PA08</option>
+        <option value="Parapet PA09" ${parapet.parapetName === 'Parapet PA09' ? 'selected' : ''}>Parapet PA09</option>
+        <option value="Parapet PA10" ${parapet.parapetName === 'Parapet PA10' ? 'selected' : ''}>Parapet PA10</option>
+    </select>
+</div>
+
+                    <div class="form-group">
+                        <label>Hauteur Max:</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0" step="1" required style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="editParapetHauteurMaxUnit${parapet.id}" required style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft" ${parapet.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+                                <option value="m" ${parapet.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
+                            </select>
+                            <input type="number" id="editParapetHauteurMaxMinor${parapet.id}" value="${parapet.hauteurMaxMinor || ''}" min="0" step="1" placeholder="Minor" style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="editParapetHauteurMaxMinorUnit${parapet.id}" style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="in" ${parapet.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
+                                <option value="cm" ${parapet.hauteurMaxMinorUnit === 'cm' ? 'selected' : ''}>cm</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Montant Métallique:</label>
+                        <select id="editParapetMontantMetallique${parapet.id}" required>
+                            <option value="">Select montant métallique...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Espacement:</label>
+                        <select id="editParapetEspacement${parapet.id}" required>
+                            <option value="">Select espacement...</option>
+                            <option value="8&quot;c/c" ${parapet.espacement === '8"c/c' ? 'selected' : ''}>8"c/c</option>
+                            <option value="12&quot;c/c" ${parapet.espacement === '12"c/c' ? 'selected' : ''}>12"c/c</option>
+                            <option value="16&quot;c/c" ${parapet.espacement === '16"c/c' ? 'selected' : ''}>16"c/c</option>
+                            <option value="24&quot;c/c" ${parapet.espacement === '24"c/c' ? 'selected' : ''}>24"c/c</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Lisse Inférieure:</label>
+                        <input type="text" id="editParapetLisseInferieure${parapet.id}" value="${parapet.lisseInferieure}" placeholder="Will be auto-filled..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Lisse Supérieure:</label>
+                        <input type="text" id="editParapetLisseSuperieure${parapet.id}" value="${parapet.lisseSuperieure}" placeholder="Will match Lisse Inférieure..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Entremise:</label>
+                        <select id="editParapetEntremise${parapet.id}" required>
+                            <option value="">Select entremise...</option>
+                            <option value="150U75-43" ${parapet.entremise === '150U75-43' ? 'selected' : ''}>150U75-43</option>
+                            <option value="N/A" ${parapet.entremise === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Note:</label>
+                        <textarea id="editParapetNote${parapet.id}" rows="3">${parapet.note || ''}</textarea>
+                    </div>
+
+                    <div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="save-btn">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button type="button" class="button secondary" onclick="cancelParapetEdit(${parapet.id})">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    `;
+        `;
     }).join('');
+    
+    // Populate montant dropdowns and setup auto-fill for all edit forms
+    setTimeout(() => {
+        projectParapets.forEach(parapet => {
+            populateParapetEditMontant(parapet.id, parapet.montantMetallique);
+            setupParapetEditAutoFill(parapet.id);
+            setupParapetEditUnitAutoUpdate(parapet.id);
+        });
+    }, 100);
 }
 
-// Edit parapet
+// Edit parapet - toggle to edit mode
 function editParapet(id) {
-    const parapet = projectParapets.find(p => p.id === id);
-    if (!parapet) return;
+    console.log(`Entering edit mode for parapet ID: ${id}`);
     
-    // Populate form
-    document.getElementById('parapetName').value = parapet.parapetName;
-    document.getElementById('parapetHauteurMax').value = parapet.hauteurMax || '';
-    document.getElementById('parapetHauteurMaxUnit').value = parapet.hauteurMaxUnit || 'ft';
-    document.getElementById('parapetHauteurMaxMinor').value = parapet.hauteurMaxMinor || '';
-    document.getElementById('parapetHauteurMaxMinorUnit').value = parapet.hauteurMaxMinorUnit || 'in';
-    document.getElementById('parapetMontantMetallique').value = parapet.montantMetallique;
-    document.getElementById('parapetEspacement').value = parapet.espacement;
-    document.getElementById('parapetLisseInferieure').value = parapet.lisseInferieure;
-    document.getElementById('parapetLisseSuperieure').value = parapet.lisseSuperieure;
-    document.getElementById('parapetEntremise').value = parapet.entremise;
-    document.getElementById('parapetNote').value = parapet.note || '';
+    // Hide view mode and show edit mode
+    document.getElementById(`parapetView${id}`).style.display = 'none';
+    document.getElementById(`parapetEdit${id}`).style.display = 'block';
+}
+
+function cancelParapetEdit(id) {
+    console.log(`Cancelling edit for parapet ID: ${id}`);
     
-    // Change form to edit mode
-    const parapetForm = document.getElementById('parapetForm');
-    const saveButton = document.getElementById('saveParapet');
-    parapetForm.classList.add('show');
-    saveButton.innerHTML = '<i class="fas fa-save"></i> Update Parapet';
+    // Show view mode and hide edit mode
+    document.getElementById(`parapetView${id}`).style.display = 'block';
+    document.getElementById(`parapetEdit${id}`).style.display = 'none';
+}
+
+// Save parapet edit
+async function saveParapetEdit(id, event) {
+    event.preventDefault();
     
-    // Update form handler
-    document.getElementById('parapetFormElement').onsubmit = async function(e) {
-        e.preventDefault();
-        const updatedData = getParapetFormData();
-        if (!updatedData) return;
+    try {
+        // Find the parapet to update
+        const parapetIndex = projectParapets.findIndex(p => p.id === id);
+        if (parapetIndex === -1) {
+            throw new Error('Parapet not found');
+        }
+
+        // Get updated data from form
+        const updatedData = {
+            id: id,
+            parapetName: document.getElementById(`editParapetName${id}`).value.trim(),
+            hauteurMax: document.getElementById(`editParapetHauteurMax${id}`).value.trim(),
+            hauteurMaxUnit: document.getElementById(`editParapetHauteurMaxUnit${id}`).value.trim(),
+            hauteurMaxMinor: document.getElementById(`editParapetHauteurMaxMinor${id}`).value.trim() || '',
+            hauteurMaxMinorUnit: document.getElementById(`editParapetHauteurMaxMinorUnit${id}`).value.trim() || '',
+            montantMetallique: document.getElementById(`editParapetMontantMetallique${id}`).value.trim(),
+            espacement: document.getElementById(`editParapetEspacement${id}`).value.trim(),
+            lisseInferieure: document.getElementById(`editParapetLisseInferieure${id}`).value.trim(),
+            lisseSuperieure: document.getElementById(`editParapetLisseSuperieure${id}`).value.trim(),
+            entremise: document.getElementById(`editParapetEntremise${id}`).value.trim(),
+            note: document.getElementById(`editParapetNote${id}`).value.trim() || '',
+            dateAdded: projectParapets[parapetIndex].dateAdded,
+            addedBy: projectParapets[parapetIndex].addedBy
+        };
+
+        // Update the parapet
+        projectParapets[parapetIndex] = updatedData;
         
-        const index = projectParapets.findIndex(p => p.id === id);
-        projectParapets[index] = { ...updatedData, id: parapet.id };
-        
+        // Save to database
         await saveParapetsToDatabase();
+        
+        // Re-render the list
         renderParapetList();
         updateParapetSummary();
-        clearParapetForm();
-        parapetForm.classList.remove('show');
-        document.getElementById('addParapetButton').innerHTML = '<i class="fas fa-building"></i> Add Parapet';
-        
-        // Reset form handler
-        document.getElementById('parapetFormElement').onsubmit = handleSaveParapet;
-        saveButton.innerHTML = '<i class="fas fa-save"></i> Save Parapet';
         
         alert('Parapet updated successfully!');
-    };
+    } catch (error) {
+        console.error('Error updating parapet:', error);
+        alert('Error updating parapet: ' + error.message);
+    }
+}
+
+// Helper function to populate montant dropdown in edit mode
+function populateParapetEditMontant(parapetId, selectedValue) {
+    const montantSelect = document.getElementById(`editParapetMontantMetallique${parapetId}`);
+    if (!montantSelect || typeof colombageData === 'undefined') return;
     
-    parapetForm.scrollIntoView({ behavior: 'smooth' });
+    montantSelect.innerHTML = '<option value="">Select montant métallique...</option>';
+    
+    const sortedKeys = Object.keys(colombageData).sort();
+    sortedKeys.forEach(montant => {
+        const option = document.createElement('option');
+        option.value = montant;
+        option.textContent = montant;
+        if (montant === selectedValue) {
+            option.selected = true;
+        }
+        montantSelect.appendChild(option);
+    });
+}
+
+function setupParapetEditAutoFill(parapetId) {
+    const montantSelect = document.getElementById(`editParapetMontantMetallique${parapetId}`);
+    const lisseSuperieureInput = document.getElementById(`editParapetLisseSuperieure${parapetId}`);
+    const lisseInferieureInput = document.getElementById(`editParapetLisseInferieure${parapetId}`);
+    
+    if (!montantSelect || !lisseSuperieureInput || !lisseInferieureInput) return;
+    if (typeof colombageData === 'undefined') return;
+    
+    montantSelect.addEventListener('change', function() {
+        const selectedMontant = this.value;
+        
+        if (selectedMontant && colombageData[selectedMontant]) {
+            const data = colombageData[selectedMontant];
+            lisseSuperieureInput.value = data.lisseSuperieur;
+            lisseInferieureInput.value = data.lisseInferieure;
+        } else {
+            lisseSuperieureInput.value = '';
+            lisseInferieureInput.value = '';
+        }
+    });
 }
 
 // Duplicate parapet
@@ -6142,6 +6300,38 @@ function loadWindowsFromProject(project) {
     updateWindowSummary();
 }
 
+// Setup auto-update for parapet height units (add form)
+function setupParapetUnitAutoUpdate() {
+    const majorUnitSelect = document.getElementById('parapetHauteurMaxUnit');
+    const minorUnitSelect = document.getElementById('parapetHauteurMaxMinorUnit');
+    
+    if (majorUnitSelect && minorUnitSelect) {
+        majorUnitSelect.addEventListener('change', function() {
+            if (this.value === 'ft') {
+                minorUnitSelect.value = 'in';
+            } else if (this.value === 'm') {
+                minorUnitSelect.value = 'cm';
+            }
+        });
+    }
+}
+
+// Setup auto-update for parapet height units (edit form)
+function setupParapetEditUnitAutoUpdate(parapetId) {
+    const majorUnitSelect = document.getElementById(`editParapetHauteurMaxUnit${parapetId}`);
+    const minorUnitSelect = document.getElementById(`editParapetHauteurMaxMinorUnit${parapetId}`);
+    
+    if (majorUnitSelect && minorUnitSelect) {
+        majorUnitSelect.addEventListener('change', function() {
+            if (this.value === 'ft') {
+                minorUnitSelect.value = 'in';
+            } else if (this.value === 'm') {
+                minorUnitSelect.value = 'cm';
+            }
+        });
+    }
+}
+
 // Make functions globally available
 window.logout = logout;
 window.deleteEquipment = deleteEquipment;
@@ -6226,3 +6416,11 @@ window.addCompositionItem = addCompositionItem;
 window.deleteCompositionItem = deleteCompositionItem;
 window.updateAllCompositions = updateAllCompositions;
 
+window.editParapet = editParapet;
+window.cancelParapetEdit = cancelParapetEdit;
+window.saveParapetEdit = saveParapetEdit;
+window.populateParapetEditMontant = populateParapetEditMontant;
+window.setupParapetEditAutoFill = setupParapetEditAutoFill;
+
+window.setupParapetUnitAutoUpdate = setupParapetUnitAutoUpdate;
+window.setupParapetEditUnitAutoUpdate = setupParapetEditUnitAutoUpdate;
