@@ -695,12 +695,12 @@
     transform: translateY(-50%);
     width: 28px; /* Explicit width for click area */
     height: 28px; /* Explicit height for click area */
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
-    color: #999;
+    color: #666;
     cursor: grab;
-    font-size: 18px;
+    font-size: 20px;
     user-select: none;
     transition: all 0.2s ease;
     border-radius: 4px;
@@ -1033,24 +1033,24 @@
     user-select: none;
 }
 
-.drag-handle {
-    position: absolute;
-    left: 50%;
-    top: -25px;
-    transform: translateX(-50%);
-    width: 30px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #007bff;
-    cursor: move;
-    opacity: 0;
-    transition: opacity 0.2s;
-    background: white;
-    border-radius: 4px 4px 0 0;
-    border: 2px solid #007bff;
-    border-bottom: none;
+.canvas-element .drag-handle {
+position: absolute;
+left: 50%;
+top: -25px;
+transform: translateX(-50%);
+width: 30px;
+height: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+color: #007bff;
+cursor: move;
+opacity: 0;
+transition: opacity 0.2s;
+background: white;
+border-radius: 4px 4px 0 0;
+border: 2px solid #007bff;
+border-bottom: none;
 }
 
 .canvas-element:hover .drag-handle,
