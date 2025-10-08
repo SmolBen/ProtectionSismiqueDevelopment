@@ -1621,10 +1621,11 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
         // Handle Google Drive upload based on user choice
         if (shouldShowPopups && saveToGoogleDrive) {
             await sendReportToMakeWebhook(result.downloadUrl);
+            alert('Report sent to Google Drive successfully!');
+        } else {
+            // Only download to browser if NOT saving to Google Drive
+            window.location.href = result.downloadUrl;
         }
-        
-        // Download the file
-        window.location.href = result.downloadUrl;
         
     } catch (error) {
         console.error('❌ CFSS PDF generation error:', error);
