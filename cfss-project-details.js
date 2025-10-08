@@ -1510,19 +1510,50 @@ async function generateCFSSReportDirectlyWithTabOptions(selectedRevision) {
 }
 
 // Updated report generation function that includes options
-async function generateCFSSReportForRevisionWithOptions(selectedRevision, selectedOptions) {
+async function generateCFSSReportForRevisionWithOptions(selectedRevision, selectedOptions = []) {
     if (!currentProjectId) {
         alert('Error: No project selected');
         return;
     }
 
+    const generateButton = document.getElementById('generateCFSSReportButton');
+    
+    // Check if user should get popups
+    const allowedEmails = ['hoangminhduc.ite@gmail.com', 'anhquan1212004@gmail.com'];
+    const shouldShowPopups = allowedEmails.includes(currentUser?.email);
+    
+    let signDocument = false;
+    let saveToGoogleDrive = false;
+    
+    // Show popups if user is in allowed list
+    if (shouldShowPopups) {
+        try {
+            // First popup: Signature
+            signDocument = await showSignaturePopup();
+            console.log('User signature choice:', signDocument);
+            
+            // Second popup: Google Drive
+            saveToGoogleDrive = await showGoogleDrivePopup();
+            console.log('User Google Drive choice:', saveToGoogleDrive);
+        } catch (error) {
+            console.error('Error showing popups:', error);
+            alert('Error displaying options. Please try again.');
+            return;
+        }
+    }
+    
     try {
-        // Get all revisions up to and including the selected revision
+        generateButton.disabled = true;
+        generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating CFSS PDF... (up to 30 seconds)';
+        
+        if (!selectedRevision || !selectedRevision.walls) {
+            throw new Error('Invalid revision data');
+        }
+
         const revisionsUpToSelected = projectRevisions
             .filter(rev => rev.number <= selectedRevision.number)
             .sort((a, b) => a.number - b.number);
-        
-        // Prepare CFSS project data with selected revision and options
+
         const cfssProjectData = {
             ...projectData,
             walls: [...selectedRevision.walls],
@@ -1530,19 +1561,21 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
             currentWallRevisionId: selectedRevision.id,
             selectedRevisionNumber: selectedRevision.number,
             cfssWindData: cfssWindData,
-            selectedOptions: selectedOptions // NEW: Include selected options
+            selectedOptions: selectedOptions,
+            signDocument: signDocument  // Pass signature decision to backend
         };
         
-        console.log('CFSS Report data with options:', {
+        console.log('CFSS Report data:', {
             name: cfssProjectData.name,
             selectedRevision: selectedRevision.number,
             wallsCount: cfssProjectData.walls?.length || 0,
             revisionsIncluded: revisionsUpToSelected.map(r => `Rev ${r.number}`).join(', '),
             windDataCount: cfssProjectData.cfssWindData?.length || 0,
-            selectedOptionsCount: selectedOptions.length
+            selectedOptionsCount: selectedOptions.length,
+            signDocument: signDocument,
+            saveToGoogleDrive: saveToGoogleDrive
         });
         
-        // Validate we have walls to report on
         if (!cfssProjectData.walls || cfssProjectData.walls.length === 0) {
             alert(`Revision ${selectedRevision.number} contains no walls. Please select a revision with walls.`);
             return;
@@ -1583,17 +1616,26 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
             throw new Error('No download URL received from server');
         }
 
-        console.log(`Opening CFSS download URL for Revision ${selectedRevision.number} with ${selectedOptions.length} options:`, result.downloadUrl);
-        await sendReportToMakeWebhook(result.downloadUrl);
+        console.log(`✅ Opening CFSS download URL for Revision ${selectedRevision.number}`);
+        
+        // Handle Google Drive upload based on user choice
+        if (shouldShowPopups && saveToGoogleDrive) {
+            await sendReportToMakeWebhook(result.downloadUrl);
+        }
+        
+        // Download the file
         window.location.href = result.downloadUrl;
         
     } catch (error) {
-        console.error('CFSS PDF generation error with options:', error);
+        console.error('❌ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
             alert('CFSS PDF generation timed out. Please try again in a few minutes.');
         } else {
             alert('Error generating CFSS report: ' + error.message);
         }
+    } finally {
+        generateButton.disabled = false;
+        generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
     }
 }
 
@@ -4849,10 +4891,12 @@ async function generateCFSSProjectReport() {
 }
 
 async function sendReportToMakeWebhook(downloadUrl) {
-    // Only send webhook for specific user
-    if (currentUser?.email !== 'hoangminhduc.ite@gmail.com') {
+    // Check for both specific users
+    const allowedEmails = ['hoangminhduc.ite@gmail.com', 'anhquan1212004@gmail.com'];
+    
+    if (!allowedEmails.includes(currentUser?.email)) {
         console.log('Skipping webhook - not target user');
-        return; // Exit early for other users
+        return;
     }
     
     const webhookUrl = 'https://hook.us1.make.com/1e5j8oi1ogsfclp934ezdip5jt1ceenk';
@@ -4870,6 +4914,106 @@ async function sendReportToMakeWebhook(downloadUrl) {
     } catch (error) {
         console.error('❌ Error sending to webhook:', error);
     }
+}
+
+// Function to show signature confirmation popup
+function showSignaturePopup() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">
+                    🖊️ Sign Document
+                </h3>
+                <p style="margin: 0 0 25px 0; color: #666; font-size: 15px; line-height: 1.5;">
+                    Do you want to sign and flatten this document?
+                </p>
+                <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                    <button id="signatureNo" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 500;">
+                        No
+                    </button>
+                    <button id="signatureYes" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 500;">
+                        Yes
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.querySelector('#signatureYes').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(true);
+        });
+        
+        modal.querySelector('#signatureNo').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(false);
+        });
+    });
+}
+
+// Function to show Google Drive confirmation popup
+function showGoogleDrivePopup() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">
+                    💾 Save to Google Drive
+                </h3>
+                <p style="margin: 0 0 25px 0; color: #666; font-size: 15px; line-height: 1.5;">
+                    Do you want to save this document to Google Drive?
+                </p>
+                <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                    <button id="driveNo" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 500;">
+                        No
+                    </button>
+                    <button id="driveYes" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 500;">
+                        Yes
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.querySelector('#driveYes').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(true);
+        });
+        
+        modal.querySelector('#driveNo').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(false);
+        });
+    });
 }
 
 // Setup function for CFSS Report button
