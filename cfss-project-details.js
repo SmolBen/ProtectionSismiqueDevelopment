@@ -583,6 +583,7 @@ async function handleSaveParapet(e) {
 // Get parapet form data
 function getParapetFormData() {
     const parapetName = document.getElementById('parapetName').value.trim();
+    const parapetType = document.getElementById('parapetType').value.trim();
     const hauteurMax = document.getElementById('parapetHauteurMax').value.trim();
     const hauteurMaxUnit = document.getElementById('parapetHauteurMaxUnit').value.trim();
     const hauteurMaxMinor = document.getElementById('parapetHauteurMaxMinor').value.trim();
@@ -597,6 +598,10 @@ function getParapetFormData() {
     // Validation
     if (!parapetName) {
         alert('Please enter a parapet name.');
+        return null;
+    }
+    if (!parapetType) {
+        alert('Please select a parapet type.');
         return null;
     }
     if (!hauteurMax) {
@@ -631,6 +636,7 @@ function getParapetFormData() {
     return {
         id: Date.now(),
         parapetName,
+        parapetType,
         hauteurMax,
         hauteurMaxUnit,
         hauteurMaxMinor: hauteurMaxMinor || '',
@@ -649,6 +655,7 @@ function getParapetFormData() {
 // Clear parapet form
 function clearParapetForm() {
     document.getElementById('parapetName').value = '';
+    document.getElementById('parapetType').value = '';
     document.getElementById('parapetHauteurMax').value = '';
     document.getElementById('parapetHauteurMaxUnit').value = '';
     document.getElementById('parapetHauteurMaxMinor').value = '';
@@ -723,7 +730,7 @@ function renderParapetList() {
                 <div class="equipment-details" id="parapetDetails${parapet.id}">
                     <div class="equipment-details-container">
                         <div class="equipment-info-section">
-                            <p><strong>Parapet Name:</strong> ${parapet.parapetName}</p>
+                            <p><strong>Parapet Type:</strong> ${parapet.parapetType || 'N/A'}</p>
                             <p><strong>Height:</strong> ${heightDisplay}</p>
                             <p><strong>Montant Métallique:</strong> ${parapet.montantMetallique}</p>
                             <p><strong>Espacement:</strong> ${parapet.espacement}</p>
@@ -743,21 +750,27 @@ function renderParapetList() {
             <div id="parapetEdit${parapet.id}" class="equipment-edit" style="display: none;">
                 <form onsubmit="saveParapetEdit(${parapet.id}, event); return false;">
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Parapet Name</label>
-                            <input type="text" id="editParapetName${parapet.id}" value="${parapet.parapetName}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Height (Major) </label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0">
-                                <select id="editParapetHauteurMaxUnit${parapet.id}">
-                                    <option value="ft" ${parapet.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-                                    <option value="m" ${parapet.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+    <div class="form-group">
+        <label>Parapet Name</label>
+        <input type="text" id="editParapetName${parapet.id}" value="${parapet.parapetName}" required>
+    </div>
+    <div class="form-group">
+        <label>Parapet Type</label>
+        <select id="editParapetType${parapet.id}" required>
+            <option value="">Select...</option>
+            <option value="Type 1" ${parapet.parapetType === 'Type 1' ? 'selected' : ''}>Type 1</option>
+            <option value="Type 2" ${parapet.parapetType === 'Type 2' ? 'selected' : ''}>Type 2</option>
+            <option value="Type 3" ${parapet.parapetType === 'Type 3' ? 'selected' : ''}>Type 3</option>
+            <option value="Type 4" ${parapet.parapetType === 'Type 4' ? 'selected' : ''}>Type 4</option>
+            <option value="Type 5" ${parapet.parapetType === 'Type 5' ? 'selected' : ''}>Type 5</option>
+            <option value="Type 6" ${parapet.parapetType === 'Type 6' ? 'selected' : ''}>Type 6</option>
+            <option value="Type 7" ${parapet.parapetType === 'Type 7' ? 'selected' : ''}>Type 7</option>
+            <option value="Type 8" ${parapet.parapetType === 'Type 8' ? 'selected' : ''}>Type 8</option>
+            <option value="Type 9" ${parapet.parapetType === 'Type 9' ? 'selected' : ''}>Type 9</option>
+            <option value="Type 10" ${parapet.parapetType === 'Type 10' ? 'selected' : ''}>Type 10</option>
+        </select>
+    </div>
+</div>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -883,6 +896,7 @@ async function saveParapetEdit(id, event) {
         const updatedData = {
             id: id,
             parapetName: document.getElementById(`editParapetName${id}`).value.trim(),
+            parapetType: document.getElementById(`editParapetType${id}`).value.trim(),
             hauteurMax: document.getElementById(`editParapetHauteurMax${id}`).value.trim(),
             hauteurMaxUnit: document.getElementById(`editParapetHauteurMaxUnit${id}`).value.trim(),
             hauteurMaxMinor: document.getElementById(`editParapetHauteurMaxMinor${id}`).value.trim() || '',
