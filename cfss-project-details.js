@@ -675,141 +675,153 @@ function renderParapetList() {
         return;
     }
     
-    container.innerHTML = projectParapets.map((parapet, index) => {
-        // Format height display
-        let heightDisplay = '';
+    // Format height display helper
+    function formatHeight(parapet) {
         const major = parapet.hauteurMax;
         const majorUnit = parapet.hauteurMaxUnit;
         const minor = parapet.hauteurMaxMinor;
         const minorUnit = parapet.hauteurMaxMinorUnit;
         
         if ((major === '0' || !major) && (minor === '0' || !minor)) {
-            heightDisplay = 'N/A';
+            return 'N/A';
         } else if (major === '0' || !major) {
-            heightDisplay = `${minor} ${minorUnit}`;
+            return `${minor} ${minorUnit}`;
         } else if (minor === '0' || !minor) {
-            heightDisplay = `${major} ${majorUnit}`;
+            return `${major} ${majorUnit}`;
         } else {
-            heightDisplay = `${major} ${majorUnit} - ${minor} ${minorUnit}`;
+            return `${major} ${majorUnit} - ${minor} ${minorUnit}`;
         }
+    }
+    
+    container.innerHTML = projectParapets.map((parapet, index) => {
+        const heightDisplay = formatHeight(parapet);
         
         return `
         <div class="equipment-card" id="parapetCard${parapet.id}">
             <!-- View Mode -->
-            <div id="parapetView${parapet.id}" class="parapet-view-mode">
-                <div class="equipment-header">
-                    <div>
-                        <div class="equipment-title">${parapet.parapetName}</div>
-                        <div class="equipment-meta">
-                            Height: ${heightDisplay}
+            <div id="parapetView${parapet.id}">
+                <div class="equipment-header" onclick="toggleParapetDetails(${parapet.id})">
+                    <div class="equipment-info-compact">
+                        <h4>${parapet.parapetName}</h4>
+                        <div class="equipment-meta-compact">
+                            <span>Height: ${heightDisplay}</span>
+                            <span class="meta-separator">•</span>
+                            <span>Montant: ${parapet.montantMetallique}</span>
+                            <span class="meta-separator">•</span>
+                            <span>Espacement: ${parapet.espacement}</span>
                         </div>
                     </div>
-                    <div class="equipment-actions">
-                        <button class="button primary" onclick="editParapet(${parapet.id})">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="duplicate-btn" onclick="duplicateParapet(${parapet.id})" style="background: #17a2b8;">
+                    <div class="equipment-actions-compact">
+                        <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails(${parapet.id})">Details</button>
+                        <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateParapet(${parapet.id})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                             <i class="fas fa-copy"></i> Duplicate
                         </button>
-                        <button class="button secondary" onclick="deleteParapet(${parapet.id})">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteParapet(${parapet.id})">Delete</button>
                     </div>
                 </div>
-                <div class="equipment-details" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
-                    <p><strong>Montant Métallique:</strong> ${parapet.montantMetallique}</p>
-                    <p><strong>Espacement:</strong> ${parapet.espacement}</p>
-                    <p><strong>Lisse Inférieure:</strong> ${parapet.lisseInferieure}</p>
-                    <p><strong>Lisse Supérieure:</strong> ${parapet.lisseSuperieure}</p>
-                    <p><strong>Entremise:</strong> ${parapet.entremise}</p>
-                    ${parapet.note ? `<p><strong>Note:</strong> ${parapet.note}</p>` : ''}
+
+                <div class="equipment-details" id="parapetDetails${parapet.id}">
+                    <div class="equipment-details-container">
+                        <div class="equipment-info-section">
+                            <p><strong>Parapet Name:</strong> ${parapet.parapetName}</p>
+                            <p><strong>Height:</strong> ${heightDisplay}</p>
+                            <p><strong>Montant Métallique:</strong> ${parapet.montantMetallique}</p>
+                            <p><strong>Espacement:</strong> ${parapet.espacement}</p>
+                            <p><strong>Lisse Inférieure:</strong> ${parapet.lisseInferieure}</p>
+                            <p><strong>Lisse Supérieure:</strong> ${parapet.lisseSuperieure}</p>
+                            <p><strong>Entremise:</strong> ${parapet.entremise}</p>
+                            ${parapet.note ? `<p><strong>Note:</strong> ${parapet.note}</p>` : ''}
+                        </div>
+                    </div>
+                    <button class="button primary" onclick="editParapet(${parapet.id})" style="margin-top: 15px;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
                 </div>
             </div>
 
             <!-- Edit Mode -->
-            <div id="parapetEdit${parapet.id}" class="parapet-edit-mode" style="display: none;">
-                <form onsubmit="saveParapetEdit(${parapet.id}, event)">
-<div class="form-group">
-    <label>Parapet Type:</label>
-    <select id="editParapetName${parapet.id}" required>
-        <option value="">Select parapet type...</option>
-        <option value="Parapet PA01" ${parapet.parapetName === 'Parapet PA01' ? 'selected' : ''}>Parapet PA01</option>
-        <option value="Parapet PA02" ${parapet.parapetName === 'Parapet PA02' ? 'selected' : ''}>Parapet PA02</option>
-        <option value="Parapet PA03" ${parapet.parapetName === 'Parapet PA03' ? 'selected' : ''}>Parapet PA03</option>
-        <option value="Parapet PA04" ${parapet.parapetName === 'Parapet PA04' ? 'selected' : ''}>Parapet PA04</option>
-        <option value="Parapet PA05" ${parapet.parapetName === 'Parapet PA05' ? 'selected' : ''}>Parapet PA05</option>
-        <option value="Parapet PA06" ${parapet.parapetName === 'Parapet PA06' ? 'selected' : ''}>Parapet PA06</option>
-        <option value="Parapet PA07" ${parapet.parapetName === 'Parapet PA07' ? 'selected' : ''}>Parapet PA07</option>
-        <option value="Parapet PA08" ${parapet.parapetName === 'Parapet PA08' ? 'selected' : ''}>Parapet PA08</option>
-        <option value="Parapet PA09" ${parapet.parapetName === 'Parapet PA09' ? 'selected' : ''}>Parapet PA09</option>
-        <option value="Parapet PA10" ${parapet.parapetName === 'Parapet PA10' ? 'selected' : ''}>Parapet PA10</option>
-    </select>
-</div>
+            <div id="parapetEdit${parapet.id}" class="equipment-edit" style="display: none;">
+                <form onsubmit="saveParapetEdit(${parapet.id}, event); return false;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Parapet Name</label>
+                            <input type="text" id="editParapetName${parapet.id}" value="${parapet.parapetName}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Height (Major) </label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0">
+                                <select id="editParapetHauteurMaxUnit${parapet.id}">
+                                    <option value="ft" ${parapet.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+                                    <option value="m" ${parapet.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-                    <div class="form-group">
-                        <label>Hauteur Max:</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0" step="1" required style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                            <select id="editParapetHauteurMaxUnit${parapet.id}" required style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                                <option value="ft" ${parapet.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-                                <option value="m" ${parapet.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
-                            </select>
-                            <input type="number" id="editParapetHauteurMaxMinor${parapet.id}" value="${parapet.hauteurMaxMinor || ''}" min="0" step="1" placeholder="Minor" style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                            <select id="editParapetHauteurMaxMinorUnit${parapet.id}" style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                                <option value="in" ${parapet.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
-                                <option value="cm" ${parapet.hauteurMaxMinorUnit === 'cm' ? 'selected' : ''}>cm</option>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Height (Minor)</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="number" id="editParapetHauteurMaxMinor${parapet.id}" value="${parapet.hauteurMaxMinor || ''}" min="0">
+                                <select id="editParapetHauteurMaxMinorUnit${parapet.id}">
+                                    <option value="">Select...</option>
+                                    <option value="in" ${parapet.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
+                                    <option value="cm" ${parapet.hauteurMaxMinorUnit === 'cm' ? 'selected' : ''}>cm</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Montant Métallique</label>
+                            <select id="editParapetMontantMetallique${parapet.id}" required>
+                                <option value="">Select...</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Montant Métallique:</label>
-                        <select id="editParapetMontantMetallique${parapet.id}" required>
-                            <option value="">Select montant métallique...</option>
-                        </select>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Espacement</label>
+                            <select id="editParapetEspacement${parapet.id}" required>
+                                <option value="">Select...</option>
+                                <option value='8"c/c' ${parapet.espacement === '8"c/c' ? 'selected' : ''}>8"c/c</option>
+                                <option value='12"c/c' ${parapet.espacement === '12"c/c' ? 'selected' : ''}>12"c/c</option>
+                                <option value='16"c/c' ${parapet.espacement === '16"c/c' ? 'selected' : ''}>16"c/c</option>
+                                <option value='24"c/c' ${parapet.espacement === '24"c/c' ? 'selected' : ''}>24"c/c</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Lisse Inférieure</label>
+                            <input type="text" id="editParapetLisseInferieure${parapet.id}" value="${parapet.lisseInferieure || ''}" required>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Espacement:</label>
-                        <select id="editParapetEspacement${parapet.id}" required>
-                            <option value="">Select espacement...</option>
-                            <option value="8&quot;c/c" ${parapet.espacement === '8"c/c' ? 'selected' : ''}>8"c/c</option>
-                            <option value="12&quot;c/c" ${parapet.espacement === '12"c/c' ? 'selected' : ''}>12"c/c</option>
-                            <option value="16&quot;c/c" ${parapet.espacement === '16"c/c' ? 'selected' : ''}>16"c/c</option>
-                            <option value="24&quot;c/c" ${parapet.espacement === '24"c/c' ? 'selected' : ''}>24"c/c</option>
-                        </select>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Lisse Supérieure</label>
+                            <input type="text" id="editParapetLisseSuperieure${parapet.id}" value="${parapet.lisseSuperieure || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Entremise</label>
+                            <select id="editParapetEntremise${parapet.id}" required>
+                                <option value="">Select...</option>
+                                <option value="150U75-43" ${parapet.entremise === '150U75-43' ? 'selected' : ''}>150U75-43</option>
+                                <option value="N/A" ${parapet.entremise === 'N/A' ? 'selected' : ''}>N/A</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Lisse Inférieure:</label>
-                        <input type="text" id="editParapetLisseInferieure${parapet.id}" value="${parapet.lisseInferieure}" placeholder="Will be auto-filled..." required>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Note</label>
+                        <textarea id="editParapetNote${parapet.id}" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-family: inherit; font-size: 13px;">${parapet.note || ''}</textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label>Lisse Supérieure:</label>
-                        <input type="text" id="editParapetLisseSuperieure${parapet.id}" value="${parapet.lisseSuperieure}" placeholder="Will match Lisse Inférieure..." required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Entremise:</label>
-                        <select id="editParapetEntremise${parapet.id}" required>
-                            <option value="">Select entremise...</option>
-                            <option value="150U75-43" ${parapet.entremise === '150U75-43' ? 'selected' : ''}>150U75-43</option>
-                            <option value="N/A" ${parapet.entremise === 'N/A' ? 'selected' : ''}>N/A</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Note:</label>
-                        <textarea id="editParapetNote${parapet.id}" rows="3">${parapet.note || ''}</textarea>
-                    </div>
-
-                    <div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button type="submit" class="save-btn">
+                    <div class="form-actions">
+                        <button type="submit" class="button primary">
                             <i class="fas fa-save"></i> Save Changes
                         </button>
                         <button type="button" class="button secondary" onclick="cancelParapetEdit(${parapet.id})">
-                            <i class="fas fa-times"></i> Cancel
+                            Cancel
                         </button>
                     </div>
                 </form>
@@ -817,15 +829,26 @@ function renderParapetList() {
         </div>
         `;
     }).join('');
-    
-    // Populate montant dropdowns and setup auto-fill for all edit forms
+
     setTimeout(() => {
-        projectParapets.forEach(parapet => {
-            populateParapetEditMontant(parapet.id, parapet.montantMetallique);
-            setupParapetEditAutoFill(parapet.id);
-            setupParapetEditUnitAutoUpdate(parapet.id);
-        });
-    }, 100);
+    projectParapets.forEach(parapet => {
+        populateParapetEditMontant(parapet.id, parapet.montantMetallique);
+        setupParapetEditAutoFill(parapet.id);
+    });
+}, 100);
+}
+
+function toggleParapetDetails(id) {
+    const detailsDiv = document.getElementById(`parapetDetails${id}`);
+    const btn = detailsDiv.closest('.equipment-card').querySelector('.details-btn');
+    
+    if (detailsDiv.classList.contains('show')) {
+        detailsDiv.classList.remove('show');
+        if (btn) btn.textContent = 'Details';
+    } else {
+        detailsDiv.classList.add('show');
+        if (btn) btn.textContent = 'Hide Details';
+    }
 }
 
 // Edit parapet - toggle to edit mode
@@ -923,7 +946,7 @@ function setupParapetEditAutoFill(parapetId) {
         
         if (selectedMontant && colombageData[selectedMontant]) {
             const data = colombageData[selectedMontant];
-            lisseSuperieureInput.value = data.lisseSuperieur;
+            lisseSuperieureInput.value = data.lisseInferieure;
             lisseInferieureInput.value = data.lisseInferieure;
         } else {
             lisseSuperieureInput.value = '';
