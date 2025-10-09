@@ -4863,7 +4863,9 @@ async function generateCFSSProjectReport() {
         const cfssProjectData = {
             ...projectData,
             walls: projectEquipment, // CFSS uses walls instead of equipment
-            cfssWindData: cfssWindData
+            cfssWindData: cfssWindData,
+            parapets: projectParapets,
+            windows: projectWindows
         };
         
         console.log('📊 CFSS Project data being sent:', {
