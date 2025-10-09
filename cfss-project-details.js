@@ -142,6 +142,68 @@ async function toggleEditProjectDetails() {
     }
 }
 
+// Function to initialize Google Places Autocomplete for edit form
+function initEditFormAutocomplete() {
+    const address1Input = document.getElementById('edit_addressLine1');
+    
+    if (!address1Input) return;
+    
+    // Check if Google Maps is available (with retry limit)
+    if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+        // Add retry counter
+        if (!window.autocompleteRetries) window.autocompleteRetries = 0;
+        if (window.autocompleteRetries < 50) { // Max 5 seconds of retrying
+            window.autocompleteRetries++;
+            setTimeout(initEditFormAutocomplete, 100);
+        } else {
+            console.error('Google Maps failed to load after multiple attempts');
+        }
+        return;
+    }
+    
+    // Reset retry counter on success
+    window.autocompleteRetries = 0;
+    
+    const options = {
+        componentRestrictions: { country: "ca" },
+        fields: ["address_components"],
+        types: ["address"]
+    };
+    
+    const autocomplete = new google.maps.places.Autocomplete(address1Input, options);
+    
+    autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        
+        // Reset fields
+        address1Input.value = '';
+        document.getElementById('edit_addressLine2').value = '';
+        document.getElementById('edit_city').value = '';
+        document.getElementById('edit_province').value = '';
+        document.getElementById('edit_country').value = 'Canada';
+        
+        // Fill in the address components
+        place.address_components.forEach(component => {
+            const types = component.types;
+            if (types.includes("street_number")) {
+                address1Input.value += component.long_name + ' ';
+            }
+            if (types.includes("route")) {
+                address1Input.value += component.short_name;
+            }
+            if (types.includes("subpremise")) {
+                document.getElementById('edit_addressLine2').value = component.long_name;
+            }
+            if (types.includes("locality")) {
+                document.getElementById('edit_city').value = component.long_name;
+            }
+            if (types.includes("administrative_area_level_1")) {
+                document.getElementById('edit_province').value = component.short_name;
+            }
+        });
+    });
+}
+
 // Function to show the edit form
 function showEditForm() {
     const basicInfo = document.querySelector('.basic-info');
@@ -253,6 +315,9 @@ const currentData = {
     // Hide the display view and show edit form
     basicInfo.style.display = 'none';
     basicInfo.insertAdjacentHTML('afterend', editFormHTML);
+
+    // Initialize Google Places Autocomplete for the edit form
+    initEditFormAutocomplete();
 }
 
 // Helper function to hide action buttons
