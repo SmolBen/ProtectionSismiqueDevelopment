@@ -5197,7 +5197,7 @@ async function generateProjectReport() {
         generateButton.disabled = true;
         generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF... (up to 30 seconds)';
         
-        // ENHANCEMENT: Calculate embedment for each equipment before sending to Lambda
+        // Calculate embedment for each equipment before sending to Lambda
         const equipmentWithEmbedment = await prepareEquipmentForReport();
         
         // Create a project object with enhanced equipment data
@@ -5211,7 +5211,7 @@ async function generateProjectReport() {
         const timeoutId = setTimeout(() => controller.abort(), 120000);
 
         const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/report`, {
-            method: 'POST', // Change to POST to send data in body
+            method: 'POST',
             headers: {
                 ...getAuthHeaders(),
                 'Content-Type': 'application/json'
@@ -5243,7 +5243,6 @@ async function generateProjectReport() {
         }
 
         console.log('✅ Opening download URL:', result.downloadUrl);
-        // window.open(result.downloadUrl, '_blank');
         window.location.href = result.downloadUrl;
         
         console.log('✅ PDF download completed successfully');
