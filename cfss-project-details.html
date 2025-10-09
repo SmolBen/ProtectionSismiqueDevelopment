@@ -58,6 +58,8 @@
                 <!-- Basic Information (Always Visible) -->
                 <div class="basic-info">
                     <p><strong>Project Name:</strong> <span id="projectName"></span></p>
+                    <p><strong>Project Number:</strong> <span id="projectNumber"></span></p>
+                    <p><strong>Client Email(s):</strong> <span id="clientEmails"></span></p>
                     <p><strong>Description:</strong> <span id="projectDescription"></span></p>
                     <p><strong>Type:</strong> <span id="projectType"></span></p>
                     <p><strong>Status:</strong> 
@@ -359,24 +361,6 @@
                         <div class="field-row">
                             <label>Ancrage des lisses à l'acier:</label>
                             <input type="text" id="steelAnchor" class="text-input" placeholder="Enter steel anchor">
-                        </div>
-                        
-                        <div class="field-row">
-                            <label>Épaisseur minimale du métal pour les éléments d'ossature:</label>
-                            <input type="text" id="minMetalThickness" class="text-input" placeholder="Enter min thickness">
-                        </div>
-                        
-
-                        <div class="field-row" style="display: flex; align-items: center; gap: 8px;">
-                            <label>Lisses inférieures: semelles de</label>
-                            <input type="text" id="cfssLisseInferieure" class="text-input" placeholder="10" style="width: 60px !important; max-width: 60px !important;">
-                            <span style="font-size: 14px;">mm de hauteur</span>
-                        </div>
-                        
-                        <div class="field-row" style="display: flex; align-items: center; gap: 8px;">
-                            <label>Lisses supérieures: de type à fentes (trous oblongs); semelles de</label>
-                            <input type="text" id="cfssLisseSuperieure" class="text-input" placeholder="20" style="width: 60px !important; max-width: 60px !important;">
-                            <span style="font-size: 14px;">mm de hauteur</span>
                         </div>
                 
                     <!-- Save Button -->
@@ -735,7 +719,7 @@
             <div class="form-fields">
                 <h2>New Parapet</h2>
                 <form id="parapetFormElement">
-                    
+
                     <!-- Parapet Name (Custom Text Input) -->
                     <div class="form-group">
                         <label for="parapetName">Parapet Name:</label>

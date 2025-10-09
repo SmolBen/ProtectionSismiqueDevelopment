@@ -51,6 +51,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 // Populate CFSS project details
                 document.getElementById("projectName").textContent = project.name;
+                document.getElementById("projectNumber").textContent = project.projectNumber || 'N/A';
+                document.getElementById("clientEmails").textContent = project.clientEmails || 'N/A';
                 document.getElementById("projectDescription").textContent = project.description;
                 document.getElementById("projectType").textContent = project.type;
                 document.getElementById("projectStatusDropdown").value = project.status;
@@ -69,6 +71,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     project.country
                 ].filter(Boolean).join(', ');
                 document.getElementById("projectAddress").textContent = projectAddress;
+
+                // Initialize edit button
+                initializeProjectDetailsEditButton();
 
                 // INITIALIZE WALL DATA - UNIFIED APPROACH
                 console.log('🔄 Initializing CFSS wall data...');

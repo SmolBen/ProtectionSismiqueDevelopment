@@ -140,6 +140,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Create CFSS project data - no seismic calculations needed
             const newCFSSProject = {
                 name: formData.get('name'),
+                projectNumber: formData.get('projectNumber'),
+                clientEmails: formData.get('clientEmails'),  
                 description: formData.get('description'),
                 type: formData.get('type'),
                 status: 'Planning',

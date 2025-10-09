@@ -20,6 +20,9 @@ let windowsSaveTimer = null;
 
 let projectParapets = []; // Store parapets
 
+// Global variable to track edit mode
+let isEditingProjectDetails = false;
+
 // Available CFSS options in logical order
 const CFSS_OPTIONS = [
     // Page S-2: Lisse trouée options
@@ -99,6 +102,302 @@ function createCompositionBuilder(containerId, hiddenInputId, existingValue = ''
   }
 }
 
+// Function to initialize the edit button
+function initializeProjectDetailsEditButton() {
+    // Add edit button after the basic-info div
+    const basicInfoDiv = document.querySelector('.basic-info');
+    if (basicInfoDiv && !document.getElementById('editProjectDetailsBtn')) {
+        const editButtonHTML = `
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button id="editProjectDetailsBtn" class="edit-project-btn" onclick="toggleEditProjectDetails()">
+                    <i class="fas fa-edit"></i> Edit Project Details
+                </button>
+            </div>
+        `;
+        basicInfoDiv.insertAdjacentHTML('afterend', editButtonHTML);
+    }
+}
+
+// Function to toggle edit mode
+async function toggleEditProjectDetails() {
+    if (!canModifyProject()) {
+        alert('You do not have permission to edit this project.');
+        return;
+    }
+
+    const editBtn = document.getElementById('editProjectDetailsBtn');
+    
+    if (!isEditingProjectDetails) {
+        // Switch to edit mode
+        showEditForm();
+        isEditingProjectDetails = true;
+        editBtn.innerHTML = '<i class="fas fa-times"></i> Cancel Edit';
+        editBtn.classList.add('cancel-mode');
+    } else {
+        // Cancel edit mode
+        hideEditForm();
+        isEditingProjectDetails = false;
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Project Details';
+        editBtn.classList.remove('cancel-mode');
+    }
+}
+
+// Function to show the edit form
+function showEditForm() {
+    const basicInfo = document.querySelector('.basic-info');
+
+    // Hide action buttons while editing
+    hideActionButtons();
+    
+    // Get current values
+const currentData = {
+        name: document.getElementById('projectName').textContent,
+        projectNumber: document.getElementById('projectNumber').textContent,
+        clientEmails: document.getElementById('clientEmails').textContent,
+        description: document.getElementById('projectDescription').textContent,
+        type: document.getElementById('projectType').textContent,
+        status: document.getElementById('projectStatusDropdown').value
+    };
+    
+    // Get address values from project data object (not from display string)
+    const addressLine1 = (window.projectData && window.projectData.addressLine1) || '';
+    const addressLine2 = (window.projectData && window.projectData.addressLine2) || '';
+    const city = (window.projectData && window.projectData.city) || '';
+    const province = (window.projectData && window.projectData.province) || '';
+    const country = (window.projectData && window.projectData.country) || 'Canada';
+    
+    // Create edit form
+    const editFormHTML = `
+        <div id="projectDetailsEditForm" class="project-edit-form">
+            <div class="form-group">
+                <label><strong>Project Name:</strong></label>
+                <input type="text" id="edit_name" value="${currentData.name}" required>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Project Number:</strong></label>
+                <input type="text" id="edit_projectNumber" value="${currentData.projectNumber}" required>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Client Email(s):</strong></label>
+                <input type="text" id="edit_clientEmails" value="${currentData.clientEmails}" required>
+                <small style="display: block; margin-top: 5px; color: #666;">Separate multiple emails with commas</small>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Description:</strong></label>
+                <textarea id="edit_description" rows="3" required>${currentData.description}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Type:</strong></label>
+                <select id="edit_type" required>
+                    <option value="condo" ${currentData.type === 'condo' ? 'selected' : ''}>Condo</option>
+                    <option value="commercial" ${currentData.type === 'commercial' ? 'selected' : ''}>Commercial</option>
+                    <option value="residential" ${currentData.type === 'residential' ? 'selected' : ''}>Residential</option>
+                    <option value="industrial" ${currentData.type === 'industrial' ? 'selected' : ''}>Industrial</option>
+                    <option value="hospital" ${currentData.type === 'hospital' ? 'selected' : ''}>Hospital</option>
+                    <option value="fire-station" ${currentData.type === 'fire-station' ? 'selected' : ''}>Fire-station</option>
+                    <option value="government" ${currentData.type === 'government' ? 'selected' : ''}>Government</option>
+                    <option value="school" ${currentData.type === 'school' ? 'selected' : ''}>School</option>
+                    <option value="other" ${currentData.type === 'other' ? 'selected' : ''}>Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Status:</strong></label>
+                <select id="edit_status" required>
+                    <option value="Planning" ${currentData.status === 'Planning' ? 'selected' : ''}>Planning</option>
+                    <option value="In Progress" ${currentData.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="Completed" ${currentData.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Address Line 1:</strong></label>
+                <input type="text" id="edit_addressLine1" value="${addressLine1}" required>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Address Line 2:</strong></label>
+                <input type="text" id="edit_addressLine2" value="${addressLine2}">
+            </div>
+            
+            <div class="form-group">
+                <label><strong>City:</strong></label>
+                <input type="text" id="edit_city" value="${city}" required>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Province:</strong></label>
+                <input type="text" id="edit_province" value="${province}" required>
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Country:</strong></label>
+                <input type="text" id="edit_country" value="${country}" required>
+            </div>
+            
+            <div class="form-actions" style="margin-top: 20px; display: flex; gap: 10px;">
+                <button onclick="saveProjectDetails()" class="save-btn">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button onclick="toggleEditProjectDetails()" class="cancel-btn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Hide the display view and show edit form
+    basicInfo.style.display = 'none';
+    basicInfo.insertAdjacentHTML('afterend', editFormHTML);
+}
+
+// Helper function to hide action buttons
+function hideActionButtons() {
+    const buttons = [
+        document.querySelector('.cfss-btn'), // Edit CFSS Data button
+        document.getElementById('newCalculationButton'), // Add Wall button
+        document.getElementById('addParapetButton'), // Add Parapet button
+        document.getElementById('addWindowButton') // Add Window button
+    ];
+    
+    buttons.forEach(btn => {
+        if (btn) {
+            btn.style.display = 'none';
+        }
+    });
+}
+
+// Helper function to show action buttons
+function showActionButtons() {
+    const buttons = [
+        document.querySelector('.cfss-btn'),
+        document.getElementById('newCalculationButton'),
+        document.getElementById('addParapetButton'),
+        document.getElementById('addWindowButton')
+    ];
+    
+    buttons.forEach(btn => {
+        if (btn) {
+            btn.style.display = '';
+        }
+    });
+}
+
+// Function to hide the edit form
+function hideEditForm() {
+    const editForm = document.getElementById('projectDetailsEditForm');
+    const basicInfo = document.querySelector('.basic-info');
+    
+    if (editForm) {
+        editForm.remove();
+    }
+    
+    if (basicInfo) {
+        basicInfo.style.display = 'block';
+    }
+
+    // Show action buttons again
+    showActionButtons();
+}
+
+// Function to save the edited project details
+async function saveProjectDetails() {
+    try {
+        // Get values from form
+        const updatedData = {
+            id: currentProjectId,
+            name: document.getElementById('edit_name').value.trim(),
+            projectNumber: document.getElementById('edit_projectNumber').value.trim(),
+            clientEmails: document.getElementById('edit_clientEmails').value.trim(),
+            description: document.getElementById('edit_description').value.trim(),
+            type: document.getElementById('edit_type').value,
+            status: document.getElementById('edit_status').value,
+            addressLine1: document.getElementById('edit_addressLine1').value.trim(),
+            addressLine2: document.getElementById('edit_addressLine2').value.trim(),
+            city: document.getElementById('edit_city').value.trim(),
+            province: document.getElementById('edit_province').value.trim(),
+            country: document.getElementById('edit_country').value.trim()
+        };
+        
+        // Validate required fields
+        if (!updatedData.name || !updatedData.projectNumber || !updatedData.clientEmails || 
+            !updatedData.description || !updatedData.addressLine1 || !updatedData.city || 
+            !updatedData.province || !updatedData.country) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        console.log('💾 Saving updated project details:', updatedData);
+        
+        // Show loading state
+        const saveBtn = document.querySelector('.save-btn');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        // Send update request
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(updatedData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Project details updated successfully:', result);
+        
+        // Update the display with new values
+        document.getElementById('projectName').textContent = updatedData.name;
+        document.getElementById('projectNumber').textContent = updatedData.projectNumber;
+        document.getElementById('clientEmails').textContent = updatedData.clientEmails;
+        document.getElementById('projectDescription').textContent = updatedData.description;
+        document.getElementById('projectType').textContent = updatedData.type;
+        document.getElementById('projectStatusDropdown').value = updatedData.status;
+        
+        // Update address display
+        const addressParts = [
+            updatedData.addressLine1,
+            updatedData.addressLine2,
+            updatedData.city,
+            updatedData.province,
+            updatedData.country
+        ].filter(Boolean);
+        document.getElementById('projectAddress').textContent = addressParts.join(', ');
+        
+        // Update global project data
+        if (window.projectData) {
+            window.projectData = { ...window.projectData, ...updatedData };
+        }
+        
+        // Exit edit mode
+        hideEditForm();
+        isEditingProjectDetails = false;
+        const editBtn = document.getElementById('editProjectDetailsBtn');
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Project Details';
+        editBtn.classList.remove('cancel-mode');
+        
+        alert('Project details updated successfully!');
+        
+    } catch (error) {
+        console.error('❌ Error saving project details:', error);
+        alert('Error saving project details: ' + error.message);
+        
+        // Reset button
+        const saveBtn = document.querySelector('.save-btn');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        }
+    }
+}
 
 function addCompositionItem(containerId, hiddenInputId, existingValue = '') {
   const MAX_COMPOSITIONS = 5;
@@ -3663,6 +3962,7 @@ function toggleCFSSForm() {
             populateCFSSForm(cfssWindData);
             btnText.textContent = 'Hide CFSS Data';
         } else {
+            setDefaultCFSSValues();
             btnText.textContent = 'Hide CFSS Data';
         }
     } else {
@@ -3672,6 +3972,27 @@ function toggleCFSSForm() {
         // Update button text based on whether data exists
         updateCFSSButtonText();
     }
+}
+
+function setDefaultCFSSValues() {
+    // Set default values
+    const defaults = {
+        maxDeflection: 'L/360',
+        maxSpacing: '48" c./c. (1200mm c./c)',
+        framingAssembly: 'Vis Auto-perçante #8-1/2"',
+        concreteAnchor: 'clous à fixation directe (fixateur pistoscellé) Hilti X-P 20 ou équivalent approuvé à 12" c./c.',
+        steelAnchor: 'clous à fixation directe (fixateur pistoscellé) Hilti X-P 14 ou équivalent approuvé à 12" c./c.'
+    };
+    
+    // Apply defaults to form fields
+    Object.keys(defaults).forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field && !field.value) {  // Only set if field is empty
+            field.value = defaults[fieldId];
+        }
+    });
+    
+    console.log('✅ Default CFSS values set');
 }
 
 function updateCFSSButtonText() {
@@ -3689,9 +4010,6 @@ function updateCFSSButtonText() {
             projectData.framingAssembly,
             projectData.concreteAnchor,
             projectData.steelAnchor,
-            projectData.minMetalThickness,
-            projectData.lisseInferieure,
-            projectData.lisseSuperieure
         ];
         const filledSpecs = specifications.filter(spec => spec && spec.trim() !== '').length;
         
@@ -3763,10 +4081,7 @@ function displayCFSSData(cfssData) {
         { label: 'Max Spacing Between Braces', value: projectData.maxSpacing },
         { label: 'Framing Assembly', value: projectData.framingAssembly },
         { label: 'Concrete Anchor', value: projectData.concreteAnchor },
-        { label: 'Steel Anchor', value: projectData.steelAnchor },
-        { label: 'Min Metal Framing Thickness', value: projectData.minMetalThickness },
-        { label: 'Lisse Inférieure', value: projectData.lisseInferieure },
-        { label: 'Lisse Supérieure', value: projectData.lisseSuperieure }
+        { label: 'Steel Anchor', value: projectData.steelAnchor }
     ];
     
     // Filter out empty project fields
@@ -3846,9 +4161,6 @@ async function saveCFSSData() {
         const framingAssembly = document.getElementById('framingAssembly')?.value.trim() || '';
         const concreteAnchor = document.getElementById('concreteAnchor')?.value.trim() || '';
         const steelAnchor = document.getElementById('steelAnchor')?.value.trim() || '';
-        const minMetalThickness = document.getElementById('minMetalThickness')?.value.trim() || '';
-        const lisseInferieure = document.getElementById('cfssLisseInferieure')?.value.trim() || '';
-        const lisseSuperieure = document.getElementById('cfssLisseSuperieure')?.value.trim() || '';
         
         sections.forEach(section => {
             const floorRange = section.querySelector('.floor-input').value.trim();
@@ -3866,9 +4178,6 @@ async function saveCFSSData() {
                     framingAssembly: framingAssembly,
                     concreteAnchor: concreteAnchor,
                     steelAnchor: steelAnchor,
-                    minMetalThickness: minMetalThickness,
-                    lisseInferieure: lisseInferieure,
-                    lisseSuperieure: lisseSuperieure,
                     dateAdded: new Date().toISOString(),
                     addedBy: currentUser.email
                 });
@@ -4000,10 +4309,7 @@ function updateCFSSDataDisplay(windData) {
         { label: 'Max Spacing Between Braces', value: projectData.maxSpacing },
         { label: 'Framing Assembly', value: projectData.framingAssembly },
         { label: 'Concrete Anchor', value: projectData.concreteAnchor },
-        { label: 'Steel Anchor', value: projectData.steelAnchor },
-        { label: 'Min Metal Framing Thickness', value: projectData.minMetalThickness },
-        { label: 'Lisse Inférieure', value: projectData.lisseInferieure },
-        { label: 'Lisse Supérieure', value: projectData.lisseSuperieure }
+        { label: 'Steel Anchor', value: projectData.steelAnchor }
     ];
     
     // Only show specifications that have values
@@ -4038,9 +4344,6 @@ function populateCFSSForm(windData) {
             { id: 'framingAssembly', value: firstEntry.framingAssembly },
             { id: 'concreteAnchor', value: firstEntry.concreteAnchor },
             { id: 'steelAnchor', value: firstEntry.steelAnchor },
-            { id: 'minMetalThickness', value: firstEntry.minMetalThickness },
-            { id: 'cfssLisseInferieure', value: firstEntry.lisseInferieure },
-            { id: 'cfssLisseSuperieure', value: firstEntry.lisseSuperieure }
         ];
         
         projectFields.forEach(field => {
@@ -6608,3 +6911,7 @@ window.setupParapetEditAutoFill = setupParapetEditAutoFill;
 
 window.setupParapetUnitAutoUpdate = setupParapetUnitAutoUpdate;
 window.setupParapetEditUnitAutoUpdate = setupParapetEditUnitAutoUpdate;
+
+window.toggleEditProjectDetails = toggleEditProjectDetails;
+window.saveProjectDetails = saveProjectDetails;
+window.initializeProjectDetailsEditButton = initializeProjectDetailsEditButton;
