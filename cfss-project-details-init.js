@@ -446,9 +446,9 @@ function getFreshProjectMeta() {
   const projectNumber = liveNumber.trim();
 
   // Normalize emails → unique, trimmed
-  const clientEmailsArray = [...new Set(
-    liveEmails.split(',').map(s => s.trim()).filter(Boolean)
-  )];
+const clientEmailsArray = [...new Set(
+  liveEmails.split(/[;,]/).map(s => s.trim()).filter(Boolean)
+)];
   const clientEmailsStr = clientEmailsArray.join(', '); // keep UI/projectData string compatible
 
   // Keep in-memory fresh for next time (string for compatibility)
@@ -497,7 +497,7 @@ const { projectName, projectNumber, clientEmailsArray } = getFreshProjectMeta();
 
 
 
-const toRecipients = clientEmailsArray.map(e => ({ email: e }));
+const toRecipients = clientEmailsArray.map(address => ({ address }));
 
         const payload = {
             projectName,
