@@ -1562,11 +1562,13 @@ button.cfss-btn {
 .bottom-half {
     position: relative;
     clear: both;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     padding: 20px;
     margin-top: 20px;
     background: transparent;
-    z-index: auto;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
 }
 
 /* Ensure CFSS button doesn't overlap */
@@ -1659,3 +1661,10 @@ button:not(.image-remove):not(.thumb-delete) {
     padding: 20px;
     overflow-y: auto;
 }
+
+.container {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+}
+
