@@ -6001,7 +6001,7 @@ function renderWindowList() {
         <select 
             id="editLargeurMaxUnit${window.id}" 
             required
-            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 70px;">
+            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
             <option value="m" ${(window.largeurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
             <option value="ft" ${window.largeurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
             <option value="in" ${window.largeurMaxUnit === 'in' ? 'selected' : ''}>in</option>
@@ -6022,7 +6022,7 @@ function renderWindowList() {
         <select 
             id="editHauteurMaxUnit${window.id}" 
             required
-            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 70px;">
+            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
             <option value="m" ${(window.hauteurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
             <option value="ft" ${window.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
             <option value="in" ${window.hauteurMaxUnit === 'in' ? 'selected' : ''}>in</option>
