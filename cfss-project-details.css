@@ -1532,3 +1532,130 @@ button.cfss-btn {
         justify-content: center;
     }
 }
+
+/* Fix button positioning and visibility issues */
+
+/* Ensure action buttons are properly positioned and visible */
+.cfss-btn,
+#newCalculationButton,
+#addWindowButton,
+#addParapetButton {
+    position: static !important;
+    display: block !important;
+    width: auto !important;
+    margin: 12px 0 !important; /* Uniform margin for all */
+    padding: 10px 20px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    clear: both !important;
+    float: none !important;
+    background-color: #17a2b8 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    transition: background-color 0.2s ease !important;
+}
+
+/* Fix the bottom half section to prevent overlap */
+.bottom-half {
+    position: relative;
+    clear: both;
+    width: 100%;
+    padding: 20px;
+    margin-top: 20px;
+    background: transparent;
+    z-index: auto;
+}
+
+/* Ensure CFSS button doesn't overlap */
+.cfss-data-section {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+    clear: both;
+}
+
+/* Fix button container */
+.cfss-btn {
+    margin-bottom: 15px !important;
+    width: fit-content !important;
+}
+
+/* Ensure all action buttons are visible on hover and always */
+#newCalculationButton,
+#addParapetButton,
+#addWindowButton {
+    margin: 20px 0 !important;
+    clear: both !important;
+    background-color: #17a2b8 !important;
+    transition: all 0.2s ease !important;
+}
+
+#newCalculationButton:hover,
+#addParapetButton:hover,
+#addWindowButton:hover,
+.cfss-btn:hover {
+    background-color: #138496 !important;
+    transform: none !important; /* Removed translateY */
+}
+
+/* Fix any transparent button issues */
+.button,
+.btn,
+button:not(.image-remove):not(.thumb-delete) {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Ensure forms don't overlap */
+#cfss-form,
+#equipmentForm,
+#windowForm,
+#parapetForm {
+    position: relative;
+    width: 100%;
+    margin-top: 15px;
+    clear: both;
+    display: none;
+}
+
+#cfss-form:not(.hidden),
+#equipmentForm.show,
+#windowForm.show,
+#parapetForm:not([style*="display: none"]) {
+    display: block;
+}
+
+/* Fix the CFSS form positioning */
+#cfss-form.hidden {
+    display: none !important;
+}
+
+#cfss-form:not(.hidden) {
+    display: block !important;
+    margin-top: 15px;
+}
+
+/* Fix container layout to prevent overlap */
+.container {
+    display: flex;
+    flex-direction: column;
+    height: auto !important; /* Changed from fixed height */
+    max-height: none !important;
+}
+
+.top-half {
+    flex: 1 1 auto;
+    min-height: 400px;
+    margin-bottom: 20px;
+}
+
+/* Ensure proper spacing between sections */
+.left-section, 
+.right-section {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
