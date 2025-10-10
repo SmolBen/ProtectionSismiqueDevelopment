@@ -417,7 +417,6 @@ async function generateSignedFlattenedLatestRevisionUrl() {
 }
 
 function getFreshProjectMeta() {
-  // Helper: prefer .value, then .textContent, then data-value, then fallback
   const readEl = (el, fb = '') => {
     if (!el) return fb;
     if (typeof el.value === 'string' && el.value.trim()) return el.value.trim();
@@ -428,7 +427,6 @@ function getFreshProjectMeta() {
     return fb;
   };
 
-  // DOM-first selectors (adjust if your edit modal uses different IDs)
   const sel = (id, name) =>
     document.querySelector(id) ||
     document.querySelector(`[name="${name}"]`) ||
@@ -440,33 +438,27 @@ function getFreshProjectMeta() {
   const numberEl = sel('#projectNumber', 'projectNumber');
   const emailsEl = sel('#clientEmails',  'clientEmails');
 
-  // Read live values (handles spans/divs or inputs)
   const liveName   = readEl(nameEl,   (projectData?.name || ''));
   const liveNumber = readEl(numberEl, (projectData?.projectNumber || ''));
   const liveEmails = readEl(emailsEl, (projectData?.clientEmails || ''));
 
-  // Normalize
   const projectName   = liveName.trim();
   const projectNumber = liveNumber.trim();
 
-  const clientEmailsArr = liveEmails
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
+  // Normalize emails → unique, trimmed
+  const clientEmailsArray = [...new Set(
+    liveEmails.split(',').map(s => s.trim()).filter(Boolean)
+  )];
+  const clientEmailsStr = clientEmailsArray.join(', '); // keep UI/projectData string compatible
 
-  const clientEmailsStr = [...new Set(clientEmailsArr)].join(', '); // dedupe + pretty
-
-  // Keep in-memory fresh for next time
+  // Keep in-memory fresh for next time (string for compatibility)
   if (projectData) {
     projectData.name = projectName;
     projectData.projectNumber = projectNumber;
     projectData.clientEmails = clientEmailsStr;
   }
 
-  // Optional: quick debug to verify what we picked up
-  console.log('🔎 Fresh meta:', { projectName, projectNumber, clientEmailsStr });
-
-  return { projectName, projectNumber, clientEmailsStr };
+  return { projectName, projectNumber, clientEmailsStr, clientEmailsArray };
 }
 
 async function onSendReportToClientsClicked() {
@@ -500,15 +492,13 @@ async function onSendReportToClientsClicked() {
         const downloadUrl = await generateSignedFlattenedLatestRevisionUrl();
 
         // Build payload for Make
-        const { projectName, projectNumber, clientEmailsStr } = getFreshProjectMeta();
+const { projectName, projectNumber, clientEmailsArray } = getFreshProjectMeta();
 
-        // Convert commas → semicolons for Make (pretty + normalized)
-        const clientEmailsSemicolon = clientEmailsStr.replace(/,\s*/g, '; ');
 
         const payload = {
             projectName,
             projectNumber,
-            clientEmails: clientEmailsSemicolon,
+            clientEmails: clientEmailsArray,
             emailContent: trimmed,
             downloadUrl
         };
