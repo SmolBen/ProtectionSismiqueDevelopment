@@ -495,6 +495,8 @@ async function onSendReportToClientsClicked() {
 const { projectName, projectNumber, clientEmailsArray } = getFreshProjectMeta();
 
 
+const toRecipients_simple = clientEmailsArray.map(address => ({ address }));
+
 const toRecipients = clientEmailsArray.map(address => ({
   emailAddress: { address }
 }));
@@ -502,7 +504,7 @@ const toRecipients = clientEmailsArray.map(address => ({
         const payload = {
             projectName,
             projectNumber,
-            clientEmails: toRecipients,
+            clientEmails: toRecipients_simple,
             emailContent: trimmed,
             downloadUrl
         };
