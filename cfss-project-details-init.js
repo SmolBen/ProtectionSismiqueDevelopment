@@ -130,6 +130,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 initializeParapetHandlers();
                 initializeCustomPages();
                 setupCFSSReportButtonWithRevisionModal();
+
+                setupSendReportToClientsButton();
                 
                 renderEquipmentList();
                 initializeImageUpload();
@@ -343,6 +345,158 @@ function setupCFSSReportButtonWithRevisionModal() {
     } else {
         console.warn('⚠️ CFSS Report button not found');
     }
+}
+
+// ===============================
+// Send Report to Client(s) flow
+// ===============================
+function getLatestRevision() {
+    if (Array.isArray(projectRevisions) && projectRevisions.length > 0) {
+        // pick the highest-numbered revision
+        return [...projectRevisions].sort((a, b) => b.number - a.number)[0];
+    }
+    return null;
+}
+
+async function generateSignedFlattenedLatestRevisionUrl() {
+    // Build a projectData payload similar to your revision-based generation
+    const latest = getLatestRevision();
+
+    // If there are revisions, use the latest; otherwise fall back to current UI walls if present
+    const wallsFromLatest = latest?.walls || [];
+    const revisionsUpToLatest = latest
+        ? projectRevisions.filter(r => r.number <= latest.number).sort((a, b) => a.number - b.number)
+        : (projectRevisions || []);
+
+    const cfssProjectData = {
+        ...projectData,
+        walls: wallsFromLatest.length > 0 ? wallsFromLatest : (projectData?.walls || projectData?.equipment || []),
+        wallRevisions: revisionsUpToLatest,
+        currentWallRevisionId: latest?.id || null,
+        selectedRevisionNumber: latest?.number || null,
+        cfssWindData: cfssWindData || [],
+        customPages: (typeof projectCustomPages !== 'undefined' && Array.isArray(projectCustomPages))
+            ? projectCustomPages
+            : (projectData.customPages || []),
+
+        // CRITICAL: force signature + flatten on Lambda side
+        signDocument: true
+    };
+
+    // Basic guard: need some walls
+    if (!cfssProjectData.walls || cfssProjectData.walls.length === 0) {
+        throw new Error('No walls found to include in the report. Please add walls or create a revision first.');
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+    const resp = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-report`, {
+        method: 'POST',
+        headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ projectData: cfssProjectData }),
+        signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`Report generation failed: HTTP ${resp.status}: ${text}`);
+    }
+
+    const json = await resp.json();
+    if (!json?.success || !json?.downloadUrl) {
+        throw new Error(json?.error || 'No download URL returned.');
+    }
+
+    return json.downloadUrl;
+}
+
+async function onSendReportToClientsClicked() {
+    try {
+        // AuthZ check (front-end)
+        const email = (currentUser?.email || '').toLowerCase();
+        if (!Array.isArray(AUTHORIZED_SENDER_EMAILS) || !AUTHORIZED_SENDER_EMAILS.includes(email)) {
+            alert('You are not authorized');
+            return;
+        }
+
+        // Prompt for email content
+        const emailContent = prompt('Email Content');
+        if (emailContent === null) {
+            // user canceled
+            return;
+        }
+        const trimmed = (emailContent || '').trim();
+        if (!trimmed) {
+            alert('Please enter some email content.');
+            return;
+        }
+
+        // UI busy state
+        const btn = document.getElementById('sendReportToClientsButton');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing report...';
+
+        // 1) Get signed & flattened latest-revision URL
+        const downloadUrl = await generateSignedFlattenedLatestRevisionUrl();
+
+        // 2) Build payload for Make
+        const clientEmailsStr = (projectData?.clientEmails || '').trim();
+
+        const payload = {
+            projectName: projectData?.name || '',
+            projectNumber: projectData?.projectNumber || '',
+            clientEmails: clientEmailsStr,
+            emailContent: trimmed,
+            downloadUrl
+        };
+
+        // 3) POST to Make webhook (no auth headers needed)
+        const hookResp = await fetch('https://hook.us1.make.com/liloapbxczwmdobkvsvs7ldfjebgy9fk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!hookResp.ok) {
+            const t = await hookResp.text();
+            throw new Error(`Make webhook error: HTTP ${hookResp.status}: ${t}`);
+        }
+        
+        // ✅ success-only logging
+        console.log('📤 Make.com webhook payload (success):', payload);
+        try {
+        const respText = await hookResp.text();
+        console.log('📥 Make.com response body:', respText);
+        } catch (e) {
+        console.debug('ℹ️ Make.com response body not available (already consumed or empty).');
+        }
+
+        alert('Report sent to Make successfully!');
+    } catch (err) {
+        console.error('❌ Send Report flow error:', err);
+        alert('Error: ' + err.message);
+    } finally {
+        const btn = document.getElementById('sendReportToClientsButton');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Report to Client(s)';
+        }
+    }
+}
+
+function setupSendReportToClientsButton() {
+    const btn = document.getElementById('sendReportToClientsButton');
+    if (!btn) return;
+    btn.removeEventListener('click', onSendReportToClientsClicked);
+    btn.addEventListener('click', onSendReportToClientsClicked);
+    console.log('✅ Send Report to Client(s) button wired up');
 }
 
 // Make functions globally available

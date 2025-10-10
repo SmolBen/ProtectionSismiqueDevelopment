@@ -64,6 +64,11 @@ const CFSS_OPTIONS = [
     'detail-structure'
 ];
 
+const AUTHORIZED_SENDER_EMAILS = [
+    'anhquan1212004@gmail.com',
+    'hoangminhduc.ite@gmail.com'
+];
+
 const compositionBuilderCounts = {};
 
 function createCompositionBuilder(containerId, hiddenInputId, existingValue = '') {
@@ -6883,6 +6888,7 @@ function setupParapetEditUnitAutoUpdate(parapetId) {
         });
     }
 }
+
 
 // Make functions globally available
 window.logout = logout;

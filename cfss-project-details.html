@@ -114,9 +114,14 @@
                     <div id="wall-list-content" class="tab-content-section active">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h1 style="margin: 0;">Wall List</h1>
-                            <button id="generateCFSSReportButton" class="button primary" style="background: #28a745;">
-                                <i class="fas fa-file-pdf"></i> Generate CFSS Report
-                            </button>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button id="generateCFSSReportButton" class="button primary" style="background: #28a745;">
+                                    <i class="fas fa-file-pdf"></i> Generate CFSS Report
+                                </button>
+                                <button id="sendReportToClientsButton" class="button primary" style="background:#0069d9;">
+                                    <i class="fas fa-paper-plane"></i> Send Report to Client(s)
+                                </button>
+                            </div>
                         </div>
                         <div id="equipmentList"></div>
                     </div>
