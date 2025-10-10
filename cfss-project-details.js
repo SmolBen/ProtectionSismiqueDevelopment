@@ -5316,11 +5316,22 @@ async function sendReportToMakeWebhook(downloadUrl) {
     
     try {
         console.log('📤 Sending report URL to Make.com webhook...');
+
+            // Get projectNumber safely from the UI or in-memory projectData
+    let projectNumber = '';
+    try {
+      projectNumber = (typeof getFreshProjectMeta === 'function'
+        ? getFreshProjectMeta().projectNumber
+        : '') || (window.projectData?.projectNumber || '');
+    } catch {
+      projectNumber = window.projectData?.projectNumber || '';
+    }
         
         await fetch(webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
-            body: downloadUrl
+            body: downloadUrl,
+                projectNumber
         });
 
         console.log('✅ Report URL sent to Google Drive successfully');
