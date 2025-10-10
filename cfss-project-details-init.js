@@ -416,6 +416,59 @@ async function generateSignedFlattenedLatestRevisionUrl() {
     return json.downloadUrl;
 }
 
+function getFreshProjectMeta() {
+  // Helper: prefer .value, then .textContent, then data-value, then fallback
+  const readEl = (el, fb = '') => {
+    if (!el) return fb;
+    if (typeof el.value === 'string' && el.value.trim()) return el.value.trim();
+    const t = (el.textContent || '').trim();
+    if (t) return t;
+    const dv = el.getAttribute ? (el.getAttribute('data-value') || '').trim() : '';
+    if (dv) return dv;
+    return fb;
+  };
+
+  // DOM-first selectors (adjust if your edit modal uses different IDs)
+  const sel = (id, name) =>
+    document.querySelector(id) ||
+    document.querySelector(`[name="${name}"]`) ||
+    document.querySelector(`[data-field="${name}"]`) ||
+    document.querySelector(`[data-key="${name}"]`) ||
+    document.querySelector(`[data-testid="${name}"]`);
+
+  const nameEl   = sel('#projectName',   'projectName');
+  const numberEl = sel('#projectNumber', 'projectNumber');
+  const emailsEl = sel('#clientEmails',  'clientEmails');
+
+  // Read live values (handles spans/divs or inputs)
+  const liveName   = readEl(nameEl,   (projectData?.name || ''));
+  const liveNumber = readEl(numberEl, (projectData?.projectNumber || ''));
+  const liveEmails = readEl(emailsEl, (projectData?.clientEmails || ''));
+
+  // Normalize
+  const projectName   = liveName.trim();
+  const projectNumber = liveNumber.trim();
+
+  const clientEmailsArr = liveEmails
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const clientEmailsStr = [...new Set(clientEmailsArr)].join(', '); // dedupe + pretty
+
+  // Keep in-memory fresh for next time
+  if (projectData) {
+    projectData.name = projectName;
+    projectData.projectNumber = projectNumber;
+    projectData.clientEmails = clientEmailsStr;
+  }
+
+  // Optional: quick debug to verify what we picked up
+  console.log('🔎 Fresh meta:', { projectName, projectNumber, clientEmailsStr });
+
+  return { projectName, projectNumber, clientEmailsStr };
+}
+
 async function onSendReportToClientsClicked() {
     try {
         // AuthZ check (front-end)
@@ -446,12 +499,12 @@ async function onSendReportToClientsClicked() {
         // 1) Get signed & flattened latest-revision URL
         const downloadUrl = await generateSignedFlattenedLatestRevisionUrl();
 
-        // 2) Build payload for Make
-        const clientEmailsStr = (projectData?.clientEmails || '').trim();
+        // Build payload for Make
+        const { projectName, projectNumber, clientEmailsStr } = getFreshProjectMeta();
 
         const payload = {
-            projectName: projectData?.name || '',
-            projectNumber: projectData?.projectNumber || '',
+            projectName,
+            projectNumber,
             clientEmails: clientEmailsStr,
             emailContent: trimmed,
             downloadUrl
