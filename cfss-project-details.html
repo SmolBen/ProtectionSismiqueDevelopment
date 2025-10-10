@@ -628,14 +628,47 @@
             <input type="text" id="windowType" name="windowType" required>
         </div>
         
-        <div class="row-compact">
-            <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                <label for="windowLargeurMax">Largeur Max (m)</label>
-                <input type="number" id="windowLargeurMax" name="windowLargeurMax" step="0.1" required>
+        <!-- Largeur Max with Unit Selection -->
+        <div class="form-group">
+            <label for="windowLargeurMax">Largeur Max</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" 
+                    id="windowLargeurMax" 
+                    name="windowLargeurMax" 
+                    step="0.01" 
+                    required
+                    style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                <select 
+                    id="windowLargeurMaxUnit" 
+                    name="windowLargeurMaxUnit" 
+                    required
+                    style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 70px;">
+                    <option value="m">m</option>
+                    <option value="ft">ft</option>
+                    <option value="in">in</option>
+                </select>
             </div>
-            <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                <label for="windowHauteurMax">Hauteur Max (m)</label>
-                <input type="number" id="windowHauteurMax" name="windowHauteurMax" step="0.1" required>
+        </div>
+
+        <!-- Hauteur Max with Unit Selection -->
+        <div class="form-group">
+            <label for="windowHauteurMax">Hauteur Max</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" 
+                    id="windowHauteurMax" 
+                    name="windowHauteurMax" 
+                    step="0.01" 
+                    required
+                    style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                <select 
+                    id="windowHauteurMaxUnit" 
+                    name="windowHauteurMaxUnit" 
+                    required
+                    style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 70px;">
+                    <option value="m">m</option>
+                    <option value="ft">ft</option>
+                    <option value="in">in</option>
+                </select>
             </div>
         </div>
         

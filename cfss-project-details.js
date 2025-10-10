@@ -5890,6 +5890,8 @@ function handleWindowSubmit(e) {
         type: formData.get('windowType'),
         largeurMax: parseFloat(formData.get('windowLargeurMax')),
         hauteurMax: parseFloat(formData.get('windowHauteurMax')),
+        largeurMaxUnit: formData.get('windowLargeurMaxUnit'),
+        hauteurMaxUnit: formData.get('windowHauteurMaxUnit'),
         jambage: {
             type: formData.get('jambageType'),
             compositions: parseComposition(formData.get('jambageComposition'))
@@ -5942,7 +5944,7 @@ function renderWindowList() {
                     <div>
                         <div class="equipment-title">${window.type || 'Unknown Type'}</div>
                         <div class="equipment-meta">
-                            ${window.largeurMax || 0}m × ${window.hauteurMax || 0}m
+                            ${window.largeurMax || 0}${window.largeurMaxUnit || 'm'} × ${window.hauteurMax || 0}${window.hauteurMaxUnit || 'm'}
                         </div>
                     </div>
                     <div class="equipment-actions">
@@ -5986,24 +5988,47 @@ function renderWindowList() {
                             required>
                     </div>
                     
-                    <div class="row-compact">
-                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                            <label for="editLargeurMax${window.id}">Largeur Max (m)</label>
-                            <input type="number" 
-                                id="editLargeurMax${window.id}" 
-                                value="${window.largeurMax || ''}" 
-                                step="0.1" 
-                                required>
-                        </div>
-                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                            <label for="editHauteurMax${window.id}">Hauteur Max (m)</label>
-                            <input type="number" 
-                                id="editHauteurMax${window.id}" 
-                                value="${window.hauteurMax || ''}" 
-                                step="0.1" 
-                                required>
-                        </div>
-                    </div>
+<!-- Largeur Max with Unit Selection -->
+<div class="form-group">
+    <label for="editLargeurMax${window.id}">Largeur Max</label>
+    <div style="display: flex; gap: 8px;">
+        <input type="number" 
+            id="editLargeurMax${window.id}" 
+            value="${window.largeurMax || ''}" 
+            step="0.01" 
+            required
+            style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+        <select 
+            id="editLargeurMaxUnit${window.id}" 
+            required
+            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 70px;">
+            <option value="m" ${(window.largeurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
+            <option value="ft" ${window.largeurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+            <option value="in" ${window.largeurMaxUnit === 'in' ? 'selected' : ''}>in</option>
+        </select>
+    </div>
+</div>
+
+<!-- Hauteur Max with Unit Selection -->
+<div class="form-group">
+    <label for="editHauteurMax${window.id}">Hauteur Max</label>
+    <div style="display: flex; gap: 8px;">
+        <input type="number" 
+            id="editHauteurMax${window.id}" 
+            value="${window.hauteurMax || ''}" 
+            step="0.01" 
+            required
+            style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+        <select 
+            id="editHauteurMaxUnit${window.id}" 
+            required
+            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 70px;">
+            <option value="m" ${(window.hauteurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
+            <option value="ft" ${window.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+            <option value="in" ${window.hauteurMaxUnit === 'in' ? 'selected' : ''}>in</option>
+        </select>
+    </div>
+</div>
                     
                     <!-- Jambage Section -->
                     <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
@@ -6154,7 +6179,9 @@ async function saveWindowEdit(windowId, event) {
             ...projectWindows[windowIndex],
             type: document.getElementById(`editWindowType${windowId}`).value,
             largeurMax: parseFloat(document.getElementById(`editLargeurMax${windowId}`).value),
+            largeurMaxUnit: document.getElementById(`editLargeurMaxUnit${windowId}`).value,
             hauteurMax: parseFloat(document.getElementById(`editHauteurMax${windowId}`).value),
+            hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${windowId}`).value,
             jambage: {
                 type: document.getElementById(`editJambageType${windowId}`).value,
                 compositions: parseComposition(document.getElementById(`editJambageComposition${windowId}`).value)
@@ -6262,7 +6289,9 @@ function duplicateWindow(id) {
     // Populate basic window information
     document.getElementById('windowType').value = windowToDuplicate.type || '';
     document.getElementById('windowLargeurMax').value = windowToDuplicate.largeurMax || '';
+    document.getElementById('windowLargeurMaxUnit').value = windowToDuplicate.largeurMaxUnit || 'm';
     document.getElementById('windowHauteurMax').value = windowToDuplicate.hauteurMax || '';
+    document.getElementById('windowHauteurMaxUnit').value = windowToDuplicate.hauteurMaxUnit || 'm';
     
     // Populate Jambage data
     if (windowToDuplicate.jambage) {
