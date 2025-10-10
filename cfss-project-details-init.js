@@ -502,10 +502,13 @@ async function onSendReportToClientsClicked() {
         // Build payload for Make
         const { projectName, projectNumber, clientEmailsStr } = getFreshProjectMeta();
 
+        // Convert commas → semicolons for Make (pretty + normalized)
+        const clientEmailsSemicolon = clientEmailsStr.replace(/,\s*/g, '; ');
+
         const payload = {
             projectName,
             projectNumber,
-            clientEmails: clientEmailsStr,
+            clientEmails: clientEmailsSemicolon,
             emailContent: trimmed,
             downloadUrl
         };
