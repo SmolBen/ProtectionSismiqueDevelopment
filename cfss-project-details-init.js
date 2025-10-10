@@ -498,7 +498,7 @@ const { projectName, projectNumber, clientEmailsArray } = getFreshProjectMeta();
 const toRecipients_simple = clientEmailsArray.map(address => ({ address }));
 
 const toRecipients = clientEmailsArray.map(address => ({
-  emailAddress: { address }
+  emailAddress: { email }
 }));
 
         const payload = {
