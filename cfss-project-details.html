@@ -130,8 +130,13 @@
                     <div id="parapet-list-content" class="tab-content-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h1 style="margin: 0;">Parapet List</h1>
-                            <div class="selection-summary" id="parapetSelectionSummary">
-                                <i class="fas fa-building"></i> 0 parapets added
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button id="generateCFSSReportButton" class="button primary" style="background: #28a745;">
+                                    <i class="fas fa-file-pdf"></i> Generate CFSS Report
+                                </button>
+                                <button id="sendReportToClientsButton" class="button primary" style="background:#0069d9;">
+                                    <i class="fas fa-paper-plane"></i> Send Report to Client(s)
+                                </button>
                             </div>
                         </div>
                         <div id="parapetList" class="equipment-list">
@@ -141,6 +146,18 @@
 
                     <!-- Options List Tab Content -->
                     <div id="option-list-content" class="tab-content-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h1 style="margin: 0;">Option List</h1>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button id="generateCFSSReportButton" class="button primary" style="background: #28a745;">
+                                    <i class="fas fa-file-pdf"></i> Generate CFSS Report
+                                </button>
+                                <button id="sendReportToClientsButton" class="button primary" style="background:#0069d9;">
+                                    <i class="fas fa-paper-plane"></i> Send Report to Client(s)
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="selection-summary" id="selectionSummary">
                             <i class="fas fa-check-circle"></i> 0 options selected
                         </div>
@@ -211,9 +228,17 @@
                     <div id="window-list-content" class="tab-content-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h1 style="margin: 0;">Window List</h1>
-                        <div class="selection-summary" id="windowSelectionSummary">
-                            <i class="fas fa-window-maximize"></i> 0 windows added
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button id="generateCFSSReportButton" class="button primary" style="background: #28a745;">
+                                <i class="fas fa-file-pdf"></i> Generate CFSS Report
+                            </button>
+                            <button id="sendReportToClientsButton" class="button primary" style="background:#0069d9;">
+                                <i class="fas fa-paper-plane"></i> Send Report to Client(s)
+                            </button>
                         </div>
+                    </div>
+                    <div class="selection-summary" id="windowSelectionSummary" style="margin-bottom: 20px;">
+                        <i class="fas fa-window-maximize"></i> 0 windows added
                     </div>
                     <div id="windowList" class="equipment-list">
                         <!-- Windows will be displayed here -->
