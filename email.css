@@ -197,3 +197,81 @@
 .footer-btn.secondary:hover {
     background: #f0f0f0;
 }
+
+.template-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #fafafa;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 12px;
+}
+
+.template-row label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: auto;
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+.template-row label i {
+    color: #0078d4;
+}
+
+.template-select {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid #d4d4d4;
+    border-radius: 3px;
+    font-size: 13px;
+    background: white;
+    cursor: pointer;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.template-select:focus {
+    outline: none;
+    border-color: #0078d4;
+}
+
+.template-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.template-btn {
+    padding: 6px 12px;
+    border: 1px solid #d4d4d4;
+    border-radius: 3px;
+    font-size: 12px;
+    background: white;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+}
+
+.template-btn:hover {
+    background: #f0f0f0;
+    border-color: #0078d4;
+}
+
+.template-btn.save {
+    background: #107c10;
+    color: white;
+    border-color: #107c10;
+}
+
+.template-btn.save:hover {
+    background: #0c5c0c;
+    border-color: #0c5c0c;
+}

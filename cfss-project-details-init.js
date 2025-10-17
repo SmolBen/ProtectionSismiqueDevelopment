@@ -533,12 +533,274 @@ async function onSendReportToClientsClicked() {
     }
 }
 
-function showEmailModal(projectName, projectNumber, clientEmailsArray) {
+// Load templates from database
+async function loadEmailTemplates() {
+    try {
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/email-templates', {
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to load templates:', response.status);
+            return [];
+        }
+        
+        const data = await response.json();
+        console.log('📧 Templates response:', data); // Debug log
+        
+        // Handle both possible response structures
+        if (Array.isArray(data)) {
+            return data; // Direct array
+        } else if (data.templates && Array.isArray(data.templates)) {
+            return data.templates; // Nested in templates property
+        } else if (data.body) {
+            // Lambda might wrap response in body
+            const bodyData = typeof data.body === 'string' ? JSON.parse(data.body) : data.body;
+            return bodyData.templates || [];
+        }
+        
+        return [];
+    } catch (error) {
+        console.error('Error loading email templates:', error);
+        return [];
+    }
+}
+
+// Save template to database
+async function saveEmailTemplate(templateData) {
+    try {
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/email-templates', {
+            method: 'POST',
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(templateData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save template');
+        }
+        
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error saving email template:', error);
+        throw error;
+    }
+}
+
+// Delete template from database
+async function deleteEmailTemplate(templateId) {
+    try {
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/email-templates/${templateId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete template');
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error deleting email template:', error);
+        throw error;
+    }
+}
+
+// Show template management modal
+function showTemplateManagementModal() {
+    return new Promise(async (resolve, reject) => {
+        const modal = document.createElement('div');
+        modal.className = 'email-modal-overlay';
+        modal.style.zIndex = '10001';
+        
+        modal.innerHTML = `
+            <div class="email-modal" style="width: 600px; max-height: 70vh;">
+                <div class="email-titlebar">
+                    <h2><i class="fas fa-cog"></i> Manage Email Templates</h2>
+                </div>
+                <div style="flex: 1; overflow-y: auto; padding: 16px;">
+                    <div id="loadingIndicator" style="text-align: center; padding: 40px 0;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #0078d4;"></i>
+                        <p style="color: #666; margin-top: 10px;">Loading templates...</p>
+                    </div>
+                    <div id="templatesList"></div>
+                </div>
+                <div class="email-footer">
+                    <button class="footer-btn secondary" id="closeManageModal">Close</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const templatesList = modal.querySelector('#templatesList');
+        const loadingIndicator = modal.querySelector('#loadingIndicator');
+        
+        async function renderTemplates() {
+            try {
+                // Show loading
+                loadingIndicator.style.display = 'block';
+                templatesList.innerHTML = '';
+                
+                const currentTemplates = await loadEmailTemplates();
+                
+                // CRITICAL: Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                
+                if (currentTemplates.length === 0) {
+                    templatesList.innerHTML = '<p style="color: #666; text-align: center; padding: 40px 0;">No templates saved yet.</p>';
+                    return;
+                }
+                
+                templatesList.innerHTML = currentTemplates.map((template) => `
+                    <div style="border: 1px solid #e0e0e0; border-radius: 3px; padding: 8px; margin-bottom: 6px; background: #fafafa;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0 px;">
+                            <div style="flex: 1;">
+                                <strong style="font-size: 12px;">${template.name}</strong>
+                            </div>
+                            <button class="template-delete-btn" data-id="${template.id}" style="background: #e81123; color: white; border: none; padding: 4px 8px; border-radius: 2px; cursor: pointer; font-size: 10px; margin-left: 8px;">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                        <div style="font-size: 11px; color: #555; max-height: 80px; overflow-y: auto; white-space: pre-wrap; line-height: 1.2; padding: 6px; background: white; border: 1px solid #ddd; border-radius: 2px;">
+                            ${template.content}
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Add delete handlers
+                templatesList.querySelectorAll('.template-delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const templateId = btn.getAttribute('data-id');
+                        if (confirm('Delete this template?')) {
+                            try {
+                                await deleteEmailTemplate(templateId);
+                                await renderTemplates();
+                            } catch (error) {
+                                alert('Error deleting template: ' + error.message);
+                            }
+                        }
+                    });
+                });
+            } catch (error) {
+                // Hide loading on error too
+                loadingIndicator.style.display = 'none';
+                console.error('Error rendering templates:', error);
+                templatesList.innerHTML = '<p style="color: #d32f2f; text-align: center; padding: 40px 0;">Error loading templates. Please try again.</p>';
+            }
+        }
+        
+        await renderTemplates();
+        
+        modal.querySelector('#closeManageModal').addEventListener('click', (e) => {
+            e.stopPropagation();
+            modal.remove();
+            resolve();
+        });
+    });
+}
+
+// Show save template modal
+function showSaveTemplateModal(currentMessage) {
     return new Promise((resolve, reject) => {
         const modal = document.createElement('div');
         modal.className = 'email-modal-overlay';
+        modal.style.zIndex = '10001';
         
-        // Store emails in an array that we can modify
+        modal.innerHTML = `
+            <div class="email-modal" style="width: 500px;">
+                <div class="email-titlebar">
+                    <h2><i class="fas fa-save"></i> Save as Template</h2>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px;">Template Name:</label>
+                        <input type="text" id="templateNameInput" placeholder="e.g., Standard Report" style="width: 100%; padding: 8px; border: 1px solid #d4d4d4; border-radius: 3px; font-size: 13px;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px;">Message Preview:</label>
+                        <textarea readonly style="width: 100%; height: 120px; padding: 8px; border: 1px solid #d4d4d4; border-radius: 3px; font-size: 12px; resize: none; background: #fafafa;">${currentMessage}</textarea>
+                    </div>
+                </div>
+                <div class="email-footer">
+                    <button class="footer-btn secondary" id="cancelSaveTemplate">Cancel</button>
+                    <button class="footer-btn" id="confirmSaveTemplate">
+                        <i class="fas fa-save"></i> Save Template
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const nameInput = modal.querySelector('#templateNameInput');
+        const cancelBtn = modal.querySelector('#cancelSaveTemplate');
+        const confirmBtn = modal.querySelector('#confirmSaveTemplate');
+        
+        nameInput.focus();
+        
+        const closeModal = () => {
+            modal.remove();
+            reject(new Error('Cancelled'));
+        };
+        
+        cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal();
+        });
+        
+        confirmBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert('Please enter a template name.');
+                return;
+            }
+            
+            // Disable button while saving
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            try {
+                const templateData = {
+                    name,
+                    content: currentMessage,
+                    createdAt: new Date().toISOString(),
+                    userId: currentUser.email
+                };
+                
+                await saveEmailTemplate(templateData);
+                
+                modal.remove();
+                resolve(name);
+            } catch (error) {
+                alert('Error saving template: ' + error.message);
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-save"></i> Save Template';
+            }
+        });
+        
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirmBtn.click();
+            }
+        });
+    });
+}
+
+function showEmailModal(projectName, projectNumber, clientEmailsArray) {
+    return new Promise(async (resolve, reject) => {
+        const modal = document.createElement('div');
+        modal.className = 'email-modal-overlay';
+        
         let currentEmails = [...clientEmailsArray];
         
         const renderEmailChips = () => {
@@ -552,10 +814,8 @@ function showEmailModal(projectName, projectNumber, clientEmailsArray) {
                 </span>
             `).join('');
             
-            // Re-append input after chips
             container.appendChild(input);
             
-            // Add click handlers to remove buttons
             container.querySelectorAll('.email-chip-remove').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const index = parseInt(e.target.getAttribute('data-index'));
@@ -564,6 +824,12 @@ function showEmailModal(projectName, projectNumber, clientEmailsArray) {
                 });
             });
         };
+        
+        // Load templates from database
+        const templates = await loadEmailTemplates();
+        const templateOptions = templates.map((t) => 
+            `<option value="${t.id}">${t.name}</option>`
+        ).join('');
         
         modal.innerHTML = `
             <div class="email-modal">
@@ -584,14 +850,30 @@ function showEmailModal(projectName, projectNumber, clientEmailsArray) {
                     <div class="email-row">
                         <label>Subject:</label>
                         <div class="email-row-content">
-                            <input type="text" id="emailSubject" placeholder="Add a subject..." />
+                            <input type="text" id="emailSubject" value="${projectNumber} - ${projectName}" />
+                        </div>
+                    </div>
+
+                    <div class="template-row">
+                        <label><i class="fas fa-file-alt"></i> Template:</label>
+                        <select class="template-select" id="templateSelect">
+                            <option value="">No template</option>
+                            ${templateOptions}
+                        </select>
+                        <div class="template-actions">
+                            <button type="button" class="template-btn save" id="saveTemplateBtn">
+                                <i class="fas fa-save"></i> Save Current
+                            </button>
+                            <button type="button" class="template-btn" id="manageTemplatesBtn">
+                                <i class="fas fa-cog"></i> Manage
+                            </button>
                         </div>
                     </div>
 
                     <div class="email-row message-area">
                         <label>Message:</label>
                         <div class="message-content">
-                            <textarea id="emailMessage"></textarea>
+                            <textarea id="emailMessage" placeholder="Type your message here..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -599,8 +881,7 @@ function showEmailModal(projectName, projectNumber, clientEmailsArray) {
                 <div class="email-footer">
                     <button class="footer-btn secondary" id="cancelEmail">Cancel</button>
                     <button class="footer-btn" id="sendEmail">
-                        <i class="fas fa-paper-plane"></i>
-                        Send
+                        <i class="fas fa-paper-plane"></i> Send
                     </button>
                 </div>
             </div>
@@ -608,17 +889,73 @@ function showEmailModal(projectName, projectNumber, clientEmailsArray) {
 
         document.body.appendChild(modal);
         
-        // Render initial email chips
         renderEmailChips();
 
-        // Event handlers
         const emailInput = modal.querySelector('#emailInput');
         const cancelBtn = modal.querySelector('#cancelEmail');
         const sendBtn = modal.querySelector('#sendEmail');
         const subjectInput = modal.querySelector('#emailSubject');
         const messageInput = modal.querySelector('#emailMessage');
+        const templateSelect = modal.querySelector('#templateSelect');
+        const saveTemplateBtn = modal.querySelector('#saveTemplateBtn');
+        const manageTemplatesBtn = modal.querySelector('#manageTemplatesBtn');
 
-        // Handle email input - create chip on space
+        // Template selection
+templateSelect.addEventListener('change', (e) => {
+    const selectedId = e.target.value;
+    if (selectedId !== '' && selectedId !== 'No template') {
+        const template = templates.find(t => t.id === selectedId);
+        if (template) {
+            messageInput.value = template.content;
+        }
+    } else {
+        // Clear message when "No template" is selected
+        messageInput.value = '';
+    }
+});
+
+        // Save template
+        saveTemplateBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const currentMessage = messageInput.value.trim();
+            if (!currentMessage) {
+                alert('Please write a message first.');
+                return;
+            }
+            
+            try {
+                const templateName = await showSaveTemplateModal(currentMessage);
+                alert(`Template "${templateName}" saved successfully!`);
+                
+                // Refresh the dropdown
+                const updatedTemplates = await loadEmailTemplates();
+                const templateOptions = updatedTemplates.map((t) => 
+                    `<option value="${t.id}">${t.name}</option>`
+                ).join('');
+                templateSelect.innerHTML = `<option value="">No template</option>${templateOptions}`;
+            } catch (err) {
+                // User cancelled
+            }
+        });
+
+        // Manage templates
+        manageTemplatesBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            await showTemplateManagementModal();
+            
+            // Refresh dropdown
+            const updatedTemplates = await loadEmailTemplates();
+            const templateOptions = updatedTemplates.map((t) => 
+                `<option value="${t.id}">${t.name}</option>`
+            ).join('');
+            templateSelect.innerHTML = `<option value="">No template</option>${templateOptions}`;
+        });
+
+        // Email input handlers
         emailInput.addEventListener('keydown', (e) => {
             if (e.key === ' ' || e.key === 'Enter') {
                 e.preventDefault();
@@ -629,7 +966,6 @@ function showEmailModal(projectName, projectNumber, clientEmailsArray) {
                     renderEmailChips();
                 }
             } else if (e.key === 'Backspace' && emailInput.value === '' && currentEmails.length > 0) {
-                // Remove last email chip when backspace is pressed on empty input
                 currentEmails.pop();
                 renderEmailChips();
             }
@@ -643,7 +979,6 @@ function showEmailModal(projectName, projectNumber, clientEmailsArray) {
         cancelBtn.addEventListener('click', closeModal);
         
         sendBtn.addEventListener('click', () => {
-            // Check if there's text in input that wasn't converted to chip
             const pendingEmail = emailInput.value.trim();
             if (pendingEmail) {
                 currentEmails.push(pendingEmail);
@@ -669,13 +1004,6 @@ function showEmailModal(projectName, projectNumber, clientEmailsArray) {
 
             modal.remove();
             resolve({ subject, message, emails: currentEmails });
-        });
-
-        // Close on outside click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
         });
     });
 }
