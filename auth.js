@@ -573,77 +573,115 @@ function setupLoginHandler() {
             const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
 
             cognitoUser.authenticateUser(authDetails, {
-                onSuccess: function(session) {
-                    console.log('Login successful');
-                    updateDebugInfo('Login successful - checking approval status...');
-                    
-                    // Use the SAME authenticated cognitoUser object
-                    cognitoUser.getUserAttributes((err, attributes) => {
-                        if (err) {
-                            console.error('Error getting user attributes:', err);
-                            showMessage('Login error: Could not verify account status', 'error');
-                            showLoading(false);
-                            return;
-                        }
-                        
-                        // Check approval status
-                        const approvalStatusAttr = attributes.find(attr => attr.getName() === 'custom:approval_status');
-                        const approvalStatus = approvalStatusAttr ? approvalStatusAttr.getValue() : null;
-                        
-                        console.log('User approval status:', approvalStatus);
-                        updateDebugInfo('Approval status: ' + (approvalStatus || 'not set'));
-                        
-                        // Handle existing users with null approval status
-                        if (approvalStatus === null) {
-                            // Send admin notification for existing user
-                            fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/users/notify-admins', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ email: email, isExistingUser: true })
-                            }).then(response => {
-                                if (response.ok) {
-                                    console.log('Admin notified about existing user login attempt');
-                                } else {
-                                    console.error('Failed to notify admin about existing user');
-                                }
-                            }).catch(error => {
-                                console.error('Error notifying admin:', error);
-                            });
-                            
-                            cognitoUser.signOut();
-                            showMessage('Your account needs admin approval. Admins have been notified and will review your account.', 'error');
-                            updateDebugInfo('Login blocked - existing user needs approval');
-                            showLoading(false);
-                            return;
-                        }
-                        
-                        // Block login if status is pending
-                        if (approvalStatus === 'pending') {
-                            cognitoUser.signOut();
-                            showMessage('Your account is pending admin approval. Please wait for confirmation email.', 'error');
-                            updateDebugInfo('Login blocked - pending approval');
-                            showLoading(false);
-                            return;
-                        }
-                        
-                        // Only allow login if explicitly approved
-                        if (approvalStatus !== 'approved') {
-                            cognitoUser.signOut();
-                            showMessage('Your account is not approved. Please contact admin.', 'error');
-                            updateDebugInfo('Login blocked - not approved');
-                            showLoading(false);
-                            return;
-                        }
-                        
-                        // Proceed with login
-                        showMessage('Login successful! Redirecting...', 'success');
-                        updateDebugInfo('Login approved - redirecting');
-                        setTimeout(() => {
-                            window.location.href = 'dashboard.html';
-                        }, 1000);
-                        showLoading(false);
-                    });
-                },
+onSuccess: function(session) {
+    console.log('Login successful');
+    updateDebugInfo('Login successful - checking approval status...');
+    
+    // Use the SAME authenticated cognitoUser object
+    cognitoUser.getUserAttributes((err, attributes) => {
+        if (err) {
+            console.error('Error getting user attributes:', err);
+            showMessage('Login error: Could not verify account status', 'error');
+            showLoading(false);
+            return;
+        }
+        
+        // Check approval status
+        const approvalStatusAttr = attributes.find(attr => attr.getName() === 'custom:approval_status');
+        const approvalStatus = approvalStatusAttr ? approvalStatusAttr.getValue() : null;
+        
+        console.log('User approval status:', approvalStatus);
+        updateDebugInfo('Approval status: ' + (approvalStatus || 'not set'));
+        
+        // Handle existing users with null approval status
+        if (approvalStatus === null) {
+            // Send admin notification for existing user
+            fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/users/notify-admins', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, isExistingUser: true })
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Admin notified about existing user login attempt');
+                } else {
+                    console.error('Failed to notify admin about existing user');
+                }
+            }).catch(error => {
+                console.error('Error notifying admin:', error);
+            });
+            
+            cognitoUser.signOut();
+            showMessage('Your account needs admin approval. Admins have been notified and will review your account.', 'error');
+            updateDebugInfo('Login blocked - existing user needs approval');
+            showLoading(false);
+            return;
+        }
+        
+        // Block login if status is pending
+        if (approvalStatus === 'pending') {
+            cognitoUser.signOut();
+            showMessage('Your account is pending admin approval. Please wait for confirmation email.', 'error');
+            updateDebugInfo('Login blocked - pending approval');
+            showLoading(false);
+            return;
+        }
+        
+        // Only allow login if explicitly approved
+        if (approvalStatus !== 'approved') {
+            cognitoUser.signOut();
+            showMessage('Your account is not approved. Please contact admin.', 'error');
+            updateDebugInfo('Login blocked - not approved');
+            showLoading(false);
+            return;
+        }
+        
+        // ============ NEW: Handle Wix Redirect ============
+        // Check if redirected from Wix
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnUrl = urlParams.get('returnUrl');
+        
+        if (returnUrl) {
+            // User came from Wix - prepare session data to pass back
+            const userData = {};
+            attributes.forEach(attr => {
+                userData[attr.getName()] = attr.getValue();
+            });
+            
+            const sessionData = {
+                email: userData.email,
+                firstName: userData.given_name || '',
+                lastName: userData.family_name || '',
+                companyName: userData['custom:company_name'] || '',
+                domain: userData['custom:domain'] || '',
+                isAdmin: userData['custom:is_admin'] === 'true',
+                timestamp: Date.now()
+            };
+            
+            // Encode session data as base64
+            const sessionToken = btoa(JSON.stringify(sessionData));
+            
+            showMessage('Login successful! Redirecting back...', 'success');
+            updateDebugInfo('Redirecting back to Wix with session');
+            
+            setTimeout(() => {
+                // Decode the returnUrl and append session token
+                const decodedReturnUrl = decodeURIComponent(returnUrl);
+                const separator = decodedReturnUrl.includes('?') ? '&' : '?';
+                window.location.href = `${decodedReturnUrl}${separator}session=${sessionToken}`;
+            }, 1000);
+        } else {
+            // Normal flow - go to dashboard
+            showMessage('Login successful! Redirecting...', 'success');
+            updateDebugInfo('Login approved - redirecting to dashboard');
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        }
+        
+        showLoading(false);
+    });
+},
                 onFailure: function(err) {
                     console.error('❌ Login failed:', err);
                     updateDebugInfo('❌ Login failed: ' + err.code);
