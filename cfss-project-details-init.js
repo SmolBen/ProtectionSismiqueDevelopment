@@ -473,15 +473,15 @@ async function onSendReportToClientsClicked() {
             return;
         }
 
-        // Prompt for email content
-        const emailContent = prompt('Email Content');
-        if (emailContent === null) {
-            // user canceled
-            return;
-        }
-        const trimmed = (emailContent || '').trim();
-        if (!trimmed) {
-            alert('Please enter some email content.');
+        // Get project metadata
+        const { projectName, projectNumber, clientEmailsArray } = getFreshProjectMeta();
+
+        // Show custom email modal (can start with empty array if no emails)
+        let emailData;
+        try {
+            emailData = await showEmailModal(projectName, projectNumber, clientEmailsArray || []);
+        } catch (err) {
+            // User cancelled
             return;
         }
 
@@ -491,26 +491,22 @@ async function onSendReportToClientsClicked() {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing report...';
 
-        // 1) Get signed & flattened latest-revision URL
+        // Get signed & flattened latest-revision URL
         const downloadUrl = await generateSignedFlattenedLatestRevisionUrl();
 
-        // Build payload for Make
-const { projectName, projectNumber, clientEmailsArray } = getFreshProjectMeta();
-
-
-
-
-const toRecipients = clientEmailsArray.map(address => ({ address }));
+        // Build payload for Make using the emails from modal (could be modified by user)
+        const toRecipients = emailData.emails.map(address => ({ address }));
 
         const payload = {
             projectName,
             projectNumber,
             clientEmails: toRecipients,
-            emailContent: trimmed,
+            emailContent: emailData.message,
+            emailSubject: emailData.subject,
             downloadUrl
         };
 
-        // 3) POST to Make webhook (no auth headers needed)
+        // POST to Make webhook
         const hookResp = await fetch('https://hook.us1.make.com/liloapbxczwmdobkvsvs7ldfjebgy9fk', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -522,16 +518,9 @@ const toRecipients = clientEmailsArray.map(address => ({ address }));
             throw new Error(`Make webhook error: HTTP ${hookResp.status}: ${t}`);
         }
         
-        // ✅ success-only logging
         console.log('📤 Make.com webhook payload (success):', payload);
-        try {
-        const respText = await hookResp.text();
-        console.log('📥 Make.com response body:', respText);
-        } catch (e) {
-        console.debug('ℹ️ Make.com response body not available (already consumed or empty).');
-        }
-
-        alert('Report sent to Make successfully!');
+        
+        alert('Report sent successfully!');
     } catch (err) {
         console.error('❌ Send Report flow error:', err);
         alert('Error: ' + err.message);
@@ -542,6 +531,153 @@ const toRecipients = clientEmailsArray.map(address => ({ address }));
             btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Report to Client(s)';
         }
     }
+}
+
+function showEmailModal(projectName, projectNumber, clientEmailsArray) {
+    return new Promise((resolve, reject) => {
+        const modal = document.createElement('div');
+        modal.className = 'email-modal-overlay';
+        
+        // Store emails in an array that we can modify
+        let currentEmails = [...clientEmailsArray];
+        
+        const renderEmailChips = () => {
+            const container = modal.querySelector('.email-chips-container');
+            const input = modal.querySelector('#emailInput');
+            
+            container.innerHTML = currentEmails.map((email, index) => `
+                <span class="email-chip">
+                    ${email}
+                    <i class="fas fa-times email-chip-remove" data-index="${index}"></i>
+                </span>
+            `).join('');
+            
+            // Re-append input after chips
+            container.appendChild(input);
+            
+            // Add click handlers to remove buttons
+            container.querySelectorAll('.email-chip-remove').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    currentEmails.splice(index, 1);
+                    renderEmailChips();
+                });
+            });
+        };
+        
+        modal.innerHTML = `
+            <div class="email-modal">
+                <div class="email-titlebar">
+                    <h2>New Message - CFSS Report</h2>
+                </div>
+
+                <div class="email-body">
+                    <div class="email-row">
+                        <label>To:</label>
+                        <div class="email-row-content">
+                            <div class="email-chips-container">
+                                <input type="text" id="emailInput" placeholder="Add email..." style="border: none; outline: none; font-size: 13px; padding: 4px; min-width: 150px;" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="email-row">
+                        <label>Subject:</label>
+                        <div class="email-row-content">
+                            <input type="text" id="emailSubject" placeholder="Add a subject..." />
+                        </div>
+                    </div>
+
+                    <div class="email-row message-area">
+                        <label>Message:</label>
+                        <div class="message-content">
+                            <textarea id="emailMessage"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="email-footer">
+                    <button class="footer-btn secondary" id="cancelEmail">Cancel</button>
+                    <button class="footer-btn" id="sendEmail">
+                        <i class="fas fa-paper-plane"></i>
+                        Send
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        
+        // Render initial email chips
+        renderEmailChips();
+
+        // Event handlers
+        const emailInput = modal.querySelector('#emailInput');
+        const cancelBtn = modal.querySelector('#cancelEmail');
+        const sendBtn = modal.querySelector('#sendEmail');
+        const subjectInput = modal.querySelector('#emailSubject');
+        const messageInput = modal.querySelector('#emailMessage');
+
+        // Handle email input - create chip on space
+        emailInput.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                const email = emailInput.value.trim();
+                if (email) {
+                    currentEmails.push(email);
+                    emailInput.value = '';
+                    renderEmailChips();
+                }
+            } else if (e.key === 'Backspace' && emailInput.value === '' && currentEmails.length > 0) {
+                // Remove last email chip when backspace is pressed on empty input
+                currentEmails.pop();
+                renderEmailChips();
+            }
+        });
+
+        const closeModal = () => {
+            modal.remove();
+            reject(new Error('User cancelled'));
+        };
+
+        cancelBtn.addEventListener('click', closeModal);
+        
+        sendBtn.addEventListener('click', () => {
+            // Check if there's text in input that wasn't converted to chip
+            const pendingEmail = emailInput.value.trim();
+            if (pendingEmail) {
+                currentEmails.push(pendingEmail);
+            }
+            
+            if (currentEmails.length === 0) {
+                alert('Please enter at least one recipient email.');
+                return;
+            }
+            
+            const subject = subjectInput.value.trim();
+            const message = messageInput.value.trim();
+            
+            if (!subject) {
+                alert('Please enter a subject.');
+                return;
+            }
+            
+            if (!message) {
+                alert('Please enter a message.');
+                return;
+            }
+
+            modal.remove();
+            resolve({ subject, message, emails: currentEmails });
+        });
+
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    });
 }
 
 function setupSendReportToClientsButton() {
