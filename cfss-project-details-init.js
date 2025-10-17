@@ -327,23 +327,26 @@ async function generateCFSSProjectReportWithRevisions() {
     }
 }
 
-// Setup function for CFSS Report button
 function setupCFSSReportButtonWithRevisionModal() {
-    const generateButton = document.getElementById('generateCFSSReportButton');
-    if (generateButton) {
-        // Remove any existing listeners
-        generateButton.removeEventListener('click', generateCFSSProjectReportWithRevisions);
-        generateButton.removeEventListener('click', generateCFSSProjectReport);
-        
-        // Add modal-based listener
-        generateButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            showRevisionSelectionModal();
+    // Use querySelectorAll to get ALL buttons with this ID across all tabs
+    const generateButtons = document.querySelectorAll('#generateCFSSReportButton');
+    
+    if (generateButtons.length > 0) {
+        generateButtons.forEach(button => {
+            // Remove any existing listeners
+            button.removeEventListener('click', generateCFSSProjectReportWithRevisions);
+            button.removeEventListener('click', generateCFSSProjectReport);
+            
+            // Add modal-based listener
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                showRevisionSelectionModal();
+            });
         });
         
-        console.log('✅ CFSS Report button setup completed with revision selection modal');
+        console.log(`✅ CFSS Report buttons setup completed (${generateButtons.length} buttons)`);
     } else {
-        console.warn('⚠️ CFSS Report button not found');
+        console.warn('⚠️ CFSS Report buttons not found');
     }
 }
 
@@ -542,11 +545,16 @@ const toRecipients = clientEmailsArray.map(address => ({ address }));
 }
 
 function setupSendReportToClientsButton() {
-    const btn = document.getElementById('sendReportToClientsButton');
-    if (!btn) return;
-    btn.removeEventListener('click', onSendReportToClientsClicked);
-    btn.addEventListener('click', onSendReportToClientsClicked);
-    console.log('✅ Send Report to Client(s) button wired up');
+    // Use querySelectorAll to get ALL buttons with this ID across all tabs
+    const buttons = document.querySelectorAll('#sendReportToClientsButton');
+    
+    if (buttons.length > 0) {
+        buttons.forEach(btn => {
+            btn.removeEventListener('click', onSendReportToClientsClicked);
+            btn.addEventListener('click', onSendReportToClientsClicked);
+        });
+        console.log(`✅ Send Report to Client(s) buttons wired up (${buttons.length} buttons)`);
+    }
 }
 
 // Make functions globally available
