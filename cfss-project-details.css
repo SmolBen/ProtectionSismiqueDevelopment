@@ -1683,3 +1683,82 @@ button:not(.image-remove):not(.thumb-delete) {
 #custom-pages-content h1 {
     font-size: 24px !important;
 }
+
+.tab-button {
+    font-size: 14px !important;
+    padding: 15px 5px !important;
+}
+
+/* Review Tab Styles */
+.summary-header {
+    background: #e8f5e8;
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    font-size: 13px;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-header i {
+    color: #28a745;
+}
+
+.review-category-section {
+    margin-bottom: 30px;
+}
+
+.review-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.review-table thead {
+    background: #f8f9fa;
+}
+
+.review-table th {
+    text-align: left;
+    padding: 10px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.review-table td {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecef;
+    color: #6c757d;
+}
+
+.review-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.review-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.review-item-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.review-empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.review-empty-state i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    opacity: 0.3;
+    display: block;
+}

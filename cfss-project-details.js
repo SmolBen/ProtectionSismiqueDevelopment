@@ -1051,24 +1051,6 @@ function renderParapetList() {
         return;
     }
     
-    // Format height display helper
-    function formatHeight(parapet) {
-        const major = parapet.hauteurMax;
-        const majorUnit = parapet.hauteurMaxUnit;
-        const minor = parapet.hauteurMaxMinor;
-        const minorUnit = parapet.hauteurMaxMinorUnit;
-        
-        if ((major === '0' || !major) && (minor === '0' || !minor)) {
-            return 'N/A';
-        } else if (major === '0' || !major) {
-            return `${minor} ${minorUnit}`;
-        } else if (minor === '0' || !minor) {
-            return `${major} ${majorUnit}`;
-        } else {
-            return `${major} ${majorUnit} - ${minor} ${minorUnit}`;
-        }
-    }
-    
     container.innerHTML = projectParapets.map((parapet, index) => {
         const heightDisplay = formatHeight(parapet);
         
@@ -5947,17 +5929,17 @@ function renderWindowList() {
                             ${window.largeurMax || 0}${window.largeurMaxUnit || 'm'} × ${window.hauteurMax || 0}${window.hauteurMaxUnit || 'm'}
                         </div>
                     </div>
-                    <div class="equipment-actions">
-                        <button class="button primary" onclick="editWindow(${window.id})">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="duplicate-btn" onclick="duplicateWindow(${window.id})" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                            <i class="fas fa-copy"></i> Duplicate
-                        </button>
-                        <button class="button secondary" onclick="deleteWindow(${window.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+<div class="equipment-actions" style="display: flex; gap: 8px; align-items: center;">
+    <button class="button primary" onclick="editWindow(${window.id})" style="padding: 8px 16px; font-size: 14px;">
+        <i class="fas fa-edit"></i> Edit
+    </button>
+    <button class="button secondary" onclick="duplicateWindow(${window.id})" style="background: #17a2b8; color: white; padding: 8px 16px; font-size: 14px;">
+        <i class="fas fa-copy"></i> Duplicate
+    </button>
+    <button class="button secondary" onclick="deleteWindow(${window.id})" style="padding: 8px 16px; font-size: 14px;">
+        <i class="fas fa-trash"></i>
+    </button>
+</div>
                 </div>
                 <div style="margin-top: 10px; font-size: 13px; color: #6c757d;">
                     <div><strong>Jambage:</strong> ${window.jambage?.type || 'N/A'}
@@ -6402,6 +6384,9 @@ function switchTab(tabId) {
         setTimeout(() => {
             preloadOptionImages();
         }, 200);
+    } else if (tabId === 'review') {
+        // NEW: Render review tab when switched to
+        renderReviewTab();
     }
 }
 
@@ -6929,6 +6914,271 @@ function setupParapetEditUnitAutoUpdate(parapetId) {
     }
 }
 
+// Render Review Tab
+function renderReviewTab() {
+    console.log('📋 Rendering Review tab...');
+    
+    // Update summary
+    const wallCount = projectEquipment?.length || 0;
+    const parapetCount = projectParapets?.length || 0;
+    const optionCount = selectedCFSSOptions?.length || 0;
+    const windowCount = projectWindows?.length || 0;
+    const customPageCount = projectCustomPages?.length || 0;
+    
+    const summaryEl = document.getElementById('reviewSummary');
+    if (summaryEl) {
+        summaryEl.innerHTML = `
+            <i class="fas fa-clipboard-check"></i>
+            <span>Total: ${wallCount} walls • ${parapetCount} parapets • ${optionCount} options • ${windowCount} windows • ${customPageCount} custom pages</span>
+        `;
+    }
+    
+    // Render each section
+    renderReviewWalls();
+    renderReviewParapets();
+    renderReviewOptions();
+    renderReviewWindows();
+    renderReviewCustomPages();
+}
+
+function renderReviewWalls() {
+    const container = document.getElementById('reviewWallsTable');
+    const header = document.getElementById('reviewWallsHeader');
+    
+    if (!container) return;
+    
+    const walls = projectEquipment || [];
+    header.textContent = `Walls (${walls.length})`;
+    
+    if (walls.length === 0) {
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-wall-brick"></i><p>No walls added yet.</p></div>';
+        return;
+    }
+    
+    const rows = walls.map(wall => {
+        const floor = wall.floor || 'N/A';
+        const montant = wall.montantMetallique || 'N/A';
+        const name = wall.equipment || 'Unnamed Wall';
+        
+        return `
+            <tr>
+                <td class="review-item-name">${name}</td>
+                <td>${floor}</td>
+                <td>${montant}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <table class="review-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Floor</th>
+                    <th>Montant Métallique</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `;
+}
+
+    // Format height display helper
+    function formatHeight(parapet) {
+        const major = parapet.hauteurMax;
+        const majorUnit = parapet.hauteurMaxUnit;
+        const minor = parapet.hauteurMaxMinor;
+        const minorUnit = parapet.hauteurMaxMinorUnit;
+        
+        if ((major === '0' || !major) && (minor === '0' || !minor)) {
+            return 'N/A';
+        } else if (major === '0' || !major) {
+            return `${minor} ${minorUnit}`;
+        } else if (minor === '0' || !minor) {
+            return `${major} ${majorUnit}`;
+        } else {
+            return `${major} ${majorUnit} - ${minor} ${minorUnit}`;
+        }
+    }
+
+function renderReviewParapets() {
+    const container = document.getElementById('reviewParapetsTable');
+    const header = document.getElementById('reviewParapetsHeader');
+    
+    if (!container) return;
+    
+    const parapets = projectParapets || [];
+    header.textContent = `Parapets (${parapets.length})`;
+    
+    if (parapets.length === 0) {
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-building"></i><p>No parapets added yet.</p></div>';
+        return;
+    }
+    
+    const rows = parapets.map(parapet => {
+        const name = parapet.parapetName || 'Unnamed Parapet';
+        const height = formatHeight(parapet); // Use existing formatHeight function
+        const montant = parapet.montantMetallique || 'N/A';
+        
+        return `
+            <tr>
+                <td class="review-item-name">${name}</td>
+                <td>${height}</td>
+                <td>${montant}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <table class="review-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Height</th>
+                    <th>Montant Métallique</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderReviewOptions() {
+    const container = document.getElementById('reviewOptionsTable');
+    const header = document.getElementById('reviewOptionsHeader');
+    
+    if (!container) return;
+    
+    const options = selectedCFSSOptions || [];
+    header.textContent = `Selected Options (${options.length})`;
+    
+    if (options.length === 0) {
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-cogs"></i><p>No options selected yet.</p></div>';
+        return;
+    }
+    
+    const rows = options.map(option => {
+        const displayName = option.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        
+        return `
+            <tr>
+                <td class="review-item-name">${displayName}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <table class="review-table">
+            <thead>
+                <tr>
+                    <th>Option Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderReviewWindows() {
+    const container = document.getElementById('reviewWindowsTable');
+    const header = document.getElementById('reviewWindowsHeader');
+    
+    if (!container) return;
+    
+    const windows = projectWindows || [];
+    header.textContent = `Windows (${windows.length})`;
+    
+    if (windows.length === 0) {
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-window-maximize"></i><p>No windows added yet.</p></div>';
+        return;
+    }
+    
+    const rows = windows.map(window => {
+        const type = window.type || 'N/A';
+        const size = `${window.largeurMax || 0}${window.largeurMaxUnit || 'mm'} × ${window.hauteurMax || 0}${window.hauteurMaxUnit || 'mm'}`;
+        
+        return `
+            <tr>
+                <td class="review-item-name">${type}</td>
+                <td>${size}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <table class="review-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderReviewCustomPages() {
+    const container = document.getElementById('reviewCustomPagesTable');
+    const header = document.getElementById('reviewCustomPagesHeader');
+    
+    if (!container) return;
+    
+    const pages = projectCustomPages || [];
+    header.textContent = `Custom Pages (${pages.length})`;
+    
+    if (pages.length === 0) {
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-file-alt"></i><p>No custom pages added yet.</p></div>';
+        return;
+    }
+    
+    const rows = pages.map(page => {
+        const title = page.title || 'Untitled Page';
+        const elements = page.elements || [];
+        
+        // Count element types
+        const headings = elements.filter(e => e.type === 'heading').length;
+        const texts = elements.filter(e => e.type === 'text').length;
+        const images = elements.filter(e => e.type === 'image').length;
+        
+        const elementParts = [];
+        if (headings > 0) elementParts.push(`${headings} heading${headings !== 1 ? 's' : ''}`);
+        if (texts > 0) elementParts.push(`${texts} text block${texts !== 1 ? 's' : ''}`);
+        if (images > 0) elementParts.push(`${images} image${images !== 1 ? 's' : ''}`);
+        
+        const elementSummary = elementParts.length > 0 ? elementParts.join(', ') : 'No elements';
+        
+        return `
+            <tr>
+                <td class="review-item-name">${title}</td>
+                <td>${elementSummary}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <table class="review-table">
+            <thead>
+                <tr>
+                    <th>Page Title</th>
+                    <th>Elements</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `;
+}
+
 
 // Make functions globally available
 window.logout = logout;
@@ -7026,3 +7276,10 @@ window.setupParapetEditUnitAutoUpdate = setupParapetEditUnitAutoUpdate;
 window.toggleEditProjectDetails = toggleEditProjectDetails;
 window.saveProjectDetails = saveProjectDetails;
 window.initializeProjectDetailsEditButton = initializeProjectDetailsEditButton;
+
+window.renderReviewTab = renderReviewTab;
+window.renderReviewWalls = renderReviewWalls;
+window.renderReviewParapets = renderReviewParapets;
+window.renderReviewOptions = renderReviewOptions;
+window.renderReviewWindows = renderReviewWindows;
+window.renderReviewCustomPages = renderReviewCustomPages;
