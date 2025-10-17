@@ -1655,11 +1655,20 @@ button:not(.image-remove):not(.thumb-delete) {
 }
 
 /* Ensure proper spacing between sections */
-.left-section, 
-.right-section {
-    flex: 1;
+.left-section {
+    flex: 0 0 40%;
     padding: 20px;
     overflow-y: auto;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.right-section {
+    flex: 1 1 auto; /* Takes remaining space */
+    padding: 20px;
+    overflow-y: auto;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .container {
@@ -1668,24 +1677,8 @@ button:not(.image-remove):not(.thumb-delete) {
     box-sizing: border-box;
 }
 
-/* Make CFSS Report buttons smaller in all tabs */
-#generateCFSSReportButton,
-#sendReportToClientsButton {
-    padding: 10px 15px !important;
-    font-size: 13px !important;
-}
-
-/* Make tab headers smaller */
-#wall-list-content h1,
-#parapet-list-content h1,
-#option-list-content h1,
-#window-list-content h1,
-#custom-pages-content h1 {
-    font-size: 24px !important;
-}
-
 .tab-button {
-    font-size: 14px !important;
+    font-size: 15px !important;
     padding: 15px 5px !important;
 }
 
@@ -1761,4 +1754,8 @@ button:not(.image-remove):not(.thumb-delete) {
     margin-bottom: 10px;
     opacity: 0.3;
     display: block;
+}
+
+#parapetList .equipment-actions-compact {
+    margin-right: 0px;
 }
