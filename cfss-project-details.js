@@ -6892,37 +6892,225 @@ function renderReviewWalls() {
     header.textContent = `Walls (${walls.length})`;
     
     if (walls.length === 0) {
-        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-wall-brick"></i><p>No walls added yet.</p></div>';
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-th-large"></i><p>No walls added yet.</p></div>';
         return;
     }
     
-    const rows = walls.map(wall => {
-        const floor = wall.floor || 'N/A';
-        const montant = wall.montantMetallique || 'N/A';
+    const rows = walls.map((wall, index) => {
         const name = wall.equipment || 'Unnamed Wall';
+        const floor = wall.floor || 'N/A';
+        const deflexion = wall.deflexionMax || 'N/A';
+        
+        // Format height using existing helper
+        const hauteur = formatHeight(wall);
+        
+        // Check if wall has Set 2
+        const hasSet2 = wall.montantMetallique2 && wall.montantMetallique2.trim() !== '';
         
         return `
-            <tr>
-                <td class="review-item-name">${name}</td>
-                <td>${floor}</td>
-                <td>${montant}</td>
-            </tr>
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleReviewAccordion(this)">
+                    <div class="main-info">
+                        <span class="item-name">${name}</span>
+                        <div class="item-meta">
+                            <span>Floor: ${floor}</span>
+                            <span>Hauteur: ${hauteur}</span>
+                            <span>Déflexion: ${deflexion}</span>
+                        </div>
+                    </div>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="accordion-details">
+                    ${hasSet2 ? `
+                        <!-- Set 1 -->
+                        <div class="set-container">
+                            <div class="set-header">Set 1</div>
+                            <div class="detail-grid">
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-columns"></i>
+                                        Montant Métallique
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.montantMetallique || 'N/A'}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-ruler-horizontal"></i>
+                                        Espacement
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.espacement || 'N/A'}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-grip-lines"></i>
+                                        Lisse Supérieure
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.lisseSuperieure || 'N/A'}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-grip-lines"></i>
+                                        Lisse Inférieure
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.lisseInferieure || 'N/A'}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-equals"></i>
+                                        Entremise
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.entremise || 'N/A'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Set 2 -->
+                        <div class="set-container">
+                            <div class="set-header">Set 2</div>
+                            <div class="detail-grid">
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-columns"></i>
+                                        Montant Métallique
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.montantMetallique2 || 'N/A'}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-ruler-horizontal"></i>
+                                        Espacement
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.espacement2 || 'N/A'}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-grip-lines"></i>
+                                        Lisse Supérieure
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.lisseSuperieure2 || 'N/A'}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-grip-lines"></i>
+                                        Lisse Inférieure
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.lisseInferieure2 || 'N/A'}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-section">
+                                    <div class="section-title">
+                                        <i class="fas fa-equals"></i>
+                                        Entremise
+                                    </div>
+                                    <div class="section-content">
+                                        ${wall.entremise2 || 'N/A'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : `
+                        <!-- Single Set -->
+                        <div class="detail-grid">
+                            <div class="detail-section">
+                                <div class="section-title">
+                                    <i class="fas fa-columns"></i>
+                                    Montant Métallique
+                                </div>
+                                <div class="section-content">
+                                    ${wall.montantMetallique || 'N/A'}
+                                </div>
+                            </div>
+                            
+                            <div class="detail-section">
+                                <div class="section-title">
+                                    <i class="fas fa-ruler-horizontal"></i>
+                                    Espacement
+                                </div>
+                                <div class="section-content">
+                                    ${wall.espacement || 'N/A'}
+                                </div>
+                            </div>
+                            
+                            <div class="detail-section">
+                                <div class="section-title">
+                                    <i class="fas fa-grip-lines"></i>
+                                    Lisse Supérieure
+                                </div>
+                                <div class="section-content">
+                                    ${wall.lisseSuperieure || 'N/A'}
+                                </div>
+                            </div>
+                            
+                            <div class="detail-section">
+                                <div class="section-title">
+                                    <i class="fas fa-grip-lines"></i>
+                                    Lisse Inférieure
+                                </div>
+                                <div class="section-content">
+                                    ${wall.lisseInferieure || 'N/A'}
+                                </div>
+                            </div>
+                            
+                            <div class="detail-section">
+                                <div class="section-title">
+                                    <i class="fas fa-equals"></i>
+                                    Entremise
+                                </div>
+                                <div class="section-content">
+                                    ${wall.entremise || 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+                    `}
+                    
+                    ${wall.note ? `
+                    <!-- Note -->
+                    <div class="detail-grid" style="margin-top: 10px;">
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-sticky-note"></i>
+                                Note
+                            </div>
+                            <div class="section-content">
+                                ${wall.note}
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
         `;
     }).join('');
     
     container.innerHTML = `
-        <table class="review-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Floor</th>
-                    <th>Montant Métallique</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rows}
-            </tbody>
-        </table>
+        <div class="accordion-container">
+            ${rows}
+        </div>
     `;
 }
 
@@ -6958,33 +7146,98 @@ function renderReviewParapets() {
         return;
     }
     
-    const rows = parapets.map(parapet => {
+    const rows = parapets.map((parapet, index) => {
         const name = parapet.parapetName || 'Unnamed Parapet';
-        const height = formatHeight(parapet); // Use existing formatHeight function
-        const montant = parapet.montantMetallique || 'N/A';
+        const type = parapet.parapetType || 'N/A';
+        
+        // Format height display - show both metric and imperial
+        const heightDisplay = formatHeight(parapet);
         
         return `
-            <tr>
-                <td class="review-item-name">${name}</td>
-                <td>${height}</td>
-                <td>${montant}</td>
-            </tr>
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleReviewAccordion(this)">
+                    <div class="main-info">
+                        <span class="item-name">${name}</span>
+                        <div class="item-meta">
+                            <span><span class="badge">${type}</span></span>
+                            <span><i class="fas fa-arrows-alt-v"></i> ${heightDisplay}</span>
+                        </div>
+                    </div>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="accordion-details">
+                    <div class="detail-grid">
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-columns"></i>
+                                Montant Métallique
+                            </div>
+                            <div class="section-content">
+                                ${parapet.montantMetallique || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-ruler-horizontal"></i>
+                                Espacement
+                            </div>
+                            <div class="section-content">
+                                ${parapet.espacement || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-grip-lines"></i>
+                                Lisse Supérieure
+                            </div>
+                            <div class="section-content">
+                                ${parapet.lisseSuperieure || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-grip-lines"></i>
+                                Lisse Inférieure
+                            </div>
+                            <div class="section-content">
+                                ${parapet.lisseInferieure || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-equals"></i>
+                                Entremise
+                            </div>
+                            <div class="section-content">
+                                ${parapet.entremise || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        ${parapet.note ? `
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-sticky-note"></i>
+                                Note
+                            </div>
+                            <div class="section-content">
+                                ${parapet.note}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
         `;
     }).join('');
     
     container.innerHTML = `
-        <table class="review-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Height</th>
-                    <th>Montant Métallique</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rows}
-            </tbody>
-        </table>
+        <div class="accordion-container">
+            ${rows}
+        </div>
     `;
 }
 
@@ -7006,23 +7259,18 @@ function renderReviewOptions() {
         const displayName = option.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         
         return `
-            <tr>
-                <td class="review-item-name">${displayName}</td>
-            </tr>
+            <div class="simple-review-item">
+                <div class="simple-item-content">
+                    <span>${displayName}</span>
+                </div>
+            </div>
         `;
     }).join('');
     
     container.innerHTML = `
-        <table class="review-table">
-            <thead>
-                <tr>
-                    <th>Option Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rows}
-            </tbody>
-        </table>
+        <div class="simple-review-container">
+            ${rows}
+        </div>
     `;
 }
 
@@ -7040,31 +7288,87 @@ function renderReviewWindows() {
         return;
     }
     
-    const rows = windows.map(window => {
-        const type = window.type || 'N/A';
-        const size = `${window.largeurMax || 0}${window.largeurMaxUnit || 'mm'} × ${window.hauteurMax || 0}${window.hauteurMaxUnit || 'mm'}`;
+    const rows = windows.map((window, index) => {
+        const type = window.type || 'Unknown Type';
+        const size = `${window.largeurMax || 0}${window.largeurMaxUnit || 'm'} × ${window.hauteurMax || 0}${window.hauteurMaxUnit || 'm'}`;
+        
+        // Get composition lists
+        const jambageCompositions = window.jambage?.compositions || [];
+        const linteauCompositions = window.linteau?.compositions || [];
+        const seuilCompositions = window.seuil?.compositions || [];
         
         return `
-            <tr>
-                <td class="review-item-name">${type}</td>
-                <td>${size}</td>
-            </tr>
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleReviewAccordion(this)">
+                    <div class="main-info">
+                        <span class="item-name">${type}</span>
+                        <div class="item-meta">
+                            <span><i class="fas fa-expand"></i> ${size}</span>
+                        </div>
+                    </div>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="accordion-details">
+                    <div class="detail-grid">
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-border-style"></i>
+                                Jambage${window.jambage?.type ? ' (' + window.jambage.type + ')' : ''}
+                            </div>
+                            ${jambageCompositions.length > 0 ? `
+                                <ul class="composition-list">
+                                    ${jambageCompositions.map(comp => `<li>${comp}</li>`).join('')}
+                                </ul>
+                            ` : '<div class="section-content">N/A</div>'}
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-horizontal-rule"></i>
+                                Linteau${window.linteau?.type ? ' (' + window.linteau.type + ')' : ''}
+                            </div>
+                            ${linteauCompositions.length > 0 ? `
+                                <ul class="composition-list">
+                                    ${linteauCompositions.map(comp => `<li>${comp}</li>`).join('')}
+                                </ul>
+                            ` : '<div class="section-content">N/A</div>'}
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">
+                                <i class="fas fa-window-minimize"></i>
+                                Seuil${window.seuil?.type ? ' (' + window.seuil.type + ')' : ''}
+                            </div>
+                            ${seuilCompositions.length > 0 ? `
+                                <ul class="composition-list">
+                                    ${seuilCompositions.map(comp => `<li>${comp}</li>`).join('')}
+                                </ul>
+                            ` : '<div class="section-content">N/A</div>'}
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
     }).join('');
     
     container.innerHTML = `
-        <table class="review-table">
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Size</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rows}
-            </tbody>
-        </table>
+        <div class="accordion-container">
+            ${rows}
+        </div>
     `;
+}
+
+function toggleReviewAccordion(header) {
+    const details = header.nextElementSibling;
+    const isExpanded = header.classList.contains('expanded');
+    
+    if (isExpanded) {
+        header.classList.remove('expanded');
+        details.classList.remove('show');
+    } else {
+        header.classList.add('expanded');
+        details.classList.add('show');
+    }
 }
 
 function renderReviewCustomPages() {
@@ -7095,28 +7399,27 @@ function renderReviewCustomPages() {
         if (texts > 0) elementParts.push(`${texts} text block${texts !== 1 ? 's' : ''}`);
         if (images > 0) elementParts.push(`${images} image${images !== 1 ? 's' : ''}`);
         
-        const elementSummary = elementParts.length > 0 ? elementParts.join(', ') : 'No elements';
+        const elementSummary = elementParts.length > 0 
+            ? elementParts.join(', ')
+            : 'Empty page';
         
         return `
-            <tr>
-                <td class="review-item-name">${title}</td>
-                <td>${elementSummary}</td>
-            </tr>
+            <div class="simple-review-item">
+                <div class="simple-item-content">
+                    <i class="fas fa-file-alt" style="color: #3498db;"></i>
+                    <div class="simple-item-details">
+                        <div class="simple-item-title">${title}</div>
+                        <div class="simple-item-subtitle">${elementSummary}</div>
+                    </div>
+                </div>
+            </div>
         `;
     }).join('');
     
     container.innerHTML = `
-        <table class="review-table">
-            <thead>
-                <tr>
-                    <th>Page Title</th>
-                    <th>Elements</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rows}
-            </tbody>
-        </table>
+        <div class="simple-review-container">
+            ${rows}
+        </div>
     `;
 }
 
