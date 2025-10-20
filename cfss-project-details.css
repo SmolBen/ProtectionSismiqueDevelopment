@@ -1759,3 +1759,41 @@ button:not(.image-remove):not(.thumb-delete) {
 #parapetList .equipment-actions-compact {
     margin-right: 0px;
 }
+
+/* Type Selection with Image Preview Styles */
+.type-selection-row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.type-selection-row select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 200px;
+}
+
+.type-image-preview {
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 2px;
+    background: #f9f9f9;
+    min-width: 100px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.type-image-preview img {
+    max-width: 96px;
+    max-height: 96px;
+    object-fit: contain;
+}
+
+.type-image-preview.empty {
+    color: #999;
+    font-size: 13px;
+}

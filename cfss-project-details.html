@@ -766,74 +766,85 @@
             </div>
         </div>
         
-        <!-- Jambage Section -->
-        <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-            <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
-                <div class="form-group" style="width: 220px; margin-bottom: 0;">
-                    <label for="jambageType">Jambage Type</label>
-                    <select id="jambageType" name="jambageType" required>
-                        <option value="">Select Jambage Type</option>
-                        <option value="JA1">JA1</option>
-                        <option value="JA2">JA2</option>
-                        <option value="JA3">JA3</option>
-                        <option value="JA4">JA4</option>
-                        <option value="JA5">JA5</option>
-                    </select>
-                </div>
-                <div class="form-group" style="width: 250px; margin-bottom: 0;">
-                    <label for="jambageComposition">Jambage Composition</label>
-                    <!-- Replace input with composition builder -->
-                    <div id="jambageCompositionBuilder"></div>
-                    <input type="hidden" id="jambageComposition" name="jambageComposition">
+<div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+    <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 10px;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="jambageType">Jambage Type</label>
+            <div class="type-selection-row">
+                <select id="jambageType" name="jambageType" required onchange="updateTypeImage('jambage', this.value)" style="width: 180px;">
+                    <option value="">Select Jambage Type</option>
+                    <option value="JA1">JA1</option>
+                    <option value="JA2">JA2</option>
+                    <option value="JA3">JA3</option>
+                    <option value="JA4">JA4</option>
+                    <option value="JA5">JA5</option>
+                </select>
+                <div id="jambageImagePreview" class="type-image-preview empty">
+                    Select a type
                 </div>
             </div>
         </div>
-        
-        <!-- Linteau Section -->
-        <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-            <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
-                <div class="form-group" style="width: 220px; margin-bottom: 0;">
-                    <label for="linteauType">Linteau Type</label>
-                    <select id="linteauType" name="linteauType" required>
-                        <option value="">Select Linteau Type</option>
-                        <option value="LT1">LT1</option>
-                        <option value="LT2">LT2</option>
-                        <option value="LT3">LT3</option>
-                        <option value="LT4">LT4</option>
-                        <option value="LT5">LT5</option>
-                    </select>
-                </div>
-                <div class="form-group" style="width: 250px; margin-bottom: 0;">
-                    <label for="linteauComposition">Linteau Composition</label>
-                    <!-- Replace input with composition builder -->
-                    <div id="linteauCompositionBuilder"></div>
-                    <input type="hidden" id="linteauComposition" name="linteauComposition">
+        <div class="form-group" style="width: 250px;">
+            <label for="jambageComposition">Jambage Composition</label>
+            <div id="jambageCompositionBuilder"></div>
+            <input type="hidden" id="jambageComposition" name="jambageComposition">
+        </div>
+    </div>
+</div>
+
+<!-- Replace the Linteau Type section with this -->
+<div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+    <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 10px;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="linteauType">Linteau Type</label>
+            <div class="type-selection-row">
+                <select id="linteauType" name="jambageType" required onchange="updateTypeImage('jambage', this.value)" style="width: 180px;">
+                    <option value="">Select Linteau Type</option>
+                    <option value="LT1">LT1</option>
+                    <option value="LT2">LT2</option>
+                    <option value="LT3">LT3</option>
+                    <option value="LT4">LT4</option>
+                    <option value="LT5">LT5</option>
+                </select>
+                <div id="linteauImagePreview" class="type-image-preview empty">
+                    Select a type
                 </div>
             </div>
         </div>
-        
-        <!-- Seuil Section -->
-        <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-            <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
-                <div class="form-group" style="width: 220px; margin-bottom: 0;">
-                    <label for="seuilType">Seuil Type</label>
-                    <select id="seuilType" name="seuilType" required>
-                        <option value="">Select Seuil Type</option>
-                        <option value="SE1">SE1</option>
-                        <option value="SE2">SE2</option>
-                        <option value="SE3">SE3</option>
-                        <option value="SE4">SE4</option>
-                        <option value="SE5">SE5</option>
-                    </select>
-                </div>
-                <div class="form-group" style="width: 250px; margin-bottom: 0;">
-                    <label for="seuilComposition">Seuil Composition</label>
-                    <!-- Replace input with composition builder -->
-                    <div id="seuilCompositionBuilder"></div>
-                    <input type="hidden" id="seuilComposition" name="seuilComposition">
+        <div class="form-group" style="width: 250px;">
+            <label for="linteauComposition">Linteau Composition</label>
+            <div id="linteauCompositionBuilder"></div>
+            <input type="hidden" id="linteauComposition" name="linteauComposition">
+        </div>
+    </div>
+</div>
+
+<!-- Replace the Seuil Type section with this -->
+<div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
+    <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 10px;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="seuilType">Seuil Type</label>
+            <div class="type-selection-row">
+                <select id="seuilType" name="jambageType" required onchange="updateTypeImage('jambage', this.value)" style="width: 180px;">
+                    <option value="">Select Seuil Type</option>
+                    <option value="SE1">SE1</option>
+                    <option value="SE2">SE2</option>
+                    <option value="SE3">SE3</option>
+                    <option value="SE4">SE4</option>
+                    <option value="SE5">SE5</option>
+                </select>
+                <div id="seuilImagePreview" class="type-image-preview empty">
+                    Select a type
                 </div>
             </div>
         </div>
+        <div class="form-group" style="width: 250px;">
+            <label for="seuilComposition">Seuil Composition</label>
+            <div id="seuilCompositionBuilder"></div>
+            <input type="hidden" id="seuilComposition" name="seuilComposition">
+        </div>
+    </div>
+</div>
         
         <!-- Form Actions -->
         <div class="form-actions">

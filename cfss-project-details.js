@@ -707,31 +707,32 @@ function initializeEditCompositionBuilders(windowId, window) {
     }
   }, 100);
 }
-// Update the renderWindowList function to include composition builders in edit mode
-// Add this to the existing renderWindowList function, replace the edit form sections
 
 // Modified section for Jambage in edit form:
 function getJambageEditSection(window) {
   return `
     <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-      <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
-        <div class="form-group" style="width: 220px; margin-bottom: 0;">
+        <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 10px;">
+            <div class="form-group" style="margin-bottom: 0; width: 180px;">
           <label for="editJambageType${window.id}">Jambage Type</label>
-          <select id="editJambageType${window.id}" required>
-            <option value="">Select Jambage Type</option>
-            <option value="JA1" ${window.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
-            <option value="JA2" ${window.jambage?.type === 'JA2' ? 'selected' : ''}>JA2</option>
-            <option value="JA3" ${window.jambage?.type === 'JA3' ? 'selected' : ''}>JA3</option>
-            <option value="JA4" ${window.jambage?.type === 'JA4' ? 'selected' : ''}>JA4</option>
-            <option value="JA5" ${window.jambage?.type === 'JA5' ? 'selected' : ''}>JA5</option>
-          </select>
+          <div class="type-selection-row">
+            <select id="editJambageType${window.id}" required onchange="updateTypeImage('editJambage${window.id}', this.value)" style="width: 72px;">
+              <option value="">Select Jambage Type</option>
+              <option value="JA1" ${window.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
+              <option value="JA2" ${window.jambage?.type === 'JA2' ? 'selected' : ''}>JA2</option>
+              <option value="JA3" ${window.jambage?.type === 'JA3' ? 'selected' : ''}>JA3</option>
+              <option value="JA4" ${window.jambage?.type === 'JA4' ? 'selected' : ''}>JA4</option>
+              <option value="JA5" ${window.jambage?.type === 'JA5' ? 'selected' : ''}>JA5</option>
+            </select>
+            <div id="editJambage${window.id}ImagePreview" class="type-image-preview ${window.jambage?.type ? '' : 'empty'}">
+              ${window.jambage?.type ? `<img src="https://s3.amazonaws.com/protection-sismique-equipment-images/jambage/${window.jambage.type}.png" alt="${window.jambage.type}" onerror="handleImageError(this, '${window.jambage.type}')">` : 'Select a type'}
+            </div>
+          </div>
         </div>
-        <div class="form-group" style="width: 250px; margin-bottom: 0;">
+        <div class="form-group" style="width: 250px;">
           <label for="editJambageComposition${window.id}">Jambage Composition</label>
           <div id="editJambageCompositionBuilder${window.id}"></div>
-          <input type="hidden" 
-                 id="editJambageComposition${window.id}" 
-                 value="${window.jambage?.composition || ''}">
+          <input type="hidden" id="editJambageComposition${window.id}" value="${window.jambage?.composition || ''}">
         </div>
       </div>
     </div>
@@ -742,24 +743,27 @@ function getJambageEditSection(window) {
 function getLinteauEditSection(window) {
   return `
     <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-      <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
-        <div class="form-group" style="width: 220px; margin-bottom: 0;">
+        <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 10px;">
+            <div class="form-group" style="margin-bottom: 0; width: 180px;">
           <label for="editLinteauType${window.id}">Linteau Type</label>
-          <select id="editLinteauType${window.id}" required>
-            <option value="">Select Linteau Type</option>
-            <option value="LT1" ${window.linteau?.type === 'LT1' ? 'selected' : ''}>LT1</option>
-            <option value="LT2" ${window.linteau?.type === 'LT2' ? 'selected' : ''}>LT2</option>
-            <option value="LT3" ${window.linteau?.type === 'LT3' ? 'selected' : ''}>LT3</option>
-            <option value="LT4" ${window.linteau?.type === 'LT4' ? 'selected' : ''}>LT4</option>
-            <option value="LT5" ${window.linteau?.type === 'LT5' ? 'selected' : ''}>LT5</option>
-          </select>
+          <div class="type-selection-row">
+            <select id="editLinteauType${window.id}" required onchange="updateTypeImage('editLinteau${window.id}', this.value)" style="width: 72px;">
+              <option value="">Select Linteau Type</option>
+              <option value="LT1" ${window.linteau?.type === 'LT1' ? 'selected' : ''}>LT1</option>
+              <option value="LT2" ${window.linteau?.type === 'LT2' ? 'selected' : ''}>LT2</option>
+              <option value="LT3" ${window.linteau?.type === 'LT3' ? 'selected' : ''}>LT3</option>
+              <option value="LT4" ${window.linteau?.type === 'LT4' ? 'selected' : ''}>LT4</option>
+              <option value="LT5" ${window.linteau?.type === 'LT5' ? 'selected' : ''}>LT5</option>
+            </select>
+            <div id="editLinteau${window.id}ImagePreview" class="type-image-preview ${window.linteau?.type ? '' : 'empty'}">
+              ${window.linteau?.type ? `<img src="https://s3.amazonaws.com/protection-sismique-equipment-images/linteau/${window.linteau.type}.png" alt="${window.linteau.type}" onerror="handleImageError(this, '${window.linteau.type}')">` : 'Select a type'}
+            </div>
+          </div>
         </div>
-        <div class="form-group" style="width: 250px; margin-bottom: 0;">
+        <div class="form-group" style="width: 250px;">
           <label for="editLinteauComposition${window.id}">Linteau Composition</label>
           <div id="editLinteauCompositionBuilder${window.id}"></div>
-          <input type="hidden" 
-                 id="editLinteauComposition${window.id}" 
-                 value="${window.linteau?.composition || ''}">
+          <input type="hidden" id="editLinteauComposition${window.id}" value="${window.linteau?.composition || ''}">
         </div>
       </div>
     </div>
@@ -770,24 +774,27 @@ function getLinteauEditSection(window) {
 function getSeuilEditSection(window) {
   return `
     <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-      <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 10px; max-width: 500px;">
-        <div class="form-group" style="width: 220px; margin-bottom: 0;">
+        <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 10px;">
+            <div class="form-group" style="margin-bottom: 0; width: 180px;">
           <label for="editSeuilType${window.id}">Seuil Type</label>
-          <select id="editSeuilType${window.id}" required>
-            <option value="">Select Seuil Type</option>
-            <option value="SE1" ${window.seuil?.type === 'SE1' ? 'selected' : ''}>SE1</option>
-            <option value="SE2" ${window.seuil?.type === 'SE2' ? 'selected' : ''}>SE2</option>
-            <option value="SE3" ${window.seuil?.type === 'SE3' ? 'selected' : ''}>SE3</option>
-            <option value="SE4" ${window.seuil?.type === 'SE4' ? 'selected' : ''}>SE4</option>
-            <option value="SE5" ${window.seuil?.type === 'SE5' ? 'selected' : ''}>SE5</option>
-          </select>
+          <div class="type-selection-row">
+            <select id="editSeuilType${window.id}" required onchange="updateTypeImage('editSeuil${window.id}', this.value)" style="width: 70px;">
+              <option value="">Select Seuil Type</option>
+              <option value="SE1" ${window.seuil?.type === 'SE1' ? 'selected' : ''}>SE1</option>
+              <option value="SE2" ${window.seuil?.type === 'SE2' ? 'selected' : ''}>SE2</option>
+              <option value="SE3" ${window.seuil?.type === 'SE3' ? 'selected' : ''}>SE3</option>
+              <option value="SE4" ${window.seuil?.type === 'SE4' ? 'selected' : ''}>SE4</option>
+              <option value="SE5" ${window.seuil?.type === 'SE5' ? 'selected' : ''}>SE5</option>
+            </select>
+            <div id="editSeuil${window.id}ImagePreview" class="type-image-preview ${window.seuil?.type ? '' : 'empty'}">
+              ${window.seuil?.type ? `<img src="https://s3.amazonaws.com/protection-sismique-equipment-images/seuil/${window.seuil.type}.png" alt="${window.seuil.type}" onerror="handleImageError(this, '${window.seuil.type}')">` : 'Select a type'}
+            </div>
+          </div>
         </div>
-        <div class="form-group" style="width: 250px; margin-bottom: 0;">
+        <div class="form-group" style="width: 250px;">
           <label for="editSeuilComposition${window.id}">Seuil Composition</label>
           <div id="editSeuilCompositionBuilder${window.id}"></div>
-          <input type="hidden" 
-                 id="editSeuilComposition${window.id}" 
-                 value="${window.seuil?.composition || ''}">
+          <input type="hidden" id="editSeuilComposition${window.id}" value="${window.seuil?.composition || ''}">
         </div>
       </div>
     </div>
@@ -5957,7 +5964,7 @@ function renderWindowList() {
                 </div>
             </div>
 
-            <!-- Edit Mode - Matches the new window form layout -->
+            <!-- Edit Mode -->
             <div id="windowEdit${window.id}" class="equipment-form" style="display: none; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                 <h3>Edit Window</h3>
                 <form onsubmit="saveWindowEdit(${window.id}, event); return false;">
@@ -5970,127 +5977,61 @@ function renderWindowList() {
                             required>
                     </div>
                     
-<!-- Largeur Max with Unit Selection -->
-<div class="form-group">
-    <label for="editLargeurMax${window.id}">Largeur Max</label>
-    <div style="display: flex; gap: 8px;">
-        <input type="number" 
-            id="editLargeurMax${window.id}" 
-            value="${window.largeurMax || ''}" 
-            step="0.01" 
-            required
-            style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-        <select 
-            id="editLargeurMaxUnit${window.id}" 
-            required
-            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
-            <option value="m" ${(window.largeurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
-            <option value="ft" ${window.largeurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-            <option value="in" ${window.largeurMaxUnit === 'in' ? 'selected' : ''}>in</option>
-        </select>
-    </div>
-</div>
-
-<!-- Hauteur Max with Unit Selection -->
-<div class="form-group">
-    <label for="editHauteurMax${window.id}">Hauteur Max</label>
-    <div style="display: flex; gap: 8px;">
-        <input type="number" 
-            id="editHauteurMax${window.id}" 
-            value="${window.hauteurMax || ''}" 
-            step="0.01" 
-            required
-            style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-        <select 
-            id="editHauteurMaxUnit${window.id}" 
-            required
-            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
-            <option value="m" ${(window.hauteurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
-            <option value="ft" ${window.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-            <option value="in" ${window.hauteurMaxUnit === 'in' ? 'selected' : ''}>in</option>
-        </select>
-    </div>
-</div>
-                    
-                    <!-- Jambage Section -->
-                    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-                        <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
-                            <div class="form-group" style="width: 220px; margin-bottom: 0;">
-                                <label for="editJambageType${window.id}">Jambage Type</label>
-                                <select id="editJambageType${window.id}" required>
-                                    <option value="">Select Jambage Type</option>
-                                    <option value="JA1" ${window.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
-                                    <option value="JA2" ${window.jambage?.type === 'JA2' ? 'selected' : ''}>JA2</option>
-                                    <option value="JA3" ${window.jambage?.type === 'JA3' ? 'selected' : ''}>JA3</option>
-                                    <option value="JA4" ${window.jambage?.type === 'JA4' ? 'selected' : ''}>JA4</option>
-                                    <option value="JA5" ${window.jambage?.type === 'JA5' ? 'selected' : ''}>JA5</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="width: 250px; margin-bottom: 0;">
-                                <label for="editJambageComposition${window.id}">Jambage Composition</label>
-                                <div id="editJambageCompositionBuilder${window.id}"></div>
-                                <input type="hidden" 
-                                    id="editJambageComposition${window.id}" 
-                                    value="${window.jambage?.composition || ''}">
-                            </div>
+                    <!-- Largeur Max -->
+                    <div class="form-group">
+                        <label for="editLargeurMax${window.id}">Largeur Max</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" 
+                                id="editLargeurMax${window.id}" 
+                                value="${window.largeurMax || ''}" 
+                                step="0.01" 
+                                required
+                                style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <select 
+                                id="editLargeurMaxUnit${window.id}" 
+                                required
+                                style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
+                                <option value="m" ${(window.largeurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
+                                <option value="ft" ${window.largeurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+                                <option value="in" ${window.largeurMaxUnit === 'in' ? 'selected' : ''}>in</option>
+                            </select>
                         </div>
                     </div>
                     
-                    <!-- Linteau Section -->
-                    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-                        <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
-                            <div class="form-group" style="width: 220px; margin-bottom: 0;">
-                                <label for="editLinteauType${window.id}">Linteau Type</label>
-                                <select id="editLinteauType${window.id}" required>
-                                    <option value="">Select Linteau Type</option>
-                                    <option value="LT1" ${window.linteau?.type === 'LT1' ? 'selected' : ''}>LT1</option>
-                                    <option value="LT2" ${window.linteau?.type === 'LT2' ? 'selected' : ''}>LT2</option>
-                                    <option value="LT3" ${window.linteau?.type === 'LT3' ? 'selected' : ''}>LT3</option>
-                                    <option value="LT4" ${window.linteau?.type === 'LT4' ? 'selected' : ''}>LT4</option>
-                                    <option value="LT5" ${window.linteau?.type === 'LT5' ? 'selected' : ''}>LT5</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="width: 250px; margin-bottom: 0;">
-                                <label for="editLinteauComposition${window.id}">Linteau Composition</label>
-                                <div id="editLinteauCompositionBuilder${window.id}"></div>
-                                <input type="hidden" 
-                                    id="editLinteauComposition${window.id}" 
-                                    value="${window.linteau?.composition || ''}">
-                            </div>
+                    <!-- Hauteur Max -->
+                    <div class="form-group">
+                        <label for="editHauteurMax${window.id}">Hauteur Max</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" 
+                                id="editHauteurMax${window.id}" 
+                                value="${window.hauteurMax || ''}" 
+                                step="0.01" 
+                                required
+                                style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <select 
+                                id="editHauteurMaxUnit${window.id}" 
+                                required
+                                style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
+                                <option value="m" ${(window.hauteurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
+                                <option value="ft" ${window.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
+                                <option value="in" ${window.hauteurMaxUnit === 'in' ? 'selected' : ''}>in</option>
+                            </select>
                         </div>
                     </div>
                     
-                    <!-- Seuil Section -->
-                    <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-                        <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; max-width: 500px;">
-                            <div class="form-group" style="width: 220px; margin-bottom: 0;">
-                                <label for="editSeuilType${window.id}">Seuil Type</label>
-                                <select id="editSeuilType${window.id}" required>
-                                    <option value="">Select Seuil Type</option>
-                                    <option value="SE1" ${window.seuil?.type === 'SE1' ? 'selected' : ''}>SE1</option>
-                                    <option value="SE2" ${window.seuil?.type === 'SE2' ? 'selected' : ''}>SE2</option>
-                                    <option value="SE3" ${window.seuil?.type === 'SE3' ? 'selected' : ''}>SE3</option>
-                                    <option value="SE4" ${window.seuil?.type === 'SE4' ? 'selected' : ''}>SE4</option>
-                                    <option value="SE5" ${window.seuil?.type === 'SE5' ? 'selected' : ''}>SE5</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="width: 250px; margin-bottom: 0;">
-                                <label for="editSeuilComposition${window.id}">Seuil Composition</label>
-                                <div id="editSeuilCompositionBuilder${window.id}"></div>
-                                <input type="hidden" 
-                                    id="editSeuilComposition${window.id}" 
-                                    value="${window.seuil?.composition || ''}">
-                            </div>
-                        </div>
-                    </div>
+                    ${getJambageEditSection(window)}
+                    ${getLinteauEditSection(window)}
+                    ${getSeuilEditSection(window)}
                     
                     <!-- Form Actions -->
-                    <div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button type="submit" class="save-btn">
-                            <i class="fas fa-save"></i> Save Changes
+                    <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                        <button type="button" 
+                                class="button secondary" 
+                                onclick="cancelWindowEdit(${window.id})">
+                            Cancel
                         </button>
-                        <button type="button" class="button secondary" onclick="cancelWindowEdit(${window.id})">
-                            <i class="fas fa-times"></i> Cancel
+                        <button type="submit" class="button primary">
+                            <i class="fas fa-save"></i> Save Changes
                         </button>
                     </div>
                 </form>
@@ -7177,6 +7118,60 @@ function renderReviewCustomPages() {
             </tbody>
         </table>
     `;
+}
+
+// Update type image preview based on selection
+function updateTypeImage(type, value) {
+    const previewId = `${type}ImagePreview`;
+    const preview = document.getElementById(previewId);
+    
+    if (!preview) {
+        console.error(`Preview element not found: ${previewId}`);
+        return;
+    }
+    
+    if (!value) {
+        preview.className = 'type-image-preview empty';
+        preview.innerHTML = 'Select a type';
+        return;
+    }
+    
+    // Construct S3 URL based on type and value
+    // Format: https://s3.amazonaws.com/bucket-name/folder/type-value.png
+    const bucketUrl = 'https://s3.amazonaws.com/protection-sismique-equipment-images';
+    let folderName = '';
+    
+    switch(type) {
+        case 'jambage':
+            folderName = 'jambage';
+            break;
+        case 'linteau':
+            folderName = 'linteau';
+            break;
+        case 'seuil':
+            folderName = 'seuil';
+            break;
+        default:
+            console.error(`Unknown type: ${type}`);
+            return;
+    }
+    
+    const imageUrl = `${bucketUrl}/${folderName}/${value}.png`;
+    
+    // Update preview with image
+    preview.className = 'type-image-preview';
+    preview.innerHTML = `<img src="${imageUrl}" alt="${value}" onerror="handleImageError(this, '${value}')">`;
+}
+
+// Handle image load error
+function handleImageError(img, typeValue) {
+    const preview = img.parentElement;
+    preview.className = 'type-image-preview empty';
+    preview.innerHTML = `<div style="text-align: center; font-size: 12px; color: #999;">
+        <div style="font-size: 18px; margin-bottom: 4px;">📷</div>
+        <div>${typeValue}</div>
+        <div style="font-size: 10px;">(Image not found)</div>
+    </div>`;
 }
 
 
