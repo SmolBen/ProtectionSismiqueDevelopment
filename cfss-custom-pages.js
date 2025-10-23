@@ -1074,6 +1074,7 @@ if (el.dataset.type === 'heading' || el.dataset.type === 'text') {
         
         // Render the updated list
         renderCustomPagesList();
+        updateCustomPagesSummary();
         
         alert('Custom page saved successfully!');
     } catch (error) {
@@ -1357,6 +1358,7 @@ async function deleteCustomPage(pageId) {
     projectCustomPages = projectCustomPages.filter(p => p.id != pageId);
     await saveCustomPagesToDatabase();
     renderCustomPagesList();
+    updateCustomPagesSummary();
 }
 
 // Save custom pages to database
@@ -1420,6 +1422,7 @@ function loadCustomPagesFromProject(project) {
     }
     
     renderCustomPagesList();
+    updateCustomPagesSummary();
 }
 
 // Make functions globally available

@@ -1392,6 +1392,15 @@ function updateParapetSummary() {
     }
 }
 
+function updateCustomPagesSummary() {
+    const el = document.getElementById('customPagesSelectionSummary');
+    if (!el) return;
+    const count = (typeof projectCustomPages !== 'undefined' && Array.isArray(projectCustomPages))
+        ? projectCustomPages.length
+        : 0;
+    el.innerHTML = `<i class="fas fa-file-alt"></i> ${count} custom page${count !== 1 ? 's' : ''} added`;
+}
+
 // Save parapets to database
 async function saveParapetsToDatabase() {
     if (!currentProjectId) return;

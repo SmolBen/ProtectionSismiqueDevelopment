@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 initializeParapetHandlers();
                 initializeCustomPages();
                 setupCFSSReportButtonWithRevisionModal();
+                updateCustomPagesSummary();
 
                 setupSendReportToClientsButton();
                 
@@ -232,6 +233,7 @@ function initializeCustomPagesWithData(project) {
     
     // Load the pages
     loadCustomPagesFromProject(project);
+    updateCustomPagesSummary();
     
     console.log('✅ Custom pages initialization complete');
 }
