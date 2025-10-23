@@ -493,10 +493,14 @@ function addCompositionItem(containerId, hiddenInputId, existingValue = '') {
     if (match) {
       defaultQuantity = match[1];
       defaultSize = match[2];
-      defaultType = match[3];
+      defaultType = match[3] === 'U' ? 'T' : match[3];
       defaultDimension = match[4];
       defaultVariant = match[5];
     }
+  }
+
+  if (!['S', 'T'].includes(defaultType)) {
+    defaultType = 'S';
   }
 
   const compositionItem = document.createElement('div');
@@ -533,7 +537,7 @@ function addCompositionItem(containerId, hiddenInputId, existingValue = '') {
       
       <select style="width: 55px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
         <option value="S" ${defaultType === 'S' ? 'selected' : ''}>S</option>
-        <option value="U" ${defaultType === 'U' ? 'selected' : ''}>U</option>
+        <option value="T" ${defaultType === 'T' ? 'selected' : ''}>T</option>
       </select>
       
       <select style="width: 70px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
@@ -5963,7 +5967,7 @@ function renderWindowList() {
   container.innerHTML = validWindows.map((win, idx) => {
     const id    = win.id;
     const title = win.windowName || win.name || win.type || `Window ${idx + 1}`;
-    const dims  = `${win.largeurMax ?? 0}${win.largeurMaxUnit || 'm'} × ${win.hauteurMax ?? 0}${win.hauteurMaxUnit || 'm'}`;
+    const dims  = `${win.largeurMax ?? 0}${win.largeurMaxUnit === 'm' ? 'mm' : (win.largeurMaxUnit || 'mm')} × ${win.hauteurMax ?? 0}${win.hauteurMaxUnit === 'm' ? 'mm' : (win.hauteurMaxUnit || 'mm')}`;
 
     return `
     <div class="equipment-card" id="windowCard${id}">
@@ -6028,7 +6032,7 @@ function renderWindowList() {
                      style="flex:1; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
               <select id="editLargeurMaxUnit${id}" required
                       style="padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px; width:60px;">
-                <option value="m" ${(win.largeurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
+                <option value="mm" ${(!win.largeurMaxUnit || win.largeurMaxUnit === 'mm' || win.largeurMaxUnit === 'm') ? 'selected' : ''}>mm</option>
                 <option value="ft" ${win.largeurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
                 <option value="in" ${win.largeurMaxUnit === 'in' ? 'selected' : ''}>in</option>
               </select>
@@ -6043,7 +6047,7 @@ function renderWindowList() {
                      style="flex:1; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
               <select id="editHauteurMaxUnit${id}" required
                       style="padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px; width:60px;">
-                <option value="m" ${(win.hauteurMaxUnit || 'm') === 'm' ? 'selected' : ''}>m</option>
+                <option value="mm" ${(!win.hauteurMaxUnit || win.hauteurMaxUnit === 'mm' || win.hauteurMaxUnit === 'm') ? 'selected' : ''}>mm</option>
                 <option value="ft" ${win.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
                 <option value="in" ${win.hauteurMaxUnit === 'in' ? 'selected' : ''}>in</option>
               </select>
@@ -6299,9 +6303,13 @@ function duplicateWindow(id) {
     // Populate basic window information
     document.getElementById('windowType').value = windowToDuplicate.type || '';
     document.getElementById('windowLargeurMax').value = windowToDuplicate.largeurMax || '';
-    document.getElementById('windowLargeurMaxUnit').value = windowToDuplicate.largeurMaxUnit || 'm';
+    document.getElementById('windowLargeurMaxUnit').value = windowToDuplicate.largeurMaxUnit === 'm'
+        ? 'mm'
+        : (windowToDuplicate.largeurMaxUnit || 'mm');
     document.getElementById('windowHauteurMax').value = windowToDuplicate.hauteurMax || '';
-    document.getElementById('windowHauteurMaxUnit').value = windowToDuplicate.hauteurMaxUnit || 'm';
+    document.getElementById('windowHauteurMaxUnit').value = windowToDuplicate.hauteurMaxUnit === 'm'
+        ? 'mm'
+        : (windowToDuplicate.hauteurMaxUnit || 'mm');
     
     // Populate Jambage data
     if (windowToDuplicate.jambage) {
@@ -7377,7 +7385,7 @@ function renderReviewWindows() {
     
     const rows = windows.map((window, index) => {
         const type = window.type || 'Unknown Type';
-        const size = `${window.largeurMax || 0}${window.largeurMaxUnit || 'm'} × ${window.hauteurMax || 0}${window.hauteurMaxUnit || 'm'}`;
+        const size = `${window.largeurMax || 0}${window.largeurMaxUnit === 'm' ? 'mm' : (window.largeurMaxUnit || 'mm')} × ${window.hauteurMax || 0}${window.hauteurMaxUnit === 'm' ? 'mm' : (window.hauteurMaxUnit || 'mm')}`;
         
         // Get composition lists
         const jambageCompositions = window.jambage?.compositions || [];

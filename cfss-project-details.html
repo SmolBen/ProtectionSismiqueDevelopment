@@ -749,7 +749,7 @@
                     name="windowLargeurMaxUnit" 
                     required
                     style="padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
-                    <option value="m">m</option>
+                    <option value="mm">mm</option>
                     <option value="ft">ft</option>
                     <option value="in">in</option>
                 </select>
@@ -771,7 +771,7 @@
                     name="windowHauteurMaxUnit" 
                     required
                     style="padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
-                    <option value="m">m</option>
+                    <option value="mm">mm</option>
                     <option value="ft">ft</option>
                     <option value="in">in</option>
                 </select>
@@ -810,7 +810,7 @@
         <div class="form-group" style="margin-bottom: 0;">
             <label for="linteauType">Linteau Type</label>
             <div class="type-selection-row">
-                <select id="linteauType" name="jambageType" required onchange="updateTypeImage('jambage', this.value)" style="width: 180px;">
+                <select id="linteauType" name="linteauType" required onchange="updateTypeImage('linteau', this.value)" style="width: 180px;">
                     <option value="">Select Linteau Type</option>
                     <option value="LT1">LT1</option>
                     <option value="LT2">LT2</option>
@@ -837,7 +837,7 @@
         <div class="form-group" style="margin-bottom: 0;">
             <label for="seuilType">Seuil Type</label>
             <div class="type-selection-row">
-                <select id="seuilType" name="jambageType" required onchange="updateTypeImage('jambage', this.value)" style="width: 180px;">
+                <select id="seuilType" name="seuilType" required onchange="updateTypeImage('seuil', this.value)" style="width: 180px;">
                     <option value="">Select Seuil Type</option>
                     <option value="SE1">SE1</option>
                     <option value="SE2">SE2</option>
