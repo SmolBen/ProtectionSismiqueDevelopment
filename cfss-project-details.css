@@ -1797,3 +1797,8 @@ button:not(.image-remove):not(.thumb-delete) {
     color: #999;
     font-size: 13px;
 }
+
+/* Walls: reduce the space *under* the green summary bar */
+#wallSelectionSummary.selection-summary {
+    margin-bottom: 8px; 
+}

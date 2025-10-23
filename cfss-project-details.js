@@ -1383,6 +1383,13 @@ async function deleteParapet(id) {
     }
 }
 
+function updateWallSummary() {
+    const el = document.getElementById('wallSelectionSummary');
+    if (!el) return;
+    const n = Array.isArray(projectEquipment) ? projectEquipment.length : 0;
+    el.innerHTML = `<i class="fas fa-th-large"></i> ${n} wall${n === 1 ? '' : 's'} added`;
+}
+
 // Update parapet summary
 function updateParapetSummary() {
     const summary = document.getElementById('parapetSelectionSummary');
@@ -2869,13 +2876,9 @@ function renderEquipmentList() {
         equipmentListDiv.innerHTML = '';
         equipmentListDiv.className = 'equipment-list-container';
 
-        const listHeader = document.createElement('div');
-        listHeader.className = 'equipment-list-header';
-        listHeader.textContent = `Walls (${projectEquipment.length})`;
-        equipmentListDiv.appendChild(listHeader);
-
         if (projectEquipment.length === 0) {
             equipmentListDiv.innerHTML += '<p>No walls added yet.</p>';
+            updateWallSummary();   
             return;
         }
 
@@ -2983,6 +2986,8 @@ function renderEquipmentList() {
             });
         });
         
+        updateWallSummary();  
+
         // Initialize SortableJS if user can modify
         if (canModifyProject()) {
             initializeSortable();
