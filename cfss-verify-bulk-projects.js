@@ -4,7 +4,7 @@ const BULK_VERIFY_API_BASE =
   'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/bulk-verify';
 
 // Toggle this ON if you also want to re-upload flattened PDFs to S3 after verify
-const REUPLOAD_FLATTENED_TO_S3 = false;
+const REUPLOAD_FLATTENED_TO_S3 = true;
 
 const N8N_WEBHOOK_URL = 'https://protectionsismique.app.n8n.cloud/webhook/cda3660d-ddda-4331-a206-16557bdc060f';
 
