@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Bulk Projects - Protection Sismique</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bulk-verify-container {
+            padding: 32px;
+            display: grid;
+            gap: 24px;
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .bulk-verify-container .card {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .bulk-upload-card .card-header,
+        .bulk-results-card .card-header {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .bulk-upload-card .card-header i,
+        .bulk-results-card .card-header i {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+        .bulk-upload-card .card-header h1 {
+            font-size: 22px;
+            margin: 0;
+        }
+        .bulk-upload-card .card-header p,
+        .bulk-results-card .card-header p {
+            margin: 6px 0 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .bulk-upload-body {
+            margin-top: 20px;
+            display: grid;
+            gap: 18px;
+        }
+        .dropzone {
+            position: relative;
+            border: 2px dashed #cdd3dd;
+            border-radius: 12px;
+            padding: 42px 20px;
+            text-align: center;
+            background: #f9fafc;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+        .dropzone.dragover {
+            border-color: var(--primary-color);
+            background: #eef5ff;
+        }
+        .dropzone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .dropzone-content {
+            pointer-events: none;
+        }
+        .dropzone-content i {
+            font-size: 40px;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+        .dropzone-content p {
+            margin: 0;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+        .dropzone-content .link-text {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        .dropzone-content small {
+            display: block;
+            margin-top: 10px;
+            color: var(--text-secondary);
+        }
+        .bulk-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+        }
+        .bulk-actions .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .bulk-status {
+            min-height: 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .bulk-status.error {
+            color: #d9534f;
+        }
+        .bulk-status.success {
+            color: #28a745;
+        }
+        .file-list {
+            border: 1px solid #e6e9f0;
+            border-radius: 10px;
+            max-height: 360px;
+            overflow-y: auto;
+        }
+        .file-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 120px 160px;
+            gap: 16px;
+            padding: 14px 18px;
+            border-bottom: 1px solid #edf0f5;
+            align-items: center;
+        }
+        .file-row:last-child {
+            border-bottom: none;
+        }
+        .file-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+        .file-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .file-status {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .file-status.pending { color: #6c757d; }
+        .file-status.uploading { color: #0d6efd; }
+        .file-status.uploaded { color: #17a2b8; }
+        .file-status.verifying { color: #0d6efd; }
+        .file-status.verified { color: #198754; }
+        .file-status.error { color: #d9534f; }
+        .file-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .file-actions .link-button {
+            color: var(--primary-color);
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .file-actions .link-button[disabled] {
+            color: #b6bcc6;
+            cursor: not-allowed;
+        }
+        .bulk-results-card .card-header h2 {
+            font-size: 18px;
+            margin: 0;
+        }
+        .bulk-results-action {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .processed-list {
+            margin-top: 18px;
+            border: 1px solid #e6e9f0;
+            border-radius: 10px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .processed-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 140px;
+            gap: 14px;
+            padding: 14px 18px;
+            border-bottom: 1px solid #edf0f5;
+            align-items: center;
+        }
+        .processed-row:last-child {
+            border-bottom: none;
+        }
+        .processed-row .file-name {
+            font-size: 14px;
+        }
+        .processed-row .download-link {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        @media (max-width: 768px) {
+            .file-row {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 10px;
+            }
+            .file-actions {
+                justify-content: flex-start;
+            }
+            .processed-row {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique - CFSS</a>
+            <div class="user-info" id="userInfo"></div>
+        </div>
+    </nav>
+
+    <main class="bulk-verify-container">
+        <section class="card bulk-upload-card">
+            <div class="card-header">
+                <i class="fas fa-clipboard-check"></i>
+                <div>
+                    <h1>Verify Bulk Projects</h1>
+                    <p>Upload PDF packages, sign & flatten them in bulk, then download the processed set.</p>
+                </div>
+            </div>
+
+            <div class="bulk-upload-body">
+                <div class="dropzone" id="bulkDropzone">
+                    <input type="file" id="bulkFileInput" multiple accept="application/pdf">
+                    <div class="dropzone-content">
+                        <i class="fas fa-file-upload"></i>
+                        <p>Drag & drop PDFs here or <span class="link-text">browse from your computer</span></p>
+                    </div>
+                </div>
+
+                <div class="bulk-actions">
+                    <button class="button secondary" id="bulkClearBtn" type="button">
+                        <i class="fas fa-undo"></i>
+                        Clear List
+                    </button>
+                    <div class="action-buttons">
+                        <button class="button primary" id="bulkUploadBtn" type="button" disabled>
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Upload Selected
+                        </button>
+                        <button class="button success" id="bulkVerifyBtn" type="button" disabled>
+                            <i class="fas fa-check-double"></i>
+                            Sign & Flatten
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bulk-status" id="bulkStatusMessage" role="status"></div>
+
+                <div class="file-list" id="bulkFileList" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section class="card bulk-results-card">
+            <div class="card-header">
+                <i class="fas fa-download"></i>
+                <div>
+                    <h2>Processed Files</h2>
+                    <p>Download the signed & flattened PDFs once verification is complete.</p>
+                </div>
+            </div>
+            <div class="bulk-results-action">
+                <button class="button primary" id="bulkDownloadAllBtn" type="button" disabled>
+                    <i class="fas fa-file-download"></i>
+                    Download All
+                </button>
+            </div>
+            <div class="processed-list" id="bulkProcessedList" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+    <!-- AWS Cognito SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-helper.js"></script>
+    <script src="cfss-verify-bulk-projects.js" defer></script>
+    <script>
+        let authHelper;
+
+        window.addEventListener('load', async () => {
+            authHelper = new AuthHelper();
+            const userData = await authHelper.checkAuthentication();
+
+            if (!userData || userData.pendingApproval) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            const userEmail = (userData.email || '').toLowerCase();
+            const allowedEmails = (typeof BULK_VERIFY_ALLOWED_EMAILS !== 'undefined')
+                ? BULK_VERIFY_ALLOWED_EMAILS
+                : [];
+
+            if (!allowedEmails.includes(userEmail)) {
+                alert('Access restricted to authorized reviewers.');
+                window.location.href = 'cfss-dashboard.html';
+                return;
+            }
+
+            authHelper.updateUserInterface();
+            initializeBulkVerifyPage({ authHelper, userData });
+        });
+    </script>
+</body>
+</html>

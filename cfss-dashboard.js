@@ -569,7 +569,23 @@ function viewAllProjects() {
     alert('Showing all CFSS projects in the system');
 }
 
+function openVerifyBulkProjects() {
+    const allowedEmails = (typeof BULK_VERIFY_ALLOWED_EMAILS !== 'undefined')
+        ? BULK_VERIFY_ALLOWED_EMAILS
+        : ['anhquan1212004@gmail.com', 'hoangminhduc.ite@gmail.com'];
+    const currentUser = authHelper?.getCurrentUser ? authHelper.getCurrentUser() : null;
+    const userEmail = (currentUser?.email || '').toLowerCase();
+
+    if (!allowedEmails.includes(userEmail)) {
+        alert('Access restricted');
+        return;
+    }
+
+    window.location.href = 'cfss-verify-bulk-projects.html';
+}
+
 // Make functions available globally
 window.switchToSeismic = switchToSeismic;
 window.openUserManagement = openUserManagement;
 window.viewAllProjects = viewAllProjects;
+window.openVerifyBulkProjects = openVerifyBulkProjects;

@@ -1,4 +1,13 @@
 // auth-helper.js - Centralized authentication without JWT
+const BULK_VERIFY_ALLOWED_EMAILS = [
+    'anhquan1212004@gmail.com',
+    'hoangminhduc.ite@gmail.com'
+];
+
+if (typeof window !== 'undefined') {
+    window.BULK_VERIFY_ALLOWED_EMAILS = BULK_VERIFY_ALLOWED_EMAILS;
+}
+
 class AuthHelper {
     constructor() {
         this.cognitoConfig = {
@@ -178,6 +187,16 @@ class AuthHelper {
         const adminPanel = document.getElementById('adminPanel');
         if (adminPanel && this.isAdmin()) {
             adminPanel.classList.add('show');
+        }
+
+        const verifyBulkButton = document.getElementById('verifyBulkProjectsButton');
+        if (verifyBulkButton) {
+            const userEmail = (this.currentUserData?.email || '').toLowerCase();
+            if (BULK_VERIFY_ALLOWED_EMAILS.includes(userEmail)) {
+                verifyBulkButton.style.display = 'inline-flex';
+            } else {
+                verifyBulkButton.style.display = 'none';
+            }
         }
     }
 
