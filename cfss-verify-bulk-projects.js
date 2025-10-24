@@ -6,6 +6,8 @@ const BULK_VERIFY_API_BASE =
 // Toggle this ON if you also want to re-upload flattened PDFs to S3 after verify
 const REUPLOAD_FLATTENED_TO_S3 = false;
 
+const N8N_WEBHOOK_URL = 'https://protectionsismique.app.n8n.cloud/webhook/cda3660d-ddda-4331-a206-16557bdc060f';
+
 const bulkVerifyState = {
   authHelper: null,
   userData: null,
@@ -107,6 +109,7 @@ function cacheDomElements() {
   bulkElements.uploadBtn = document.getElementById('bulkUploadBtn');
   bulkElements.verifyBtn = document.getElementById('bulkVerifyBtn');
   bulkElements.downloadAllBtn = document.getElementById('bulkDownloadAllBtn');
+  bulkElements.downloadDriveBtn = document.getElementById('bulkDownloadDriveBtn');
   bulkElements.fileList = document.getElementById('bulkFileList');
   bulkElements.processedList = document.getElementById('bulkProcessedList');
   bulkElements.statusMessage = document.getElementById('bulkStatusMessage');
@@ -129,6 +132,9 @@ function bindEventListeners() {
   bulkElements.uploadBtn.addEventListener('click', handleUploadSelected);
   bulkElements.verifyBtn.addEventListener('click', handleVerifyFiles);
   bulkElements.downloadAllBtn.addEventListener('click', handleDownloadAll);
+    if (bulkElements.downloadDriveBtn) {
+    bulkElements.downloadDriveBtn.addEventListener('click', handleDownloadToDrive); 
+  }
 }
 
 /* ------------------------------- UI events ------------------------------- */
@@ -649,6 +655,8 @@ function updateButtonStates() {
   const hasVerified = bulkVerifyState.entries.some(
     (e) => e.status === 'verified' && (e.flattenedDownloadUrl || e.flattenedBlobUrl || e.downloadUrl)
   );
+  bulkElements.downloadAllBtn.disabled = !hasVerified;
+  if (bulkElements.downloadDriveBtn) bulkElements.downloadDriveBtn.disabled = !hasVerified;
 
   bulkElements.uploadBtn.disabled =
     bulkVerifyState.isUploading || bulkVerifyState.isVerifying || !hasPending;
@@ -707,6 +715,39 @@ function formatRelativeTime(ts) {
     return `${h} hour${h !== 1 ? 's' : ''} ago`;
   }
   return d.toLocaleString();
+}
+
+async function handleDownloadToDrive() {
+  try {
+    const processed = bulkVerifyState.entries.filter(
+      e => e.status === 'verified' && (e.flattenedDownloadUrl || e.downloadUrl || e.flattenedBlobUrl)
+    );
+
+    // Build payload; n8n must be able to GET the URL (skip blob:)
+    const files = processed.map(e => ({
+      fileName: (e.file?.name || 'report').replace(/\.pdf$/i, '') + '-signed.pdf',
+      sourceUrl: e.flattenedDownloadUrl || e.downloadUrl || null
+    })).filter(x => !!x.sourceUrl);
+
+    if (!files.length) {
+      updateStatusMessage('No processed files available to send to Google Drive.', 'error');
+      return;
+    }
+
+const res = await fetch(N8N_WEBHOOK_URL, {
+   method: 'POST',
+   headers: { 'Content-Type': 'text/plain' }, // simple → no preflight
+   body: JSON.stringify({ files }),
+ });
+
+    if (!res.ok) throw new Error(`n8n webhook failed (HTTP ${res.status})`);
+    updateStatusMessage('Google Drive upload started. Files will appear in Drive shortly.', 'success');
+  } catch (err) {
+    console.error('Drive upload error:', err);
+    updateStatusMessage(err.message || 'Failed to send files to Google Drive.', 'error');
+  } finally {
+    updateButtonStates();
+  }
 }
 
 window.initializeBulkVerifyPage = initializeBulkVerifyPage;

@@ -169,6 +169,7 @@
         .bulk-results-action {
             display: flex;
             justify-content: flex-end;
+            gap: 12px;
             margin-top: 10px;
         }
         .processed-list {
@@ -217,7 +218,13 @@
 <body>
     <nav class="navbar">
         <div class="navbar-content">
-            <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique - CFSS</a>
+            <div class="title-area">
+                <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique - CFSS</a>
+                <a href="cfss-dashboard.html" class="dashboard-btn">
+                    <i class="fas fa-th-large"></i>
+                    Dashboard
+                </a>
+            </div>
             <div class="user-info" id="userInfo"></div>
         </div>
     </nav>
@@ -275,7 +282,11 @@
             <div class="bulk-results-action">
                 <button class="button primary" id="bulkDownloadAllBtn" type="button" disabled>
                     <i class="fas fa-file-download"></i>
-                    Download All
+                    Download to PC
+                </button>
+                <button class="button secondary" id="bulkDownloadDriveBtn" type="button" disabled>
+                    <i class="fas fa-cloud-download-alt"></i>
+                    Download to Google Drive
                 </button>
             </div>
             <div class="processed-list" id="bulkProcessedList" aria-live="polite"></div>
