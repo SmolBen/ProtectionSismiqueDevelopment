@@ -478,6 +478,21 @@ function viewAllProjects() {
     alert('Showing all projects in the system');
 }
 
+function openVerifyBulkProjects() {
+    const allowedEmails = (typeof BULK_VERIFY_ALLOWED_EMAILS !== 'undefined')
+        ? BULK_VERIFY_ALLOWED_EMAILS
+        : ['anhquan1212004@gmail.com', 'hoangminhduc.ite@gmail.com'];
+    const currentUser = authHelper?.getCurrentUser ? authHelper.getCurrentUser() : null;
+    const userEmail = (currentUser?.email || '').toLowerCase();
+
+    if (!allowedEmails.includes(userEmail)) {
+        alert('Access restricted');
+        return;
+    }
+
+    window.location.href = 'cfss-verify-bulk-projects.html';
+}
+
 function exportData() {
     if (!authHelper.isAdmin()) {
         alert('Admin access required');
@@ -490,4 +505,5 @@ function exportData() {
 window.switchToCFSS = switchToCFSS;
 window.openUserManagement = openUserManagement;
 window.viewAllProjects = viewAllProjects;
+window.openVerifyBulkProjects = openVerifyBulkProjects;
 window.exportData = exportData;
