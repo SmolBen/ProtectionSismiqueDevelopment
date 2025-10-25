@@ -89,6 +89,47 @@ function makeBlobDownloadUrl(file) {
   return URL.createObjectURL(file);
 }
 
+function triggerDownload(info) {
+  if (!info) return;
+
+  let href = info.url || null;
+  let shouldRevoke = false;
+
+  if (info.file instanceof Blob) {
+    if (info.blobUrl) {
+      href = info.blobUrl;
+    } else {
+      href = URL.createObjectURL(info.file);
+      shouldRevoke = true;
+    }
+  }
+
+  if (!href) return;
+
+  const link = document.createElement('a');
+  link.href = href;
+  if (info.filename) link.download = info.filename;
+  link.style.display = 'none';
+
+  const parent = document.body || document.documentElement;
+  parent.appendChild(link);
+  link.click();
+  setTimeout(() => {
+    try {
+      link.remove();
+    } catch (err) {
+      console.warn('Failed to clean up download link', err);
+    }
+    if (shouldRevoke) {
+      try {
+        URL.revokeObjectURL(href);
+      } catch (revokeErr) {
+        console.warn('Failed to revoke object URL', revokeErr);
+      }
+    }
+  }, 0);
+}
+
 /* ------------------------------ Page wiring ------------------------------ */
 
 function initializeBulkVerifyPage({ authHelper, userData }) {
@@ -134,6 +175,9 @@ function bindEventListeners() {
   bulkElements.downloadAllBtn.addEventListener('click', handleDownloadAll);
     if (bulkElements.downloadDriveBtn) {
     bulkElements.downloadDriveBtn.addEventListener('click', handleDownloadToDrive); 
+  }
+  if (bulkElements.processedList) {
+    bulkElements.processedList.addEventListener('click', handleProcessedDownloadClick);
   }
 }
 
@@ -190,6 +234,7 @@ function addFilesToQueue(files) {
       downloadUrl: null,           // signed (server) url after verify
       flattenedBlobUrl: null,      // browser-generated url (no backend)
       flattenedFile: null,         // File object for flattened version
+      signedFile: null,            // File object for signed version
       flattenedS3Key: null,        // optional re-uploaded key
       flattenedDownloadUrl: null,  // optional S3 presigned link for flattened
       error: null,
@@ -440,6 +485,7 @@ async function runBulkVerification(entries) {
           entry.downloadUrl,
           entry.file.name.replace(/\.pdf$/i, '') + '-signed.pdf'
         );
+        entry.signedFile = signedFile;
 
         // B) flatten it client-side
         const flatFile = await flattenPdfInBrowser(signedFile, 1.75); // tune scale if needed
@@ -549,24 +595,23 @@ function handleDownloadAll() {
     return;
   }
 
-  for (const e of ready) {
-    const href = e.flattenedDownloadUrl || e.flattenedBlobUrl || e.downloadUrl;
+  let hadFailure = false;
+  for (const entry of ready) {
+    const info = getDownloadInfo(entry);
+    if (!info) continue;
     try {
-      const a = document.createElement('a');
-      a.href = href;
-      if (e.flattenedBlobUrl) {
-        a.download = (e.flattenedFile?.name) || 'flattened.pdf';
-      }
-      a.target = '_blank';
-      a.rel = 'noopener';
-      a.click();
+      triggerDownload(info);
     } catch (err) {
-      console.error('Open download failed', err);
-      window.open(href, '_blank');
+      console.error('Download trigger failed', err);
+      hadFailure = true;
     }
   }
 
-  updateStatusMessage('Download links opened.', 'success');
+  if (hadFailure) {
+    updateStatusMessage('Unable to start one or more downloads automatically.', 'error');
+  } else {
+    updateStatusMessage('Downloads started.', 'success');
+  }
 }
 
 function renderFileList() {
@@ -630,25 +675,46 @@ function renderProcessedList() {
   }
 
   bulkElements.processedList.innerHTML = processedEntries
-    .map(
-      (e) => `
+    .map((e) => {
+      const info = getDownloadInfo(e);
+      const hrefValue = info?.url ? escapeHtml(info.url) : '#';
+      const downloadMarkup = info
+        ? `<a class="download-link" href="${hrefValue}" data-action="download" data-id="${e.id}" download="${escapeHtml(info.filename)}"><i class="fas fa-file-download"></i> Download</a>`
+        : '';
+
+      return `
       <div class="processed-row">
         <div>
           <div class="file-name">${escapeHtml(e.file.name)}</div>
           <div class="file-meta">Signed ${formatRelativeTime(e.verifiedAt)}</div>
         </div>
-        ${
-          e.flattenedDownloadUrl
-            ? `<a class="download-link" href="${e.flattenedDownloadUrl}" target="_blank" rel="noopener"><i class="fas fa-file-download"></i> Download</a>`
-            : e.flattenedBlobUrl
-            ? `<a class="download-link" href="${e.flattenedBlobUrl}" download="${escapeHtml(e.flattenedFile?.name || 'flattened.pdf')}"><i class="fas fa-file-download"></i> Download</a>`
-            : e.downloadUrl
-            ? `<a class="download-link" href="${e.downloadUrl}" target="_blank" rel="noopener"><i class="fas fa-file-download"></i> Download</a>`
-            : ''
-        }
-      </div>`
-    )
+        ${downloadMarkup}
+      </div>`;
+    })
     .join('');
+}
+
+function handleProcessedDownloadClick(event) {
+  const downloadTarget = event.target.closest('[data-action="download"]');
+  if (!downloadTarget) return;
+
+  event.preventDefault();
+  const { id } = downloadTarget.dataset;
+  const entry = bulkVerifyState.entries.find((e) => e.id === id);
+  if (!entry) return;
+
+  const info = getDownloadInfo(entry);
+  if (!info) {
+    updateStatusMessage('This file is not ready for download yet.', 'error');
+    return;
+  }
+
+  try {
+    triggerDownload(info);
+  } catch (err) {
+    console.error('Download trigger failed', err);
+    updateStatusMessage('Unable to start the download automatically.', 'error');
+  }
 }
 
 function handleRemoveEntry(event) {
@@ -743,6 +809,44 @@ function formatRelativeTime(ts) {
     return `${h} hour${h !== 1 ? 's' : ''} ago`;
   }
   return d.toLocaleString();
+}
+
+function getDownloadInfo(entry) {
+  if (!entry) return null;
+
+  const originalName = entry.file?.name || 'report.pdf';
+  const baseName = originalName.replace(/\.pdf$/i, '');
+
+  if (entry.flattenedFile) {
+    return {
+      file: entry.flattenedFile,
+      filename: entry.flattenedFile.name || `${baseName}-flattened.pdf`,
+      blobUrl: entry.flattenedBlobUrl || null,
+    };
+  }
+
+  if (entry.flattenedBlobUrl) {
+    return {
+      url: entry.flattenedBlobUrl,
+      filename: `${baseName}-flattened.pdf`,
+    };
+  }
+
+  if (entry.signedFile) {
+    return {
+      file: entry.signedFile,
+      filename: entry.signedFile.name || `${baseName}-signed.pdf`,
+    };
+  }
+
+  if (entry.downloadUrl) {
+    return {
+      url: entry.downloadUrl,
+      filename: `${baseName}-signed.pdf`,
+    };
+  }
+
+  return null;
 }
 
 async function handleDownloadToDrive() {
