@@ -450,47 +450,75 @@ async function runBulkVerification(entries) {
 
         // D) (optional) also re-upload flattened to S3
         if (REUPLOAD_FLATTENED_TO_S3) {
-          const res = await fetch(`${BULK_VERIFY_API_BASE}/upload-url`, {
-            method: 'POST',
-            headers: { ...authHeaders, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              files: [
-                {
-                  clientId: entry.id + ':flat',
-                  filename:
-                    flatFile.name.replace(/-signed/i, '').replace(/\.pdf$/i, '') +
-                    '-final.pdf',
-                  contentType: flatFile.type || 'application/pdf',
-                  size: flatFile.size,
-                },
-              ],
-            }),
-          });
-          if (!res.ok) throw new Error(`Upload-URL for flattened failed (${res.status})`);
-          const { success, uploads } = await res.json();
-          if (!success || !uploads?.length) throw new Error('No upload URL for flattened');
+          try {
+            console.log(`[${entry.file.name}] Starting S3 re-upload of flattened file...`);
+            const res = await fetch(`${BULK_VERIFY_API_BASE}/upload-url`, {
+              method: 'POST',
+              headers: { ...authHeaders, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                files: [
+                  {
+                    clientId: entry.id + ':flat',
+                    filename:
+                      flatFile.name.replace(/-signed/i, '').replace(/\.pdf$/i, '') +
+                      '-final.pdf',
+                    contentType: flatFile.type || 'application/pdf',
+                    size: flatFile.size,
+                  },
+                ],
+              }),
+            });
+            if (!res.ok) {
+              const errText = await res.text();
+              throw new Error(`Upload-URL request failed (${res.status}): ${errText}`);
+            }
+            const { success, uploads } = await res.json();
+            if (!success || !uploads?.length) throw new Error('No upload URL returned for flattened file');
 
-          const { uploadUrl, key } = uploads[0];
-          const put = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': flatFile.type || 'application/pdf' },
-            body: flatFile,
-          });
-          if (!put.ok) throw new Error(`Flattened PUT failed (${put.status})`);
+            const { uploadUrl, key } = uploads[0];
+            console.log(`[${entry.file.name}] Got upload URL, uploading to S3 key: ${key}`);
+            
+            const put = await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': flatFile.type || 'application/pdf' },
+              body: flatFile,
+            });
+            if (!put.ok) {
+              const errText = await put.text();
+              throw new Error(`S3 PUT failed (${put.status}): ${errText}`);
+            }
 
-          // Optional: get a presigned GET for the flattened file
-          const dlRes = await fetch(
-            `${BULK_VERIFY_API_BASE}/download?key=${encodeURIComponent(key)}`,
-            { headers: authHeaders }
-          );
-          const dlData = await dlRes.json();
-          if (dlRes.ok && dlData?.downloadUrl) {
-            entry.flattenedS3Key = key;
-            entry.flattenedDownloadUrl = dlData.downloadUrl;
+            console.log(`[${entry.file.name}] S3 upload successful, getting download URL...`);
+            
+            // Optional: get a presigned GET for the flattened file
+            const dlRes = await fetch(
+              `${BULK_VERIFY_API_BASE}/download?key=${encodeURIComponent(key)}`,
+              { headers: authHeaders }
+            );
+            if (!dlRes.ok) {
+              const errText = await dlRes.text();
+              throw new Error(`Download URL request failed (${dlRes.status}): ${errText}`);
+            }
+            const dlData = await dlRes.json();
+            if (dlData?.downloadUrl) {
+              entry.flattenedS3Key = key;
+              entry.flattenedDownloadUrl = dlData.downloadUrl;
+              console.log(`[${entry.file.name}] ✓ Flattened file successfully uploaded to S3 with download URL`);
+            } else {
+              throw new Error('Download URL not returned in response');
+            }
+          } catch (uploadErr) {
+            console.error(`[${entry.file.name}] S3 re-upload failed:`, uploadErr);
+            // Don't overwrite existing errors, but log this specific failure
+            if (!entry.error || !entry.error.includes('Flatten')) {
+              entry.error = `S3 upload failed: ${uploadErr.message}. File can still be downloaded to PC.`;
+            }
           }
+        } else {
+          console.log(`[${entry.file.name}] S3 re-upload skipped (REUPLOAD_FLATTENED_TO_S3 = false)`);
         }
       } catch (e) {
-        console.error('Post-verify flatten failed:', e);
+        console.error(`[${entry.file.name}] Post-verify flatten failed:`, e);
         entry.error =
           entry.error ||
           'Flatten after sign failed (you can still download the signed version).';
@@ -719,29 +747,53 @@ function formatRelativeTime(ts) {
 
 async function handleDownloadToDrive() {
   try {
-    const processed = bulkVerifyState.entries.filter(
-      e => e.status === 'verified' && (e.flattenedDownloadUrl || e.downloadUrl || e.flattenedBlobUrl)
-    );
+    const verifiedEntries = bulkVerifyState.entries.filter(e => e.status === 'verified');
+    const withFlattenedUrl = verifiedEntries.filter(e => !!e.flattenedDownloadUrl);
+    const withBlobOnly = verifiedEntries.filter(e => e.flattenedBlobUrl && !e.flattenedDownloadUrl);
 
-    // Build payload; n8n must be able to GET the URL (skip blob:)
-    const files = processed.map(e => ({
-      fileName: (e.file?.name || 'report').replace(/\.pdf$/i, '') + '-signed.pdf',
-      sourceUrl: e.flattenedDownloadUrl || e.downloadUrl || null
-    })).filter(x => !!x.sourceUrl);
-
-    if (!files.length) {
-      updateStatusMessage('No processed files available to send to Google Drive.', 'error');
+    // If some files only have blob URLs, they failed S3 re-upload
+    if (withBlobOnly.length > 0) {
+      const fileNames = withBlobOnly.map(e => e.file.name).join(', ');
+      console.error('Files failed S3 re-upload:', withBlobOnly);
+      updateStatusMessage(
+        `${withBlobOnly.length} file(s) failed to upload to cloud storage (required for Google Drive transfer): ${fileNames}. Check the console for details.`,
+        'error'
+      );
       return;
     }
 
-const res = await fetch(N8N_WEBHOOK_URL, {
-   method: 'POST',
-   headers: { 'Content-Type': 'text/plain' }, // simple → no preflight
-   body: JSON.stringify({ files }),
- });
+    // If no verified entries yet
+    if (!verifiedEntries.length) {
+      updateStatusMessage('No verified files to send to Google Drive yet.', 'error');
+      return;
+    }
+
+    // If still processing (no blob or download URLs yet)
+    const stillProcessing = verifiedEntries.filter(e => !e.flattenedDownloadUrl && !e.flattenedBlobUrl);
+    if (stillProcessing.length > 0) {
+      updateStatusMessage('Flattened versions are still processing. Try again once they finish.', 'error');
+      return;
+    }
+
+    // Build payload; n8n must be able to GET the URL (skip blob:)
+    const files = withFlattenedUrl.map(e => ({
+      fileName: (e.file?.name || 'report').replace(/\.pdf$/i, '') + '-signed.pdf',
+      sourceUrl: e.flattenedDownloadUrl
+    }));
+
+    if (!files.length) {
+      updateStatusMessage('No files successfully uploaded to cloud storage for Google Drive transfer.', 'error');
+      return;
+    }
+
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // text/plain avoids preflight
+      body: JSON.stringify({ files }),
+    });
 
     if (!res.ok) throw new Error(`n8n webhook failed (HTTP ${res.status})`);
-    updateStatusMessage('Google Drive upload started. Files will appear in Drive shortly.', 'success');
+    updateStatusMessage(`Google Drive upload started for ${files.length} file(s). Files will appear in Drive shortly.`, 'success');
   } catch (err) {
     console.error('Drive upload error:', err);
     updateStatusMessage(err.message || 'Failed to send files to Google Drive.', 'error');
@@ -749,5 +801,4 @@ const res = await fetch(N8N_WEBHOOK_URL, {
     updateButtonStates();
   }
 }
-
 window.initializeBulkVerifyPage = initializeBulkVerifyPage;
