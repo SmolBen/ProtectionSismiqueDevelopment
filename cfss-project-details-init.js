@@ -81,13 +81,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 // Load CFSS wind data
                 console.log('🔍 Loading CFSS wind data...');
-                if (project.cfssWindData && project.cfssWindData.length > 0) {
+                
+                // Check if cfssWindData exists (both old array format and new object format)
+                const hasCFSSData = project.cfssWindData && (
+                    (Array.isArray(project.cfssWindData) && project.cfssWindData.length > 0) ||
+                    (!Array.isArray(project.cfssWindData) && project.cfssWindData.storeys)
+                );
+                
+                if (hasCFSSData) {
                     console.log('✅ CFSS data found, loading display...');
                     cfssWindData = project.cfssWindData;
                     
                     setTimeout(() => {
                         try {
-                            updateCFSSDataDisplay(project.cfssWindData);
+                            displayCFSSData(project.cfssWindData);
+                            updateCFSSButtonText();
                             console.log('✅ CFSS data display updated successfully');
                         } catch (error) {
                             console.error('❌ Error updating CFSS data display:', error);

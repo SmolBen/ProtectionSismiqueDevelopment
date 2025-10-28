@@ -410,42 +410,78 @@
                 </button>
                 
                 <div id="cfss-form" class="cfss-form hidden">
-                    <!-- Floor-specific sections (can have multiple) -->
-                    <div id="floor-sections">
-                        <div class="floor-section">
-                            <div class="main-fields-row">
-                                <div class="field-group floor-range">
-                                    <label>Floor Range:</label>
-                                    <input type="text" class="floor-input" placeholder="e.g., 1-4">
-                                </div>
-                                
-                                <div class="field-group resistance">
-                                    <label>Resistance:</label>
-                                    <div class="field-with-unit">
-                                        <input type="number" class="value-input" placeholder="0.0" step="0.1">
-                                        <span class="unit-label">psf</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="field-group deflection">
-                                    <label>Deflection:</label>
-                                    <div class="field-with-unit">
-                                        <input type="number" class="value-input" placeholder="0.0" step="0.1">
-                                        <span class="unit-label">psf</span>
-                                    </div>
-                                </div>
-                                
-                                <button class="remove-btn" onclick="removeCFSSSection(this)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                    <!-- Global Wind Calculation Parameters -->
+                    <div class="wind-parameters-section">
+                        <h3 style="margin: 0 0 15px 0; color: #17a2b8; font-size: 16px; border-bottom: 2px solid #17a2b8; padding-bottom: 8px;">
+                            Paramètres de calcul du vent
+                        </h3>
+                        
+                        <div class="wind-params-grid">
+                            <div class="field-row">
+                                <label for="q50">q50 (kPa):</label>
+                                <input type="number" id="q50" class="number-input" step="0.01" min="0" oninput="recalculateAllStoreys()">
+                            </div>
+                            
+                            <div class="field-row">
+                                <label for="importanceFactor">Facteur d'importance (Iw):</label>
+                                <select id="importanceFactor" class="select-input" onchange="recalculateAllStoreys()">
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="Low">Low (0.8)</option>
+                                    <option value="Normal">Normal (1.0)</option>
+                                    <option value="High">High (1.15)</option>
+                                    <option value="Post Disaster">Post Disaster (1.25)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="field-row">
+                                <label for="terrainType">Type de terrain:</label>
+                                <select id="terrainType" class="select-input" onchange="recalculateAllStoreys()">
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="Open terrain">Open terrain</option>
+                                    <option value="Rough terrain">Rough terrain</option>
+                                </select>
+                            </div>
+                            
+                            <div class="field-row">
+                                <label for="category">Catégorie (pression interne):</label>
+                                <select id="category" class="select-input" onchange="recalculateAllStoreys()">
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="Category 1">Category 1</option>
+                                    <option value="Category 2">Category 2</option>
+                                    <option value="Category 3">Category 3</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Add Floor Section Button -->
-                    <button class="add-section-btn" onclick="addCFSSFloorSection()">
-                        <i class="fas fa-plus"></i> Add Floor Section
-                    </button>
+                    <!-- Storey Calculations Section -->
+                    <div class="storey-calculations-section">
+                        <h3 style="margin: 20px 0 15px 0; color: #17a2b8; font-size: 16px; border-bottom: 2px solid #17a2b8; padding-bottom: 8px;">
+                            Calculs par étage
+                        </h3>
+                        
+                        <div class="storey-table-container">
+                            <table class="storey-table" id="storeyTable">
+                                <thead>
+                                    <tr>
+                                        <th>Étage</th>
+                                        <th>H (m)</th>
+                                        <th>A (m²)</th>
+                                        <th>ULS (psf)</th>
+                                        <th>SLS (psf)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="storeyTableBody">
+                                    <!-- Storey rows will be added dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <button class="add-section-btn" onclick="addStoreyRow()">
+                            <i class="fas fa-plus"></i> Ajouter un étage
+                        </button>
+                    </div>
                     
                     <!-- Project-wide fields (single instance) -->
                     <div class="project-fields">

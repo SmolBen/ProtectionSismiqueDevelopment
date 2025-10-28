@@ -5,6 +5,21 @@ let currentUser = null;
 let isAdmin = false;
 let projectData = null;
 let cfssWindData = []; // Store wind data
+let storeyCounter = 0; // Counter for storey labels (RDC, NV1, NV2...)
+
+// CFSS Wind Load Calculation - Lookup tables from Excel
+const IW_VALUES = {
+    'Low': { ULS: 0.8, SLS: 0.75 },
+    'Normal': { ULS: 1.0, SLS: 0.75 },
+    'High': { ULS: 1.15, SLS: 0.75 },
+    'Post Disaster': { ULS: 1.25, SLS: 0.75 }
+};
+
+const CPI_VALUES = {
+    'Category 1': { min: -0.15, max: 0 },
+    'Category 2': { min: -0.45, max: 0.3 },
+    'Category 3': { min: -0.7, max: 0.7 }
+};
 let projectRevisions = [];
 let currentRevisionId = null;
 
@@ -2439,9 +2454,9 @@ async function reloadProjectData() {
             updateRevisionIndicator();
             
             // Load CFSS data
-            if (project.cfssWindData && project.cfssWindData.length > 0) {
+            if (project.cfssWindData) {
                 cfssWindData = project.cfssWindData;
-                updateCFSSDataDisplay(project.cfssWindData);
+                displayCFSSData(project.cfssWindData);
             }
             
             console.log('✅ Project data reloaded successfully');
@@ -4058,7 +4073,7 @@ function toggleCFSSForm() {
         btn.classList.add('expanded');
         
         // Check if we have existing CFSS data and populate form
-        if (cfssWindData && cfssWindData.length > 0) {
+        if (cfssWindData && (Array.isArray(cfssWindData) ? cfssWindData.length > 0 : cfssWindData.storeys)) {
             populateCFSSForm(cfssWindData);
             btnText.textContent = 'Hide CFSS Data';
         } else {
@@ -4075,7 +4090,13 @@ function toggleCFSSForm() {
 }
 
 function setDefaultCFSSValues() {
-    // Set default values
+    // Clear wind parameters
+    document.getElementById('q50').value = '';
+    document.getElementById('importanceFactor').value = '';
+    document.getElementById('terrainType').value = '';
+    document.getElementById('category').value = '';
+    
+    // Set default specification values
     const defaults = {
         maxDeflection: 'L/360',
         maxSpacing: '48" c./c. (1200mm c./c)',
@@ -4087,10 +4108,18 @@ function setDefaultCFSSValues() {
     // Apply defaults to form fields
     Object.keys(defaults).forEach(fieldId => {
         const field = document.getElementById(fieldId);
-        if (field && !field.value) {  // Only set if field is empty
+        if (field) {
             field.value = defaults[fieldId];
         }
     });
+    
+    // Initialize storey table with one empty row
+    const tbody = document.getElementById('storeyTableBody');
+    if (tbody) {
+        tbody.innerHTML = '';
+        storeyCounter = 0;
+        addStoreyRow();
+    }
     
     console.log('✅ Default CFSS values set');
 }
@@ -4099,24 +4128,37 @@ function updateCFSSButtonText() {
     const btnText = document.getElementById('cfss-btn-text');
     if (!btnText) return;
     
-    if (cfssWindData && cfssWindData.length > 0) {
-        const floorCount = cfssWindData.length;
+    // Check if cfssWindData exists and determine structure
+    const hasData = cfssWindData && (
+        (Array.isArray(cfssWindData) && cfssWindData.length > 0) ||
+        (!Array.isArray(cfssWindData) && cfssWindData.storeys)
+    );
+    
+    if (hasData) {
+        // Check if new structure
+        const isNewStructure = !Array.isArray(cfssWindData) && cfssWindData.storeys;
         
-        // Count filled specifications
-        const projectData = cfssWindData[0] || {};
-        const specifications = [
-            projectData.maxDeflection,
-            projectData.maxSpacing,
-            projectData.framingAssembly,
-            projectData.concreteAnchor,
-            projectData.steelAnchor,
-        ];
-        const filledSpecs = specifications.filter(spec => spec && spec.trim() !== '').length;
-        
-        if (filledSpecs > 0) {
-            btnText.textContent = `Edit CFSS Data (${floorCount} floors, ${filledSpecs} specs)`;
+        if (isNewStructure) {
+            const storeyCount = cfssWindData.storeys?.length || 0;
+            btnText.textContent = `Edit CFSS data (${storeyCount} floors)`;
         } else {
-            btnText.textContent = `Edit CFSS Data (${floorCount} floors)`;
+            // Old structure
+            const floorCount = cfssWindData.length;
+            const projectData = cfssWindData[0] || {};
+            const specifications = [
+                projectData.maxDeflection,
+                projectData.maxSpacing,
+                projectData.framingAssembly,
+                projectData.concreteAnchor,
+                projectData.steelAnchor,
+            ];
+            const filledSpecs = specifications.filter(spec => spec && spec.trim() !== '').length;
+            
+            if (filledSpecs > 0) {
+                btnText.textContent = `Edit CFSS Data (${floorCount} floors, ${filledSpecs} specs)`;
+            } else {
+                btnText.textContent = `Edit CFSS Data (${floorCount} floors)`;
+            }
         }
     } else {
         btnText.textContent = 'Add CFSS Data';
@@ -4163,84 +4205,143 @@ function displayCFSSData(cfssData) {
     const displayDiv = document.getElementById('cfssDataDisplay');
     const contentDiv = document.getElementById('cfssDataContent');
     
-    if (!cfssData || cfssData.length === 0) {
+    // Handle both old and new data structures
+    if (!cfssData || (Array.isArray(cfssData) && cfssData.length === 0) || (!Array.isArray(cfssData) && !cfssData.storeys)) {
         displayDiv.style.display = 'none';
         return;
     }
     
     displayDiv.style.display = 'block';
-    
-    // Get project-wide fields from first entry (they're the same across all floor sections)
-    const projectData = cfssData[0] || {};
-    
     let html = '';
     
-    // Display project-wide CFSS data first
-    const projectFields = [
-        { label: 'Max Deflection', value: projectData.maxDeflection },
-        { label: 'Max Spacing Between Braces', value: projectData.maxSpacing },
-        { label: 'Framing Assembly', value: projectData.framingAssembly },
-        { label: 'Concrete Anchor', value: projectData.concreteAnchor },
-        { label: 'Steel Anchor', value: projectData.steelAnchor }
-    ];
+    // Check if this is new structure or old structure
+    const isNewStructure = !Array.isArray(cfssData) && cfssData.windParams && cfssData.storeys;
     
-    // Filter out empty project fields
-    const filledProjectFields = projectFields.filter(field => field.value && field.value.trim() !== '');
-    
-    if (filledProjectFields.length > 0) {
-        html += `
-            <div class="cfss-project-data">
-                <h4 style="margin: 0 0 10px 0; color: #28a745; font-size: 14px; border-bottom: 1px solid #28a745; padding-bottom: 5px;">
-                    Project Specifications
-                </h4>
-                <div class="cfss-project-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
-        `;
-        
-        filledProjectFields.forEach(field => {
+    if (isNewStructure) {
+        // NEW STRUCTURE: Display wind parameters
+        if (cfssData.windParams) {
             html += `
-                <div class="cfss-project-item" style="font-size: 12px; padding: 4px 0;">
-                    <strong style="color: #495057;">${field.label}:</strong>
-                    <span style="color: #6c757d; margin-left: 8px;">${field.value}</span>
+                <div class="cfss-wind-params-display">
+                    <h4 style="margin: 0 0 10px 0; color: #17a2b8; font-size: 14px; border-bottom: 1px solid #17a2b8; padding-bottom: 5px;">
+                        Paramètres de calcul du vent
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+                        <div style="font-size: 12px;"><strong>q50:</strong> ${cfssData.windParams.q50} kPa</div>
+                        <div style="font-size: 12px;"><strong>Facteur d'importance:</strong> ${cfssData.windParams.importanceFactor}</div>
+                        <div style="font-size: 12px;"><strong>Type de terrain:</strong> ${cfssData.windParams.terrainType}</div>
+                        <div style="font-size: 12px;"><strong>Catégorie:</strong> ${cfssData.windParams.category}</div>
+                    </div>
                 </div>
             `;
-        });
+        }
         
-        html += `
-                </div>
-            </div>
-        `;
-    }
-    
-    // Display wind data by floor
-    if (cfssData.length > 0) {
-        html += `
-            <div class="cfss-wind-data">
-                <h4 style="margin: 0 0 10px 0; color: #17a2b8; font-size: 14px; border-bottom: 1px solid #17a2b8; padding-bottom: 5px;">
-                    Wind Data by Floor
-                </h4>
-        `;
+        // Display specifications
+        if (cfssData.specifications) {
+            const specs = cfssData.specifications;
+            const specFields = [
+                { label: 'Max Deflection', value: specs.maxDeflection },
+                { label: 'Max Spacing Between Braces', value: specs.maxSpacing },
+                { label: 'Framing Assembly', value: specs.framingAssembly },
+                { label: 'Concrete Anchor', value: specs.concreteAnchor },
+                { label: 'Steel Anchor', value: specs.steelAnchor }
+            ];
+            
+            const filledSpecs = specFields.filter(field => field.value && field.value.trim() !== '');
+            
+            if (filledSpecs.length > 0) {
+                html += `
+                    <div class="cfss-specifications-display">
+                        <h4 style="margin: 0 0 10px 0; color: #28a745; font-size: 14px; border-bottom: 1px solid #28a745; padding-bottom: 5px;">
+                            Spécifications du projet
+                        </h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+                `;
+                
+                filledSpecs.forEach(field => {
+                    html += `<div style="font-size: 12px;"><strong>${field.label}:</strong> ${field.value}</div>`;
+                });
+                
+                html += `</div></div>`;
+            }
+        }
         
-        cfssData.forEach(item => {
+        // Display storey calculations table
+        if (cfssData.storeys && cfssData.storeys.length > 0) {
             html += `
-                <div class="cfss-floor-item">
-                    <span class="cfss-floor-range">Floor ${item.floorRange}</span>
-                    <span class="cfss-values">Resistance: ${item.resistance} psf, Deflection: ${item.deflection} psf</span>
-                </div>
+                <div class="cfss-storeys-display">
+                    <h4 style="margin: 0 0 10px 0; color: #17a2b8; font-size: 14px; border-bottom: 1px solid #17a2b8; padding-bottom: 5px;">
+                        Calculs par étage
+                    </h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="background: #17a2b8; color: white;">
+                                <th style="padding: 8px; text-align: left;">Étage</th>
+                                <th style="padding: 8px; text-align: center;">H (m)</th>
+                                <th style="padding: 8px; text-align: center;">A (m²)</th>
+                                <th style="padding: 8px; text-align: center;">ULS (psf)</th>
+                                <th style="padding: 8px; text-align: center;">SLS (psf)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
-        });
+            
+            cfssData.storeys.forEach((storey, index) => {
+                const bgColor = index % 2 === 0 ? '#f8f9fa' : 'white';
+                html += `
+                    <tr style="background: ${bgColor};">
+                        <td style="padding: 8px;">${storey.label}</td>
+                        <td style="padding: 8px; text-align: center;">${storey.height}</td>
+                        <td style="padding: 8px; text-align: center;">${storey.area}</td>
+                        <td style="padding: 8px; text-align: center; font-weight: 600; color: #28a745;">${storey.uls.toFixed(2)}</td>
+                        <td style="padding: 8px; text-align: center; font-weight: 600; color: #17a2b8;">${storey.sls.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `</tbody></table></div>`;
+        }
         
-        html += `</div>`;
+        // Update button text
+        const btnText = document.getElementById('cfss-btn-text');
+        if (btnText) {
+            const storeyCount = cfssData.storeys?.length || 0;
+            btnText.textContent = `Données CFSS (${storeyCount} étages)`;
+        }
+        
+    } else {
+        // OLD STRUCTURE: Display legacy format (for backward compatibility)
+        const projectData = Array.isArray(cfssData) ? cfssData[0] : cfssData;
+        
+        if (projectData) {
+            const projectFields = [
+                { label: 'Max Deflection', value: projectData.maxDeflection },
+                { label: 'Max Spacing Between Braces', value: projectData.maxSpacing },
+                { label: 'Framing Assembly', value: projectData.framingAssembly },
+                { label: 'Concrete Anchor', value: projectData.concreteAnchor },
+                { label: 'Steel Anchor', value: projectData.steelAnchor }
+            ];
+            
+            const filledProjectFields = projectFields.filter(field => field.value && field.value.trim() !== '');
+            
+            if (filledProjectFields.length > 0) {
+                html += `<div class="cfss-project-data"><h4 style="margin: 0 0 10px 0; color: #28a745; font-size: 14px;">Project Specifications</h4><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">`;
+                filledProjectFields.forEach(field => {
+                    html += `<div style="font-size: 12px;"><strong>${field.label}:</strong> ${field.value}</div>`;
+                });
+                html += `</div></div>`;
+            }
+        }
+        
+        if (Array.isArray(cfssData) && cfssData.length > 0) {
+            html += `<div class="cfss-wind-data"><h4 style="margin: 10px 0; color: #17a2b8; font-size: 14px;">Wind Data by Floor</h4>`;
+            cfssData.forEach(item => {
+                html += `<div style="font-size: 12px; padding: 5px 0;">Floor ${item.floorRange}: Resistance: ${item.resistance} psf, Deflection: ${item.deflection} psf</div>`;
+            });
+            html += `</div>`;
+        }
     }
     
     contentDiv.innerHTML = html;
-    
-    // Update the button text to show data exists
-    const btnText = document.getElementById('cfss-btn-text');
-    if (btnText) {
-        const floorCount = cfssData.length;
-        const projectFieldCount = filledProjectFields.length;
-        btnText.textContent = `CFSS Data (${floorCount} floors, ${projectFieldCount} specs)`;
-    }
 }
 
 // Update the saveCFSSData function to refresh the display
@@ -4251,66 +4352,85 @@ async function saveCFSSData() {
     }
     
     try {
-        // Collect all floor section data
-        const sections = document.querySelectorAll('.floor-section');
-        const newCfssData = [];
+        // First, calculate all wind loads
+        const calculationSuccess = calculateAllStoreyWindLoads();
+        if (!calculationSuccess) {
+            alert('Fill in all required fields for all floors.');
+            return;
+        }
         
-        // Get project-wide fields (collected once)
-        const maxDeflection = document.getElementById('maxDeflection')?.value.trim() || '';
-        const maxSpacing = document.getElementById('maxSpacing')?.value.trim() || '';
-        const framingAssembly = document.getElementById('framingAssembly')?.value.trim() || '';
-        const concreteAnchor = document.getElementById('concreteAnchor')?.value.trim() || '';
-        const steelAnchor = document.getElementById('steelAnchor')?.value.trim() || '';
+        // Get global wind parameters
+        const windParams = {
+            q50: parseFloat(document.getElementById('q50')?.value) || 0,
+            importanceFactor: document.getElementById('importanceFactor')?.value || '',
+            terrainType: document.getElementById('terrainType')?.value || '',
+            category: document.getElementById('category')?.value || ''
+        };
         
-        sections.forEach(section => {
-            const floorRange = section.querySelector('.floor-input').value.trim();
-            const resistance = parseFloat(section.querySelectorAll('.value-input')[0].value) || 0;
-            const deflection = parseFloat(section.querySelectorAll('.value-input')[1].value) || 0;
+        // Get project-wide specification fields
+        const specifications = {
+            maxDeflection: document.getElementById('maxDeflection')?.value.trim() || '',
+            maxSpacing: document.getElementById('maxSpacing')?.value.trim() || '',
+            framingAssembly: document.getElementById('framingAssembly')?.value.trim() || '',
+            concreteAnchor: document.getElementById('concreteAnchor')?.value.trim() || '',
+            steelAnchor: document.getElementById('steelAnchor')?.value.trim() || ''
+        };
+        
+        // Collect storey calculation data
+        const storeys = [];
+        const rows = document.querySelectorAll('#storeyTableBody tr');
+        
+        rows.forEach(row => {
+            const label = row.querySelector('.storey-label')?.value || '';
+            const H = parseFloat(row.querySelector('.storey-height')?.value) || 0;
+            const A = parseFloat(row.querySelector('.storey-area')?.value) || 0;
+            const ULS = parseFloat(row.querySelector('.storey-uls')?.textContent) || 0;
+            const SLS = parseFloat(row.querySelector('.storey-sls')?.textContent) || 0;
             
-            if (floorRange) {
-                newCfssData.push({
-                    floorRange: floorRange,
-                    resistance: resistance,
-                    deflection: deflection,
-                    // Add project-wide fields to each floor section
-                    maxDeflection: maxDeflection,
-                    maxSpacing: maxSpacing,
-                    framingAssembly: framingAssembly,
-                    concreteAnchor: concreteAnchor,
-                    steelAnchor: steelAnchor,
-                    dateAdded: new Date().toISOString(),
-                    addedBy: currentUser.email
+            if (label && H > 0 && A > 0) {
+                storeys.push({
+                    label: label,
+                    height: H,
+                    area: A,
+                    uls: ULS,
+                    sls: SLS
                 });
             }
         });
         
-        if (newCfssData.length === 0) {
-            alert('Please add at least one floor section with data.');
+        if (storeys.length === 0) {
+            alert('Add at least one floor with valid data.');
             return;
         }
         
-        console.log('Saving CFSS wind data:', newCfssData);
+        // Create the complete CFSS data object
+        const cfssData = {
+            windParams: windParams,
+            specifications: specifications,
+            storeys: storeys,
+            dateAdded: new Date().toISOString(),
+            addedBy: currentUser.email
+        };
         
-        // Save to database using your existing API
+        console.log('Saving CFSS data:', cfssData);
+        
+        // Save to database
         const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`, {
             method: 'PUT',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ cfssWindData: newCfssData })
+            body: JSON.stringify({ cfssWindData: cfssData })
         });
 
         if (!response.ok) {
             throw new Error(`Failed to save CFSS data: ${response.status}`);
         }
         
-        cfssWindData = newCfssData;
+        cfssWindData = cfssData;
         
-        // Update the display with simplified version
-        updateCFSSDataDisplay(newCfssData);
+        // Update the display
+        displayCFSSData(cfssData);
         
-        // Update button text to reflect new data
-        updateCFSSButtonText();
-        
-        alert('CFSS data saved successfully!');
+        alert('CFSS Data Saved Successfully!');
         
         // Hide the form after saving
         toggleCFSSForm();
@@ -4332,11 +4452,17 @@ function removeCFSSSection(button) {
 function loadCFSSData(project) {
     const cfssDisplay = document.getElementById('cfssDataDisplay');
     
-    if (project.cfssWindData && project.cfssWindData.length > 0) {
+    // Check if cfssWindData exists (both old array format and new object format)
+    const hasCFSSData = project.cfssWindData && (
+        (Array.isArray(project.cfssWindData) && project.cfssWindData.length > 0) ||
+        (!Array.isArray(project.cfssWindData) && project.cfssWindData.storeys)
+    );
+    
+    if (hasCFSSData) {
         cfssWindData = project.cfssWindData;
         
-        // Update the display with simplified version
-        updateCFSSDataDisplay(project.cfssWindData);
+        // Use displayCFSSData which handles both formats
+        displayCFSSData(project.cfssWindData);
         
         // Update button text to show "Edit" instead of "Add"
         updateCFSSButtonText();
@@ -4349,7 +4475,7 @@ function loadCFSSData(project) {
         }
         
         // Reset global variable
-        cfssWindData = [];
+        cfssWindData = null;
         
         // Ensure button shows "Add"
         updateCFSSButtonText();
@@ -7676,3 +7802,620 @@ window.renderReviewParapets = renderReviewParapets;
 window.renderReviewOptions = renderReviewOptions;
 window.renderReviewWindows = renderReviewWindows;
 window.renderReviewCustomPages = renderReviewCustomPages;
+
+// ==================== CFSS WIND LOAD CALCULATIONS ====================
+
+/**
+ * Calculate wind load for a single storey row
+ */
+function calculateSingleStorey(row) {
+    const ulsSpan = row.querySelector('.storey-uls');
+    const slsSpan = row.querySelector('.storey-sls');
+
+    // Get global parameters
+    const q50 = parseFloat(document.getElementById('q50')?.value);
+    const importanceFactor = document.getElementById('importanceFactor')?.value;
+    const terrainType = document.getElementById('terrainType')?.value;
+    const category = document.getElementById('category')?.value;
+    
+    // Get storey-specific values
+    const H = parseFloat(row.querySelector('.storey-height')?.value);
+    const A = parseFloat(row.querySelector('.storey-area')?.value);
+    
+    // Check if all required values are present
+    if (!q50 || !importanceFactor || !terrainType || !category || !H || !A || H <= 0 || A <= 0) {
+        if (ulsSpan) {
+            ulsSpan.textContent = '--';
+            ulsSpan.classList.remove('clickable');
+        }
+        if (slsSpan) {
+            slsSpan.textContent = '--';
+            slsSpan.classList.remove('clickable');
+        }
+        row.windBreakdown = null;
+        return false;
+    }
+    
+    // Calculate wind load
+    const result = calculateStoreyWindLoad({
+        q50, importanceFactor, terrainType, category, H, A
+    });
+    
+    // Update display
+    if (result.ULS !== null && result.SLS !== null) {
+        if (ulsSpan) {
+            ulsSpan.textContent = result.ULS.toFixed(2);
+            ulsSpan.classList.toggle('clickable', !!result.breakdown);
+        }
+        if (slsSpan) {
+            slsSpan.textContent = result.SLS.toFixed(2);
+            slsSpan.classList.toggle('clickable', !!result.breakdown);
+        }
+        row.windBreakdown = result.breakdown || null;
+        return true;
+    } else {
+        if (ulsSpan) {
+            ulsSpan.textContent = '--';
+            ulsSpan.classList.remove('clickable');
+        }
+        if (slsSpan) {
+            slsSpan.textContent = '--';
+            slsSpan.classList.remove('clickable');
+        }
+        row.windBreakdown = null;
+        return false;
+    }
+}
+
+/**
+ * Display a modal with the detailed wind load breakdown for the selected storey value.
+ */
+function showWindBreakdownModal(row, type) {
+    const breakdown = row?.windBreakdown;
+    if (!breakdown) {
+        alert('No breakdown available. Please ensure the calculation inputs are complete.');
+        return;
+    }
+    
+    const typeKey = type === 'SLS' ? 'SLS' : 'ULS';
+    const isULS = typeKey === 'ULS';
+    const labelInput = row.querySelector('.storey-label');
+    const storeyLabel = labelInput ? labelInput.value : 'Storey';
+    
+    const escapeHtml = (value) => {
+        if (value === null || value === undefined) return '';
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+    
+    const formatValue = (value, decimals = 2) => (typeof value === 'number' && isFinite(value) ? value.toFixed(decimals) : '--');
+    const formatZone = (zone) => {
+        const map = { eMinus: 'e-', ePlus: 'e+', wMinus: 'w-', wPlus: 'w+' };
+        return map[zone] || zone;
+    };
+    
+    const inputs = breakdown.inputs || {};
+    const cpCg = breakdown.cpCg || {};
+    const exterior = breakdown.exteriorPressures || {};
+    const interior = breakdown.interiorPressures || {};
+    const combinations = breakdown.combinations || [];
+    const governing = breakdown.governing ? breakdown.governing[typeKey] : null;
+    
+    const iwFactor = inputs.Iw ? inputs.Iw[typeKey] : null;
+    const q50Val = inputs.q50;
+    const CeVal = inputs.Ce;
+    const CgiVal = inputs.Cgi;
+    const zoneLabel = governing ? formatZone(governing.zone) : null;
+    const cpCgZone = governing ? cpCg[governing.zone] : null;
+    const exteriorZone = governing && exterior[governing.zone] ? exterior[governing.zone][typeKey] : null;
+    const cpiVal = governing && inputs.Cpi ? inputs.Cpi[governing.interior] : null;
+    const interiorVal = governing && interior[governing.interior] ? interior[governing.interior][typeKey] : null;
+    const kPaResult = governing ? governing.kPa : null;
+    const psfResult = governing ? governing.psf : null;
+    const summaryValue = governing ? `${formatValue(psfResult, 2)} psf` : '--';
+    
+    const cpCgSummary = ['eMinus', 'wMinus', 'ePlus', 'wPlus']
+        .filter(zone => typeof cpCg[zone] === 'number')
+        .map(zone => `${formatZone(zone)} ${formatValue(cpCg[zone], 3)}`)
+        .join(', ');
+    
+    const keyInputsItems = [
+        `Importance = ${inputs.importanceFactor || '--'}`,
+        `Terrain = ${inputs.terrainType || '--'}`,
+        `Category = ${inputs.category || '--'}`,
+        `q50 = ${formatValue(q50Val, 2)} kPa`,
+        `Iw_${typeKey} = ${formatValue(iwFactor, 3)}`,
+        `Ce = ${formatValue(CeVal, 3)}`,
+        `Cgi = ${formatValue(CgiVal, 2)}`,
+        `Height H = ${formatValue(inputs.height, 2)} m`,
+        `Area A = ${formatValue(inputs.area, 2)} m^2`,
+        `Cpi min = ${inputs.Cpi ? formatValue(inputs.Cpi.min, 2) : '--'}, max = ${inputs.Cpi ? formatValue(inputs.Cpi.max, 2) : '--'}`
+    ];
+    
+    if (cpCgSummary) {
+        keyInputsItems.push(`CpCg values: ${cpCgSummary}`);
+    }
+    
+    const keyInputsHtml = keyInputsItems.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+    
+    const kPaKey = isULS ? 'ULS_kPa' : 'SLS_kPa';
+    const psfKey = isULS ? 'ULS_psf' : 'SLS_psf';
+    
+    const combinationsHtml = combinations.length > 0
+        ? combinations.map(combo => {
+            const isGov = governing && combo.zone === governing.zone && combo.interior === governing.interior;
+            const zoneText = escapeHtml(formatZone(combo.zone));
+            const cpiText = escapeHtml(combo.interior);
+            const kPaText = escapeHtml(formatValue(combo[kPaKey], 3));
+            const psfText = escapeHtml(formatValue(combo[psfKey], 2));
+            const suffix = isGov ? ' (governing)' : '';
+            return `<li>${zoneText} with Cpi ${cpiText}: ${kPaText} kPa (${psfText} psf)${suffix}</li>`;
+        }).join('')
+        : '<li>No pressure combinations available.</li>';
+    
+    const formulaLines = governing ? [
+        `Pe = Iw_${typeKey} * q50 * Ce * CpCg(${zoneLabel})`,
+        `Pe = ${formatValue(iwFactor, 3)} * ${formatValue(q50Val, 2)} * ${formatValue(CeVal, 3)} * ${formatValue(cpCgZone, 3)} = ${formatValue(exteriorZone, 3)} kPa`,
+        `Pi = Iw_${typeKey} * q50 * Ce * Cgi * Cpi(${governing.interior})`,
+        `Pi = ${formatValue(iwFactor, 3)} * ${formatValue(q50Val, 2)} * ${formatValue(CeVal, 3)} * ${formatValue(CgiVal, 2)} * ${formatValue(cpiVal, 2)} = ${formatValue(interiorVal, 3)} kPa`,
+        `P = Pe - Pi = ${formatValue(exteriorZone, 3)} - ${formatValue(interiorVal, 3)} = ${formatValue(kPaResult, 3)} kPa`,
+        `P_psf = P * 20.885 = ${formatValue(kPaResult, 3)} * 20.885 = ${formatValue(psfResult, 2)} psf`
+    ] : ['No governing combination found.'];
+    
+    const formulaHtml = formulaLines.map(line => escapeHtml(line)).join('\n');
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'wind-breakdown-modal';
+    overlay.innerHTML = `
+        <div class="wind-breakdown-content">
+            <button type="button" class="wind-breakdown-close" aria-label="Close breakdown">&times;</button>
+            <h3>${escapeHtml(typeKey)} Breakdown - ${escapeHtml(storeyLabel)}</h3>
+            <p class="wind-breakdown-result">Result: <strong>${escapeHtml(summaryValue)}</strong></p>
+            <div class="wind-breakdown-section">
+                <h4>Key Inputs</h4>
+                <ul class="wind-breakdown-list">
+                    ${keyInputsHtml}
+                </ul>
+            </div>
+            <div class="wind-breakdown-section">
+                <h4>Governing Combination${governing ? ` (${escapeHtml(zoneLabel)}, Cpi ${escapeHtml(governing.interior)})` : ''}</h4>
+                <pre class="wind-breakdown-formula">${formulaHtml}</pre>
+            </div>
+            <div class="wind-breakdown-section">
+                <h4>All Combinations (${escapeHtml(typeKey)})</h4>
+                <ul class="wind-breakdown-list">
+                    ${combinationsHtml}
+                </ul>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    const cleanup = () => {
+        overlay.remove();
+        document.removeEventListener('keydown', onKeyDown);
+    };
+    
+    const onKeyDown = (event) => {
+        if (event.key === 'Escape') {
+            cleanup();
+        }
+    };
+    
+    const closeButton = overlay.querySelector('.wind-breakdown-close');
+    if (closeButton) {
+        closeButton.addEventListener('click', cleanup);
+    }
+    
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) {
+            cleanup();
+        }
+    });
+    
+    document.addEventListener('keydown', onKeyDown);
+}
+
+
+/**
+ * Recalculate all storeys (called when global parameters change)
+ */
+function recalculateAllStoreys() {
+    const rows = document.querySelectorAll('#storeyTableBody tr');
+    rows.forEach(row => calculateSingleStorey(row));
+}
+
+/**
+ * Generate French storey label based on index
+ */
+function getStoreyLabel(index) {
+    if (index === 0) return 'RDC'; // Rez-de-chaussée (Ground floor)
+    return `NV${index}`; // Niveau 1, 2, 3...
+}
+
+/**
+ * Add a new storey row to the table
+ */
+function addStoreyRow() {
+    const tbody = document.getElementById('storeyTableBody');
+    const row = document.createElement('tr');
+    const label = getStoreyLabel(storeyCounter);
+    storeyCounter++;
+    
+    row.innerHTML = `
+        <td><input type="text" class="storey-label" value="${label}" readonly style="background: #e9ecef;"></td>
+        <td><input type="number" class="storey-height" placeholder="0" step="0.1" min="0"></td>
+        <td><input type="number" class="storey-area" placeholder="0" step="0.1" min="0"></td>
+        <td><span class="output-value storey-uls">--</span></td>
+        <td><span class="output-value storey-sls">--</span></td>
+        <td><button class="remove-storey-btn" onclick="removeStoreyRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+    
+    tbody.appendChild(row);
+    attachWindBreakdownHandlers(row);
+    
+    // Add event listeners for real-time calculation
+    const heightInput = row.querySelector('.storey-height');
+    const areaInput = row.querySelector('.storey-area');
+    
+    heightInput.addEventListener('input', () => calculateSingleStorey(row));
+    areaInput.addEventListener('input', () => calculateSingleStorey(row));
+
+    // Ensure initial state reflects current inputs (and clears breakdown if needed)
+    calculateSingleStorey(row);
+}
+
+/**
+ * Attach click handlers that show the wind breakdown modal for a row.
+ */
+function attachWindBreakdownHandlers(row) {
+    const ulsSpan = row.querySelector('.storey-uls');
+    const slsSpan = row.querySelector('.storey-sls');
+    
+    if (ulsSpan && !ulsSpan.dataset.breakdownBound) {
+        ulsSpan.dataset.breakdownBound = 'true';
+        ulsSpan.addEventListener('click', () => showWindBreakdownModal(row, 'ULS'));
+    }
+    
+    if (slsSpan && !slsSpan.dataset.breakdownBound) {
+        slsSpan.dataset.breakdownBound = 'true';
+        slsSpan.addEventListener('click', () => showWindBreakdownModal(row, 'SLS'));
+    }
+}
+
+/**
+ * Remove a storey row
+ */
+function removeStoreyRow(button) {
+    const row = button.closest('tr');
+    row.remove();
+    
+    // Re-label all storeys
+    const rows = document.querySelectorAll('#storeyTableBody tr');
+    rows.forEach((row, index) => {
+        const labelInput = row.querySelector('.storey-label');
+        if (labelInput) {
+            labelInput.value = getStoreyLabel(index);
+        }
+    });
+    
+    storeyCounter = rows.length;
+}
+
+/**
+ * Calculate exposure factor Ce based on terrain type and height
+ */
+function calculateCe(terrainType, H) {
+    if (H <= 20) {
+        // For H <= 20m
+        if (terrainType === 'Open terrain') {
+            return Math.max(Math.pow(H / 10, 0.2), 0.9);
+        } else if (terrainType === 'Rough terrain') {
+            return Math.max(0.7 * Math.pow(H / 12, 0.3), 0.7);
+        }
+    } else {
+        // For H > 20m - more complex formulas
+        if (terrainType === 'Open terrain') {
+            const He = Math.min((H / 2), 6);
+            return Math.max(Math.pow(He / 10, 0.2), 0.9);
+        } else if (terrainType === 'Rough terrain') {
+            const He = Math.min((H / 2), 6);
+            return Math.max(0.7 * Math.pow(He / 12, 0.3), 0.7);
+        }
+    }
+    return 1.0; // Default fallback
+}
+
+/**
+ * Calculate CpCg for different zones based on area A
+ */
+function calculateCpCg(A) {
+    const zones = {};
+    
+    // e- zone
+    if (A <= 1) {
+        zones.eMinus = -2.09;
+    } else if (A > 1 && A < 50) {
+        zones.eMinus = 0.35 * Math.log10(A) - 2.1;
+    } else {
+        zones.eMinus = -1.5;
+    }
+    
+    // w- zone
+    if (A <= 1) {
+        zones.wMinus = -1.8;
+    } else if (A > 1 && A < 50) {
+        zones.wMinus = 0.17658 * Math.log10(A) - 1.8;
+    } else {
+        zones.wMinus = -1.5;
+    }
+    
+    // w+ zone (e+ uses same value as w+)
+    if (A <= 1) {
+        zones.wPlus = 1.75;
+    } else if (A > 1 && A < 50) {
+        zones.wPlus = 1.75 - 0.264866 * Math.log10(A);
+    } else {
+        zones.wPlus = 1.3;
+    }
+    
+    zones.ePlus = zones.wPlus;
+    
+    return zones;
+}
+
+/**
+ * Calculate wind load for a single storey
+ */
+function calculateStoreyWindLoad(params) {
+    const { q50, importanceFactor, terrainType, category, H, A } = params;
+
+    const roundTo = (value, decimals = 2) => {
+        if (typeof value !== 'number' || !isFinite(value)) return null;
+        const factor = Math.pow(10, decimals);
+        return Math.round(value * factor) / factor;
+    };
+    
+    // Validate inputs
+    if (!q50 || !importanceFactor || !terrainType || !category || !H || !A) {
+        return { ULS: null, SLS: null, breakdown: null };
+    }
+    
+    // Get Iw values
+    const Iw = IW_VALUES[importanceFactor];
+    if (!Iw) return { ULS: null, SLS: null, breakdown: null };
+    
+    // Calculate Ce
+    const Ce = calculateCe(terrainType, H);
+    
+    // Calculate CpCg for all zones
+    const cpCg = calculateCpCg(A);
+    
+    // Get Cpi values
+    const Cpi = CPI_VALUES[category];
+    if (!Cpi) return { ULS: null, SLS: null, breakdown: null };
+    
+    const Cgi = 2; // Constant from Excel
+    
+    // Calculate exterior pressures Pe for each zone (kPa)
+    const Pe = {
+        eMinus: { ULS: Iw.ULS * q50 * Ce * cpCg.eMinus, SLS: Iw.SLS * q50 * Ce * cpCg.eMinus },
+        wMinus: { ULS: Iw.ULS * q50 * Ce * cpCg.wMinus, SLS: Iw.SLS * q50 * Ce * cpCg.wMinus },
+        ePlus:  { ULS: Iw.ULS * q50 * Ce * cpCg.ePlus,  SLS: Iw.SLS * q50 * Ce * cpCg.ePlus },
+        wPlus:  { ULS: Iw.ULS * q50 * Ce * cpCg.wPlus,  SLS: Iw.SLS * q50 * Ce * cpCg.wPlus }
+    };
+    
+    // Calculate interior pressures Pi (kPa)
+    const Pi = {
+        min: {
+            ULS: Iw.ULS * q50 * Ce * Cgi * Cpi.min,
+            SLS: Iw.SLS * q50 * Ce * Cgi * Cpi.min
+        },
+        max: {
+            ULS: Iw.ULS * q50 * Ce * Cgi * Cpi.max,
+            SLS: Iw.SLS * q50 * Ce * Cgi * Cpi.max
+        }
+    };
+    
+    // Build all pressure combinations P = Pe - Pi (kPa)
+    const combinations = [];
+    Object.keys(Pe).forEach(zone => {
+        ['min', 'max'].forEach(piType => {
+            combinations.push({
+                zone,
+                interior: piType,
+                ULS_kPa: Pe[zone].ULS - Pi[piType].ULS,
+                SLS_kPa: Pe[zone].SLS - Pi[piType].SLS
+            });
+        });
+    });
+    
+    if (combinations.length === 0) {
+        return { ULS: null, SLS: null, breakdown: null };
+    }
+    
+    const ULSValues = combinations.map(combo => combo.ULS_kPa);
+    const SLSValues = combinations.map(combo => combo.SLS_kPa);
+    
+    const ULS_Pmax = Math.max(...ULSValues);
+    const ULS_Pmin = Math.min(...ULSValues);
+    const SLS_Pmax = Math.max(...SLSValues);
+    const SLS_Pmin = Math.min(...SLSValues);
+    
+    const governingULSCombo = combinations.reduce((best, combo) => {
+        return !best || Math.abs(combo.ULS_kPa) > Math.abs(best.ULS_kPa) ? combo : best;
+    }, null);
+    
+    const governingSLSCombo = combinations.reduce((best, combo) => {
+        return !best || Math.abs(combo.SLS_kPa) > Math.abs(best.SLS_kPa) ? combo : best;
+    }, null);
+    
+    const ULS_kPa = governingULSCombo ? Math.abs(governingULSCombo.ULS_kPa) : 0;
+    const SLS_kPa = governingSLSCombo ? Math.abs(governingSLSCombo.SLS_kPa) : 0;
+    
+    // Convert from kPa to psf (1 kPa = 20.885 psf)
+    const ULS_psf = ULS_kPa * 20.885;
+    const SLS_psf = SLS_kPa * 20.885;
+
+    const breakdown = {
+        inputs: {
+            q50,
+            importanceFactor,
+            terrainType,
+            category,
+            height: H,
+            area: A,
+            Iw,
+            Ce,
+            Cpi,
+            Cgi
+        },
+        cpCg,
+        exteriorPressures: Pe,
+        interiorPressures: Pi,
+        combinations: combinations.map(combo => ({
+            zone: combo.zone,
+            interior: combo.interior,
+            ULS_kPa: roundTo(combo.ULS_kPa, 4),
+            SLS_kPa: roundTo(combo.SLS_kPa, 4),
+            ULS_psf: roundTo(combo.ULS_kPa * 20.885, 2),
+            SLS_psf: roundTo(combo.SLS_kPa * 20.885, 2)
+        })),
+        governing: {
+            ULS: governingULSCombo ? {
+                zone: governingULSCombo.zone,
+                interior: governingULSCombo.interior,
+                direction: governingULSCombo.ULS_kPa === ULS_Pmax ? 'max' : 'min',
+                kPa: roundTo(ULS_kPa, 4),
+                psf: roundTo(ULS_psf, 2)
+            } : null,
+            SLS: governingSLSCombo ? {
+                zone: governingSLSCombo.zone,
+                interior: governingSLSCombo.interior,
+                direction: governingSLSCombo.SLS_kPa === SLS_Pmax ? 'max' : 'min',
+                kPa: roundTo(SLS_kPa, 4),
+                psf: roundTo(SLS_psf, 2)
+            } : null
+        }
+    };
+    
+    return {
+        ULS: roundTo(ULS_psf, 2),
+        SLS: roundTo(SLS_psf, 2),
+        breakdown
+    };
+}
+
+/**
+ * Calculate wind loads for all storeys and update the table
+ */
+function calculateAllStoreyWindLoads() {
+    // Get global parameters
+    const q50 = parseFloat(document.getElementById('q50')?.value);
+    const importanceFactor = document.getElementById('importanceFactor')?.value;
+    const terrainType = document.getElementById('terrainType')?.value;
+    const category = document.getElementById('category')?.value;
+    
+    // Validate global parameters
+    if (!q50 || !importanceFactor || !terrainType || !category) {
+        alert('Fill in all wind calculation fields.');
+        return false;
+    }
+    
+    // Calculate for each storey
+    const rows = document.querySelectorAll('#storeyTableBody tr');
+    let allValid = true;
+    
+    rows.forEach(row => {
+        const isRowValid = calculateSingleStorey(row);
+        if (!isRowValid) {
+            allValid = false;
+        }
+    });
+    
+    return allValid;
+}
+
+
+/**
+ * Populate the CFSS form with existing data for editing
+ */
+function populateCFSSForm(cfssData) {
+    if (!cfssData) return;
+    
+    // Check if new structure
+    const isNewStructure = !Array.isArray(cfssData) && cfssData.windParams && cfssData.storeys;
+    
+    if (isNewStructure) {
+        // Populate wind parameters
+        if (cfssData.windParams) {
+            document.getElementById('q50').value = cfssData.windParams.q50 || '';
+            document.getElementById('importanceFactor').value = cfssData.windParams.importanceFactor || '';
+            document.getElementById('terrainType').value = cfssData.windParams.terrainType || '';
+            document.getElementById('category').value = cfssData.windParams.category || '';
+        }
+        
+        // Populate specifications
+        if (cfssData.specifications) {
+            document.getElementById('maxDeflection').value = cfssData.specifications.maxDeflection || '';
+            document.getElementById('maxSpacing').value = cfssData.specifications.maxSpacing || '';
+            document.getElementById('framingAssembly').value = cfssData.specifications.framingAssembly || '';
+            document.getElementById('concreteAnchor').value = cfssData.specifications.concreteAnchor || '';
+            document.getElementById('steelAnchor').value = cfssData.specifications.steelAnchor || '';
+        }
+        
+        // Clear existing storey rows
+        const tbody = document.getElementById('storeyTableBody');
+        tbody.innerHTML = '';
+        storeyCounter = 0;
+        
+        // Add storey rows
+        if (cfssData.storeys && cfssData.storeys.length > 0) {
+            cfssData.storeys.forEach((storey, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" class="storey-label" value="${storey.label}" readonly style="background: #e9ecef;"></td>
+                    <td><input type="number" class="storey-height" value="${storey.height}" step="0.1" min="0"></td>
+                    <td><input type="number" class="storey-area" value="${storey.area}" step="0.1" min="0"></td>
+                    <td><span class="output-value storey-uls">${storey.uls.toFixed(2)}</span></td>
+                    <td><span class="output-value storey-sls">${storey.sls.toFixed(2)}</span></td>
+                    <td><button class="remove-storey-btn" onclick="removeStoreyRow(this)"><i class="fas fa-trash"></i></button></td>
+                `;
+                tbody.appendChild(row);
+                
+                // Add event listeners for real-time calculation
+                const heightInput = row.querySelector('.storey-height');
+                const areaInput = row.querySelector('.storey-area');
+                heightInput.addEventListener('input', () => calculateSingleStorey(row));
+                areaInput.addEventListener('input', () => calculateSingleStorey(row));
+                attachWindBreakdownHandlers(row);
+                
+                // Re-run calculation to refresh breakdown data
+                calculateSingleStorey(row);
+                
+                storeyCounter++;
+            });
+        }
+    } else {
+        // Handle old structure - populate with default empty storeys
+        if (Array.isArray(cfssData) && cfssData.length > 0) {
+            const firstItem = cfssData[0];
+            document.getElementById('maxDeflection').value = firstItem.maxDeflection || '';
+            document.getElementById('maxSpacing').value = firstItem.maxSpacing || '';
+            document.getElementById('framingAssembly').value = firstItem.framingAssembly || '';
+            document.getElementById('concreteAnchor').value = firstItem.concreteAnchor || '';
+            document.getElementById('steelAnchor').value = firstItem.steelAnchor || '';
+        }
+        
+        // Clear storeys and add one empty row
+        const tbody = document.getElementById('storeyTableBody');
+        tbody.innerHTML = '';
+        storeyCounter = 0;
+        addStoreyRow();
+    }
+}
