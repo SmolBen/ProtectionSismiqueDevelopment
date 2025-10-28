@@ -23,7 +23,7 @@ const bulkElements = {};
 // Render each page to canvas (PDF.js) and rebuild a PDF (pdf-lib).
 // Pages are created at original PDF-point size and rotation so server-side
 // signing coordinates remain correct.
-async function flattenPdfInBrowser(file, scale = 1.75) {
+async function flattenPdfInBrowser(file, scale = 3.75) {
   // Ensure libs exist (defensive in case of script-order issues)
   if (!window.pdfjsLib) throw new Error('pdfjs-dist not loaded');
   if (!window.PDFLib?.PDFDocument) throw new Error('pdf-lib not loaded');
@@ -488,7 +488,7 @@ async function runBulkVerification(entries) {
         entry.signedFile = signedFile;
 
         // B) flatten it client-side
-        const flatFile = await flattenPdfInBrowser(signedFile, 1.75); // tune scale if needed
+        const flatFile = await flattenPdfInBrowser(signedFile, 4.5); // tune scale if needed
 
         // C) Offer immediate client download
         entry.flattenedFile = flatFile;
