@@ -58,9 +58,9 @@ let projectData = null;
 
 // Equipment options based on domain
 const equipmentOptions = {
-    'ventilation': ['Fan_1', 'Fan_2', 'VU_1', 'VU_2', 'VU_3', 'AHU_1', 'Pipe'],
-    'plumbing': ['HUM_1', 'RF_1', 'TE_1', 'CE_1', 'CE_2', 'P_1', 'Pipe'],
-    'electricity': ['Generator', 'Transformer', 'Panel', 'UPS', 'Cabinet', 'Battery', 'Switchgear', 'Variable Frequency Drive', 'Motor Control Center', 'Pipe'],
+    'ventilation': ['Ventilateur', 'Aérotherme', 'Caisson de ventilation', 'Condenseur', 'Diffuseur', 'Duct terminal unit', 'Échangeur', 'Extracteur d\'air de toit', 'Hotte', 'Plénum de ventilation', 'Serpentin', 'Silencieux', 'Unité de ventilation', 'Unknown', 'Pipe'],
+    'plumbing': ['Humidificateur', 'Reservoir d\'expansion', 'Filtre d\'eau', 'Chauffe-eau', 'Glycol', 'Pompe', 'Pompe à chaleur', 'Refroidisseur de liquide', 'Échangeur de chaleur à plaques', 'Vanne d\'eau', 'Séparateur d\'air', 'Aérothermes', 'Refroidisseur', 'Unknown', 'Pipe'],
+    'electricity': ['groupe électrogène', 'Transformateur', 'Panneau', 'UPS', 'Battery', 'Switchgear', 'Cabinet', 'Variable Frequency Drive', 'Commande des moteurs', 'Unknown', 'Pipe'],
     'sprinkler': ['Pipe'],
     'interior system': ['Pipe']
 };
@@ -69,57 +69,105 @@ const equipmentOptions = {
 // Based on Excel: Fixed to slab | Fixed to Ceiling | Fixed to concrete wall | Fixed to Steel Structure | Fixed to Wooden sleeper
 const equipmentInstallMethods = {
     'electricity': {
-        'Generator': ['1', '4', '5'], // slab, ceiling, roof
-        'Transformer': ['1', '4', '2'], // slab, ceiling, wall
-        'Panel': ['2', '3'], // wall, structure
-        'UPS': ['1', '4', '5'], // slab, ceiling, roof
-        'Cabinet': ['1', '4', '5'], // slab, ceiling, roof
-        'Battery': ['1', '4', '5'], // slab, ceiling, roof
-        'Switchgear': ['1', '4', '5'], // slab, ceiling, roof
-        'Variable Frequency Drive': ['1', '2', '3'], // slab, wall, structure
-        'Motor Control Center': ['1', '4', '5'] // slab, ceiling, roof
-    }
-    // Other domains (plumbing, ventilation, etc.) will be added as Excel is updated
+        'groupe électrogène': ['1', '3', '7'],
+        'Transformateur': ['1', '2', '4'],
+        'Panneau': ['2', '6'],
+        'UPS': ['1'],
+        'Battery': ['1'],
+        'Switchgear': ['1'],
+        'Cabinet': ['1'],
+        'Variable Frequency Drive': ['4'],
+        'Commande des moteurs': ['1'],
+        'Unknown': ['1', '2', '3', '4']
+    },
+        'plumbing': {
+        'Humidificateur': ['4'],
+        'Reservoir d\'expansion': ['1', '2'],
+        'Filtre d\'eau': ['4'],
+        'Chauffe-eau': ['1', '2', '4'],
+        'Glycol': ['1'],
+        'Pompe': ['1'],
+        'Pompe à chaleur': ['1'],
+        'Refroidisseur de liquide': ['1', '3'],
+        'Échangeur de chaleur à plaques': ['1'],
+        'Vanne d\'eau': ['1', '4'],
+        'Séparateur d\'air': ['4'],
+        'Aérothermes': ['4'],
+        'Refroidisseur': ['4'],
+        'Unknown': ['1', '2', '3', '4', '5']
+    },
+    'ventilation': {
+    'Ventilateur': ['1', '2', '3', '4', '5', '7'],
+    'Aérotherme': ['4'],
+    'Caisson de ventilation': ['4'],
+    'Condenseur': ['2', '3', '7'],
+    'Diffuseur': ['4'],
+    'Duct terminal unit': ['4'],
+    'Échangeur': ['1', '3', '4'],
+    'Extracteur d\'air de toit': ['3', '5', '7'],
+    'Hotte': ['2', '4'],
+    'Plénum de ventilation': ['4'],
+    'Serpentin': ['4'],
+    'Silencieux': ['4'],
+    'Unité de ventilation': ['4', '7'],
+    'Unknown': ['1', '3', '4', '5']
+}
 };
 
 const equipmentMappings = {
     'electricity': {
         domainCode: 'El',
         equipmentMap: {
-            'Generator': 'GE',
-            'Transformer': 'TRA',
-            'Panel': 'PA', 
+            'groupe électrogène': 'GE',
+            'Transformateur': 'TRA',
+            'Panneau': 'PA', 
             'UPS': 'UPS',
-            'Cabinet': 'CA',
             'Battery': 'BA',
             'Switchgear': 'SW',
+            'Cabinet': 'CA',
             'Variable Frequency Drive': 'VFD',
-            'Motor Control Center': 'MCC',
-            'Controller': 'CN', // Keep existing for backward compatibility
+            'Commande des moteurs': 'MCC',
+            'Unknown': 'UNK',
             'Pipe': 'Pipe'
         } 
     },
-    'ventilation': {
-        domainCode: 'Ve',
-        equipmentMap: {
-            'Fan_1': 'F1',
-            'Fan_2': 'F2',
-            'VU_1': 'VU1',
-            'VU_2': 'VU2', 
-            'VU_3': 'VU3',
-            'AHU_1': 'AHU1',
-            'Pipe': 'Pipe'
-        }
-    },
+'ventilation': {
+    domainCode: 'VE',
+    equipmentMap: {
+        'Ventilateur': 'VE',
+        'Aérotherme': 'AER',
+        'Caisson de ventilation': 'CE',
+        'Condenseur': 'CON',
+        'Diffuseur': 'DIF',
+        'Duct terminal unit': 'DTN',
+        'Échangeur': 'ECH',
+        'Extracteur d\'air de toit': 'EDT',
+        'Hotte': 'HOT',
+        'Plénum de ventilation': 'PLV',
+        'Serpentin': 'SER',
+        'Silencieux': 'SIL',
+        'Unité de ventilation': 'UVE',
+        'Unknown': 'UNK',
+        'Pipe': 'Pipe'
+    }
+},
     'plumbing': {
-        domainCode: 'Pl',
+        domainCode: 'PL',
         equipmentMap: {
-            'HUM_1': 'HUM1',
-            'RF_1': 'RF1',
-            'TE_1': 'TE1',
-            'CE_1': 'CE1',
-            'CE_2': 'CE2',
-            'P_1': 'P1',
+            'Humidificateur': 'HUM',
+            'Reservoir d\'expansion': 'RES',
+            'Filtre d\'eau': 'FIL',
+            'Chauffe-eau': 'CHA',
+            'Glycol': 'GLY',
+            'Pompe': 'POM',
+            'Pompe à chaleur': 'PAC',
+            'Refroidisseur de liquide': 'REL',
+            'Échangeur de chaleur à plaques': 'ECP',
+            'Vanne d\'eau': 'VDE',
+            'Séparateur d\'air': 'SEA',
+            'Aérothermes': 'AEO',
+            'Refroidisseur': 'REF',
+            'Unknown': 'UNK',
             'Pipe': 'Pipe'
         }
     },
@@ -1737,6 +1785,8 @@ function populateEquipmentOptions(domain) {
             <option value="3">Fixed to Structure</option>
             <option value="4">Fixed to Ceiling</option>
             <option value="5">Fixed to Roof</option>
+            <option value="6">Fixed to Interior Wall</option>
+            <option value="7">Fixed to Wooden Sleeper</option>
         `;
     }
     
@@ -1761,7 +1811,9 @@ function populateInstallMethodOptions(domain, equipment) {
         '2': 'Fixed to Wall', 
         '3': 'Fixed to Structure',
         '4': 'Fixed to Ceiling',
-        '5': 'Fixed to Roof'
+        '5': 'Fixed to Roof',
+        '6': 'Fixed to Interior Wall',
+        '7': 'Fixed to Wooden Sleeper'
     };
     
     let allowedMethods = [];
@@ -1931,30 +1983,33 @@ function getEquipmentImageUrl(equipmentType, pipeType, installMethod, projectDom
     const extension = preferPng ? 'png' : 'jpg';
     
     if (equipmentType === 'Pipe') {
-        if (!pipeType) return null;
-        
-        const pipeTypeMap = {
-            'Steel_Pipe': 'Steel',
-            'Copper_Pipe': 'Copper', 
-            'PVC_Pipe': 'PVC',
-            'No_Hub_Pipe': 'NoHub'
-        };
-        
-        const mappedPipeType = pipeTypeMap[pipeType] || pipeType;
-        return `${s3BaseUrl}piping/Pipe_${mappedPipeType}.${extension}`;
-    } else {
-        const domainMapping = equipmentMappings[projectDomain];
-        if (!domainMapping) return null;
+    if (!pipeType) return null;
+    
+    const pipeTypeMap = {
+        'Steel_Pipe': 'Steel',
+        'Copper_Pipe': 'Copper', 
+        'PVC_Pipe': 'PVC',
+        'No_Hub_Pipe': 'NoHub'
+    };
+    
+    const mappedPipeType = pipeTypeMap[pipeType] || pipeType;
+    const filename = `Pipe_${mappedPipeType}`.toUpperCase() + `.${extension}`;
+    return `${s3BaseUrl}piping/${filename}`;
+} else {
+    const domainMapping = equipmentMappings[projectDomain];
+    if (!domainMapping) return null;
 
-        const equipmentCode = domainMapping.equipmentMap[equipmentType];
-        if (!equipmentCode) return null;
-        
-        if (projectDomain === 'electricity') {
-            return `${s3BaseUrl}electricity/${domainMapping.domainCode}_${equipmentCode}_${installMethod}.${extension}`;
-        } else {
-            return `${s3BaseUrl}${domainMapping.domainCode}_${equipmentCode}_${installMethod}.${extension}`;
-        }
+    const equipmentCode = domainMapping.equipmentMap[equipmentType];
+    if (!equipmentCode) return null;
+    
+    const filename = `${domainMapping.domainCode}_${equipmentCode}_${installMethod}`.toUpperCase() + `.${extension}`;
+    
+    if (projectDomain === 'electricity') {
+        return `${s3BaseUrl}electricity/${filename}`;
+    } else {
+        return `${s3BaseUrl}${projectDomain}/${filename}`;
     }
+}
 }
 
 // Updated getWorkingImageUrl function with caching
@@ -3655,7 +3710,9 @@ function getInstallMethodText(value) {
         '2': 'Fixed to Wall',
         '3': 'Fixed to Structure',
         '4': 'Fixed to Ceiling',
-        '5': 'Fixed to Roof'
+        '5': 'Fixed to Roof',
+        '6': 'Fixed to Interior Wall',
+        '7': 'Fixed to Wooden Sleeper'
     };
     return methods[value] || 'Unknown';
 }
@@ -3809,7 +3866,9 @@ function populateEditInstallMethodOptions(index, domain, equipment) {
         '2': 'Fixed to Wall', 
         '3': 'Fixed to Structure',
         '4': 'Fixed to Ceiling',
-        '5': 'Fixed to Roof'
+        '5': 'Fixed to Roof',
+        '6': 'Fixed to Interior Wall',
+        '7': 'Fixed to Wooden Sleeper'
     };
     
     let allowedMethods = [];
