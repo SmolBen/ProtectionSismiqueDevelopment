@@ -2687,6 +2687,7 @@ async function saveEquipmentEditWithRevisions(index, event) {
             hauteurMaxMinorUnit: hauteurMaxMinorUnit,
             deflexionMax: deflexionMax,
             montantMetallique: montantMetallique,
+            dosADos: document.getElementById(`editDosADos${index}`)?.checked || false,
             espacement: espacement,
             lisseSuperieure: lisseSuperieure,
             lisseInferieure: lisseInferieure,
@@ -2699,6 +2700,7 @@ async function saveEquipmentEditWithRevisions(index, event) {
         // Add Set 2 data if it exists
         if (set2Visible && montantMetallique2) {
             updatedWall.montantMetallique2 = montantMetallique2;
+            updatedWall.dosADos2 = document.getElementById(`editDosADos2_${index}`)?.checked || false;
             updatedWall.espacement2 = espacement2;
             updatedWall.lisseSuperieure2 = lisseSuperieure2;
             updatedWall.lisseInferieure2 = lisseInferieure2;
@@ -2706,6 +2708,7 @@ async function saveEquipmentEditWithRevisions(index, event) {
         } else {
             // Clear Set 2 data if not visible
             updatedWall.montantMetallique2 = '';
+            updatedWall.dosADos2 = false;
             updatedWall.espacement2 = '';
             updatedWall.lisseSuperieure2 = '';
             updatedWall.lisseInferieure2 = '';
@@ -3031,7 +3034,7 @@ function generateWallDetailsContent(wall, originalIndex) {
                     <p><strong>Déflexion Max:</strong> ${wall.deflexionMax || 'N/A'}</p>
                     
                     ${hasSet2 ? '<p style="margin-top: 15px; font-weight: bold; color: #666;">Set 1:</p>' : ''}
-                    <p><strong>Montant Métallique:</strong> ${wall.montantMetallique || 'N/A'}</p>
+                    <p><strong>Montant Métallique:</strong> ${wall.montantMetallique || 'N/A'}${wall.dosADos ? ' dos-à-dos' : ''}</p>
                     <p><strong>Espacement:</strong> ${wall.espacement || 'N/A'}</p>
                     <p><strong>Lisse Supérieure:</strong> ${wall.lisseSuperieure || 'N/A'}</p>
                     <p><strong>Lisse Inférieure:</strong> ${wall.lisseInferieure || 'N/A'}</p>
@@ -3039,7 +3042,7 @@ function generateWallDetailsContent(wall, originalIndex) {
                     
                     ${hasSet2 ? `
                         <p style="margin-top: 15px; font-weight: bold; color: #666;">Set 2:</p>
-                        <p><strong>Montant Métallique 2:</strong> ${wall.montantMetallique2 || 'N/A'}</p>
+                        <p><strong>Montant Métallique 2:</strong> ${wall.montantMetallique2 || 'N/A'}${wall.dosADos2 ? ' dos-à-dos' : ''}</p>
                         <p><strong>Espacement 2:</strong> ${wall.espacement2 || 'N/A'}</p>
                         <p><strong>Lisse Supérieure 2:</strong> ${wall.lisseSuperieure2 || 'N/A'}</p>
                         <p><strong>Lisse Inférieure 2:</strong> ${wall.lisseInferieure2 || 'N/A'}</p>
@@ -3163,11 +3166,17 @@ function generateEditForm(wall, originalIndex) {
 
                                 <div class="form-group">
                                     <label for="editMontantMetallique${originalIndex}"><strong>Montant Métallique:</strong></label>
-                                    <select id="editMontantMetallique${originalIndex}" required 
-                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                                        <option value="">Select montant métallique...</option>
-                                        ${generateMontantOptions(wall.montantMetallique)}
-                                    </select>
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <select id="editMontantMetallique${originalIndex}" required 
+                                                style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                            <option value="">Select montant métallique...</option>
+                                            ${generateMontantOptions(wall.montantMetallique)}
+                                        </select>
+                                        <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
+                                            <input type="checkbox" id="editDosADos${originalIndex}" ${wall.dosADos ? 'checked' : ''} style="margin: 0;">
+                                            <span>dos-à-dos</span>
+                                        </label>
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
@@ -3217,11 +3226,17 @@ function generateEditForm(wall, originalIndex) {
 
                                 <div class="form-group">
                                     <label for="editMontantMetallique2_${originalIndex}"><strong>Montant Métallique 2:</strong></label>
-                                    <select id="editMontantMetallique2_${originalIndex}" 
-                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                                        <option value="">Select montant métallique...</option>
-                                        ${generateMontantOptions(wall.montantMetallique2 || '')}
-                                    </select>
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <select id="editMontantMetallique2_${originalIndex}" 
+                                                style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                            <option value="">Select montant métallique...</option>
+                                            ${generateMontantOptions(wall.montantMetallique2 || '')}
+                                        </select>
+                                        <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
+                                            <input type="checkbox" id="editDosADos2_${originalIndex}" ${wall.dosADos2 ? 'checked' : ''} style="margin: 0;">
+                                            <span>dos-à-dos</span>
+                                        </label>
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
@@ -5157,6 +5172,7 @@ function getWallFormDataWithImages() {
         hauteurMaxMinorUnit: hauteurMaxMinorUnit,
         deflexionMax: deflexionMax,
         montantMetallique: montantMetallique,
+        dosADos: document.getElementById('dosADos')?.checked || false,
         lisseSuperieure: lisseSuperieure,
         lisseInferieure: lisseInferieure,
         entremise: entremise,
@@ -5170,6 +5186,7 @@ function getWallFormDataWithImages() {
     // Add Set 2 data if it exists
     if (set2Visible && montantMetallique2) {
         wallData.montantMetallique2 = montantMetallique2;
+        wallData.dosADos2 = document.getElementById('dosADos2')?.checked || false;
         wallData.lisseSuperieure2 = lisseSuperieure2;
         wallData.lisseInferieure2 = lisseInferieure2;
         wallData.entremise2 = entremise2;

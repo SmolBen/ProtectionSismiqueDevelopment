@@ -618,14 +618,18 @@
                     +
                 </button>
             </div>
-
-            <!-- 5. Montant Métallique - NOW A DROPDOWN -->
+            <!-- 5. Montant Métallique with dos-à-dos checkbox -->
             <div class="form-group">
                 <label for="montantMetallique">Montant Métallique:</label>
-                <select id="montantMetallique" name="montantMetallique" required>
-                    <option value="">Select montant métallique...</option>
-                    <!-- Options will be populated by JavaScript from CSV data -->
-                </select>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="montantMetallique" name="montantMetallique" required style="flex: 1;">
+                        <option value="">Select montant métallique...</option>
+                    </select>
+                    <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
+                        <input type="checkbox" id="dosADos" name="dosADos" style="margin: 0;">
+                        <span>dos-à-dos</span>
+                    </label>
+                </div>
             </div>
 
             <!-- 9. Espacement - DROPDOWN -->
@@ -676,10 +680,15 @@
             <!-- Montant Métallique 2 -->
             <div class="form-group">
                 <label for="montantMetallique2">Montant Métallique 2:</label>
-                <select id="montantMetallique2" name="montantMetallique2">
-                    <option value="">Select montant métallique...</option>
-                    <!-- Options will be populated by JavaScript -->
-                </select>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="montantMetallique2" name="montantMetallique2">
+                        <option value="">Select montant métallique...</option>
+                    </select>
+                    <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
+                        <input type="checkbox" id="dosADos2" name="dosADos2" style="margin: 0;">
+                        <span>dos-à-dos</span>
+                    </label>
+                </div>
             </div>
 
             <!-- Espacement 2 -->
