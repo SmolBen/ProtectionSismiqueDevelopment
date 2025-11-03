@@ -4307,8 +4307,8 @@ function displayCFSSData(cfssData) {
                         <td style="padding: 8px;">${storey.label}</td>
                         <td style="padding: 8px; text-align: center;">${storey.height}</td>
                         <td style="padding: 8px; text-align: center;">${storey.area}</td>
-                        <td style="padding: 8px; text-align: center; font-weight: 600; color: #28a745;">${storey.uls.toFixed(2)}</td>
-                        <td style="padding: 8px; text-align: center; font-weight: 600; color: #17a2b8;">${storey.sls.toFixed(2)}</td>
+                        <td style="padding: 8px; text-align: center; font-weight: 600; color: #28a745;">${storey.uls.toFixed(1)}</td>
+                        <td style="padding: 8px; text-align: center; font-weight: 600; color: #17a2b8;">${storey.sls.toFixed(1)}</td>
                     </tr>
                 `;
             });
@@ -7861,11 +7861,11 @@ function calculateSingleStorey(row) {
     // Update display
     if (result.ULS !== null && result.SLS !== null) {
         if (ulsSpan) {
-            ulsSpan.textContent = result.ULS.toFixed(2);
+            ulsSpan.textContent = result.ULS.toFixed(1);
             ulsSpan.classList.toggle('clickable', !!result.breakdown);
         }
         if (slsSpan) {
-            slsSpan.textContent = result.SLS.toFixed(2);
+            slsSpan.textContent = result.SLS.toFixed(1);
             slsSpan.classList.toggle('clickable', !!result.breakdown);
         }
         row.windBreakdown = result.breakdown || null;
@@ -8318,8 +8318,8 @@ function calculateStoreyWindLoad(params) {
             interior: combo.interior,
             ULS_kPa: roundTo(combo.ULS_kPa, 4),
             SLS_kPa: roundTo(combo.SLS_kPa, 4),
-            ULS_psf: roundTo(combo.ULS_kPa * 20.885, 2),
-            SLS_psf: roundTo(combo.SLS_kPa * 20.885, 2)
+            ULS_psf: roundTo(combo.ULS_kPa * 20.885, 1),
+            SLS_psf: roundTo(combo.SLS_kPa * 20.885, 1)
         })),
         governing: {
             ULS: governingULSCombo ? {
@@ -8327,21 +8327,21 @@ function calculateStoreyWindLoad(params) {
                 interior: governingULSCombo.interior,
                 direction: governingULSCombo.ULS_kPa === ULS_Pmax ? 'max' : 'min',
                 kPa: roundTo(ULS_kPa, 4),
-                psf: roundTo(ULS_psf, 2)
+                psf: roundTo(ULS_psf, 1)
             } : null,
             SLS: governingSLSCombo ? {
                 zone: governingSLSCombo.zone,
                 interior: governingSLSCombo.interior,
                 direction: governingSLSCombo.SLS_kPa === SLS_Pmax ? 'max' : 'min',
                 kPa: roundTo(SLS_kPa, 4),
-                psf: roundTo(SLS_psf, 2)
+                psf: roundTo(SLS_psf, 1)
             } : null
         }
     };
     
     return {
-        ULS: roundTo(Math.abs(ULS_psf), 2),
-        SLS: roundTo(Math.abs(SLS_psf), 2),
+        ULS: roundTo(Math.abs(ULS_psf), 1),
+        SLS: roundTo(Math.abs(SLS_psf), 1),
         breakdown
     };
 }
@@ -8417,8 +8417,8 @@ function populateCFSSForm(cfssData) {
                     <td><input type="text" class="storey-label" value="${storey.label}" readonly style="background: #e9ecef;"></td>
                     <td><input type="number" class="storey-height" value="${storey.height}" step="0.1" min="0"></td>
                     <td><input type="number" class="storey-area" value="${storey.area}" step="0.1" min="0"></td>
-                    <td><span class="output-value storey-uls">${storey.uls.toFixed(2)}</span></td>
-                    <td><span class="output-value storey-sls">${storey.sls.toFixed(2)}</span></td>
+                    <td><span class="output-value storey-uls">${parseFloat(storey.uls.toFixed(1))}</span></td>
+                    <td><span class="output-value storey-sls">${parseFloat(storey.sls.toFixed(1))}</span></td>
                     <td><button class="remove-storey-btn" onclick="removeStoreyRow(this)"><i class="fas fa-trash"></i></button></td>
                 `;
                 tbody.appendChild(row);
