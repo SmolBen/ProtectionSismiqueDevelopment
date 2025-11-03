@@ -8052,7 +8052,7 @@ function recalculateAllStoreys() {
  */
 function getStoreyLabel(index) {
     if (index === 0) return 'RDC'; // Rez-de-chaussée (Ground floor)
-    return `NV${index}`; // Niveau 1, 2, 3...
+    return `NV${index+1}`; // Niveau 2, 3, 4...
 }
 
 /**
@@ -8067,7 +8067,7 @@ function addStoreyRow() {
     row.innerHTML = `
         <td><input type="text" class="storey-label" value="${label}" readonly style="background: #e9ecef;"></td>
         <td><input type="number" class="storey-height" placeholder="0" step="0.1" min="0"></td>
-        <td><input type="number" class="storey-area" placeholder="0" step="0.1" min="0"></td>
+        <td><input type="number" class="storey-area" value="1" step="0.1" min="0"></td>
         <td><span class="output-value storey-uls">--</span></td>
         <td><span class="output-value storey-sls">--</span></td>
         <td><button class="remove-storey-btn" onclick="removeStoreyRow(this)"><i class="fas fa-trash"></i></button></td>
@@ -8128,22 +8128,10 @@ function removeStoreyRow(button) {
  * Calculate exposure factor Ce based on terrain type and height
  */
 function calculateCe(terrainType, H) {
-    if (H <= 20) {
-        // For H <= 20m
-        if (terrainType === 'Open terrain') {
-            return Math.max(Math.pow(H / 10, 0.2), 0.9);
-        } else if (terrainType === 'Rough terrain') {
-            return Math.max(0.7 * Math.pow(H / 12, 0.3), 0.7);
-        }
-    } else {
-        // For H > 20m - more complex formulas
-        if (terrainType === 'Open terrain') {
-            const He = Math.min((H / 2), 6);
-            return Math.max(Math.pow(He / 10, 0.2), 0.9);
-        } else if (terrainType === 'Rough terrain') {
-            const He = Math.min((H / 2), 6);
-            return Math.max(0.7 * Math.pow(He / 12, 0.3), 0.7);
-        }
+    if (terrainType === 'Open terrain') {
+        return Math.max(Math.pow(H / 10, 0.2), 0.9);
+    } else if (terrainType === 'Rough terrain') {
+        return Math.max(0.7 * Math.pow(H / 12, 0.3), 0.7);
     }
     return 1.0; // Default fallback
 }
@@ -8210,34 +8198,65 @@ function calculateStoreyWindLoad(params) {
     // Calculate Ce
     const Ce = calculateCe(terrainType, H);
     
-    // Calculate CpCg for all zones
-    const cpCg = calculateCpCg(A);
-    
     // Get Cpi values
     const Cpi = CPI_VALUES[category];
     if (!Cpi) return { ULS: null, SLS: null, breakdown: null };
     
     const Cgi = 2; // Constant from Excel
+    const Ct = 1;  // Topographic factor (always 1)
     
-    // Calculate exterior pressures Pe for each zone (kPa)
-    const Pe = {
-        eMinus: { ULS: Iw.ULS * q50 * Ce * cpCg.eMinus, SLS: Iw.SLS * q50 * Ce * cpCg.eMinus },
-        wMinus: { ULS: Iw.ULS * q50 * Ce * cpCg.wMinus, SLS: Iw.SLS * q50 * Ce * cpCg.wMinus },
-        ePlus:  { ULS: Iw.ULS * q50 * Ce * cpCg.ePlus,  SLS: Iw.SLS * q50 * Ce * cpCg.ePlus },
-        wPlus:  { ULS: Iw.ULS * q50 * Ce * cpCg.wPlus,  SLS: Iw.SLS * q50 * Ce * cpCg.wPlus }
-    };
+    // Declare Pe and Pi
+    let Pe, Pi;
     
-    // Calculate interior pressures Pi (kPa)
-    const Pi = {
-        min: {
-            ULS: Iw.ULS * q50 * Ce * Cgi * Cpi.min,
-            SLS: Iw.SLS * q50 * Ce * Cgi * Cpi.min
-        },
-        max: {
-            ULS: Iw.ULS * q50 * Ce * Cgi * Cpi.max,
-            SLS: Iw.SLS * q50 * Ce * Cgi * Cpi.max
-        }
-    };
+    if (H <= 20) {
+        // H ≤ 20m: Use CpCg (area-dependent), no separate Cg factor
+        const cpCg = calculateCpCg(A);
+        
+        Pe = {
+            eMinus: { ULS: Iw.ULS * q50 * Ce * cpCg.eMinus, SLS: Iw.SLS * q50 * Ce * cpCg.eMinus },
+            wMinus: { ULS: Iw.ULS * q50 * Ce * cpCg.wMinus, SLS: Iw.SLS * q50 * Ce * cpCg.wMinus },
+            ePlus:  { ULS: Iw.ULS * q50 * Ce * cpCg.ePlus,  SLS: Iw.SLS * q50 * Ce * cpCg.ePlus },
+            wPlus:  { ULS: Iw.ULS * q50 * Ce * cpCg.wPlus,  SLS: Iw.SLS * q50 * Ce * cpCg.wPlus }
+        };
+        
+        Pi = {
+            min: {
+                ULS: Iw.ULS * q50 * Ce * Cgi * Cpi.min,
+                SLS: Iw.SLS * q50 * Ce * Cgi * Cpi.min
+            },
+            max: {
+                ULS: Iw.ULS * q50 * Ce * Cgi * Cpi.max,
+                SLS: Iw.SLS * q50 * Ce * Cgi * Cpi.max
+            }
+        };
+    } else {
+        // H > 21m: Use fixed Cp values + Cg factor of 2.5
+        const Cg = 2.5;
+        const Cp = { eMinus: -1.2, wMinus: -0.9, ePlus: 0.9, wPlus: 0.9 };
+        
+        // For H>21m: Ce uses full H (already calculated above)
+        // Cei uses Hei = max(H/2, 6)
+        const Hei = Math.max(H / 2, 6);
+        const Cei = calculateCe(terrainType, Hei);
+        
+        Pe = {
+            eMinus: { ULS: Iw.ULS * q50 * Ce * Ct * Cg * Cp.eMinus, SLS: Iw.SLS * q50 * Ce * Ct * Cg * Cp.eMinus },
+            wMinus: { ULS: Iw.ULS * q50 * Ce * Ct * Cg * Cp.wMinus, SLS: Iw.SLS * q50 * Ce * Ct * Cg * Cp.wMinus },
+            ePlus:  { ULS: Iw.ULS * q50 * Ce * Ct * Cg * Cp.ePlus,  SLS: Iw.SLS * q50 * Ce * Ct * Cg * Cp.ePlus },
+            wPlus:  { ULS: Iw.ULS * q50 * Ce * Ct * Cg * Cp.wPlus,  SLS: Iw.SLS * q50 * Ce * Ct * Cg * Cp.wPlus }
+        };
+        
+        Pi = {
+            min: {
+                ULS: Iw.ULS * q50 * Cei * Cgi * Cpi.min,  // Use Cei, no Ct/Cg
+                SLS: Iw.SLS * q50 * Cei * Cgi * Cpi.min
+            },
+            max: {
+                ULS: Iw.ULS * q50 * Cei * Cgi * Cpi.max,  // Use Cei, no Ct/Cg
+                SLS: Iw.SLS * q50 * Cei * Cgi * Cpi.max
+            }
+        };
+    }
     
     // Build all pressure combinations P = Pe - Pi (kPa)
     const combinations = [];
@@ -8264,18 +8283,12 @@ function calculateStoreyWindLoad(params) {
     const SLS_Pmax = Math.max(...SLSValues);
     const SLS_Pmin = Math.min(...SLSValues);
     
-    const governingULSCombo = combinations.reduce((best, combo) => {
-        return !best || Math.abs(combo.ULS_kPa) > Math.abs(best.ULS_kPa) ? combo : best;
-    }, null);
+    const ULS_kPa = Math.abs(ULS_Pmax) > Math.abs(ULS_Pmin) ? ULS_Pmax : ULS_Pmin;
+    const SLS_kPa = Math.abs(SLS_Pmax) > Math.abs(SLS_Pmin) ? SLS_Pmax : SLS_Pmin;
     
-    const governingSLSCombo = combinations.reduce((best, combo) => {
-        return !best || Math.abs(combo.SLS_kPa) > Math.abs(best.SLS_kPa) ? combo : best;
-    }, null);
+    const governingULSCombo = combinations.find(c => c.ULS_kPa === ULS_kPa);
+    const governingSLSCombo = combinations.find(c => c.SLS_kPa === SLS_kPa);
     
-    const ULS_kPa = governingULSCombo ? Math.abs(governingULSCombo.ULS_kPa) : 0;
-    const SLS_kPa = governingSLSCombo ? Math.abs(governingSLSCombo.SLS_kPa) : 0;
-    
-    // Convert from kPa to psf (1 kPa = 20.885 psf)
     const ULS_psf = ULS_kPa * 20.885;
     const SLS_psf = SLS_kPa * 20.885;
 
@@ -8290,9 +8303,14 @@ function calculateStoreyWindLoad(params) {
             Iw,
             Ce,
             Cpi,
-            Cgi
+            Cgi,
+            Ct,
+            Cg: H > 21 ? 2.5 : undefined,
+            Cp: H > 21 ? { eMinus: -1.2, wMinus: -0.9, ePlus: 0.9, wPlus: 0.9 } : undefined,
+            Hei: H > 21 ? Math.max(H / 2, 6) : undefined,
+            Cei: H > 21 ? calculateCe(terrainType, Math.max(H / 2, 6)) : undefined
         },
-        cpCg,
+        cpCg: H <= 21 ? calculateCpCg(A) : undefined,
         exteriorPressures: Pe,
         interiorPressures: Pi,
         combinations: combinations.map(combo => ({
@@ -8322,8 +8340,8 @@ function calculateStoreyWindLoad(params) {
     };
     
     return {
-        ULS: roundTo(ULS_psf, 2),
-        SLS: roundTo(SLS_psf, 2),
+        ULS: roundTo(Math.abs(ULS_psf), 2),
+        SLS: roundTo(Math.abs(SLS_psf), 2),
         breakdown
     };
 }
