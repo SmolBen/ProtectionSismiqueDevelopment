@@ -3117,6 +3117,8 @@ function generateEditForm(wall, originalIndex) {
                         <select id="editDeflexionMax${originalIndex}" required 
                                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                             <option value="">Select déflexion max...</option>
+                            <option value="L/180" ${wall.deflexionMax === 'L/180' ? 'selected' : ''}>L/180</option>
+                            <option value="L/240" ${wall.deflexionMax === 'L/240' ? 'selected' : ''}>L/240</option>
                             <option value="L/360" ${wall.deflexionMax === 'L/360' ? 'selected' : ''}>L/360</option>
                             <option value="L/480" ${wall.deflexionMax === 'L/480' ? 'selected' : ''}>L/480</option>
                             <option value="L/600" ${wall.deflexionMax === 'L/600' ? 'selected' : ''}>L/600</option>
