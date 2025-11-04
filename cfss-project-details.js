@@ -2581,7 +2581,18 @@ async function saveEquipmentEditWithRevisions(index, event) {
         const espacement = document.getElementById(`editEspacement${index}`).value.trim();
         const lisseSuperieure = document.getElementById(`editLisseSuperieure${index}`).value.trim();
         const lisseInferieure = document.getElementById(`editLisseInferieure${index}`).value.trim();
-        const entremise = document.getElementById(`editEntremise${index}`).value.trim();
+
+        const entremisePart1 = document.getElementById(`editEntremisePart1_${index}`).value.trim();
+        const entremisePart2 = document.getElementById(`editEntremisePart2_${index}`).value.trim();
+        let entremise = '';
+        if (entremisePart1 === 'N/A') {
+            entremise = 'N/A';
+        } else if (entremisePart1 && entremisePart2) {
+            entremise = `${entremisePart1} @${entremisePart2}`;
+        } else if (entremisePart1) {
+            entremise = entremisePart1;
+        }
+
         const note = document.getElementById(`editNote${index}`).value.trim();
         
         // Get Set 2 values (if visible)
@@ -2590,7 +2601,18 @@ async function saveEquipmentEditWithRevisions(index, event) {
         const espacement2 = set2Visible ? document.getElementById(`editEspacement2_${index}`).value.trim() : '';
         const lisseSuperieure2 = set2Visible ? document.getElementById(`editLisseSuperieure2_${index}`).value.trim() : '';
         const lisseInferieure2 = set2Visible ? document.getElementById(`editLisseInferieure2_${index}`).value.trim() : '';
-        const entremise2 = set2Visible ? document.getElementById(`editEntremise2_${index}`).value.trim() : '';
+        let entremise2 = '';
+        if (set2Visible) {
+            const entremise2Part1 = document.getElementById(`editEntremise2Part1_${index}`).value.trim();
+            const entremise2Part2 = document.getElementById(`editEntremise2Part2_${index}`).value.trim();
+            if (entremise2Part1 === 'N/A') {
+                entremise2 = 'N/A';
+            } else if (entremise2Part1 && entremise2Part2) {
+                entremise2 = `${entremise2Part1} @${entremise2Part2}`;
+            } else if (entremise2Part1) {
+                entremise2 = entremise2Part1;
+            }
+        }
 
         // Validation - Set 1 (required)
         if (!equipment) {
@@ -3000,6 +3022,41 @@ function renderEquipmentList() {
                 }
                 toggleEquipmentDetails(originalIndex);
             });
+            
+            // Setup entremise dropdown event listeners for edit form
+            setTimeout(() => {
+                const part1Edit = document.getElementById(`editEntremisePart1_${originalIndex}`);
+                const part2Edit = document.getElementById(`editEntremisePart2_${originalIndex}`);
+                
+                if (part1Edit && part2Edit) {
+                    part1Edit.addEventListener('change', function() {
+                        if (this.value === 'N/A') {
+                            part2Edit.style.display = 'none';
+                            part2Edit.required = false;
+                            part2Edit.value = '';
+                        } else {
+                            part2Edit.style.display = '';
+                            part2Edit.required = true;
+                        }
+                    });
+                }
+                
+                const part1Edit2 = document.getElementById(`editEntremise2Part1_${originalIndex}`);
+                const part2Edit2 = document.getElementById(`editEntremise2Part2_${originalIndex}`);
+                
+                if (part1Edit2 && part2Edit2) {
+                    part1Edit2.addEventListener('change', function() {
+                        if (this.value === 'N/A') {
+                            part2Edit2.style.display = 'none';
+                            part2Edit2.required = false;
+                            part2Edit2.value = '';
+                        } else {
+                            part2Edit2.style.display = '';
+                            part2Edit2.required = false;
+                        }
+                    });
+                }
+            }, 100);
         });
         
         updateWallSummary();  
@@ -3194,12 +3251,39 @@ function generateEditForm(wall, originalIndex) {
 
                                 <div class="form-group">
                                     <label for="editEntremise${originalIndex}"><strong>Entremise:</strong></label>
-                                    <select id="editEntremise${originalIndex}" required 
-                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                                        <option value="">Select entremise...</option>
-                                        <option value="150U75-43" ${wall.entremise === '150U75-43' ? 'selected' : ''}>150U75-43</option>
-                                        <option value="N/A" ${wall.entremise === 'N/A' ? 'selected' : ''}>N/A</option>
-                                    </select>
+                                    <div style="display: flex; gap: 10px;">
+                                        <select id="editEntremisePart1_${originalIndex}" required style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                            <option value="">Select...</option>
+                                            ${(() => {
+                                                const [part1, part2] = (wall.entremise || '').includes('@') 
+                                                    ? wall.entremise.split(' @') 
+                                                    : [wall.entremise || '', ''];
+                                                return `
+                                                    <option value="150U50-43" ${part1 === '150U50-43' ? 'selected' : ''}>150U50-43</option>
+                                                    <option value="150U50-54" ${part1 === '150U50-54' ? 'selected' : ''}>150U50-54</option>
+                                                    <option value="N/A" ${part1 === 'N/A' ? 'selected' : ''}>N/A</option>
+                                                `;
+                                            })()}
+                                        </select>
+                                        <select id="editEntremisePart2_${originalIndex}" required style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; ${(() => {
+                                            const [part1] = (wall.entremise || '').includes('@') ? wall.entremise.split(' @') : [wall.entremise || '', ''];
+                                            return part1 === 'N/A' ? 'display: none;' : '';
+                                        })()}">
+                                            <option value="">Select spacing...</option>
+                                            ${(() => {
+                                                const [part1, part2] = (wall.entremise || '').includes('@') 
+                                                    ? wall.entremise.split(' @') 
+                                                    : [wall.entremise || '', ''];
+                                                return `
+                                                    <option value="48&quot;c/c" ${part2 === '48"c/c' ? 'selected' : ''}>48"c/c</option>
+                                                    <option value="Mi-hauteur" ${part2 === 'Mi-hauteur' ? 'selected' : ''}>Mi-hauteur</option>
+                                                    <option value="60&quot;c/c" ${part2 === '60"c/c' ? 'selected' : ''}>60"c/c</option>
+                                                    <option value="72&quot;c/c" ${part2 === '72"c/c' ? 'selected' : ''}>72"c/c</option>
+                                                    <option value="96&quot;c/c" ${part2 === '96"c/c' ? 'selected' : ''}>96"c/c</option>
+                                                `;
+                                            })()}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
@@ -3254,12 +3338,39 @@ function generateEditForm(wall, originalIndex) {
 
                                 <div class="form-group">
                                     <label for="editEntremise2_${originalIndex}"><strong>Entremise 2:</strong></label>
-                                    <select id="editEntremise2_${originalIndex}" 
-                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                                        <option value="">Select entremise...</option>
-                                        <option value="150U75-43" ${wall.entremise2 === '150U75-43' ? 'selected' : ''}>150U75-43</option>
-                                        <option value="N/A" ${wall.entremise2 === 'N/A' ? 'selected' : ''}>N/A</option>
-                                    </select>
+                                    <div style="display: flex; gap: 10px;">
+                                        <select id="editEntremise2Part1_${originalIndex}" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                            <option value="">Select...</option>
+                                            ${(() => {
+                                                const [part1, part2] = (wall.entremise2 || '').includes('@') 
+                                                    ? wall.entremise2.split(' @') 
+                                                    : [wall.entremise2 || '', ''];
+                                                return `
+                                                    <option value="150U50-43" ${part1 === '150U50-43' ? 'selected' : ''}>150U50-43</option>
+                                                    <option value="150U50-54" ${part1 === '150U50-54' ? 'selected' : ''}>150U50-54</option>
+                                                    <option value="N/A" ${part1 === 'N/A' ? 'selected' : ''}>N/A</option>
+                                                `;
+                                            })()}
+                                        </select>
+                                        <select id="editEntremise2Part2_${originalIndex}" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; ${(() => {
+                                            const [part1] = (wall.entremise2 || '').includes('@') ? wall.entremise2.split(' @') : [wall.entremise2 || '', ''];
+                                            return part1 === 'N/A' ? 'display: none;' : '';
+                                        })()}">
+                                            <option value="">Select spacing...</option>
+                                            ${(() => {
+                                                const [part1, part2] = (wall.entremise2 || '').includes('@') 
+                                                    ? wall.entremise2.split(' @') 
+                                                    : [wall.entremise2 || '', ''];
+                                                return `
+                                                    <option value="48&quot;c/c" ${part2 === '48"c/c' ? 'selected' : ''}>48"c/c</option>
+                                                    <option value="Mi-hauteur" ${part2 === 'Mi-hauteur' ? 'selected' : ''}>Mi-hauteur</option>
+                                                    <option value="60&quot;c/c" ${part2 === '60"c/c' ? 'selected' : ''}>60"c/c</option>
+                                                    <option value="72&quot;c/c" ${part2 === '72"c/c' ? 'selected' : ''}>72"c/c</option>
+                                                    <option value="96&quot;c/c" ${part2 === '96"c/c' ? 'selected' : ''}>96"c/c</option>
+                                                `;
+                                            })()}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -3278,7 +3389,7 @@ function generateEditForm(wall, originalIndex) {
                 </div>
                 
                 <div id="editDropZone${originalIndex}" tabindex="0"
-                     style="border: 2px dashed #ddd; border-radius: 8px; padding: 30px; text-align: center; background: white; cursor: default; min-height: 120px;">
+                    style="border: 2px dashed #ddd; border-radius: 8px; padding: 30px; text-align: center; background: white; cursor: default; min-height: 120px;">
                     <p style="color: #666; margin: 0 0 10px 0;">
                         <i class="fas fa-images" style="font-size: 32px; color: #ccc; margin-bottom: 8px;"></i><br>
                         Drop images here or paste from clipboard<br>
@@ -5053,7 +5164,23 @@ function getWallFormDataWithImages() {
     const montantMetallique = montantMetalliqueEl ? montantMetalliqueEl.value.trim() : '';
     const lisseSuperieure = lisseSuperieureEl ? lisseSuperieureEl.value.trim() : '';
     const lisseInferieure = lisseInferieureEl ? lisseInferieureEl.value.trim() : '';
-    const entremise = entremiseEl ? entremiseEl.value.trim() : '';
+    
+        // Get entremise parts
+    const entremisePart1El = document.getElementById('entremisePart1');
+    const entremisePart2El = document.getElementById('entremisePart2');
+    const entremisePart1 = entremisePart1El ? entremisePart1El.value.trim() : '';
+    const entremisePart2 = entremisePart2El ? entremisePart2El.value.trim() : '';
+    
+    // Concatenate entremise
+    let entremise = '';
+    if (entremisePart1 === 'N/A') {
+        entremise = 'N/A';
+    } else if (entremisePart1 && entremisePart2) {
+        entremise = `${entremisePart1} @${entremisePart2}`;
+    } else if (entremisePart1) {
+        entremise = entremisePart1;
+    }
+
     const espacement = espacementEl ? espacementEl.value.trim() : '';
     const note = noteEl ? noteEl.value.trim() : '';
     
@@ -5062,7 +5189,25 @@ function getWallFormDataWithImages() {
     const montantMetallique2 = set2Visible && montantMetallique2El ? montantMetallique2El.value.trim() : '';
     const lisseSuperieure2 = set2Visible && lisseSuperieure2El ? lisseSuperieure2El.value.trim() : '';
     const lisseInferieure2 = set2Visible && lisseInferieure2El ? lisseInferieure2El.value.trim() : '';
-    const entremise2 = set2Visible && entremise2El ? entremise2El.value.trim() : '';
+    
+        // Get Set 2 entremise parts
+    const entremise2Part1El = document.getElementById('entremise2Part1');
+    const entremise2Part2El = document.getElementById('entremise2Part2');
+    const entremise2Part1 = set2Visible && entremise2Part1El ? entremise2Part1El.value.trim() : '';
+    const entremise2Part2 = set2Visible && entremise2Part2El ? entremise2Part2El.value.trim() : '';
+    
+    // Concatenate entremise2
+    let entremise2 = '';
+    if (set2Visible) {
+        if (entremise2Part1 === 'N/A') {
+            entremise2 = 'N/A';
+        } else if (entremise2Part1 && entremise2Part2) {
+            entremise2 = `${entremise2Part1} @${entremise2Part2}`;
+        } else if (entremise2Part1) {
+            entremise2 = entremise2Part1;
+        }
+    }
+
     const espacement2 = set2Visible && espacement2El ? espacement2El.value.trim() : '';
 
     // Validation for Set 1 (required)
@@ -5106,8 +5251,13 @@ function getWallFormDataWithImages() {
         return null;
     }
 
-    if (!entremise) {
+    if (!entremisePart1) {
         alert('Please select entremise.');
+        return null;
+    }
+    
+    if (entremisePart1 !== 'N/A' && !entremisePart2) {
+        alert('Please select entremise spacing.');
         return null;
     }
 
@@ -8031,6 +8181,56 @@ function attachWindBreakdownHandlers(row) {
         slsSpan.addEventListener('click', () => showWindBreakdownModal(row, 'SLS'));
     }
 }
+
+// Setup entremise dropdown logic
+function setupEntremiseDropdowns() {
+    const part1 = document.getElementById('entremisePart1');
+    const part2 = document.getElementById('entremisePart2');
+    const part1Set2 = document.getElementById('entremise2Part1');
+    const part2Set2 = document.getElementById('entremise2Part2');
+    
+    if (part1 && part2) {
+        part1.addEventListener('change', function() {
+            if (this.value === 'N/A') {
+                part2.style.display = 'none';
+                part2.required = false;
+                part2.value = '';
+            } else {
+                part2.style.display = '';
+                part2.required = true;
+            }
+        });
+        // Trigger on load
+        if (part1.value === 'N/A') {
+            part2.style.display = 'none';
+            part2.required = false;
+        }
+    }
+    
+    if (part1Set2 && part2Set2) {
+        part1Set2.addEventListener('change', function() {
+            if (this.value === 'N/A') {
+                part2Set2.style.display = 'none';
+                part2Set2.required = false;
+                part2Set2.value = '';
+            } else {
+                part2Set2.style.display = '';
+                part2Set2.required = false; // Set 2 is optional
+            }
+        });
+        // Trigger on load
+        if (part1Set2.value === 'N/A') {
+            part2Set2.style.display = 'none';
+            part2Set2.required = false;
+        }
+    }
+}
+
+// Call this in DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupHauteurMaxPreview();
+    setupEntremiseDropdowns();
+});
 
 /**
  * Remove a storey row

@@ -653,11 +653,22 @@
             <!-- 8. Entremise - NOW A DROPDOWN -->
             <div class="form-group">
                 <label for="entremise">Entremise:</label>
-                <select id="entremise" name="entremise" required>
-                    <option value="">Select entremise...</option>
-                    <option value="150U75-43">150U75-43</option>
-                    <option value="N/A">N/A</option>
-                </select>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="entremisePart1" name="entremisePart1" required style="flex: 1;">
+                        <option value="">Select...</option>
+                        <option value="150U50-43" selected>150U50-43</option>
+                        <option value="150U50-54">150U50-54</option>
+                        <option value="N/A">N/A</option>
+                    </select>
+                    <select id="entremisePart2" name="entremisePart2" required style="flex: 1;">
+                        <option value="">Select spacing...</option>
+                        <option value="48&quot;c/c" selected>48"c/c</option>
+                        <option value="Mi-hauteur">Mi-hauteur</option>
+                        <option value="60&quot;c/c">60"c/c</option>
+                        <option value="72&quot;c/c">72"c/c</option>
+                        <option value="96&quot;c/c">96"c/c</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -712,11 +723,22 @@
             <!-- Entremise 2 -->
             <div class="form-group">
                 <label for="entremise2">Entremise 2:</label>
-                <select id="entremise2" name="entremise2">
-                    <option value="">Select entremise...</option>
-                    <option value="150U75-43">150U75-43</option>
-                    <option value="N/A">N/A</option>
-                </select>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="entremise2Part1" name="entremise2Part1" style="flex: 1;">
+                        <option value="">Select...</option>
+                        <option value="150U50-43" selected>150U50-43</option>
+                        <option value="150U50-54">150U50-54</option>
+                        <option value="N/A">N/A</option>
+                    </select>
+                    <select id="entremise2Part2" name="entremise2Part2" style="flex: 1;">
+                        <option value="">Select spacing...</option>
+                        <option value="48&quot;c/c" selected>48"c/c</option>
+                        <option value="Mi-hauteur">Mi-hauteur</option>
+                        <option value="60&quot;c/c">60"c/c</option>
+                        <option value="72&quot;c/c">72"c/c</option>
+                        <option value="96&quot;c/c">96"c/c</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
