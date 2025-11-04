@@ -903,9 +903,6 @@ function initializeParapetHandlers() {
                 parapetForm.style.display = 'block';
                 addParapetButton.innerHTML = 'Hide Form';
                 parapetForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                setTimeout(() => {
-                    setupParapetUnitAutoUpdate();
-                }, 100);
             }
         });
     }
@@ -980,9 +977,9 @@ function getParapetFormData() {
     const parapetName = document.getElementById('parapetName').value.trim();
     const parapetType = document.getElementById('parapetType').value.trim();
     const hauteurMax = document.getElementById('parapetHauteurMax').value.trim();
-    const hauteurMaxUnit = document.getElementById('parapetHauteurMaxUnit').value.trim();
+    const hauteurMaxCombined = document.getElementById('parapetHauteurMaxUnit').value.trim();
+    const [hauteurMaxUnit, hauteurMaxMinorUnit] = hauteurMaxCombined.split('-');
     const hauteurMaxMinor = document.getElementById('parapetHauteurMaxMinor').value.trim();
-    const hauteurMaxMinorUnit = document.getElementById('parapetHauteurMaxMinorUnit').value.trim();
     const montantMetallique = document.getElementById('parapetMontantMetallique').value.trim();
     const espacement = document.getElementById('parapetEspacement').value.trim();
     const lisseInferieure = document.getElementById('parapetLisseInferieure').value.trim();
@@ -1033,9 +1030,9 @@ function getParapetFormData() {
         parapetName,
         parapetType,
         hauteurMax,
-        hauteurMaxUnit,
+        hauteurMaxUnit: hauteurMaxUnit || 'ft',
         hauteurMaxMinor: hauteurMaxMinor || '',
-        hauteurMaxMinorUnit: hauteurMaxMinorUnit || '',
+        hauteurMaxMinorUnit: hauteurMaxMinorUnit || 'in',
         montantMetallique,
         espacement,
         lisseInferieure,
@@ -1052,9 +1049,8 @@ function clearParapetForm() {
     document.getElementById('parapetName').value = '';
     document.getElementById('parapetType').value = '';
     document.getElementById('parapetHauteurMax').value = '';
-    document.getElementById('parapetHauteurMaxUnit').value = '';
+    document.getElementById('parapetHauteurMaxUnit').value = 'ft-in';
     document.getElementById('parapetHauteurMaxMinor').value = '';
-    document.getElementById('parapetHauteurMaxMinorUnit').value = '';
     document.getElementById('parapetMontantMetallique').value = '';
     document.getElementById('parapetEspacement').value = '';
     document.getElementById('parapetLisseInferieure').value = '';
@@ -1151,13 +1147,13 @@ function renderParapetList() {
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Height (Minor)</label>
+                            <label>Hauteur Max</label>
                             <div style="display: flex; gap: 8px;">
+                                <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0" required>
                                 <input type="number" id="editParapetHauteurMaxMinor${parapet.id}" value="${parapet.hauteurMaxMinor || ''}" min="0">
-                                <select id="editParapetHauteurMaxMinorUnit${parapet.id}">
-                                    <option value="">Select...</option>
-                                    <option value="in" ${parapet.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
-                                    <option value="cm" ${parapet.hauteurMaxMinorUnit === 'cm' ? 'selected' : ''}>cm</option>
+                                <select id="editParapetHauteurMaxUnit${parapet.id}" required>
+                                    <option value="ft-in" ${(parapet.hauteurMaxUnit === 'ft' || !parapet.hauteurMaxUnit) ? 'selected' : ''}>ft-in</option>
+                                    <option value="m-mm" ${parapet.hauteurMaxUnit === 'm' ? 'selected' : ''}>m-mm</option>
                                 </select>
                             </div>
                         </div>
@@ -1298,9 +1294,9 @@ async function saveParapetEdit(id, event) {
             parapetName: document.getElementById(`editParapetName${id}`).value.trim(),
             parapetType: document.getElementById(`editParapetType${id}`).value.trim(),
             hauteurMax: document.getElementById(`editParapetHauteurMax${id}`).value.trim(),
-            hauteurMaxUnit: document.getElementById(`editParapetHauteurMaxUnit${id}`).value.trim(),
+            hauteurMaxUnit: (() => { const combined = document.getElementById(`editParapetHauteurMaxUnit${id}`).value.trim(); return combined.split('-')[0] || 'ft'; })(),
             hauteurMaxMinor: document.getElementById(`editParapetHauteurMaxMinor${id}`).value.trim() || '',
-            hauteurMaxMinorUnit: document.getElementById(`editParapetHauteurMaxMinorUnit${id}`).value.trim() || '',
+            hauteurMaxMinorUnit: (() => { const combined = document.getElementById(`editParapetHauteurMaxUnit${id}`).value.trim(); return combined.split('-')[1] || 'in'; })(),
             montantMetallique: document.getElementById(`editParapetMontantMetallique${id}`).value.trim(),
             espacement: document.getElementById(`editParapetEspacement${id}`).value.trim(),
             lisseInferieure: document.getElementById(`editParapetLisseInferieure${id}`).value.trim(),
@@ -2577,9 +2573,9 @@ async function saveEquipmentEditWithRevisions(index, event) {
         const equipment = document.getElementById(`editEquipment${index}`).value.trim();
         const floor = document.getElementById(`editFloor${index}`).value.trim();
         const hauteurMax = document.getElementById(`editHauteurMax${index}`).value.trim();
-        const hauteurMaxUnit = document.getElementById(`editHauteurMaxUnit${index}`).value.trim();
+        const hauteurMaxCombined = document.getElementById(`editHauteurMaxUnit${index}`).value.trim();
+        const [hauteurMaxUnit, hauteurMaxMinorUnit] = hauteurMaxCombined.split('-');
         const hauteurMaxMinor = document.getElementById(`editHauteurMaxMinor${index}`).value.trim();
-        const hauteurMaxMinorUnit = document.getElementById(`editHauteurMaxMinorUnit${index}`).value.trim();
         const deflexionMax = document.getElementById(`editDeflexionMax${index}`).value.trim();
         const montantMetallique = document.getElementById(`editMontantMetallique${index}`).value.trim();
         const espacement = document.getElementById(`editEspacement${index}`).value.trim();
@@ -2612,13 +2608,8 @@ async function saveEquipmentEditWithRevisions(index, event) {
             return;
         }
 
-        if (hauteurMax && !hauteurMaxUnit) {
-            alert('Please select a unit for the main height value.');
-            return;
-        }
-
-        if (hauteurMaxMinor && !hauteurMaxMinorUnit) {
-            alert('Please select a unit for the minor height value.');
+        if (hauteurMax && !hauteurMaxCombined) {
+            alert('Please select units.');
             return;
         }
 
@@ -2682,9 +2673,9 @@ async function saveEquipmentEditWithRevisions(index, event) {
             equipment: equipment,
             floor: floor,
             hauteurMax: hauteurMax || '0',
-            hauteurMaxUnit: hauteurMaxUnit,
+            hauteurMaxUnit: hauteurMaxUnit || 'ft',
             hauteurMaxMinor: hauteurMaxMinor || '0',
-            hauteurMaxMinorUnit: hauteurMaxMinorUnit,
+            hauteurMaxMinorUnit: hauteurMaxMinorUnit || 'in',
             deflexionMax: deflexionMax,
             montantMetallique: montantMetallique,
             dosADos: document.getElementById(`editDosADos${index}`)?.checked || false,
@@ -2729,6 +2720,9 @@ async function saveEquipmentEditWithRevisions(index, event) {
             
             // Update the project equipment array
             projectEquipment[index] = updatedWall;
+            
+            // Save to database
+            await saveRevisionsToDatabase();
             
             // Clean up edit mode
             clearEditModeImages(index);
@@ -3099,26 +3093,19 @@ function generateEditForm(wall, originalIndex) {
                     <!-- Hauteur Max with Units -->
                     <div class="form-group">
                         <label for="editHauteurMax${originalIndex}"><strong>Hauteur Max:</strong></label>
-                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="number" id="editHauteurMax${originalIndex}" 
                                    value="${wall.hauteurMax || ''}" min="0" step="1"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                    placeholder="Main height">
-                            <select id="editHauteurMaxUnit${originalIndex}" 
-                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                                <option value="ft" ${wall.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-                                <option value="m" ${wall.hauteurMaxUnit === 'm' ? 'selected' : ''}>m</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="number" id="editHauteurMaxMinor${originalIndex}" 
                                    value="${wall.hauteurMaxMinor || ''}" min="0" step="0.01"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                    placeholder="Minor value">
-                            <select id="editHauteurMaxMinorUnit${originalIndex}" 
+                            <select id="editHauteurMaxUnit${originalIndex}" 
                                     style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                                <option value="in" ${wall.hauteurMaxMinorUnit === 'in' ? 'selected' : ''}>in</option>
-                                <option value="cm" ${wall.hauteurMaxMinorUnit === 'cm' ? 'selected' : ''}>cm</option>
+                                <option value="ft-in" ${(wall.hauteurMaxUnit === 'ft' || !wall.hauteurMaxUnit) ? 'selected' : ''}>ft-in</option>
+                                <option value="m-mm" ${wall.hauteurMaxUnit === 'm' ? 'selected' : ''}>m-mm</option>
                             </select>
                         </div>
                         <div id="editHauteurPreview${originalIndex}" style="margin-top: 5px; font-size: 13px; color: #666;"></div>
@@ -3403,10 +3390,9 @@ function duplicateEquipment(index) {
     document.getElementById('equipment').value = wallToDuplicate.equipment;
     document.getElementById('floor').value = wallToDuplicate.floor || '';
     document.getElementById('hauteurMax').value = wallToDuplicate.hauteurMax || '';
-    document.getElementById('hauteurMaxUnit').value = wallToDuplicate.hauteurMaxUnit || '';
-    // FIX: Add the missing minor height values
+    const combinedUnit = `${wallToDuplicate.hauteurMaxUnit || 'ft'}-${wallToDuplicate.hauteurMaxMinorUnit || 'in'}`;
+    document.getElementById('hauteurMaxUnit').value = combinedUnit;
     document.getElementById('hauteurMaxMinor').value = wallToDuplicate.hauteurMaxMinor || '';
-    document.getElementById('hauteurMaxMinorUnit').value = wallToDuplicate.hauteurMaxMinorUnit || '';
     document.getElementById('deflexionMax').value = wallToDuplicate.deflexionMax || '';
     document.getElementById('montantMetallique').value = wallToDuplicate.montantMetallique || '';
     document.getElementById('lisseSuperieure').value = wallToDuplicate.lisseSuperieure || '';
@@ -3644,9 +3630,9 @@ async function saveEquipmentEdit(index, event) {
             equipment: document.getElementById(`editEquipment${index}`).value,
             floor: document.getElementById(`editFloor${index}`).value,
             hauteurMax: document.getElementById(`editHauteurMax${index}`).value,
-            hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${index}`).value,
+            hauteurMaxUnit: (() => { const combined = document.getElementById(`editHauteurMaxUnit${index}`).value; return combined.split('-')[0] || 'ft'; })(),
             hauteurMaxMinor: document.getElementById(`editHauteurMaxMinor${index}`).value,
-            hauteurMaxMinorUnit: document.getElementById(`editHauteurMaxMinorUnit${index}`).value,
+            hauteurMaxMinorUnit: (() => { const combined = document.getElementById(`editHauteurMaxUnit${index}`).value; return combined.split('-')[1] || 'in'; })(),
             deflexionMax: document.getElementById(`editDeflexionMax${index}`).value,
             montantMetallique: document.getElementById(`editMontantMetallique${index}`).value,
             lisseSuperieure: document.getElementById(`editLisseSuperieure${index}`).value,
@@ -3674,13 +3660,8 @@ async function saveEquipmentEdit(index, event) {
             return;
         }
 
-        if (updatedWall.hauteurMax && !updatedWall.hauteurMaxUnit) {
-            alert('Please select a unit for the main height value.');
-            return;
-        }
-
-        if (updatedWall.hauteurMaxMinor && !updatedWall.hauteurMaxMinorUnit) {
-            alert('Please select a unit for the minor height value.');
+        if (updatedWall.hauteurMax && (!updatedWall.hauteurMaxUnit || !updatedWall.hauteurMaxMinorUnit)) {
+            alert('Please select units.');
             return;
         }
 
@@ -5044,7 +5025,6 @@ function getWallFormDataWithImages() {
     const hauteurMaxEl = document.getElementById('hauteurMax');
     const hauteurMaxUnitEl = document.getElementById('hauteurMaxUnit');
     const hauteurMaxMinorEl = document.getElementById('hauteurMaxMinor');
-    const hauteurMaxMinorUnitEl = document.getElementById('hauteurMaxMinorUnit');
     const deflexionMaxEl = document.getElementById('deflexionMax');
     const montantMetalliqueEl = document.getElementById('montantMetallique');
     const lisseSuperieureEl = document.getElementById('lisseSuperieure');
@@ -5064,9 +5044,9 @@ function getWallFormDataWithImages() {
     const equipment = equipmentEl ? equipmentEl.value.trim() : '';
     const floor = floorEl ? floorEl.value.trim() : '';
     const hauteurMax = hauteurMaxEl ? hauteurMaxEl.value.trim() : '';
-    const hauteurMaxUnit = hauteurMaxUnitEl ? hauteurMaxUnitEl.value.trim() : '';
+    const hauteurMaxCombined = hauteurMaxUnitEl ? hauteurMaxUnitEl.value.trim() : '';
+    const [hauteurMaxUnit, hauteurMaxMinorUnit] = hauteurMaxCombined.split('-');
     const hauteurMaxMinor = hauteurMaxMinorEl ? hauteurMaxMinorEl.value.trim() : '';
-    const hauteurMaxMinorUnit = hauteurMaxMinorUnitEl ? hauteurMaxMinorUnitEl.value.trim() : '';
     const deflexionMax = deflexionMaxEl ? deflexionMaxEl.value.trim() : '';
     const montantMetallique = montantMetalliqueEl ? montantMetalliqueEl.value.trim() : '';
     const lisseSuperieure = lisseSuperieureEl ? lisseSuperieureEl.value.trim() : '';
@@ -5099,13 +5079,8 @@ function getWallFormDataWithImages() {
         return null;
     }
 
-    if (hauteurMax && !hauteurMaxUnit) {
-        alert('Please select a unit for the main height value.');
-        return null;
-    }
-
-    if (hauteurMaxMinor && !hauteurMaxMinorUnit) {
-        alert('Please select a unit for the minor height value.');
+    if (hauteurMax && !hauteurMaxCombined) {
+        alert('Please select units.');
         return null;
     }
 
@@ -5167,9 +5142,9 @@ function getWallFormDataWithImages() {
         equipment: equipment,
         floor: floor,
         hauteurMax: hauteurMax || '0',
-        hauteurMaxUnit: hauteurMaxUnit,
+        hauteurMaxUnit: hauteurMaxUnit || 'ft',
         hauteurMaxMinor: hauteurMaxMinor || '0',
-        hauteurMaxMinorUnit: hauteurMaxMinorUnit,
+        hauteurMaxMinorUnit: hauteurMaxMinorUnit || 'in',
         deflexionMax: deflexionMax,
         montantMetallique: montantMetallique,
         dosADos: document.getElementById('dosADos')?.checked || false,
@@ -5329,20 +5304,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function setupHauteurMaxPreview() {
     const majorInput = document.getElementById('hauteurMax');
-    const majorUnitSelect = document.getElementById('hauteurMaxUnit');
+    const combinedUnitSelect = document.getElementById('hauteurMaxUnit');
     const minorInput = document.getElementById('hauteurMaxMinor');
-    const minorUnitSelect = document.getElementById('hauteurMaxMinorUnit');
     const preview = document.getElementById('hauteurPreview');
     
-    if (!majorInput || !majorUnitSelect || !minorInput || !minorUnitSelect || !preview) {
+    if (!majorInput || !combinedUnitSelect || !minorInput || !preview) {
         return;
     }
     
     function updatePreview() {
         const major = majorInput.value || '0';
-        const majorUnit = majorUnitSelect.value || 'ft';
         const minor = minorInput.value || '0';
-        const minorUnit = minorUnitSelect.value || 'in';
+        const combined = combinedUnitSelect.value || 'ft-in';
+        const [majorUnit, minorUnit] = combined.split('-');
         
         if (major === '0' && minor === '0') {
             preview.textContent = 'Preview: --';
@@ -5354,26 +5328,10 @@ function setupHauteurMaxPreview() {
         }
     }
     
-    // AUTO-PAIRING: ft with in, m with mm
-    majorUnitSelect.addEventListener('change', function() {
-        const majorUnit = this.value;
-        
-        // Auto-pair ft with in, m with mm
-        if (majorUnit === 'ft') {
-            minorUnitSelect.value = 'in';
-        } else if (majorUnit === 'm') {
-            minorUnitSelect.value = 'mm';
-        }
-        
-        updatePreview();
-    });
-    
-    // When minor unit changes, don't affect major
-    minorUnitSelect.addEventListener('change', updatePreview);
-    
     // Add event listeners for input changes
     majorInput.addEventListener('input', updatePreview);
     minorInput.addEventListener('input', updatePreview);
+    combinedUnitSelect.addEventListener('change', updatePreview);
     
     // Initial preview
     updatePreview();
@@ -7061,38 +7019,6 @@ function loadWindowsFromProject(project) {
     updateWindowSummary();
 }
 
-// Setup auto-update for parapet height units (add form)
-function setupParapetUnitAutoUpdate() {
-    const majorUnitSelect = document.getElementById('parapetHauteurMaxUnit');
-    const minorUnitSelect = document.getElementById('parapetHauteurMaxMinorUnit');
-    
-    if (majorUnitSelect && minorUnitSelect) {
-        majorUnitSelect.addEventListener('change', function() {
-            if (this.value === 'ft') {
-                minorUnitSelect.value = 'in';
-            } else if (this.value === 'm') {
-                minorUnitSelect.value = 'cm';
-            }
-        });
-    }
-}
-
-// Setup auto-update for parapet height units (edit form)
-function setupParapetEditUnitAutoUpdate(parapetId) {
-    const majorUnitSelect = document.getElementById(`editParapetHauteurMaxUnit${parapetId}`);
-    const minorUnitSelect = document.getElementById(`editParapetHauteurMaxMinorUnit${parapetId}`);
-    
-    if (majorUnitSelect && minorUnitSelect) {
-        majorUnitSelect.addEventListener('change', function() {
-            if (this.value === 'ft') {
-                minorUnitSelect.value = 'in';
-            } else if (this.value === 'm') {
-                minorUnitSelect.value = 'cm';
-            }
-        });
-    }
-}
-
 // Render Review Tab
 function renderReviewTab() {
     console.log('📋 Rendering Review tab...');
@@ -7807,7 +7733,6 @@ window.populateParapetEditMontant = populateParapetEditMontant;
 window.setupParapetEditAutoFill = setupParapetEditAutoFill;
 
 window.setupParapetUnitAutoUpdate = setupParapetUnitAutoUpdate;
-window.setupParapetEditUnitAutoUpdate = setupParapetEditUnitAutoUpdate;
 
 window.toggleEditProjectDetails = toggleEditProjectDetails;
 window.saveProjectDetails = saveProjectDetails;

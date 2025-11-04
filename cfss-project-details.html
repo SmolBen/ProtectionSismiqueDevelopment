@@ -551,7 +551,7 @@
                                 <!-- 3. Hauteur Max - MANUAL INPUT WITH UNIT SELECTION -->
                                 <div class="form-group">
                                     <label for="hauteurMax">Hauteur Max:</label>
-                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <div style="display: flex; gap: 10px; align-items: center;">
                                         <input 
                                             type="number" 
                                             id="hauteurMax" 
@@ -561,15 +561,6 @@
                                             required 
                                             style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                         >
-                                        <select 
-                                            id="hauteurMaxUnit" 
-                                            name="hauteurMaxUnit" 
-                                            required 
-                                            style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-                                        >
-                                            <option value="ft" selected>ft</option>
-                                            <option value="m">m</option>
-                                        </select>
                                         <input 
                                             type="number" 
                                             id="hauteurMaxMinor" 
@@ -579,12 +570,13 @@
                                             style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                         >
                                         <select 
-                                            id="hauteurMaxMinorUnit" 
-                                            name="hauteurMaxMinorUnit" 
+                                            id="hauteurMaxUnit" 
+                                            name="hauteurMaxUnit" 
+                                            required 
                                             style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                         >
-                                            <option value="in" selected>in</option>
-                                            <option value="mm">mm</option>
+                                            <option value="ft-in" selected>ft-in</option>
+                                            <option value="m-mm">m-mm</option>
                                         </select>
                                     </div>
                                     <div id="hauteurPreview" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
@@ -957,16 +949,6 @@
             required 
             style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
         >
-        <select 
-            id="parapetHauteurMaxUnit" 
-            name="parapetHauteurMaxUnit" 
-            required 
-            style="width: 70px; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-        >
-            <option value="">Unit</option>
-            <option value="ft">ft</option>
-            <option value="m">m</option>
-        </select>
         <input 
             type="number" 
             id="parapetHauteurMaxMinor" 
@@ -976,13 +958,13 @@
             style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
         >
         <select 
-            id="parapetHauteurMaxMinorUnit" 
-            name="parapetHauteurMaxMinorUnit" 
-            style="width: 70px; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+            id="parapetHauteurMaxUnit" 
+            name="parapetHauteurMaxUnit" 
+            required 
+            style="width: 100px; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
         >
-            <option value="">Unit</option>
-            <option value="in">in</option>
-            <option value="cm">cm</option>
+            <option value="ft-in" selected>ft-in</option>
+            <option value="m-mm">m-mm</option>
         </select>
     </div>
 </div>
