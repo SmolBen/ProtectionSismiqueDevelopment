@@ -1161,11 +1161,17 @@
         addBtn.style.display = 'inline-block';
         
         // Clear Set 2 fields
-        document.getElementById('montantMetallique2').value = '';
-        document.getElementById('espacement2').value = '';
-        document.getElementById('lisseSuperieure2').value = '';
-        document.getElementById('lisseInferieure2').value = '';
-        document.getElementById('entremise2').value = '';
+        const montant2 = document.getElementById('montantMetallique2');
+        const espacement2 = document.getElementById('espacement2');
+        const lisseSuperieure2 = document.getElementById('lisseSuperieure2');
+        const lisseInferieure2 = document.getElementById('lisseInferieure2');
+        const entremise2 = document.getElementById('entremise2');
+        
+        if (montant2) montant2.value = '';
+        if (espacement2) espacement2.value = '';
+        if (lisseSuperieure2) lisseSuperieure2.value = '';
+        if (lisseInferieure2) lisseInferieure2.value = '';
+        if (entremise2) entremise2.value = '';
     }
 }
 

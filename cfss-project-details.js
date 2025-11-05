@@ -1582,7 +1582,7 @@ function showRevisionPopup(actionType, wallName = '', callback, isFirstRevision 
                 
                 <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-bottom: 20px; border-left: 3px solid #28a745;">
                     <div style="font-size: 13px; color: #495057;">
-                        <strong>This will create:</strong> Revision 1
+                        <strong>This will create:</strong> Revision 0
                     </div>
                 </div>
                 
@@ -1593,7 +1593,7 @@ function showRevisionPopup(actionType, wallName = '', callback, isFirstRevision 
                     </button>
                     <button onclick="processRevisionChoice()" 
                             style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                        Create Revision 1
+                        Create Revision 0
                     </button>
                 </div>
             </div>
@@ -1729,7 +1729,7 @@ async function createFirstRevision(description, callback) {
     try {
         const firstRevision = {
             id: `rev_${Date.now()}`,
-            number: 1,
+            number: 0,
             description: description || '',
             createdAt: new Date().toISOString(),
             createdBy: currentUser?.email || 'unknown',
@@ -2247,7 +2247,7 @@ async function generateCFSSReportForRevision(selectedRevision) {
 async function createNewRevision(description, callback) {
     console.log('📝 Creating new revision with description:', description);
     
-    const newRevisionNumber = projectRevisions.length + 1;
+    const newRevisionNumber = projectRevisions.length;
     const newRevision = {
         id: `rev_${Date.now()}`,
         number: newRevisionNumber,
