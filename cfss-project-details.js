@@ -239,7 +239,9 @@ const currentData = {
         clientEmails: document.getElementById('clientEmails').textContent,
         description: document.getElementById('projectDescription').textContent,
         type: document.getElementById('projectType').textContent,
-        status: document.getElementById('projectStatusDropdown').value
+        status: document.getElementById('projectStatusDropdown').value,
+        designedBy: (window.projectData && window.projectData.designedBy) || '',
+        approvedBy: (window.projectData && window.projectData.approvedBy) || ''
     };
     
     // Get address values from project data object (not from display string)
@@ -325,6 +327,16 @@ const currentData = {
             <div class="form-group">
                 <label><strong>Country:</strong></label>
                 <input type="text" id="edit_country" value="${country}" required>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Designed by:</strong></label>
+                <input type="text" id="edit_designedBy" value="${currentData.designedBy}">
+            </div>
+            
+            <div class="form-group">
+                <label><strong>Approved by:</strong></label>
+                <input type="text" id="edit_approvedBy" value="${currentData.approvedBy}">
             </div>
             
             <div class="form-actions" style="margin-top: 20px; display: flex; gap: 10px;">
@@ -412,7 +424,9 @@ async function saveProjectDetails() {
             addressLine2: document.getElementById('edit_addressLine2').value.trim(),
             city: document.getElementById('edit_city').value.trim(),
             province: document.getElementById('edit_province').value.trim(),
-            country: document.getElementById('edit_country').value.trim()
+            country: document.getElementById('edit_country').value.trim(),
+            designedBy: document.getElementById('edit_designedBy').value.trim(),
+            approvedBy: document.getElementById('edit_approvedBy').value.trim()
         };
         
         // Validate required fields
@@ -464,6 +478,8 @@ async function saveProjectDetails() {
             updatedData.country
         ].filter(Boolean);
         document.getElementById('projectAddress').textContent = addressParts.join(', ');
+        document.getElementById('projectDesignedBy').textContent = updatedData.designedBy || 'N/A';
+        document.getElementById('projectApprovedBy').textContent = updatedData.approvedBy || 'N/A';
         
         // Update global project data
         if (window.projectData) {
@@ -478,6 +494,9 @@ async function saveProjectDetails() {
         editBtn.classList.remove('cancel-mode');
         
         alert('Project details updated successfully!');
+
+        // Reload project data from server to ensure fresh data
+        await reloadProjectData();
         
     } catch (error) {
         console.error('❌ Error saving project details:', error);
@@ -2464,7 +2483,6 @@ async function reloadProjectData() {
             }
             
             console.log('✅ Project data reloaded successfully');
-            alert('Project data reloaded successfully');
         }
         
     } catch (error) {
