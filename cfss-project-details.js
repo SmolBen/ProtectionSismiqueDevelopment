@@ -1055,7 +1055,7 @@ function getParapetFormData() {
 // Clear parapet form
 function clearParapetForm() {
     document.getElementById('parapetName').value = '';
-    document.getElementById('parapetType').value = '';
+    document.getElementById('parapetType').value = 'Type 1';
     document.getElementById('parapetHauteurMax').value = '';
     document.getElementById('parapetHauteurMaxUnit').value = 'ft-in';
     document.getElementById('parapetHauteurMaxMinor').value = '';
