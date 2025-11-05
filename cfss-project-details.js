@@ -235,6 +235,7 @@ function showEditForm() {
 const currentData = {
         name: document.getElementById('projectName').textContent,
         projectNumber: document.getElementById('projectNumber').textContent,
+        clientName: document.getElementById('clientName').textContent,
         clientEmails: document.getElementById('clientEmails').textContent,
         description: document.getElementById('projectDescription').textContent,
         type: document.getElementById('projectType').textContent,
@@ -259,6 +260,11 @@ const currentData = {
             <div class="form-group">
                 <label><strong>Project Number:</strong></label>
                 <input type="text" id="edit_projectNumber" value="${currentData.projectNumber}" required>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Client Name:</strong></label>
+                <input type="text" id="edit_clientName" value="${currentData.clientName}">
             </div>
             
             <div class="form-group">
@@ -397,6 +403,7 @@ async function saveProjectDetails() {
             id: currentProjectId,
             name: document.getElementById('edit_name').value.trim(),
             projectNumber: document.getElementById('edit_projectNumber').value.trim(),
+            clientName: document.getElementById('edit_clientName').value.trim(),
             clientEmails: document.getElementById('edit_clientEmails').value.trim(),
             description: document.getElementById('edit_description').value.trim(),
             type: document.getElementById('edit_type').value,
@@ -442,6 +449,7 @@ async function saveProjectDetails() {
         // Update the display with new values
         document.getElementById('projectName').textContent = updatedData.name;
         document.getElementById('projectNumber').textContent = updatedData.projectNumber;
+        document.getElementById('clientName').textContent = updatedData.clientName;
         document.getElementById('clientEmails').textContent = updatedData.clientEmails;
         document.getElementById('projectDescription').textContent = updatedData.description;
         document.getElementById('projectType').textContent = updatedData.type;

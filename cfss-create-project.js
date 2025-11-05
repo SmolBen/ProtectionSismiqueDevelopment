@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const newCFSSProject = {
                 name: formData.get('name'),
                 projectNumber: formData.get('projectNumber'),
+                clientName: formData.get('clientName') || '',
                 clientEmails: formData.get('clientEmails'),  
                 description: formData.get('description'),
                 type: formData.get('type'),

@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // Populate CFSS project details
                 document.getElementById("projectName").textContent = project.name;
                 document.getElementById("projectNumber").textContent = project.projectNumber || 'N/A';
+                document.getElementById("clientName").textContent = project.clientName || 'N/A';
                 document.getElementById("clientEmails").textContent = project.clientEmails || 'N/A';
                 document.getElementById("projectDescription").textContent = project.description;
                 document.getElementById("projectType").textContent = project.type;
