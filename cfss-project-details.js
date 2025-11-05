@@ -1076,7 +1076,16 @@ function clearParapetForm() {
     document.getElementById('parapetName').value = '';
     document.getElementById('parapetType').value = 'Type 1';
     document.getElementById('parapetHauteurMax').value = '';
-    document.getElementById('parapetHauteurMaxUnit').value = 'ft-in';
+    
+    // Default to last wall's unit, or 'ft-in' if no walls
+    const lastWall = projectEquipment && projectEquipment.length > 0 ? projectEquipment[projectEquipment.length - 1] : null;
+    let defaultUnit = 'ft-in';
+    if (lastWall?.hauteurMaxUnit && lastWall?.hauteurMaxMinorUnit) {
+        defaultUnit = `${lastWall.hauteurMaxUnit}-${lastWall.hauteurMaxMinorUnit}`;
+    }
+    console.log('Setting parapet unit to:', defaultUnit, 'from last wall:', lastWall);
+    document.getElementById('parapetHauteurMaxUnit').value = defaultUnit;
+    
     document.getElementById('parapetHauteurMaxMinor').value = '';
     document.getElementById('parapetMontantMetallique').value = '';
     document.getElementById('parapetEspacement').value = '';
