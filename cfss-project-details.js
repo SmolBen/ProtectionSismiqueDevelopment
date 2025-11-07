@@ -3577,6 +3577,36 @@ function duplicateEquipment(index) {
     console.log(`Duplicated wall: ${wallToDuplicate.equipment}`);
 }
 
+function toggleEditSet2(wallIndex, show, event) {
+    if (event) event.preventDefault();
+    
+    const set2Container = document.getElementById(`editSet2_${wallIndex}`);
+    const addBtn = document.getElementById(`editAddSet2Btn${wallIndex}`);
+    
+    if (show) {
+        set2Container.style.display = 'block';
+        addBtn.style.display = 'none';
+    } else {
+        set2Container.style.display = 'none';
+        addBtn.style.display = 'inline-block';
+        
+        // Clear Set 2 fields
+        const montant2 = document.getElementById(`editMontantMetallique2_${wallIndex}`);
+        const espacement2 = document.getElementById(`editEspacement2_${wallIndex}`);
+        const lisseSuperieure2 = document.getElementById(`editLisseSuperieure2_${wallIndex}`);
+        const lisseInferieure2 = document.getElementById(`editLisseInferieure2_${wallIndex}`);
+        const entremise2 = document.getElementById(`editEntremise2_${wallIndex}`);
+        
+        if (montant2) montant2.value = '';
+        if (espacement2) espacement2.value = '';
+        if (lisseSuperieure2) lisseSuperieure2.value = '';
+        if (lisseInferieure2) lisseInferieure2.value = '';
+        if (entremise2) entremise2.value = '';
+    }
+}
+
+window.toggleEditSet2 = toggleEditSet2;
+
 // Function to toggle wall details
 function toggleEquipmentDetails(index) {
     const detailsDiv = document.getElementById(`equipmentDetails${index}`);
@@ -7257,6 +7287,11 @@ function renderReviewWalls() {
         
         // Check if wall has Set 2
         const hasSet2 = wall.montantMetallique2 && wall.montantMetallique2.trim() !== '';
+
+        // Format montant metallique info
+        const montantInfo = hasSet2 
+            ? `• Montant 1: ${wall.montantMetallique || 'N/A'} @${wall.espacement || 'N/A'} &nbsp;&nbsp;• Montant 2: ${wall.montantMetallique2 || 'N/A'} @${wall.espacement2 || 'N/A'}`
+            : `Montant: ${wall.montantMetallique || 'N/A'} @${wall.espacement || 'N/A'}`;
         
         return `
             <div class="accordion-item">
@@ -7267,6 +7302,7 @@ function renderReviewWalls() {
                             <span>Floor: ${floor}</span>
                             <span>Hauteur: ${hauteur}</span>
                             <span>Déflexion: ${deflexion}</span>
+                            <span>${montantInfo}</span>
                         </div>
                     </div>
                     <span class="expand-icon">▼</span>
