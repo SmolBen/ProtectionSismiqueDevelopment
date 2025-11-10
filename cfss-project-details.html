@@ -531,6 +531,134 @@
                 <i class="fas fa-window-maximize"></i> Add Window
             </button>
 
+            <button id="exteriorWallCalcButton" class="button secondary">
+                <i class="fas fa-calculator"></i> Exterior Wall Calculation
+            </button>
+
+<!-- Exterior Wall Calculation Form -->
+<div id="exteriorWallForm" class="equipment-form">
+    <h3>Exterior Wall Calculation</h3>
+    <div style="display: flex; gap: 30px;">
+        <!-- Left side: Form -->
+        <div style="flex: 0 0 400px;">
+            <form id="exteriorWallDataForm">
+                <!-- Windload -->
+                <div class="form-group">
+                    <label for="wallWindloadULS">Windload Resistance (ULS) (psf)</label>
+                    <input type="number" id="wallWindloadULS" name="wallWindloadULS" step="0.01" value="5" required>
+                </div>
+
+                <!-- Spacing -->
+                <div class="form-group">
+                    <label for="wallSpacing">Spacing (in)</label>
+                    <select id="wallSpacing" name="wallSpacing" required>
+                        <option value="8">8</option>
+                        <option value="12">12</option>
+                        <option value="16" selected>16</option>
+                        <option value="24">24</option>
+                    </select>
+                </div>
+
+                <!-- Bridging Spacing -->
+                <div class="form-group">
+                    <label for="wallBridging">Bridging Spacing (in)</label>
+                    <select id="wallBridging" name="wallBridging" required>
+                        <option value="48" selected>48</option>
+                        <option value="60">60</option>
+                        <option value="72">72</option>
+                        <option value="96">96</option>
+                    </select>
+                </div>
+
+                <!-- Deflection Limit -->
+                <div class="form-group">
+                    <label for="wallDeflectionLimit">Deflection Limit (L/)</label>
+                    <select id="wallDeflectionLimit" name="wallDeflectionLimit" required>
+                        <option value="180">180</option>
+                        <option value="240" selected>240</option>
+                        <option value="360">360</option>
+                        <option value="480">480</option>
+                        <option value="600">600</option>
+                        <option value="720">720</option>
+                    </select>
+                </div>
+
+                <!-- Height -->
+                <div class="form-group">
+                    <label for="wallHeightFt">Height</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="number" id="wallHeightFt" name="wallHeightFt" placeholder="ft" value="10" required style="flex: 1;">
+                        <span>ft</span>
+                        <input type="number" id="wallHeightIn" name="wallHeightIn" placeholder="in" value="1" required style="flex: 1;">
+                        <span>in</span>
+                    </div>
+                </div>
+
+                <!-- Bearing Length -->
+                <div class="form-group">
+                    <label for="wallBearingLength">Bearing Length (N) (in)</label>
+                    <input type="number" id="wallBearingLength" name="wallBearingLength" step="0.1" value="1" required>
+                </div>
+
+                <!-- Fastener Type -->
+                <div class="form-group">
+                    <label for="wallFastenerType">Fastener Type</label>
+                    <select id="wallFastenerType" name="wallFastenerType" required>
+                        <option value="EOF">EOF</option>
+                        <option value="IOF">IOF</option>
+                        <option value="ETF">ETF</option>
+                        <option value="ITF">ITF</option>
+                    </select>
+                </div>
+
+                <!-- Steel Stud -->
+                <div class="form-group">
+                    <label for="wallSteelStud">Steel Stud</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="wallSteelStud" name="wallSteelStud" required style="flex: 1;">
+                            <option value="">Select Steel Stud...</option>
+                        </select>
+                        <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
+                            <input type="checkbox" id="wallDosADos" name="wallDosADos" style="margin: 0;">
+                            <span>dos-à-dos</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Bottom Track -->
+                <div class="form-group">
+                    <label for="wallBottomTrack">Bottom Track</label>
+                    <select id="wallBottomTrack" name="wallBottomTrack" required>
+                        <option value="">Select Bottom Track...</option>
+                    </select>
+                </div>
+
+                <!-- Deflection Track -->
+                <div class="form-group">
+                    <label for="wallDeflectionTrack">Deflection Track</label>
+                    <select id="wallDeflectionTrack" name="wallDeflectionTrack" required>
+                        <option value="">Select Deflection Track...</option>
+                    </select>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="button primary">Calculate</button>
+                    <button type="button" id="cancelWallCalc" class="button secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right side: Results -->
+        <div style="flex: 1; min-width: 0;">
+            <div id="wallCalcResults" class="calc-results" style="display: none;">
+                <h3>Calculation Results</h3>
+                <div id="wallCalcResultsContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
             <div id="equipmentForm">
                 <div class="calculation-sections">
                     <!-- Section 1: Wall Form -->
@@ -1401,5 +1529,10 @@ function setupMontantChangeHandler() {
     <script src="cfss-project-details.js"></script>
     <script src="cfss-project-details-init.js"></script>
     <script src="cfss-custom-pages.js"></script>
+        
+    <script src="cfss-wall-calc-data.js"></script>
+    <script src="cfss-wall-calc-logic.js"></script>
+    <script src="cfss-wall-calc-ui.js"></script>
+
 </body>
 </html>

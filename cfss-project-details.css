@@ -763,15 +763,10 @@
     animation: dropHighlight 1s ease-in-out infinite;
 }
 
-/* Hide forms by default */
-#windowForm,
-#equipmentForm {
-    display: none;
-}
-
 /* Show forms when they have the 'show' class */
 #windowForm.show,
-#equipmentForm.show {
+#equipmentForm.show,
+#exteriorWallForm.show {
     display: block;
 }
 
@@ -1615,7 +1610,8 @@ button:not(.image-remove):not(.thumb-delete) {
 #cfss-form,
 #equipmentForm,
 #windowForm,
-#parapetForm {
+#parapetForm,
+#exteriorWallForm {
     position: relative;
     width: 100%;
     margin-top: 15px;
@@ -2014,6 +2010,29 @@ button:not(.image-remove):not(.thumb-delete) {
     font-size: 13px;
     line-height: 1.45;
     white-space: pre-wrap;
+}
+
+.calc-results {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.calc-results table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.calc-results th,
+.calc-results td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.calc-results thead {
+    background-color: #f5f5f5;
 }
 
 @media (max-width: 768px) {

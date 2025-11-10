@@ -132,6 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setupNewCalculationButton();
                 setupEquipmentFormHandlerWithRevisions();
                 setupWindowHandlers();
+                initExteriorWallCalculator();
                 loadWindowsFromProject(project);
                 console.log('📋 About to call loadParapetsFromProject...');
                 console.log('Project object keys:', Object.keys(project));
