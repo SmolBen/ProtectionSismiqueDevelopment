@@ -6772,7 +6772,7 @@ function populateOptionsCategories() {
                 'fixe-tabiler-metallique-lisse-trouee',
                 'fixe-bois-lisse-trouee',
                 'detail-lisse-trouee',
-                'detail-entremise'
+                'identification'
             ]
         },
         'double-lisse': {
@@ -6790,21 +6790,35 @@ function populateOptionsCategories() {
                 'fixe-beton-lisse-basse',
                 'fixe-structure-dacier-lisse-basse',
                 'fixe-bois-lisse-basse',
-                'detail-lisse-basse',
-                'identification'
+                'detail-entremise-1',
+                'detail-entremise-2',
+                'detail-lisse-basse'
             ]
         },
         'parapet': {
             container: 'parapet-options',
             options: [
                 'parapet-1', 'parapet-2', 'parapet-3', 'parapet-4', 'parapet-5',
-                'parapet-6', 'parapet-7', 'parapet-8', 'parapet-9', 'parapet-10'
+                'parapet-6', 'parapet-7', 'parapet-8', 'parapet-9', 'parapet-10',
+                'parapet-11', 'parapet-12', 'parapet-13'
             ]
         },
-        'detail-structure': {
-            container: 'detail-structure-options',
+        'fenetre': {
+            container: 'fenetre-options',
             options: [
-                'detail-structure'
+                'fenetre'
+            ]
+        },
+        'jambages-linteaux-seuils': {
+            container: 'jambages-linteaux-seuils-options',
+            options: [
+                // Jambages
+                'jambage-1', 'jambage-2', 'jambage-3', 'jambage-4', 'jambage-5',
+                // Linteaux  
+                'linteau-1', 'linteau-2', 'linteau-3', 'linteau-4', 'linteau-5',
+                'linteau-6', 'linteau-7', 'linteau-8',
+                // Seuils
+                'seuil-1', 'seuil-2', 'seuil-3'
             ]
         }
     };
@@ -6974,7 +6988,7 @@ async function preloadOptionImages() {
         'fixe-tabiler-metallique-lisse-trouee',
         'fixe-bois-lisse-trouee',
         'detail-lisse-trouee',
-        'detail-entremise',
+        'identification',
         
         // Double lisse options
         'fixe-beton-double-lisse',
@@ -6986,15 +7000,27 @@ async function preloadOptionImages() {
         'fixe-beton-lisse-basse',
         'fixe-structure-dacier-lisse-basse',
         'fixe-bois-lisse-basse',
+        'detail-entremise-1',
+        'detail-entremise-2',
         'detail-lisse-basse',
-        'identification',
         
         // Parapet options
         'parapet-1', 'parapet-2', 'parapet-3', 'parapet-4', 'parapet-5',
         'parapet-6', 'parapet-7', 'parapet-8', 'parapet-9', 'parapet-10',
+        'parapet-11', 'parapet-12', 'parapet-13',
         
-        // Detail structure
-        'detail-structure'
+        // Fenetre
+        'fenetre',
+        
+        // Jambages
+        'jambage-1', 'jambage-2', 'jambage-3', 'jambage-4', 'jambage-5',
+        
+        // Linteaux
+        'linteau-1', 'linteau-2', 'linteau-3', 'linteau-4', 'linteau-5',
+        'linteau-6', 'linteau-7', 'linteau-8',
+        
+        // Seuils
+        'seuil-1', 'seuil-2', 'seuil-3'
     ];
     
     // Load images in batches to avoid overwhelming the server
