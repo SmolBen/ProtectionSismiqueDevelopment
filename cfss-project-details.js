@@ -938,8 +938,48 @@ function initializeParapetHandlers() {
         parapetFormElement.addEventListener('submit', handleSaveParapet);
     }
     
+    // Setup parapet type image preview
+    setupParapetTypeImagePreview();
+    
     // Setup montant auto-fill for parapets
     setupParapetMontantAutoFill();
+}
+
+// Setup image preview for parapet type selection
+function setupParapetTypeImagePreview() {
+    const parapetTypeSelect = document.getElementById('parapetType');
+    const previewBox = document.getElementById('parapetTypeImagePreview');
+    
+    if (!parapetTypeSelect || !previewBox) return;
+    
+    parapetTypeSelect.addEventListener('change', function() {
+        updateParapetTypeImage(this.value);
+    });
+}
+
+// Update parapet type image preview
+function updateParapetTypeImage(selectedType) {
+    const previewBox = document.getElementById('parapetTypeImagePreview');
+    if (!previewBox) return;
+    
+    if (!selectedType) {
+        previewBox.innerHTML = '<span style="color: #999; font-size: 13px; text-align: center;">Select a type</span>';
+        return;
+    }
+    
+    // Extract type number (e.g., "Type 1" -> "1")
+    const typeNumber = selectedType.replace('Type ', '');
+    const imageUrl = `https://protection-sismique-equipment-images.s3.amazonaws.com/cfss-options/parapet-${typeNumber}.png`;
+    
+    // Create image element
+    previewBox.innerHTML = `
+        <img 
+            src="${imageUrl}" 
+            alt="${selectedType}"
+            style="max-width: 105px; max-height: 105px; object-fit: contain;"
+            onerror="this.parentElement.innerHTML='<span style=\\'color: #999; font-size: 11px; text-align: center;\\'><i class=\\'fas fa-image\\' style=\\'font-size: 20px; margin-bottom: 4px; display: block;\\'></i>${selectedType}<br/>(image not found)</span>';"
+        />
+    `;
 }
 
 // Setup auto-fill for parapet lisse fields
@@ -1075,6 +1115,10 @@ function getParapetFormData() {
 function clearParapetForm() {
     document.getElementById('parapetName').value = '';
     document.getElementById('parapetType').value = 'Type 1';
+    
+    // Trigger image preview for default Type 1
+    updateParapetTypeImage('Type 1');
+    
     document.getElementById('parapetHauteurMax').value = '';
     
     // Default to last wall's unit, or 'ft-in' if no walls
