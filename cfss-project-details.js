@@ -46,7 +46,6 @@ const CFSS_OPTIONS = [
     'fixe-tabiler-metallique-lisse-trouee',
     'fixe-bois-lisse-trouee',
     'detail-lisse-trouee',
-    'detail-entremise',
     
     // Page S-3: Double lisse options
     'fixe-beton-double-lisse',
