@@ -576,20 +576,18 @@ function addCompositionItem(containerId, hiddenInputId, existingValue = '') {
         <option value="1000" ${defaultSize === '1000' ? 'selected' : ''}>1000</option>
       </select>
       
-      <select style="width: 55px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
+    <select data-item-id="${itemId}" data-role="type-selector" style="width: 55px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateDimensionOptions('${itemId}'); updateAllCompositions('${containerId}', '${hiddenInputId}')">
         <option value="S" ${defaultType === 'S' ? 'selected' : ''}>S</option>
         <option value="T" ${defaultType === 'T' ? 'selected' : ''}>T</option>
       </select>
       
-      <select style="width: 70px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
-        <option value="125" ${defaultDimension === '125' ? 'selected' : ''}>125</option>
-        <option value="150" ${defaultDimension === '150' ? 'selected' : ''}>150</option>
-        <option value="200" ${defaultDimension === '200' ? 'selected' : ''}>200</option>
+      <select data-item-id="${itemId}" data-role="dimension-selector" style="width: 70px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
+        ${getDimensionOptions(defaultType, defaultDimension)}
       </select>
-      
-      <span style="color: #666; font-weight: 500;">-</span>
-      
-      <select style="width: 60px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
+    
+    <span style="color: #666; font-weight: 500;">-</span>
+    
+    <select style="width: 60px; padding: 6px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;" onchange="updateAllCompositions('${containerId}', '${hiddenInputId}')">
         <option value="18" ${defaultVariant === '18' ? 'selected' : ''}>18</option>
         <option value="33" ${defaultVariant === '33' ? 'selected' : ''}>33</option>
         <option value="34" ${defaultVariant === '34' ? 'selected' : ''}>34</option>
@@ -619,6 +617,47 @@ function addCompositionItem(containerId, hiddenInputId, existingValue = '') {
   
   updateAllCompositions(containerId, hiddenInputId);
   updateAddButton(containerId);
+}
+
+// Get dimension options based on type (S or T)
+function getDimensionOptions(type, selectedValue) {
+  const optionsMap = {
+    'S': ['125', '162', '200', '250', '300', '350'],
+    'T': ['125', '150', '200', '250', '300']
+  };
+  
+  const options = optionsMap[type] || optionsMap['S'];
+  
+  return options.map(val => 
+    `<option value="${val}" ${val === selectedValue ? 'selected' : ''}>${val}</option>`
+  ).join('');
+}
+
+// Update dimension dropdown when type (S/T) changes
+function updateDimensionOptions(itemId) {
+  const typeSelector = document.querySelector(`[data-item-id="${itemId}"][data-role="type-selector"]`);
+  const dimensionSelector = document.querySelector(`[data-item-id="${itemId}"][data-role="dimension-selector"]`);
+  
+  if (!typeSelector || !dimensionSelector) return;
+  
+  const selectedType = typeSelector.value;
+  const currentValue = dimensionSelector.value;
+  
+  // Get new options
+  const optionsMap = {
+    'S': ['125', '162', '200', '250', '300', '350'],
+    'T': ['125', '150', '200', '250', '300']
+  };
+  
+  const newOptions = optionsMap[selectedType] || optionsMap['S'];
+  
+  // Check if current value is valid for new type, otherwise default to first option
+  const newValue = newOptions.includes(currentValue) ? currentValue : newOptions[0];
+  
+  // Update options
+  dimensionSelector.innerHTML = newOptions.map(val => 
+    `<option value="${val}" ${val === newValue ? 'selected' : ''}>${val}</option>`
+  ).join('');
 }
 
 function deleteCompositionItem(itemId, containerId, hiddenInputId) {
@@ -8036,6 +8075,8 @@ window.renderReviewParapets = renderReviewParapets;
 window.renderReviewOptions = renderReviewOptions;
 window.renderReviewWindows = renderReviewWindows;
 window.renderReviewCustomPages = renderReviewCustomPages;
+
+window.updateDimensionOptions = updateDimensionOptions;
 
 // ==================== CFSS WIND LOAD CALCULATIONS ====================
 
