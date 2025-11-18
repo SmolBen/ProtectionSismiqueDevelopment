@@ -7896,26 +7896,26 @@ function updateTypeImage(type, value) {
     }
     
     // Construct S3 URL based on type and value
-    // Format: https://s3.amazonaws.com/bucket-name/folder/type-value.png
-    const bucketUrl = 'https://s3.amazonaws.com/protection-sismique-equipment-images';
-    let folderName = '';
+    // Format: https://bucket-name.s3.region.amazonaws.com/cfss-options/type-number.png
+    const bucketUrl = 'https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com';
     
-    switch(type) {
-        case 'jambage':
-            folderName = 'jambage';
-            break;
-        case 'linteau':
-            folderName = 'linteau';
-            break;
-        case 'seuil':
-            folderName = 'seuil';
-            break;
-        default:
-            console.error(`Unknown type: ${type}`);
-            return;
+    // Extract number from value (JA3 -> 3, LT5 -> 5, SE2 -> 2)
+    const number = value.substring(2); // Remove the first 2 characters (JA, LT, SE)
+    
+    // Map type to lowercase filename
+    const typeMap = {
+        'jambage': 'jambage',
+        'linteau': 'linteau',
+        'seuil': 'seuil'
+    };
+    
+    const filename = typeMap[type];
+    if (!filename) {
+        console.error(`Unknown type: ${type}`);
+        return;
     }
     
-    const imageUrl = `${bucketUrl}/${folderName}/${value}.png`;
+    const imageUrl = `${bucketUrl}/cfss-options/${filename}-${number}.png`;
     
     // Update preview with image
     preview.className = 'type-image-preview';

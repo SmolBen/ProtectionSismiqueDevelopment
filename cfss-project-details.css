@@ -1774,7 +1774,7 @@ button:not(.image-remove):not(.thumb-delete) {
 .type-image-preview {
     border: 2px solid #ddd;
     border-radius: 4px;
-    padding: 2px;
+    padding: 0;
     background: #f9f9f9;
     min-width: 100px;
     min-height: 100px;
@@ -1784,8 +1784,8 @@ button:not(.image-remove):not(.thumb-delete) {
 }
 
 .type-image-preview img {
-    max-width: 96px;
-    max-height: 96px;
+    max-width: 100px;
+    max-height: 100px;
     object-fit: contain;
 }
 
