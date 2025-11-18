@@ -1131,7 +1131,7 @@ function clearParapetForm() {
     
     document.getElementById('parapetHauteurMaxMinor').value = '';
     document.getElementById('parapetMontantMetallique').value = '';
-    document.getElementById('parapetEspacement').value = '';
+    document.getElementById('parapetEspacement').value = '16"c/c';
     document.getElementById('parapetLisseInferieure').value = '';
     document.getElementById('parapetLisseSuperieure').value = '';
     document.getElementById('parapetEntremise').value = 'N/A';
