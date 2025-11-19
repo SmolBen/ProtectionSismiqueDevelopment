@@ -6598,26 +6598,27 @@ function handleWindowSubmit(e) {
     };
     
     const windowData = {
-        id: Date.now(),
-        type: formData.get('windowType'),
-        largeurMax: parseFloat(formData.get('windowLargeurMax')),
-        hauteurMax: parseFloat(formData.get('windowHauteurMax')),
-        largeurMaxUnit: formData.get('windowLargeurMaxUnit'),
-        hauteurMaxUnit: formData.get('windowHauteurMaxUnit'),
-        jambage: {
-            type: formData.get('jambageType'),
-            compositions: parseComposition(formData.get('jambageComposition'))
-        },
-        linteau: {
-            type: formData.get('linteauType'),
-            compositions: parseComposition(formData.get('linteauComposition'))
-        },
-        seuil: {
-            type: formData.get('seuilType'),
-            compositions: parseComposition(formData.get('seuilComposition'))
-        },
-        createdAt: new Date().toISOString()
-    };
+    id: Date.now(),
+    type: formData.get('windowType'),
+    floor: formData.get('windowFloor') || '',
+    largeurMax: parseFloat(formData.get('windowLargeurMax')),
+    hauteurMax: parseFloat(formData.get('windowHauteurMax')),
+    largeurMaxUnit: formData.get('windowLargeurMaxUnit'),
+    hauteurMaxUnit: formData.get('windowHauteurMaxUnit'),
+    jambage: {
+        type: formData.get('jambageType'),
+        compositions: parseComposition(formData.get('jambageComposition'))
+    },
+    linteau: {
+        type: formData.get('linteauType'),
+        compositions: parseComposition(formData.get('linteauComposition'))
+    },
+    seuil: {
+        type: formData.get('seuilType'),
+        compositions: parseComposition(formData.get('seuilComposition'))
+    },
+    createdAt: new Date().toISOString()
+};
 
     projectWindows.push(windowData);
     renderWindowList();
@@ -6673,8 +6674,9 @@ function renderWindowList() {
         <div class="equipment-details" id="windowDetails${id}">
           <div class="equipment-details-container">
             <div class="equipment-info-section" style="font-size:13px;color:#495057;">
-              <p><strong>Type:</strong> ${win.type || 'N/A'}</p>
-              <p><strong>Dimensions:</strong> ${dims}</p>
+                <p><strong>Type:</strong> ${win.type || 'N/A'}</p>
+                ${win.floor ? `<p><strong>Floor:</strong> ${win.floor}</p>` : ''}
+                <p><strong>Dimensions:</strong> ${dims}</p>
 
               <p><strong>Jambage:</strong> ${win.jambage?.type || 'N/A'}</p>
               ${win.jambage?.compositions?.length ? `<div style="margin:6px 0 10px 12px;color:#6c757d;">• ${win.jambage.compositions.join('<br>• ')}</div>` : ''}
@@ -6704,6 +6706,12 @@ function renderWindowList() {
           <div class="form-group" style="max-width:420px;">
             <label for="editWindowType${id}">Window Type</label>
             <input type="text" id="editWindowType${id}" value="${win.type || ''}" required>
+          </div>
+
+          <!-- Floor -->
+          <div class="form-group" style="max-width:420px;">
+            <label for="editWindowFloor${id}">Floor</label>
+            <input type="text" id="editWindowFloor${id}" value="${win.floor || ''}" placeholder="e.g., NV2 - NV3">
           </div>
 
           <!-- Largeur Max (+ unit) -->
@@ -6874,6 +6882,7 @@ async function saveWindowEdit(windowId, event) {
         const updatedWindow = {
             ...projectWindows[windowIndex],
             type: document.getElementById(`editWindowType${windowId}`).value,
+            floor: document.getElementById(`editWindowFloor${windowId}`).value || '',
             largeurMax: parseFloat(document.getElementById(`editLargeurMax${windowId}`).value),
             largeurMaxUnit: document.getElementById(`editLargeurMaxUnit${windowId}`).value,
             hauteurMax: parseFloat(document.getElementById(`editHauteurMax${windowId}`).value),
@@ -6984,6 +6993,7 @@ function duplicateWindow(id) {
     
     // Populate basic window information
     document.getElementById('windowType').value = windowToDuplicate.type || '';
+    document.getElementById('windowFloor').value = windowToDuplicate.floor || '';
     document.getElementById('windowLargeurMax').value = windowToDuplicate.largeurMax || '';
     document.getElementById('windowLargeurMaxUnit').value = windowToDuplicate.largeurMaxUnit === 'm'
         ? 'mm'
