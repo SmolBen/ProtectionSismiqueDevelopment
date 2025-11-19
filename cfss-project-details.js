@@ -7,6 +7,239 @@ let projectData = null;
 let cfssWindData = []; // Store wind data
 let storeyCounter = 0; // Counter for storey labels (RDC, NV1, NV2...)
 
+// Global state for floor selection
+let selectedFloorIndices = new Set();
+
+// Helper function to find which group a floor belongs to
+function findGroupForFloor(floorGroups, floorIndex) {
+    if (!floorGroups) return null;
+    
+    for (const group of floorGroups) {
+        if (floorIndex >= group.firstIndex && floorIndex <= group.lastIndex) {
+            return group;
+        }
+    }
+    return null;
+}
+
+// Helper function to check if floors are consecutive
+function areFloorsConsecutive(indices) {
+    if (indices.length === 0) return false;
+    const sorted = [...indices].sort((a, b) => a - b);
+    for (let i = 1; i < sorted.length; i++) {
+        if (sorted[i] !== sorted[i-1] + 1) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Initialize floor grouping event listeners
+function initializeFloorGrouping() {
+    const contentDiv = document.getElementById('cfssDataContent');
+    if (!contentDiv) return;
+    
+    // Clear selection state when initializing
+    selectedFloorIndices.clear();
+    
+    // Remove any existing listeners to prevent duplicates
+    const oldListener = contentDiv._floorGroupingListener;
+    if (oldListener) {
+        contentDiv.removeEventListener('click', oldListener);
+        document.removeEventListener('keydown', contentDiv._keydownListener);
+    }
+    
+    // Create new listener functions
+    const clickListener = function(e) {
+    // Check if clicked on arrow (for ungrouping)
+    const arrow = e.target.closest('.group-arrow');
+    if (arrow) {
+        const floorIndex = parseInt(arrow.getAttribute('data-floor-index'));
+        if (!projectData || !projectData.cfssWindData) return;
+        const groupInfo = findGroupForFloor(projectData.cfssWindData.floorGroups, floorIndex);
+        if (groupInfo) {
+            ungroupFloors(groupInfo);
+        }
+        return;
+    }
+    
+    // Check if clicked on a floor row (for selection)
+    const floorRow = e.target.closest('.floor-row');
+    if (!floorRow) return;
+    
+    // Don't allow selection of already grouped floors
+    if (floorRow.classList.contains('grouped-floor')) {
+        return;
+    }
+    
+    const floorIndex = parseInt(floorRow.getAttribute('data-floor-index'));
+    handleFloorClick(floorIndex);
+};
+    
+    const keydownListener = function(e) {
+        if (e.key === 'Enter' && selectedFloorIndices.size > 0) {
+            e.preventDefault();
+            groupSelectedFloors();
+        }
+    };
+    
+    // Store listeners for cleanup
+    contentDiv._floorGroupingListener = clickListener;
+    contentDiv._keydownListener = keydownListener;
+    
+    // Attach listeners
+    contentDiv.addEventListener('click', clickListener);
+    document.addEventListener('keydown', keydownListener);
+}
+
+// Handle clicking on a floor name
+function handleFloorClick(floorIndex) {
+    // CHANGED: Always get fresh data from projectData
+    if (!projectData || !projectData.cfssWindData || !projectData.cfssWindData.storeys) return;
+    
+    const cfssData = projectData.cfssWindData;
+    
+    // Check if this floor is already in a group
+    const groupInfo = findGroupForFloor(cfssData.floorGroups, floorIndex);
+    
+    if (groupInfo) {
+    // Grouped floors can't be selected - only ungrouped via arrow clicks
+    return;
+}
+    
+    // Toggle selection
+    if (selectedFloorIndices.has(floorIndex)) {
+        selectedFloorIndices.delete(floorIndex);
+    } else {
+        selectedFloorIndices.add(floorIndex);
+    }
+    
+    updateFloorSelection();
+}
+
+// Update visual selection state
+function updateFloorSelection() {
+    const floorRows = document.querySelectorAll('.floor-row');
+    const instruction = document.getElementById('grouping-instruction');
+    const selectionCount = document.getElementById('selection-count');
+    
+    floorRows.forEach(row => {
+        const index = parseInt(row.getAttribute('data-floor-index'));
+        const isGrouped = row.classList.contains('grouped-floor');
+        
+        if (selectedFloorIndices.has(index)) {
+            // Highlight like grouped rows (light blue with left border)
+            row.style.background = '#e7f5f7';
+            row.style.borderLeft = '3px solid #17a2b8';
+        } else if (!isGrouped) {
+            // Reset to original striped background
+            const originalBg = index % 2 === 0 ? '#f8f9fa' : 'white';
+            row.style.background = originalBg;
+            row.style.borderLeft = '';
+        }
+    });
+    
+    // Show/hide instruction
+    if (selectedFloorIndices.size > 0) {
+        instruction.style.display = 'block';
+        selectionCount.textContent = selectedFloorIndices.size;
+    } else {
+        instruction.style.display = 'none';
+    }
+}
+
+// Group selected floors
+async function groupSelectedFloors() {
+    if (selectedFloorIndices.size < 2) {
+        alert('Please select at least 2 floors to group.');
+        return;
+    }
+    
+    // CHANGED: Always get fresh data from projectData
+    if (!projectData || !projectData.cfssWindData || !projectData.cfssWindData.storeys) return;
+    
+    const cfssData = projectData.cfssWindData;
+    const indices = [...selectedFloorIndices].sort((a, b) => a - b);
+    
+    // Check if floors are consecutive
+    if (!areFloorsConsecutive(indices)) {
+        alert('Please select consecutive floors only.');
+        return;
+    }
+    
+    // Initialize floorGroups if needed
+    if (!cfssData.floorGroups) {
+        cfssData.floorGroups = [];
+    }
+    
+    // Check for overlaps with existing groups
+    for (const index of indices) {
+        if (findGroupForFloor(cfssData.floorGroups, index)) {
+            alert('One or more selected floors are already in a group. Please ungroup them first.');
+            return;
+        }
+    }
+    
+    // Create new group
+    const newGroup = {
+        firstIndex: indices[0],
+        lastIndex: indices[indices.length - 1]
+    };
+    
+    cfssData.floorGroups.push(newGroup);
+    
+    // Clear selection
+    selectedFloorIndices.clear();
+    
+    // Save to backend
+    await saveCFSSDataToBackend(cfssData);
+    
+    // CHANGED: Refresh display using the updated data from projectData
+    displayCFSSData(projectData.cfssWindData);
+}
+
+// Ungroup floors
+async function ungroupFloors(groupInfo) {
+    // CHANGED: Always get fresh data from projectData
+    if (!projectData || !projectData.cfssWindData) return;
+    
+    const cfssData = projectData.cfssWindData;
+    
+    // Remove the group
+    cfssData.floorGroups = cfssData.floorGroups.filter(g => 
+        g.firstIndex !== groupInfo.firstIndex || g.lastIndex !== groupInfo.lastIndex
+    );
+    
+    // Save to backend
+    await saveCFSSDataToBackend(cfssData);
+    
+    // CHANGED: Refresh display using the updated data from projectData
+    displayCFSSData(projectData.cfssWindData);
+}
+
+// Save CFSS data to backend
+async function saveCFSSDataToBackend(cfssData) {
+    try {
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                cfssWindData: cfssData
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save floor grouping');
+        }
+        
+        // Update local project data
+        projectData.cfssWindData = cfssData;
+        
+    } catch (error) {
+        console.error('Error saving floor grouping:', error);
+        alert('Failed to save floor grouping. Please try again.');
+    }
+}
 // CFSS Wind Load Calculation - Lookup tables from Excel
 const IW_VALUES = {
     'Low': { ULS: 0.8, SLS: 0.75 },
@@ -2572,6 +2805,11 @@ async function reloadProjectData() {
                 cfssWindData = project.cfssWindData;
                 displayCFSSData(project.cfssWindData);
             }
+
+            // Ensure floorGroups are preserved from backend
+            if (project.cfssWindData && !project.cfssWindData.floorGroups) {
+                project.cfssWindData.floorGroups = [];
+            }
             
             console.log('✅ Project data reloaded successfully');
         }
@@ -4521,14 +4759,24 @@ function displayCFSSData(cfssData) {
             }
         }
         
-        // Display storey calculations table
+        // Display storey calculations table WITH GROUPING FEATURE
         if (cfssData.storeys && cfssData.storeys.length > 0) {
+            // Initialize floor groups if not exist
+            if (!cfssData.floorGroups) {
+                cfssData.floorGroups = [];
+            }
+            
             html += `
-                <div class="cfss-storeys-display">
-                    <h4 style="margin: 0 0 10px 0; color: #17a2b8; font-size: 14px; border-bottom: 1px solid #17a2b8; padding-bottom: 5px;">
-                        Calculs par étage
-                    </h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <div class="cfss-storeys-display">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #17a2b8; padding-bottom: 5px;">
+            <h4 style="margin: 0; color: #17a2b8; font-size: 14px;">
+                Calculs par étage
+            </h4>
+            <div id="grouping-instruction" style="font-size: 12px; color: #0c5460; display: none;">
+                <span id="selection-count">0</span> floor(s) selected. Press <strong>Enter</strong> to group them.
+            </div>
+        </div>
+        <table id="cfss-storeys-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
                         <thead>
                             <tr style="background: #17a2b8; color: white;">
                                 <th style="padding: 8px; text-align: left;">Étage</th>
@@ -4542,17 +4790,37 @@ function displayCFSSData(cfssData) {
             `;
             
             cfssData.storeys.forEach((storey, index) => {
-                const bgColor = index % 2 === 0 ? '#f8f9fa' : 'white';
-                html += `
-                    <tr style="background: ${bgColor};">
-                        <td style="padding: 8px;">${storey.label}</td>
-                        <td style="padding: 8px; text-align: center;">${storey.height}</td>
-                        <td style="padding: 8px; text-align: center;">${storey.area}</td>
-                        <td style="padding: 8px; text-align: center; font-weight: 600; color: #28a745;">${storey.uls.toFixed(1)}</td>
-                        <td style="padding: 8px; text-align: center; font-weight: 600; color: #17a2b8;">${storey.sls.toFixed(1)}</td>
-                    </tr>
-                `;
-            });
+    const groupInfo = findGroupForFloor(cfssData.floorGroups, index);
+    const isGrouped = groupInfo !== null;
+    const isFirstInGroup = isGrouped && groupInfo.firstIndex === index;
+    const isLastInGroup = isGrouped && groupInfo.lastIndex === index;
+    
+    const bgColor = index % 2 === 0 ? '#f8f9fa' : 'white';
+    const borderLeft = isGrouped ? 'border-left: 3px solid #17a2b8;' : '';
+    
+    let floorLabel = storey.label;
+    let arrowHtml = '';
+    if (isFirstInGroup) {
+        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">▼</span>';
+    }
+    if (isLastInGroup) {
+        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">▲</span>';
+    }
+    
+    html += `
+        <tr class="floor-row ${isGrouped ? 'grouped-floor' : ''}" 
+            data-floor-index="${index}" 
+            style="background: ${bgColor}; ${borderLeft} cursor: ${isGrouped ? 'default' : 'pointer'}; transition: background 0.2s ease;">
+            <td style="padding: 8px;">
+                ${floorLabel}${arrowHtml}
+            </td>
+            <td style="padding: 8px; text-align: center;">${storey.height}</td>
+            <td style="padding: 8px; text-align: center;">${storey.area}</td>
+            <td style="padding: 8px; text-align: center; font-weight: 600; color: #28a745;">${storey.uls.toFixed(1)}</td>
+            <td style="padding: 8px; text-align: center; font-weight: 600; color: #17a2b8;">${storey.sls.toFixed(1)}</td>
+        </tr>
+    `;
+});
             
             html += `</tbody></table></div>`;
         }
@@ -4598,6 +4866,9 @@ function displayCFSSData(cfssData) {
     }
     
     contentDiv.innerHTML = html;
+    
+    // Initialize floor grouping feature
+    setTimeout(() => initializeFloorGrouping(), 0);
 }
 
 // Update the saveCFSSData function to refresh the display
@@ -4661,12 +4932,13 @@ async function saveCFSSData() {
         
         // Create the complete CFSS data object
         const cfssData = {
-            windParams: windParams,
-            specifications: specifications,
-            storeys: storeys,
-            dateAdded: new Date().toISOString(),
-            addedBy: currentUser.email
-        };
+        windParams: windParams,
+        specifications: specifications,
+        storeys: storeys,
+        floorGroups: projectData.cfssWindData?.floorGroups || [],
+        dateAdded: new Date().toISOString(),
+        addedBy: currentUser.email
+    };
         
         console.log('Saving CFSS data:', cfssData);
         
@@ -4682,6 +4954,7 @@ async function saveCFSSData() {
         }
         
         cfssWindData = cfssData;
+        projectData.cfssWindData = cfssData;
         
         // Update the display
         displayCFSSData(cfssData);
