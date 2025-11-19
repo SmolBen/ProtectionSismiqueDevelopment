@@ -1314,6 +1314,7 @@ async function handleSaveParapet(e) {
 function getParapetFormData() {
     const parapetName = document.getElementById('parapetName').value.trim();
     const parapetType = document.getElementById('parapetType').value.trim();
+    const floor = document.getElementById('parapetFloor').value.trim();
     const hauteurMax = document.getElementById('parapetHauteurMax').value.trim();
     const hauteurMaxCombined = document.getElementById('parapetHauteurMaxUnit').value.trim();
     const [hauteurMaxUnit, hauteurMaxMinorUnit] = hauteurMaxCombined.split('-');
@@ -1367,6 +1368,7 @@ function getParapetFormData() {
         id: Date.now(),
         parapetName,
         parapetType,
+        floor: floor || '',
         hauteurMax,
         hauteurMaxUnit: hauteurMaxUnit || 'ft',
         hauteurMaxMinor: hauteurMaxMinor || '',
@@ -1386,6 +1388,7 @@ function getParapetFormData() {
 function clearParapetForm() {
     document.getElementById('parapetName').value = '';
     document.getElementById('parapetType').value = 'Type 1';
+    document.getElementById('parapetFloor').value = '';
     
     // Trigger image preview for default Type 1
     updateParapetTypeImage('Type 1');
@@ -1455,6 +1458,7 @@ function renderParapetList() {
                     <div class="equipment-details-container">
                         <div class="equipment-info-section">
                             <p><strong>Parapet Type:</strong> ${parapet.parapetType || 'N/A'}</p>
+                            ${parapet.floor ? `<p><strong>Floor:</strong> ${parapet.floor}</p>` : ''}
                             <p><strong>Height:</strong> ${heightDisplay}</p>
                             <p><strong>Montant Métallique:</strong> ${parapet.montantMetallique}</p>
                             <p><strong>Espacement:</strong> ${parapet.espacement}</p>
@@ -1493,6 +1497,10 @@ function renderParapetList() {
             <option value="Type 9" ${parapet.parapetType === 'Type 9' ? 'selected' : ''}>Type 9</option>
             <option value="Type 10" ${parapet.parapetType === 'Type 10' ? 'selected' : ''}>Type 10</option>
         </select>
+    </div>
+    <div class="form-group">
+        <label>Floor</label>
+        <input type="text" id="editParapetFloor${parapet.id}" value="${parapet.floor || ''}" placeholder="e.g., NV2 - NV3">
     </div>
 </div>
 
@@ -1644,6 +1652,7 @@ async function saveParapetEdit(id, event) {
             id: id,
             parapetName: document.getElementById(`editParapetName${id}`).value.trim(),
             parapetType: document.getElementById(`editParapetType${id}`).value.trim(),
+            floor: document.getElementById(`editParapetFloor${id}`).value.trim() || '',
             hauteurMax: document.getElementById(`editParapetHauteurMax${id}`).value.trim(),
             hauteurMaxUnit: (() => { const combined = document.getElementById(`editParapetHauteurMaxUnit${id}`).value.trim(); return combined.split('-')[0] || 'ft'; })(),
             hauteurMaxMinor: document.getElementById(`editParapetHauteurMaxMinor${id}`).value.trim() || '',
