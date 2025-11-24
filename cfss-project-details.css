@@ -496,7 +496,7 @@
 
 .tab-content {
     padding: 20px;
-    height: 600px;
+    flex: 1;
     overflow-y: auto;
     background: white;
     border-radius: 0 0 8px 8px;
@@ -516,6 +516,7 @@
 .options-category {
     margin-bottom: 25px;
 }
+
 
 .category-header {
     font-size: 16px;
@@ -567,13 +568,10 @@
 }
 
 .save-options-btn {
-    position: sticky;
-    bottom: 0;
     background: white;
     padding: 20px;
     border-top: 1px solid #e0e0e0;
-    margin: -20px -20px 0;
-    border-radius: 0 0 8px 8px;
+    margin: 0 0 0 0;
 }
 
 .save-btn {
@@ -1645,6 +1643,8 @@ button:not(.image-remove):not(.thumb-delete) {
 }
 
 .top-half {
+    display: flex;
+    align-items: flex-start;
     flex: 1 1 auto;
     min-height: 400px;
     margin-bottom: 20px;
@@ -1654,17 +1654,19 @@ button:not(.image-remove):not(.thumb-delete) {
 .left-section {
     flex: 0 0 40%;
     padding: 20px;
-    overflow-y: auto;
+    overflow-y: visible;  /* Left side never scrolls */
     min-width: 0;
     box-sizing: border-box;
 }
 
 .right-section {
-    flex: 1 1 auto; /* Takes remaining space */
+    flex: 1 1 auto;
     padding: 20px;
-    overflow-y: auto;
+    overflow-y: hidden;
     min-width: 0;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .container {

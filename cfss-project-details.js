@@ -7101,6 +7101,12 @@ function switchTab(tabId) {
     });
     document.getElementById(`${tabId}-content`).classList.add('active');
     
+    // Show/hide save options button based on tab
+    const saveButtonContainer = document.getElementById('saveOptionsBtnContainer');
+    if (saveButtonContainer) {
+        saveButtonContainer.style.display = (tabId === 'option-list') ? 'block' : 'none';
+    }
+    
     // Render lists when switching tabs
     if (tabId === 'window-list') {
         renderWindowList();
