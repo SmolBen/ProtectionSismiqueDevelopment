@@ -942,47 +942,75 @@
             <input type="text" id="windowFloor" name="windowFloor" placeholder="e.g., 2-5">
         </div>
         
-        <!-- Largeur Max with Unit Selection -->
+        <!-- Largeur Max - Dual Input with Unit Toggle -->
         <div class="form-group">
             <label for="windowLargeurMax">Largeur Max</label>
-            <div style="display: flex; gap: 8px;">
-                <input type="number" 
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input 
+                    type="number" 
                     id="windowLargeurMax" 
                     name="windowLargeurMax" 
-                    step="0.01" 
-                    required
-                    style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    min="0"
+                    step="1"
+                    required 
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                >
+                <input 
+                    type="number" 
+                    id="windowLargeurMaxMinor" 
+                    name="windowLargeurMaxMinor" 
+                    min="0"
+                    step="1"
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                >
                 <select 
                     id="windowLargeurMaxUnit" 
                     name="windowLargeurMaxUnit" 
-                    required
-                    style="padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
-                    <option value="mm">mm</option>
-                    <option value="ft">ft</option>
-                    <option value="in">in</option>
+                    required 
+                    style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                >
+                    <option value="ft-in" selected>ft-in</option>
+                    <option value="m-mm">m-mm</option>
                 </select>
+            </div>
+            <div id="largeurPreview" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
+                Preview: --
             </div>
         </div>
 
-        <!-- Hauteur Max with Unit Selection -->
+        <!-- Hauteur Max - Dual Input with Unit Toggle -->
         <div class="form-group">
             <label for="windowHauteurMax">Hauteur Max</label>
-            <div style="display: flex; gap: 8px;">
-                <input type="number" 
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input 
+                    type="number" 
                     id="windowHauteurMax" 
                     name="windowHauteurMax" 
-                    step="0.01" 
-                    required
-                    style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    min="0"
+                    step="1"
+                    required 
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                >
+                <input 
+                    type="number" 
+                    id="windowHauteurMaxMinor" 
+                    name="windowHauteurMaxMinor" 
+                    min="0"
+                    step="1"
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                >
                 <select 
                     id="windowHauteurMaxUnit" 
                     name="windowHauteurMaxUnit" 
-                    required
-                    style="padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 60px;">
-                    <option value="mm">mm</option>
-                    <option value="ft">ft</option>
-                    <option value="in">in</option>
+                    required 
+                    style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                >
+                    <option value="ft-in" selected>ft-in</option>
+                    <option value="m-mm">m-mm</option>
                 </select>
+            </div>
+            <div id="hauteurWindowPreview" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
+                Preview: --
             </div>
         </div>
         

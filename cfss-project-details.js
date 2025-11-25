@@ -5879,8 +5879,12 @@ function openImageModal(imageKey, filename) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Setup hauteur max preview
+    // Setup hauteur max preview (for walls)
     setupHauteurMaxPreview();
+    
+    // Setup window dimension previews
+    setupWindowLargeurPreview();
+    setupWindowHauteurPreview();
 });
 
 function setupHauteurMaxPreview() {
@@ -5916,6 +5920,94 @@ function setupHauteurMaxPreview() {
     
     // Initial preview
     updatePreview();
+}
+
+function setupWindowLargeurPreview() {
+    const majorInput = document.getElementById('windowLargeurMax');
+    const minorInput = document.getElementById('windowLargeurMaxMinor');
+    const combinedUnitSelect = document.getElementById('windowLargeurMaxUnit');
+    const preview = document.getElementById('largeurPreview');
+    
+    if (!majorInput || !combinedUnitSelect || !minorInput || !preview) {
+        return;
+    }
+    
+    function updatePreview() {
+        const major = majorInput.value || '0';
+        const minor = minorInput.value || '0';
+        const combined = combinedUnitSelect.value || 'ft-in';
+        const [majorUnit, minorUnit] = combined.split('-');
+        
+        if (major === '0' && minor === '0') {
+            preview.textContent = 'Preview: --';
+            preview.style.color = '#666';
+        } else {
+            const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+            preview.textContent = `Preview: ${formatted}`;
+            preview.style.color = '#2c5aa0';
+        }
+    }
+    
+    majorInput.addEventListener('input', updatePreview);
+    minorInput.addEventListener('input', updatePreview);
+    combinedUnitSelect.addEventListener('change', updatePreview);
+    
+    updatePreview();
+}
+
+function setupWindowHauteurPreview() {
+    const majorInput = document.getElementById('windowHauteurMax');
+    const minorInput = document.getElementById('windowHauteurMaxMinor');
+    const combinedUnitSelect = document.getElementById('windowHauteurMaxUnit');
+    const preview = document.getElementById('hauteurWindowPreview');
+    
+    if (!majorInput || !combinedUnitSelect || !minorInput || !preview) {
+        return;
+    }
+    
+    function updatePreview() {
+        const major = majorInput.value || '0';
+        const minor = minorInput.value || '0';
+        const combined = combinedUnitSelect.value || 'ft-in';
+        const [majorUnit, minorUnit] = combined.split('-');
+        
+        if (major === '0' && minor === '0') {
+            preview.textContent = 'Preview: --';
+            preview.style.color = '#666';
+        } else {
+            const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+            preview.textContent = `Preview: ${formatted}`;
+            preview.style.color = '#2c5aa0';
+        }
+    }
+    
+    majorInput.addEventListener('input', updatePreview);
+    minorInput.addEventListener('input', updatePreview);
+    combinedUnitSelect.addEventListener('change', updatePreview);
+    
+    updatePreview();
+}
+
+function formatWindowDimension(major, minor, unit) {
+    const majorVal = parseFloat(major) || 0;
+    const minorVal = parseFloat(minor) || 0;
+    
+    if (!unit) return 'N/A';
+    
+    if (unit === 'ft-in') {
+        // Imperial format: 5'-6"
+        if (majorVal === 0 && minorVal === 0) return '0"';
+        if (majorVal > 0 && minorVal > 0) return `${majorVal}'-${minorVal}"`;
+        if (majorVal > 0) return `${majorVal}'-0"`;
+        return `${minorVal}"`;
+    } else if (unit === 'm-mm') {
+        // Convert to total mm
+        const totalMm = (majorVal * 1000) + minorVal;
+        return Math.round(totalMm) + 'mm';
+    }
+    
+    // Fallback for old format
+    return `${majorVal}${unit}`;
 }
 
 // Helper function for preview formatting
@@ -6601,9 +6693,11 @@ function handleWindowSubmit(e) {
     id: Date.now(),
     type: formData.get('windowType'),
     floor: formData.get('windowFloor') || '',
-    largeurMax: parseFloat(formData.get('windowLargeurMax')),
-    hauteurMax: parseFloat(formData.get('windowHauteurMax')),
+    largeurMax: parseFloat(formData.get('windowLargeurMax')) || 0,
+    largeurMaxMinor: parseFloat(formData.get('windowLargeurMaxMinor')) || 0,
     largeurMaxUnit: formData.get('windowLargeurMaxUnit'),
+    hauteurMax: parseFloat(formData.get('windowHauteurMax')) || 0,
+    hauteurMaxMinor: parseFloat(formData.get('windowHauteurMaxMinor')) || 0,
     hauteurMaxUnit: formData.get('windowHauteurMaxUnit'),
     jambage: {
         type: formData.get('jambageType'),
@@ -6650,7 +6744,9 @@ function renderWindowList() {
   container.innerHTML = validWindows.map((win, idx) => {
     const id    = win.id;
     const title = win.windowName || win.name || win.type || `Window ${idx + 1}`;
-    const dims  = `${win.largeurMax ?? 0}${win.largeurMaxUnit === 'm' ? 'mm' : (win.largeurMaxUnit || 'mm')} × ${win.hauteurMax ?? 0}${win.hauteurMaxUnit === 'm' ? 'mm' : (win.hauteurMaxUnit || 'mm')}`;
+    const largeurDisplay = formatWindowDimension(win.largeurMax, win.largeurMaxMinor, win.largeurMaxUnit);
+    const hauteurDisplay = formatWindowDimension(win.hauteurMax, win.hauteurMaxMinor, win.hauteurMaxUnit);
+    const dims = `${largeurDisplay} × ${hauteurDisplay}`;
 
     return `
     <div class="equipment-card" id="windowCard${id}">
@@ -6714,35 +6810,43 @@ function renderWindowList() {
             <input type="text" id="editWindowFloor${id}" value="${win.floor || ''}" placeholder="e.g., NV2 - NV3">
           </div>
 
-          <!-- Largeur Max (+ unit) -->
-          <div class="form-group">
-            <label for="editLargeurMax${id}">Largeur Max</label>
-            <div style="display:flex; gap:8px;">
-              <input type="number" id="editLargeurMax${id}" value="${win.largeurMax ?? ''}" step="0.01" required
-                     style="flex:1; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
-              <select id="editLargeurMaxUnit${id}" required
-                      style="padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px; width:60px;">
-                <option value="mm" ${(!win.largeurMaxUnit || win.largeurMaxUnit === 'mm' || win.largeurMaxUnit === 'm') ? 'selected' : ''}>mm</option>
-                <option value="ft" ${win.largeurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-                <option value="in" ${win.largeurMaxUnit === 'in' ? 'selected' : ''}>in</option>
-              </select>
-            </div>
-          </div>
+          <!-- Largeur Max - Dual Input with Unit Toggle -->
+        <div class="form-group">
+        <label for="editLargeurMax${id}">Largeur Max</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <input type="number" id="editLargeurMax${id}" value="${win.largeurMax ?? ''}" min="0" step="1" required
+                style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+            <input type="number" id="editLargeurMaxMinor${id}" value="${win.largeurMaxMinor ?? ''}" min="0" step="1"
+                style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+            <select id="editLargeurMaxUnit${id}" required
+                    style="flex:1; padding:8px 8px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+            <option value="ft-in" ${(!win.largeurMaxUnit || win.largeurMaxUnit === 'ft-in') ? 'selected' : ''}>ft-in</option>
+            <option value="m-mm" ${win.largeurMaxUnit === 'm-mm' ? 'selected' : ''}>m-mm</option>
+            </select>
+        </div>
+        <div id="editLargeurPreview${id}" style="margin-top:5px; font-size:12px; color:#666; font-style:italic;">
+            Preview: --
+        </div>
+        </div>
 
-          <!-- Hauteur Max (+ unit) -->
-          <div class="form-group">
-            <label for="editHauteurMax${id}">Hauteur Max</label>
-            <div style="display:flex; gap:8px;">
-              <input type="number" id="editHauteurMax${id}" value="${win.hauteurMax ?? ''}" step="0.01" required
-                     style="flex:1; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
-              <select id="editHauteurMaxUnit${id}" required
-                      style="padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px; width:60px;">
-                <option value="mm" ${(!win.hauteurMaxUnit || win.hauteurMaxUnit === 'mm' || win.hauteurMaxUnit === 'm') ? 'selected' : ''}>mm</option>
-                <option value="ft" ${win.hauteurMaxUnit === 'ft' ? 'selected' : ''}>ft</option>
-                <option value="in" ${win.hauteurMaxUnit === 'in' ? 'selected' : ''}>in</option>
-              </select>
-            </div>
-          </div>
+        <!-- Hauteur Max - Dual Input with Unit Toggle -->
+        <div class="form-group">
+        <label for="editHauteurMax${id}">Hauteur Max</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <input type="number" id="editHauteurMax${id}" value="${win.hauteurMax ?? ''}" min="0" step="1" required
+                style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+            <input type="number" id="editHauteurMaxMinor${id}" value="${win.hauteurMaxMinor ?? ''}" min="0" step="1"
+                style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+            <select id="editHauteurMaxUnit${id}" required
+                    style="flex:1; padding:8px 8px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+            <option value="ft-in" ${(!win.hauteurMaxUnit || win.hauteurMaxUnit === 'ft-in') ? 'selected' : ''}>ft-in</option>
+            <option value="m-mm" ${win.hauteurMaxUnit === 'm-mm' ? 'selected' : ''}>m-mm</option>
+            </select>
+        </div>
+        <div id="editHauteurWindowPreview${id}" style="margin-top:5px; font-size:12px; color:#666; font-style:italic;">
+            Preview: --
+        </div>
+        </div>
 
           <!-- Jambage -->
           <div style="border-top:1px solid #e9ecef; margin:15px 0 10px; padding-top:12px;">
@@ -6821,6 +6925,66 @@ function renderWindowList() {
   }).join('');
 }
 
+function setupEditWindowDimensionPreviews(id, win) {
+    // Setup Largeur preview
+    const largeurMajor = document.getElementById(`editLargeurMax${id}`);
+    const largeurMinor = document.getElementById(`editLargeurMaxMinor${id}`);
+    const largeurUnit = document.getElementById(`editLargeurMaxUnit${id}`);
+    const largeurPreview = document.getElementById(`editLargeurPreview${id}`);
+    
+    if (largeurMajor && largeurMinor && largeurUnit && largeurPreview) {
+        function updateLargeurPreview() {
+            const major = largeurMajor.value || '0';
+            const minor = largeurMinor.value || '0';
+            const combined = largeurUnit.value || 'ft-in';
+            const [majorUnit, minorUnit] = combined.split('-');
+            
+            if (major === '0' && minor === '0') {
+                largeurPreview.textContent = 'Preview: --';
+                largeurPreview.style.color = '#666';
+            } else {
+                const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+                largeurPreview.textContent = `Preview: ${formatted}`;
+                largeurPreview.style.color = '#2c5aa0';
+            }
+        }
+        
+        largeurMajor.addEventListener('input', updateLargeurPreview);
+        largeurMinor.addEventListener('input', updateLargeurPreview);
+        largeurUnit.addEventListener('change', updateLargeurPreview);
+        updateLargeurPreview();
+    }
+    
+    // Setup Hauteur preview
+    const hauteurMajor = document.getElementById(`editHauteurMax${id}`);
+    const hauteurMinor = document.getElementById(`editHauteurMaxMinor${id}`);
+    const hauteurUnit = document.getElementById(`editHauteurMaxUnit${id}`);
+    const hauteurPreview = document.getElementById(`editHauteurWindowPreview${id}`);
+    
+    if (hauteurMajor && hauteurMinor && hauteurUnit && hauteurPreview) {
+        function updateHauteurPreview() {
+            const major = hauteurMajor.value || '0';
+            const minor = hauteurMinor.value || '0';
+            const combined = hauteurUnit.value || 'ft-in';
+            const [majorUnit, minorUnit] = combined.split('-');
+            
+            if (major === '0' && minor === '0') {
+                hauteurPreview.textContent = 'Preview: --';
+                hauteurPreview.style.color = '#666';
+            } else {
+                const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+                hauteurPreview.textContent = `Preview: ${formatted}`;
+                hauteurPreview.style.color = '#2c5aa0';
+            }
+        }
+        
+        hauteurMajor.addEventListener('input', updateHauteurPreview);
+        hauteurMinor.addEventListener('input', updateHauteurPreview);
+        hauteurUnit.addEventListener('change', updateHauteurPreview);
+        updateHauteurPreview();
+    }
+}
+
 // Function to enter edit mode for a window
 function editWindow(windowId) {
     if (!canModifyProject()) {
@@ -6839,6 +7003,9 @@ function editWindow(windowId) {
     // Hide view mode and show edit mode
     document.getElementById(`windowView${windowId}`).style.display = 'none';
     document.getElementById(`windowEdit${windowId}`).style.display = 'block';
+
+    // Setup dimension previews for edit mode
+    setupEditWindowDimensionPreviews(id, win);
 }
 
 // Function to cancel window edit
@@ -6883,9 +7050,11 @@ async function saveWindowEdit(windowId, event) {
             ...projectWindows[windowIndex],
             type: document.getElementById(`editWindowType${windowId}`).value,
             floor: document.getElementById(`editWindowFloor${windowId}`).value || '',
-            largeurMax: parseFloat(document.getElementById(`editLargeurMax${windowId}`).value),
+            largeurMax: parseFloat(document.getElementById(`editLargeurMax${windowId}`).value) || 0,
+            largeurMaxMinor: parseFloat(document.getElementById(`editLargeurMaxMinor${windowId}`).value) || 0,
             largeurMaxUnit: document.getElementById(`editLargeurMaxUnit${windowId}`).value,
-            hauteurMax: parseFloat(document.getElementById(`editHauteurMax${windowId}`).value),
+            hauteurMax: parseFloat(document.getElementById(`editHauteurMax${windowId}`).value) || 0,
+            hauteurMaxMinor: parseFloat(document.getElementById(`editHauteurMaxMinor${windowId}`).value) || 0,
             hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${windowId}`).value,
             jambage: {
                 type: document.getElementById(`editJambageType${windowId}`).value,
