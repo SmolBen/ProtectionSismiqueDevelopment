@@ -5948,9 +5948,23 @@ function setupWindowLargeurPreview() {
         }
     }
     
+    // Sync with Hauteur unit
+    combinedUnitSelect.addEventListener('change', function() {
+        const hauteurUnitSelect = document.getElementById('windowHauteurMaxUnit');
+        if (hauteurUnitSelect) {
+            hauteurUnitSelect.value = this.value;
+            // Trigger hauteur preview update
+            const hauteurPreview = document.getElementById('hauteurWindowPreview');
+            if (hauteurPreview) {
+                const event = new Event('change');
+                hauteurUnitSelect.dispatchEvent(event);
+            }
+        }
+        updatePreview();
+    });
+    
     majorInput.addEventListener('input', updatePreview);
     minorInput.addEventListener('input', updatePreview);
-    combinedUnitSelect.addEventListener('change', updatePreview);
     
     updatePreview();
 }
@@ -6949,9 +6963,18 @@ function setupEditWindowDimensionPreviews(id, win) {
             }
         }
         
+        // Sync with Hauteur unit
+        largeurUnit.addEventListener('change', function() {
+            const hauteurUnit = document.getElementById(`editHauteurMaxUnit${id}`);
+            if (hauteurUnit) {
+                hauteurUnit.value = this.value;
+                hauteurUnit.dispatchEvent(new Event('change'));
+            }
+            updateLargeurPreview();
+        });
+        
         largeurMajor.addEventListener('input', updateLargeurPreview);
         largeurMinor.addEventListener('input', updateLargeurPreview);
-        largeurUnit.addEventListener('change', updateLargeurPreview);
         updateLargeurPreview();
     }
     
@@ -6960,7 +6983,7 @@ function setupEditWindowDimensionPreviews(id, win) {
     const hauteurMinor = document.getElementById(`editHauteurMaxMinor${id}`);
     const hauteurUnit = document.getElementById(`editHauteurMaxUnit${id}`);
     const hauteurPreview = document.getElementById(`editHauteurWindowPreview${id}`);
-    
+
     if (hauteurMajor && hauteurMinor && hauteurUnit && hauteurPreview) {
         function updateHauteurPreview() {
             const major = hauteurMajor.value || '0';
