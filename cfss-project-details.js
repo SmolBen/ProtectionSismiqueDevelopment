@@ -7797,13 +7797,17 @@ function duplicateWindow(id) {
     document.getElementById('windowType').value = windowToDuplicate.type || '';
     document.getElementById('windowFloor').value = windowToDuplicate.floor || '';
     document.getElementById('windowLargeurMax').value = windowToDuplicate.largeurMax || '';
-    document.getElementById('windowLargeurMaxUnit').value = windowToDuplicate.largeurMaxUnit === 'm'
-        ? 'mm'
-        : (windowToDuplicate.largeurMaxUnit || 'mm');
-    document.getElementById('windowHauteurMax').value = windowToDuplicate.hauteurMax || '';
-    document.getElementById('windowHauteurMaxUnit').value = windowToDuplicate.hauteurMaxUnit === 'm'
-        ? 'mm'
-        : (windowToDuplicate.hauteurMaxUnit || 'mm');
+document.getElementById('windowLargeurMaxMinor').value = windowToDuplicate.largeurMaxMinor || '0';
+document.getElementById('windowLargeurMaxUnit').value = 
+    (windowToDuplicate.largeurMaxUnit === 'm' || windowToDuplicate.largeurMaxUnit === 'mm' || windowToDuplicate.largeurMaxUnit === 'm-mm') 
+    ? 'm-mm' 
+    : 'ft-in';
+document.getElementById('windowHauteurMax').value = windowToDuplicate.hauteurMax || '';
+document.getElementById('windowHauteurMaxMinor').value = windowToDuplicate.hauteurMaxMinor || '0';
+document.getElementById('windowHauteurMaxUnit').value = 
+    (windowToDuplicate.hauteurMaxUnit === 'm' || windowToDuplicate.hauteurMaxUnit === 'mm' || windowToDuplicate.hauteurMaxUnit === 'm-mm') 
+    ? 'm-mm' 
+    : 'ft-in';
     
     // Populate Jambage data
     if (windowToDuplicate.jambage) {
