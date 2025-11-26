@@ -4201,7 +4201,7 @@ function duplicateEquipment(index) {
     
     // Clear any existing form data and images
     clearWallForm();
-    currentWallImages = [];
+    window.currentWallImages = wallToDuplicate.images ? [...wallToDuplicate.images] : [];
     
     // Populate form with wall data (except images)
     document.getElementById('equipment').value = wallToDuplicate.equipment;
@@ -4214,26 +4214,85 @@ function duplicateEquipment(index) {
     document.getElementById('montantMetallique').value = wallToDuplicate.montantMetallique || '';
     document.getElementById('lisseSuperieure').value = wallToDuplicate.lisseSuperieure || '';
     document.getElementById('lisseInferieure').value = wallToDuplicate.lisseInferieure || '';
+    
     // Split entremise back into two parts
-const entremiseValue = wallToDuplicate.entremise || '';
-let entremisePart1 = '';
-let entremisePart2 = '';
-
-if (entremiseValue === 'N/A') {
-    entremisePart1 = 'N/A';
-} else if (entremiseValue.includes(' @')) {
-    const parts = entremiseValue.split(' @');
-    entremisePart1 = parts[0];
-    entremisePart2 = parts[1];
-} else {
-    entremisePart1 = entremiseValue;
-}
-
-document.getElementById('entremisePart1').value = entremisePart1;
-document.getElementById('entremisePart2').value = entremisePart2;
-    // FIX: Add the missing espacement value
+    const entremiseValue = wallToDuplicate.entremise || '';
+    let entremisePart1 = '';
+    let entremisePart2 = '';
+    if (entremiseValue === 'N/A') {
+        entremisePart1 = 'N/A';
+    } else if (entremiseValue.includes(' @')) {
+        const parts = entremiseValue.split(' @');
+        entremisePart1 = parts[0];
+        entremisePart2 = parts[1];
+    } else {
+        entremisePart1 = entremiseValue;
+    }
+    document.getElementById('entremisePart1').value = entremisePart1;
+    document.getElementById('entremisePart2').value = entremisePart2;
+    
     document.getElementById('espacement').value = wallToDuplicate.espacement || '';
+    document.getElementById('dosADos').checked = wallToDuplicate.dosADos || false;
     document.getElementById('note').value = wallToDuplicate.note || '';
+    // Display duplicated images in preview
+if (window.currentWallImages.length > 0) {
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    if (previewContainer) {
+        previewContainer.innerHTML = '';
+        window.currentWallImages.forEach((imageData) => {
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.innerHTML = `
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
+                <button type="button" class="image-remove" title="Remove image">×</button>
+            `;
+            previewContainer.appendChild(preview);
+            
+            // Add remove listener
+            const removeButton = preview.querySelector('.image-remove');
+            removeButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                removeImage(imageData.key);
+            });
+            
+            // Load the actual image
+            loadImagePreview(preview.querySelector('img'), imageData.key);
+        });
+        updateImagePreviewLayout();
+        updateDropZoneState();
+    }
+}
+    
+    // Handle Set 2 if it exists
+    const hasSet2 = wallToDuplicate.montantMetallique2 && wallToDuplicate.montantMetallique2.trim() !== '';
+    if (hasSet2) {
+        // Show Set 2
+        toggleSet2(true);
+        
+        // Populate Set 2 fields
+        document.getElementById('montantMetallique2').value = wallToDuplicate.montantMetallique2 || '';
+        document.getElementById('espacement2').value = wallToDuplicate.espacement2 || '';
+        document.getElementById('lisseSuperieure2').value = wallToDuplicate.lisseSuperieure2 || '';
+        document.getElementById('lisseInferieure2').value = wallToDuplicate.lisseInferieure2 || '';
+        document.getElementById('dosADos2').checked = wallToDuplicate.dosADos2 || false;
+        
+        // Split entremise2 into two parts
+        const entremise2Value = wallToDuplicate.entremise2 || '';
+        let entremise2Part1 = '';
+        let entremise2Part2 = '';
+        if (entremise2Value === 'N/A') {
+            entremise2Part1 = 'N/A';
+        } else if (entremise2Value.includes(' @')) {
+            const parts = entremise2Value.split(' @');
+            entremise2Part1 = parts[0];
+            entremise2Part2 = parts[1];
+        } else {
+            entremise2Part1 = entremise2Value;
+        }
+        document.getElementById('entremise2Part1').value = entremise2Part1;
+        document.getElementById('entremise2Part2').value = entremise2Part2;
+    }
     
     // Show the form
     const equipmentForm = document.getElementById('equipmentForm');
@@ -4254,7 +4313,7 @@ document.getElementById('entremisePart2').value = entremisePart2;
             const floorField = document.getElementById('floor');
             if (floorField) {
                 floorField.focus();
-                floorField.select(); // Select the text so user can easily change it
+                floorField.select();
             }
         }, 100);
     }
