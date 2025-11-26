@@ -2067,21 +2067,99 @@ function setupParapetEditAutoFill(parapetId) {
 
 // Duplicate parapet
 function duplicateParapet(id) {
-    const parapet = projectParapets.find(p => p.id === id);
-    if (!parapet) return;
+    if (!canModifyProject()) {
+        alert('You do not have permission to add parapets to this project.');
+        return;
+    }
     
-    const duplicated = {
-        ...parapet,
-        id: Date.now(),
-        parapetName: parapet.parapetName + ' (Copy)',
-        dateAdded: new Date().toISOString()
-    };
+    const parapetToDuplicate = projectParapets.find(p => p.id === id);
+    if (!parapetToDuplicate) {
+        alert('Parapet not found.');
+        return;
+    }
     
-    projectParapets.push(duplicated);
-    saveParapetsToDatabase();
-    renderParapetList();
-    updateParapetSummary();
-    alert('Parapet duplicated successfully!');
+    // Hide all forms first
+    hideAllForms();
+    closeAllExpandedDetails();
+    
+    // Clear the parapet form
+    clearParapetForm();
+    
+    // Populate parapet type dropdown based on selected options
+    populateParapetTypeDropdown();
+    
+    // Copy images
+    window.currentParapetImages = parapetToDuplicate.images ? [...parapetToDuplicate.images] : [];
+    
+    // Populate form with parapet data (except images, they're handled separately)
+    document.getElementById('parapetName').value = parapetToDuplicate.parapetName;
+    document.getElementById('parapetType').value = parapetToDuplicate.parapetType || 'Type 1';
+    document.getElementById('parapetFloor').value = parapetToDuplicate.floor || '';
+    document.getElementById('parapetHauteurMax').value = parapetToDuplicate.hauteurMax || '';
+    const combinedUnit = `${parapetToDuplicate.hauteurMaxUnit || 'ft'}-${parapetToDuplicate.hauteurMaxMinorUnit || 'in'}`;
+    document.getElementById('parapetHauteurMaxUnit').value = combinedUnit;
+    document.getElementById('parapetHauteurMaxMinor').value = parapetToDuplicate.hauteurMaxMinor || '';
+    document.getElementById('parapetMontantMetallique').value = parapetToDuplicate.montantMetallique || '';
+    document.getElementById('parapetEspacement').value = parapetToDuplicate.espacement || '';
+    document.getElementById('parapetLisseInferieure').value = parapetToDuplicate.lisseInferieure || '';
+    document.getElementById('parapetLisseSuperieure').value = parapetToDuplicate.lisseSuperieure || '';
+    document.getElementById('parapetEntremise').value = parapetToDuplicate.entremise || '';
+    document.getElementById('parapetNote').value = parapetToDuplicate.note || '';
+    
+    // Display duplicated images in preview
+    if (window.currentParapetImages.length > 0) {
+        const previewContainer = document.getElementById('parapetImagePreviewContainer');
+        if (previewContainer) {
+            previewContainer.innerHTML = '';
+            window.currentParapetImages.forEach((imageData) => {
+                const preview = document.createElement('div');
+                preview.className = 'image-preview';
+                preview.innerHTML = `
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
+                    <button type="button" class="image-remove" title="Remove image">×</button>
+                `;
+                previewContainer.appendChild(preview);
+                
+                // Add remove listener
+                const removeButton = preview.querySelector('.image-remove');
+                removeButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    removeParapetImage(imageData.key);
+                });
+                
+                // Load the actual image
+                loadImagePreview(preview.querySelector('img'), imageData.key);
+            });
+            updateParapetDropZoneState();
+        }
+    }
+    
+    // Show the form
+    const parapetForm = document.getElementById('parapetForm');
+    const addParapetButton = document.getElementById('addParapetButton');
+    
+    if (parapetForm && addParapetButton) {
+        parapetForm.style.display = 'block';
+        addParapetButton.innerHTML = 'Hide Form';
+        
+        // Scroll to form
+        parapetForm.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+        
+        // Focus on the name field so user can modify it
+        setTimeout(() => {
+            const nameField = document.getElementById('parapetName');
+            if (nameField) {
+                nameField.focus();
+                nameField.select();
+            }
+        }, 100);
+    }
+    
+    console.log(`Duplicated parapet: ${parapetToDuplicate.parapetName}`);
 }
 
 // Delete parapet
