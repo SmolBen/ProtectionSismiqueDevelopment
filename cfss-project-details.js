@@ -4214,7 +4214,23 @@ function duplicateEquipment(index) {
     document.getElementById('montantMetallique').value = wallToDuplicate.montantMetallique || '';
     document.getElementById('lisseSuperieure').value = wallToDuplicate.lisseSuperieure || '';
     document.getElementById('lisseInferieure').value = wallToDuplicate.lisseInferieure || '';
-    document.getElementById('entremise').value = wallToDuplicate.entremise || '';
+    // Split entremise back into two parts
+const entremiseValue = wallToDuplicate.entremise || '';
+let entremisePart1 = '';
+let entremisePart2 = '';
+
+if (entremiseValue === 'N/A') {
+    entremisePart1 = 'N/A';
+} else if (entremiseValue.includes(' @')) {
+    const parts = entremiseValue.split(' @');
+    entremisePart1 = parts[0];
+    entremisePart2 = parts[1];
+} else {
+    entremisePart1 = entremiseValue;
+}
+
+document.getElementById('entremisePart1').value = entremisePart1;
+document.getElementById('entremisePart2').value = entremisePart2;
     // FIX: Add the missing espacement value
     document.getElementById('espacement').value = wallToDuplicate.espacement || '';
     document.getElementById('note').value = wallToDuplicate.note || '';
@@ -9410,7 +9426,7 @@ function addStoreyRow() {
     storeyCounter++;
     
     row.innerHTML = `
-        <td><input type="text" class="storey-label" value="${label}" readonly style="background: #e9ecef;"></td>
+        <td><input type="text" class="storey-label" value="${label}" style="background: white;"></td>
         <td><input type="number" class="storey-height" placeholder="0" step="0.1" min="0"></td>
         <td><input type="number" class="storey-area" value="1" step="0.1" min="0"></td>
         <td><span class="output-value storey-uls">--</span></td>
@@ -9809,7 +9825,7 @@ function populateCFSSForm(cfssData) {
             cfssData.storeys.forEach((storey, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><input type="text" class="storey-label" value="${storey.label}" readonly style="background: #e9ecef;"></td>
+                    <td><input type="text" class="storey-label" value="${storey.label}" style="background: white;"></td>
                     <td><input type="number" class="storey-height" value="${storey.height}" step="0.1" min="0"></td>
                     <td><input type="number" class="storey-area" value="${storey.area}" step="0.1" min="0"></td>
                     <td><span class="output-value storey-uls">${parseFloat(storey.uls.toFixed(1))}</span></td>
