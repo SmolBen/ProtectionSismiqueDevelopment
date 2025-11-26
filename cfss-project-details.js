@@ -10,6 +10,43 @@ let storeyCounter = 0; // Counter for storey labels (RDC, NV1, NV2...)
 // Global state for floor selection
 let selectedFloorIndices = new Set();
 
+/**
+ * Parse various inch formats: 3.5, 3/4, 9 3/4
+ * Returns decimal value or null if invalid
+ */
+function parseInchInput(value) {
+    if (!value || value.trim() === '') return null;
+    
+    value = value.trim();
+    
+    // Check for mixed number format: "9 3/4"
+    const mixedMatch = value.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    if (mixedMatch) {
+        const whole = parseFloat(mixedMatch[1]);
+        const numerator = parseFloat(mixedMatch[2]);
+        const denominator = parseFloat(mixedMatch[3]);
+        if (denominator === 0) return null;
+        return whole + (numerator / denominator);
+    }
+    
+    // Check for simple fraction: "3/4"
+    const fractionMatch = value.match(/^(\d+)\/(\d+)$/);
+    if (fractionMatch) {
+        const numerator = parseFloat(fractionMatch[1]);
+        const denominator = parseFloat(fractionMatch[2]);
+        if (denominator === 0) return null;
+        return numerator / denominator;
+    }
+    
+    // Check for decimal: "3.5"
+    const decimal = parseFloat(value);
+    if (!isNaN(decimal) && decimal >= 0) {
+        return decimal;
+    }
+    
+    return null;
+}
+
 // Helper function to find which group a floor belongs to
 function findGroupForFloor(floorGroups, floorIndex) {
     if (!floorGroups) return null;
@@ -6633,9 +6670,22 @@ function setupHauteurMaxPreview() {
     
     function updatePreview() {
         const major = majorInput.value || '0';
-        const minor = minorInput.value || '0';
+        const minorRaw = minorInput.value || '0';
         const combined = combinedUnitSelect.value || 'ft-in';
         const [majorUnit, minorUnit] = combined.split('-');
+        
+        // Parse minor value - only for inches
+        let minor = minorRaw;
+        if (minorUnit === 'in' && minorRaw !== '0') {
+            const parsed = parseInchInput(minorRaw);
+            if (parsed !== null) {
+                minor = parsed.toString();
+            } else {
+                preview.textContent = 'Preview: Invalid inch format';
+                preview.style.color = '#dc3545';
+                return;
+            }
+        }
         
         if (major === '0' && minor === '0') {
             preview.textContent = 'Preview: --';
@@ -6668,9 +6718,22 @@ function setupWindowLargeurPreview() {
     
     function updatePreview() {
         const major = majorInput.value || '0';
-        const minor = minorInput.value || '0';
+        const minorRaw = minorInput.value || '0';
         const combined = combinedUnitSelect.value || 'ft-in';
         const [majorUnit, minorUnit] = combined.split('-');
+        
+        // Parse minor value - only for inches
+        let minor = minorRaw;
+        if (minorUnit === 'in' && minorRaw !== '0') {
+            const parsed = parseInchInput(minorRaw);
+            if (parsed !== null) {
+                minor = parsed.toString();
+            } else {
+                preview.textContent = 'Preview: Invalid inch format';
+                preview.style.color = '#dc3545';
+                return;
+            }
+        }
         
         if (major === '0' && minor === '0') {
             preview.textContent = 'Preview: --';
@@ -6715,9 +6778,22 @@ function setupWindowHauteurPreview() {
     
     function updatePreview() {
         const major = majorInput.value || '0';
-        const minor = minorInput.value || '0';
+        const minorRaw = minorInput.value || '0';
         const combined = combinedUnitSelect.value || 'ft-in';
         const [majorUnit, minorUnit] = combined.split('-');
+        
+        // Parse minor value - only for inches
+        let minor = minorRaw;
+        if (minorUnit === 'in' && minorRaw !== '0') {
+            const parsed = parseInchInput(minorRaw);
+            if (parsed !== null) {
+                minor = parsed.toString();
+            } else {
+                preview.textContent = 'Preview: Invalid inch format';
+                preview.style.color = '#dc3545';
+                return;
+            }
+        }
         
         if (major === '0' && minor === '0') {
             preview.textContent = 'Preview: --';
@@ -6738,16 +6814,19 @@ function setupWindowHauteurPreview() {
 
 function formatWindowDimension(major, minor, unit) {
     const majorVal = parseFloat(major) || 0;
-    const minorVal = parseFloat(minor) || 0;
+    // Convert minor to string if it's a number
+    const minorStr = (minor !== null && minor !== undefined) ? String(minor) : '';
+    const minorVal = parseInchInput(minorStr) || 0;
+    const minorDisplay = minorStr || '0';
     
     if (!unit) return 'N/A';
     
     if (unit === 'ft-in') {
-        // Imperial format: 5'-6"
+        // Imperial format: 5'-6" (preserve original format)
         if (majorVal === 0 && minorVal === 0) return '0"';
-        if (majorVal > 0 && minorVal > 0) return `${majorVal}'-${minorVal}"`;
+        if (majorVal > 0 && minorVal > 0) return `${majorVal}'-${minorDisplay}"`;
         if (majorVal > 0) return `${majorVal}'-0"`;
-        return `${minorVal}"`;
+        return `${minorDisplay}"`;
     } else if (unit === 'm-mm') {
         // Convert to total mm
         const totalMm = (majorVal * 1000) + minorVal;
@@ -7455,10 +7534,10 @@ function handleWindowSubmit(e) {
     type: formData.get('windowType'),
     floor: formData.get('windowFloor') || '',
     largeurMax: parseFloat(formData.get('windowLargeurMax')) || 0,
-    largeurMaxMinor: parseFloat(formData.get('windowLargeurMaxMinor')) || 0,
+    largeurMaxMinor: formData.get('windowLargeurMaxMinor') || '',
     largeurMaxUnit: formData.get('windowLargeurMaxUnit'),
     hauteurMax: parseFloat(formData.get('windowHauteurMax')) || 0,
-    hauteurMaxMinor: parseFloat(formData.get('windowHauteurMaxMinor')) || 0,
+    hauteurMaxMinor: formData.get('windowHauteurMaxMinor') || '',
     hauteurMaxUnit: formData.get('windowHauteurMaxUnit'),
     jambage: {
         type: formData.get('jambageType'),
@@ -7821,10 +7900,10 @@ async function saveWindowEdit(windowId, event) {
             type: document.getElementById(`editWindowType${windowId}`).value,
             floor: document.getElementById(`editWindowFloor${windowId}`).value || '',
             largeurMax: parseFloat(document.getElementById(`editLargeurMax${windowId}`).value) || 0,
-            largeurMaxMinor: parseFloat(document.getElementById(`editLargeurMaxMinor${windowId}`).value) || 0,
+            largeurMaxMinor: document.getElementById(`editLargeurMaxMinor${windowId}`).value || '',
             largeurMaxUnit: document.getElementById(`editLargeurMaxUnit${windowId}`).value,
             hauteurMax: parseFloat(document.getElementById(`editHauteurMax${windowId}`).value) || 0,
-            hauteurMaxMinor: parseFloat(document.getElementById(`editHauteurMaxMinor${windowId}`).value) || 0,
+            hauteurMaxMinor: document.getElementById(`editHauteurMaxMinor${windowId}`).value || '',
             hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${windowId}`).value,
             jambage: {
                 type: document.getElementById(`editJambageType${windowId}`).value,
