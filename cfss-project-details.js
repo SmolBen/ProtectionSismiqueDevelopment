@@ -3974,10 +3974,10 @@ function generateEditForm(wall, originalIndex) {
                                    value="${wall.hauteurMax || ''}" min="0" step="1"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                    placeholder="Main height">
-                            <input type="number" id="editHauteurMaxMinor${originalIndex}" 
-                                   value="${wall.hauteurMaxMinor || ''}" min="0" step="0.01"
+                            <input type="text" id="editHauteurMaxMinor${originalIndex}" 
+                                   value="${wall.hauteurMaxMinor || ''}"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-                                   placeholder="Minor value">
+                                   placeholder="e.g., 3.5 or 3/4">
                             <select id="editHauteurMaxUnit${originalIndex}" 
                                     style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                                 <option value="ft-in" ${(wall.hauteurMaxUnit === 'ft' || !wall.hauteurMaxUnit) ? 'selected' : ''}>ft-in</option>
@@ -7656,7 +7656,7 @@ function renderWindowList() {
         <div style="display:flex; gap:10px; align-items:center;">
             <input type="number" id="editLargeurMax${id}" value="${win.largeurMax ?? ''}" min="0" step="1" required
                 style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
-            <input type="number" id="editLargeurMaxMinor${id}" value="${win.largeurMaxMinor ?? ''}" min="0" step="1"
+            <input type="text" id="editLargeurMaxMinor${id}" value="${win.largeurMaxMinor ?? ''}" placeholder="e.g., 3.5 or 3/4"
                 style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
             <select id="editLargeurMaxUnit${id}" required
                     style="flex:1; padding:8px 8px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
@@ -7675,7 +7675,7 @@ function renderWindowList() {
         <div style="display:flex; gap:10px; align-items:center;">
             <input type="number" id="editHauteurMax${id}" value="${win.hauteurMax ?? ''}" min="0" step="1" required
                 style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
-            <input type="number" id="editHauteurMaxMinor${id}" value="${win.hauteurMaxMinor ?? ''}" min="0" step="1"
+            <input type="text" id="editHauteurMaxMinor${id}" value="${win.hauteurMaxMinor ?? ''}" placeholder="e.g., 3.5 or 3/4"
                 style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
             <select id="editHauteurMaxUnit${id}" required
                     style="flex:1; padding:8px 8px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
