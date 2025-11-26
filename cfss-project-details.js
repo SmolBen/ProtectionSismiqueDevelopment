@@ -47,6 +47,61 @@ function parseInchInput(value) {
     return null;
 }
 
+/**
+ * Toggle visibility of minor field based on unit selection
+ * When mm is selected, hide the minor field
+ */
+function toggleMinorField(fieldPrefix) {
+    const unitSelect = document.getElementById(`${fieldPrefix}MaxUnit`);
+    const minorInput = document.getElementById(`${fieldPrefix}MaxMinor`);
+    
+    if (!unitSelect || !minorInput) return;
+    
+    if (unitSelect.value === 'mm') {
+        minorInput.style.display = 'none';
+        minorInput.value = ''; // Clear minor value
+    } else {
+        minorInput.style.display = '';
+    }
+}
+
+/**
+ * Toggle visibility of minor field in edit forms
+ */
+function toggleEditMinorField(index, fieldType) {
+    const unitSelect = document.getElementById(`edit${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}MaxUnit${index}`);
+    const minorInput = document.getElementById(`edit${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}MaxMinor${index}`);
+    
+    if (!unitSelect || !minorInput) return;
+    
+    if (unitSelect.value === 'mm') {
+        minorInput.style.display = 'none';
+        minorInput.value = '';
+    } else {
+        minorInput.style.display = '';
+    }
+}
+
+/**
+ * Toggle visibility of minor field in edit window forms
+ */
+function toggleEditWindowMinorField(windowId, fieldType) {
+    const unitSelect = document.getElementById(`edit${fieldType}MaxUnit${windowId}`);
+    const minorInput = document.getElementById(`edit${fieldType}MaxMinor${windowId}`);
+    
+    if (!unitSelect || !minorInput) {
+        console.log(`Toggle failed - elements not found for window ${windowId}, field ${fieldType}`);
+        return;
+    }
+    
+    if (unitSelect.value === 'mm') {
+        minorInput.style.display = 'none';
+        minorInput.value = '';
+    } else {
+        minorInput.style.display = '';
+    }
+}
+
 // Helper function to find which group a floor belongs to
 function findGroupForFloor(floorGroups, floorIndex) {
     if (!floorGroups) return null;
@@ -1073,13 +1128,13 @@ function getJambageEditSection(window) {
             <select id="editJambageType${window.id}" required onchange="updateTypeImage('editJambage${window.id}', this.value)" style="width: 72px;">
               <option value="">Select Jambage Type</option>
               <option value="JA1" ${window.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
-              <option value="JA2" ${window.jambage?.type === 'JA2' ? 'selected' : ''}>JA2</option>
-              <option value="JA3" ${window.jambage?.type === 'JA3' ? 'selected' : ''}>JA3</option>
-              <option value="JA4" ${window.jambage?.type === 'JA4' ? 'selected' : ''}>JA4</option>
-              <option value="JA5" ${window.jambage?.type === 'JA5' ? 'selected' : ''}>JA5</option>
+              <option value="JA2a" ${window.jambage?.type === 'JA2a' ? 'selected' : ''}>JA2a</option>
+              <option value="JA2b" ${window.jambage?.type === 'JA2b' ? 'selected' : ''}>JA2b</option>
+              <option value="JA3a" ${window.jambage?.type === 'JA3a' ? 'selected' : ''}>JA3a</option>
+              <option value="JA4a" ${window.jambage?.type === 'JA4a' ? 'selected' : ''}>JA4a</option>
             </select>
             <div id="editJambage${window.id}ImagePreview" class="type-image-preview ${window.jambage?.type ? '' : 'empty'}">
-              ${window.jambage?.type ? `<img src="https://s3.amazonaws.com/protection-sismique-equipment-images/jambage/${window.jambage.type}.png" alt="${window.jambage.type}" onerror="handleImageError(this, '${window.jambage.type}')">` : 'Select a type'}
+              ${window.jambage?.type ? `<img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/jambage-${window.jambage.type}.png" alt="${window.jambage.type}" onerror="handleImageError(this, '${window.jambage.type}')">` : 'Select a type'}
             </div>
           </div>
         </div>
@@ -3982,9 +4037,10 @@ function generateEditForm(wall, originalIndex) {
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                    placeholder="e.g., 3.5 or 3/4">
                             <select id="editHauteurMaxUnit${originalIndex}" 
+                                    onchange="toggleEditMinorField(${originalIndex}, 'hauteur')"
                                     style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                                 <option value="ft-in" ${(wall.hauteurMaxUnit === 'ft' || !wall.hauteurMaxUnit) ? 'selected' : ''}>ft-in</option>
-                                <option value="m-mm" ${wall.hauteurMaxUnit === 'm' ? 'selected' : ''}>m-mm</option>
+                                <option value="mm" ${wall.hauteurMaxUnit === 'm' || wall.hauteurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
                             </select>
                         </div>
                         <div id="editHauteurPreview${originalIndex}" style="margin-top: 5px; font-size: 13px; color: #666;"></div>
@@ -4522,6 +4578,9 @@ function editEquipment(index) {
         setupEditMontantChangeHandler(index);
         setupEditImageHandlers(index);
         loadExistingImagesInEdit(wall, index);
+        
+        // Initialize minor field visibility based on current unit selection
+        toggleEditMinorField(index, 'hauteur');
         
         console.log(`Edit mode setup complete for wall ${index}`);
     }, 100);
@@ -6087,7 +6146,12 @@ function formatHauteurDisplay(wall) {
         return `${minor} ${minorUnit}`;
     }
     
-    // If there's a major value, always show both with dash (even if minor is 0)
+    // If unit is mm, show only major value (no minor)
+    if (majorUnit === 'mm' || majorUnit === 'm') {
+        return `${major} mm`;
+    }
+    
+    // For ft-in, show both with dash
     return `${major} ${majorUnit} - ${minor} ${minorUnit}`;
 }
 
@@ -6674,8 +6738,22 @@ function setupHauteurMaxPreview() {
     function updatePreview() {
         const major = majorInput.value || '0';
         const minorRaw = minorInput.value || '0';
-        const combined = combinedUnitSelect.value || 'ft-in';
-        const [majorUnit, minorUnit] = combined.split('-');
+        const unit = combinedUnitSelect.value || 'ft-in';
+        
+        // Handle mm unit (single value)
+        if (unit === 'mm') {
+            if (major === '0') {
+                preview.textContent = 'Preview: --';
+                preview.style.color = '#666';
+            } else {
+                preview.textContent = `Preview: ${major}mm`;
+                preview.style.color = '#2c5aa0';
+            }
+            return;
+        }
+        
+        // Handle ft-in unit (two values)
+        const [majorUnit, minorUnit] = unit.split('-');
         
         // Parse minor value - only for inches
         let minor = minorRaw;
@@ -6703,9 +6781,13 @@ function setupHauteurMaxPreview() {
     // Add event listeners for input changes
     majorInput.addEventListener('input', updatePreview);
     minorInput.addEventListener('input', updatePreview);
-    combinedUnitSelect.addEventListener('change', updatePreview);
+    combinedUnitSelect.addEventListener('change', () => {
+        toggleMinorField('hauteur');
+        updatePreview();
+    });
     
-    // Initial preview
+    // Initial setup
+    toggleMinorField('hauteur');
     updatePreview();
 }
 
@@ -6722,8 +6804,22 @@ function setupWindowLargeurPreview() {
     function updatePreview() {
         const major = majorInput.value || '0';
         const minorRaw = minorInput.value || '0';
-        const combined = combinedUnitSelect.value || 'ft-in';
-        const [majorUnit, minorUnit] = combined.split('-');
+        const unit = combinedUnitSelect.value || 'ft-in';
+        
+        // Handle mm unit (single value)
+        if (unit === 'mm') {
+            if (major === '0') {
+                preview.textContent = 'Preview: --';
+                preview.style.color = '#666';
+            } else {
+                preview.textContent = `Preview: ${major}mm`;
+                preview.style.color = '#2c5aa0';
+            }
+            return;
+        }
+        
+        // Handle ft-in unit (two values)
+        const [majorUnit, minorUnit] = unit.split('-');
         
         // Parse minor value - only for inches
         let minor = minorRaw;
@@ -6750,15 +6846,15 @@ function setupWindowLargeurPreview() {
     
     // Sync with Hauteur unit
     combinedUnitSelect.addEventListener('change', function() {
+        toggleMinorField('windowLargeur');
+        
         const hauteurUnitSelect = document.getElementById('windowHauteurMaxUnit');
         if (hauteurUnitSelect) {
             hauteurUnitSelect.value = this.value;
-            // Trigger hauteur preview update
-            const hauteurPreview = document.getElementById('hauteurWindowPreview');
-            if (hauteurPreview) {
-                const event = new Event('change');
-                hauteurUnitSelect.dispatchEvent(event);
-            }
+            // Trigger hauteur preview update and toggle
+            toggleMinorField('windowHauteur');
+            const event = new Event('change');
+            hauteurUnitSelect.dispatchEvent(event);
         }
         updatePreview();
     });
@@ -6766,6 +6862,8 @@ function setupWindowLargeurPreview() {
     majorInput.addEventListener('input', updatePreview);
     minorInput.addEventListener('input', updatePreview);
     
+    // Initial setup
+    toggleMinorField('windowLargeur');
     updatePreview();
 }
 
@@ -6782,8 +6880,22 @@ function setupWindowHauteurPreview() {
     function updatePreview() {
         const major = majorInput.value || '0';
         const minorRaw = minorInput.value || '0';
-        const combined = combinedUnitSelect.value || 'ft-in';
-        const [majorUnit, minorUnit] = combined.split('-');
+        const unit = combinedUnitSelect.value || 'ft-in';
+        
+        // Handle mm unit (single value)
+        if (unit === 'mm') {
+            if (major === '0') {
+                preview.textContent = 'Preview: --';
+                preview.style.color = '#666';
+            } else {
+                preview.textContent = `Preview: ${major}mm`;
+                preview.style.color = '#2c5aa0';
+            }
+            return;
+        }
+        
+        // Handle ft-in unit (two values)
+        const [majorUnit, minorUnit] = unit.split('-');
         
         // Parse minor value - only for inches
         let minor = minorRaw;
@@ -6810,8 +6922,13 @@ function setupWindowHauteurPreview() {
     
     majorInput.addEventListener('input', updatePreview);
     minorInput.addEventListener('input', updatePreview);
-    combinedUnitSelect.addEventListener('change', updatePreview);
+    combinedUnitSelect.addEventListener('change', () => {
+        toggleMinorField('windowHauteur');
+        updatePreview();
+    });
     
+    // Initial setup
+    toggleMinorField('windowHauteur');
     updatePreview();
 }
 
@@ -6830,27 +6947,43 @@ function formatWindowDimension(major, minor, unit) {
         if (majorVal > 0 && minorVal > 0) return `${majorVal}'-${minorDisplay}"`;
         if (majorVal > 0) return `${majorVal}'-0"`;
         return `${minorDisplay}"`;
+    } else if (unit === 'mm') {
+        // Metric format: 1234mm (single value)
+        if (majorVal === 0) return '0mm';
+        return `${Math.round(majorVal)}mm`;
     } else if (unit === 'm-mm') {
-        // Convert to total mm
-        const totalMm = (majorVal * 1000) + minorVal;
-        return Math.round(totalMm) + 'mm';
+        // Legacy format support: convert m-mm to mm
+        const meters = parseFloat(major) || 0;
+        const mm = parseFloat(minor) || 0;
+        const totalMm = (meters * 1000) + mm;
+        return `${Math.round(totalMm)}mm`;
     }
     
-    // Fallback for old format
-    return `${majorVal}${unit}`;
+    return 'N/A';
 }
 
 // Helper function for preview formatting
 function formatPreviewDisplay(major, majorUnit, minor, minorUnit) {
-    if ((major === '0' || major === '') && (minor === '0' || minor === '')) {
-        return 'N/A';
+    const majorVal = parseFloat(major) || 0;
+    const minorVal = parseFloat(minor) || 0;
+    
+    if (majorUnit === 'ft' && minorUnit === 'in') {
+        // Imperial: 5'-6"
+        if (majorVal === 0 && minorVal === 0) return '0"';
+        if (majorVal > 0 && minorVal > 0) return `${majorVal}'-${minorVal}"`;
+        if (majorVal > 0) return `${majorVal}'-0"`;
+        return `${minorVal}"`;
+    } else if (majorUnit === 'mm') {
+        // Metric single value: 1234mm
+        if (majorVal === 0) return '0mm';
+        return `${Math.round(majorVal)}mm`;
+    } else if (majorUnit === 'm' && minorUnit === 'mm') {
+        // Legacy metric format: convert to mm
+        const totalMm = (majorVal * 1000) + minorVal;
+        return `${Math.round(totalMm)}mm`;
     }
     
-    if (major === '0' || major === '') {
-        return `${minor} ${minorUnit}`;
-    }
-    
-    return `${major} ${majorUnit} - ${minor} ${minorUnit}`;
+    return `${majorVal} ${majorUnit}`;
 }
 
 // CFSS Report Generation Function
@@ -7660,11 +7793,12 @@ function renderWindowList() {
             <input type="number" id="editLargeurMax${id}" value="${win.largeurMax ?? ''}" min="0" step="1" required
                 style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
             <input type="text" id="editLargeurMaxMinor${id}" value="${win.largeurMaxMinor ?? ''}" placeholder="e.g., 3.5 or 3/4"
-                style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+    style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px; display:${(win.largeurMaxUnit === 'mm' || win.largeurMaxUnit === 'm-mm') ? 'none' : 'block'};">
             <select id="editLargeurMaxUnit${id}" required
+                    onchange="toggleEditWindowMinorField(${id}, 'Largeur')"
                     style="flex:1; padding:8px 8px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
             <option value="ft-in" ${(!win.largeurMaxUnit || win.largeurMaxUnit === 'ft-in') ? 'selected' : ''}>ft-in</option>
-            <option value="m-mm" ${win.largeurMaxUnit === 'm-mm' ? 'selected' : ''}>m-mm</option>
+            <option value="mm" ${win.largeurMaxUnit === 'mm' || win.largeurMaxUnit === 'm-mm' ? 'selected' : ''}>mm</option>
             </select>
         </div>
         <div id="editLargeurPreview${id}" style="margin-top:5px; font-size:12px; color:#666; font-style:italic;">
@@ -7679,11 +7813,12 @@ function renderWindowList() {
             <input type="number" id="editHauteurMax${id}" value="${win.hauteurMax ?? ''}" min="0" step="1" required
                 style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
             <input type="text" id="editHauteurMaxMinor${id}" value="${win.hauteurMaxMinor ?? ''}" placeholder="e.g., 3.5 or 3/4"
-                style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+    style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px; display:${(win.hauteurMaxUnit === 'mm' || win.hauteurMaxUnit === 'm-mm') ? 'none' : 'block'};">
             <select id="editHauteurMaxUnit${id}" required
+                    onchange="toggleEditWindowMinorField(${id}, 'Hauteur')"
                     style="flex:1; padding:8px 8px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
             <option value="ft-in" ${(!win.hauteurMaxUnit || win.hauteurMaxUnit === 'ft-in') ? 'selected' : ''}>ft-in</option>
-            <option value="m-mm" ${win.hauteurMaxUnit === 'm-mm' ? 'selected' : ''}>m-mm</option>
+            <option value="mm" ${win.hauteurMaxUnit === 'mm' || win.hauteurMaxUnit === 'm-mm' ? 'selected' : ''}>mm</option>
             </select>
         </div>
         <div id="editHauteurWindowPreview${id}" style="margin-top:5px; font-size:12px; color:#666; font-style:italic;">
@@ -7699,10 +7834,10 @@ function renderWindowList() {
                 <select id="editJambageType${id}" required>
                   <option value="">Select Jambage Type</option>
                   <option value="JA1" ${win.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
-                  <option value="JA2" ${win.jambage?.type === 'JA2' ? 'selected' : ''}>JA2</option>
-                  <option value="JA3" ${win.jambage?.type === 'JA3' ? 'selected' : ''}>JA3</option>
-                  <option value="JA4" ${win.jambage?.type === 'JA4' ? 'selected' : ''}>JA4</option>
-                  <option value="JA5" ${win.jambage?.type === 'JA5' ? 'selected' : ''}>JA5</option>
+                  <option value="JA2a" ${win.jambage?.type === 'JA2a' ? 'selected' : ''}>JA2a</option>
+                  <option value="JA2b" ${win.jambage?.type === 'JA2b' ? 'selected' : ''}>JA2b</option>
+                  <option value="JA3a" ${win.jambage?.type === 'JA3a' ? 'selected' : ''}>JA3a</option>
+                  <option value="JA4a" ${win.jambage?.type === 'JA4a' ? 'selected' : ''}>JA4a</option>
                 </select>
               </div>
               <div class="form-group" style="width:260px; margin-bottom:0;">
@@ -7779,8 +7914,22 @@ function setupEditWindowDimensionPreviews(id, win) {
         function updateLargeurPreview() {
             const major = largeurMajor.value || '0';
             const minor = largeurMinor.value || '0';
-            const combined = largeurUnit.value || 'ft-in';
-            const [majorUnit, minorUnit] = combined.split('-');
+            const unit = largeurUnit.value || 'ft-in';
+            
+            // Handle mm unit (single value)
+            if (unit === 'mm') {
+                if (major === '0') {
+                    largeurPreview.textContent = 'Preview: --';
+                    largeurPreview.style.color = '#666';
+                } else {
+                    largeurPreview.textContent = `Preview: ${major}mm`;
+                    largeurPreview.style.color = '#2c5aa0';
+                }
+                return;
+            }
+            
+            // Handle ft-in unit
+            const [majorUnit, minorUnit] = unit.split('-');
             
             if (major === '0' && minor === '0') {
                 largeurPreview.textContent = 'Preview: --';
@@ -7794,9 +7943,11 @@ function setupEditWindowDimensionPreviews(id, win) {
         
         // Sync with Hauteur unit
         largeurUnit.addEventListener('change', function() {
+            toggleEditWindowMinorField(id, 'Largeur');
             const hauteurUnit = document.getElementById(`editHauteurMaxUnit${id}`);
             if (hauteurUnit) {
                 hauteurUnit.value = this.value;
+                toggleEditWindowMinorField(id, 'Hauteur');
                 hauteurUnit.dispatchEvent(new Event('change'));
             }
             updateLargeurPreview();
@@ -7804,6 +7955,14 @@ function setupEditWindowDimensionPreviews(id, win) {
         
         largeurMajor.addEventListener('input', updateLargeurPreview);
         largeurMinor.addEventListener('input', updateLargeurPreview);
+        
+        // Initial setup - force hide if mm
+        console.log(`Setting up Largeur for window ${id}, unit: ${largeurUnit.value}`);
+        if (largeurUnit.value === 'mm') {
+            console.log('Largeur is mm, hiding minor field');
+            largeurMinor.style.display = 'none';
+            largeurMinor.value = '';
+        }
         updateLargeurPreview();
     }
     
@@ -7817,8 +7976,22 @@ function setupEditWindowDimensionPreviews(id, win) {
         function updateHauteurPreview() {
             const major = hauteurMajor.value || '0';
             const minor = hauteurMinor.value || '0';
-            const combined = hauteurUnit.value || 'ft-in';
-            const [majorUnit, minorUnit] = combined.split('-');
+            const unit = hauteurUnit.value || 'ft-in';
+            
+            // Handle mm unit (single value)
+            if (unit === 'mm') {
+                if (major === '0') {
+                    hauteurPreview.textContent = 'Preview: --';
+                    hauteurPreview.style.color = '#666';
+                } else {
+                    hauteurPreview.textContent = `Preview: ${major}mm`;
+                    hauteurPreview.style.color = '#2c5aa0';
+                }
+                return;
+            }
+            
+            // Handle ft-in unit
+            const [majorUnit, minorUnit] = unit.split('-');
             
             if (major === '0' && minor === '0') {
                 hauteurPreview.textContent = 'Preview: --';
@@ -7832,7 +8005,18 @@ function setupEditWindowDimensionPreviews(id, win) {
         
         hauteurMajor.addEventListener('input', updateHauteurPreview);
         hauteurMinor.addEventListener('input', updateHauteurPreview);
-        hauteurUnit.addEventListener('change', updateHauteurPreview);
+        hauteurUnit.addEventListener('change', () => {
+            toggleEditWindowMinorField(id, 'Hauteur');
+            updateHauteurPreview();
+        });
+        
+        // Initial setup - force hide if mm
+        console.log(`Setting up Hauteur for window ${id}, unit: ${hauteurUnit.value}`);
+        if (hauteurUnit.value === 'mm') {
+            console.log('Hauteur is mm, hiding minor field');
+            hauteurMinor.style.display = 'none';
+            hauteurMinor.value = '';
+        }
         updateHauteurPreview();
     }
 }
@@ -7856,8 +8040,16 @@ function editWindow(windowId) {
     document.getElementById(`windowView${windowId}`).style.display = 'none';
     document.getElementById(`windowEdit${windowId}`).style.display = 'block';
 
-    // Setup dimension previews for edit mode
-    setupEditWindowDimensionPreviews(id, win);
+    // Setup dimension previews after browser renders the display change
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            setupEditWindowDimensionPreviews(windowId, window);
+            
+            // Initialize minor field visibility based on current unit selection
+            toggleEditWindowMinorField(windowId, 'Largeur');
+            toggleEditWindowMinorField(windowId, 'Hauteur');
+        });
+    });
 }
 
 // Function to cancel window edit
@@ -8218,12 +8410,12 @@ function populateOptionsCategories() {
             container: 'jambages-linteaux-seuils-options',
             options: [
                 // Jambages
-                'jambage-1', 'jambage-2', 'jambage-3', 'jambage-4', 'jambage-5',
+                'jambage-JA1', 'jambage-JA2a', 'jambage-JA2b', 'jambage-JA3a', 'jambage-JA4a',
                 // Linteaux  
-                'linteau-1', 'linteau-2', 'linteau-3', 'linteau-4', 'linteau-5',
-                'linteau-6', 'linteau-7', 'linteau-8',
+                'linteau-LT1', 'linteau-LT2', 'linteau-LT3', 'linteau-LT4', 'linteau-LT5',
+                'linteau-LT6', 'linteau-LT7', 'linteau-LT8',
                 // Seuils
-                'seuil-1', 'seuil-2', 'seuil-3'
+                'seuil-SE1', 'seuil-SE2', 'seuil-SE3'
             ]
         }
     };
@@ -8418,7 +8610,7 @@ async function preloadOptionImages() {
         'fenetre',
         
         // Jambages
-        'jambage-1', 'jambage-2', 'jambage-3', 'jambage-4', 'jambage-5',
+        'jambage-JA1', 'jambage-JA2a', 'jambage-JA2b', 'jambage-JA3a', 'jambage-JA4a',
         
         // Linteaux
         'linteau-1', 'linteau-2', 'linteau-3', 'linteau-4', 'linteau-5',
@@ -9264,10 +9456,7 @@ function updateTypeImage(type, value) {
     // Format: https://bucket-name.s3.region.amazonaws.com/cfss-options/type-number.png
     const bucketUrl = 'https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com';
     
-    // Extract number from value (JA3 -> 3, LT5 -> 5, SE2 -> 2)
-    const number = value.substring(2); // Remove the first 2 characters (JA, LT, SE)
-    
-    // Map type to lowercase filename
+    // Map type to lowercase filename prefix
     const typeMap = {
         'jambage': 'jambage',
         'linteau': 'linteau',
@@ -9280,7 +9469,8 @@ function updateTypeImage(type, value) {
         return;
     }
     
-    const imageUrl = `${bucketUrl}/cfss-options/${filename}-${number}.png`;
+    // Use full value for filename (e.g., JA2a -> jambage-JA2a.png)
+    const imageUrl = `${bucketUrl}/cfss-options/${filename}-${value}.png`;
     
     // Update preview with image
     preview.className = 'type-image-preview';
