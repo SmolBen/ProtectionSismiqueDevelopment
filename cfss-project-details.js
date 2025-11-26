@@ -1579,6 +1579,9 @@ function renderParapetList() {
             <option value="Type 8" ${parapet.parapetType === 'Type 8' ? 'selected' : ''}>Type 8</option>
             <option value="Type 9" ${parapet.parapetType === 'Type 9' ? 'selected' : ''}>Type 9</option>
             <option value="Type 10" ${parapet.parapetType === 'Type 10' ? 'selected' : ''}>Type 10</option>
+            <option value="Type 11" ${parapet.parapetType === 'Type 11' ? 'selected' : ''}>Type 11</option>
+            <option value="Type 12" ${parapet.parapetType === 'Type 12' ? 'selected' : ''}>Type 12</option>
+            <option value="Type 13" ${parapet.parapetType === 'Type 13' ? 'selected' : ''}>Type 13</option>
         </select>
     </div>
     <div class="form-group">
