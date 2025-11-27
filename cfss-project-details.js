@@ -3475,6 +3475,7 @@ async function saveEquipmentEditWithRevisions(index, event) {
         // Get Set 2 values (if visible)
         const set2Visible = document.getElementById(`editSet2_${index}`).style.display !== 'none';
         const montantMetallique2 = set2Visible ? document.getElementById(`editMontantMetallique2_${index}`).value.trim() : '';
+        const deflexionMax2 = set2Visible ? document.getElementById(`editDeflexionMax2_${index}`).value.trim() : '';
         const espacement2 = set2Visible ? document.getElementById(`editEspacement2_${index}`).value.trim() : '';
         const lisseSuperieure2 = set2Visible ? document.getElementById(`editLisseSuperieure2_${index}`).value.trim() : '';
         const lisseInferieure2 = set2Visible ? document.getElementById(`editLisseInferieure2_${index}`).value.trim() : '';
@@ -3590,6 +3591,7 @@ async function saveEquipmentEditWithRevisions(index, event) {
         // Add Set 2 data if it exists
         if (set2Visible && montantMetallique2) {
             updatedWall.montantMetallique2 = montantMetallique2;
+            updatedWall.deflexionMax2 = deflexionMax2;
             updatedWall.dosADos2 = document.getElementById(`editDosADos2_${index}`)?.checked || false;
             updatedWall.espacement2 = espacement2;
             updatedWall.lisseSuperieure2 = lisseSuperieure2;
@@ -3598,6 +3600,7 @@ async function saveEquipmentEditWithRevisions(index, event) {
         } else {
             // Clear Set 2 data if not visible
             updatedWall.montantMetallique2 = '';
+            updatedWall.deflexionMax2 = '';
             updatedWall.dosADos2 = false;
             updatedWall.espacement2 = '';
             updatedWall.lisseSuperieure2 = '';
@@ -3668,6 +3671,10 @@ async function deleteEquipmentWithRevisions(index) {
             }
             
             projectEquipment.splice(index, 1);
+            
+            // Save to database
+            await saveRevisionsToDatabase();
+            
             renderEquipmentList();
         });
     }
@@ -3959,10 +3966,10 @@ function generateWallDetailsContent(wall, originalIndex) {
                     <p><strong>Wall Name:</strong> ${wall.equipment}</p>
                     <p><strong>Floor:</strong> ${wall.floor || 'N/A'}</p>
                     <p><strong>Hauteur Max:</strong> ${formatHauteurDisplay(wall)}</p>
-                    <p><strong>Déflexion Max:</strong> ${wall.deflexionMax || 'N/A'}</p>
                     
                     ${hasSet2 ? '<p style="margin-top: 15px; font-weight: bold; color: #666;">Set 1:</p>' : ''}
                     <p><strong>Montant Métallique:</strong> ${wall.montantMetallique || 'N/A'}${wall.dosADos ? ' dos-à-dos' : ''}</p>
+                    <p><strong>Déflexion Max:</strong> ${wall.deflexionMax || 'N/A'}</p>
                     <p><strong>Espacement:</strong> ${wall.espacement || 'N/A'}</p>
                     <p><strong>Lisse Supérieure:</strong> ${wall.lisseSuperieure || 'N/A'}</p>
                     <p><strong>Lisse Inférieure:</strong> ${wall.lisseInferieure || 'N/A'}</p>
@@ -3971,6 +3978,7 @@ function generateWallDetailsContent(wall, originalIndex) {
                     ${hasSet2 ? `
                         <p style="margin-top: 15px; font-weight: bold; color: #666;">Set 2:</p>
                         <p><strong>Montant Métallique 2:</strong> ${wall.montantMetallique2 || 'N/A'}${wall.dosADos2 ? ' dos-à-dos' : ''}</p>
+                        <p><strong>Déflexion Max 2:</strong> ${wall.deflexionMax2 || 'N/A'}</p>
                         <p><strong>Espacement 2:</strong> ${wall.espacement2 || 'N/A'}</p>
                         <p><strong>Lisse Supérieure 2:</strong> ${wall.lisseSuperieure2 || 'N/A'}</p>
                         <p><strong>Lisse Inférieure 2:</strong> ${wall.lisseInferieure2 || 'N/A'}</p>
@@ -4046,21 +4054,6 @@ function generateEditForm(wall, originalIndex) {
                         <div id="editHauteurPreview${originalIndex}" style="margin-top: 5px; font-size: 13px; color: #666;"></div>
                     </div>
 
-                    <!-- Déflexion Max -->
-                    <div class="form-group">
-                        <label for="editDeflexionMax${originalIndex}"><strong>Déflexion Max:</strong></label>
-                        <select id="editDeflexionMax${originalIndex}" required 
-                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                            <option value="">Select déflexion max...</option>
-                            <option value="L/180" ${wall.deflexionMax === 'L/180' ? 'selected' : ''}>L/180</option>
-                            <option value="L/240" ${wall.deflexionMax === 'L/240' ? 'selected' : ''}>L/240</option>
-                            <option value="L/360" ${wall.deflexionMax === 'L/360' ? 'selected' : ''}>L/360</option>
-                            <option value="L/480" ${wall.deflexionMax === 'L/480' ? 'selected' : ''}>L/480</option>
-                            <option value="L/600" ${wall.deflexionMax === 'L/600' ? 'selected' : ''}>L/600</option>
-                            <option value="L/720" ${wall.deflexionMax === 'L/720' ? 'selected' : ''}>L/720</option>
-                        </select>
-                    </div>
-
                     <!-- Note -->
                     <div class="form-group">
                         <label for="editNote${originalIndex}"><strong>Note:</strong></label>
@@ -4101,6 +4094,20 @@ function generateEditForm(wall, originalIndex) {
                                             <span>dos-à-dos</span>
                                         </label>
                                     </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="editDeflexionMax${originalIndex}"><strong>Déflexion Max:</strong></label>
+                                    <select id="editDeflexionMax${originalIndex}" required 
+                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                        <option value="">Select déflexion max...</option>
+                                        <option value="L/180" ${wall.deflexionMax === 'L/180' ? 'selected' : ''}>L/180</option>
+                                        <option value="L/240" ${wall.deflexionMax === 'L/240' ? 'selected' : ''}>L/240</option>
+                                        <option value="L/360" ${wall.deflexionMax === 'L/360' ? 'selected' : ''}>L/360</option>
+                                        <option value="L/480" ${wall.deflexionMax === 'L/480' ? 'selected' : ''}>L/480</option>
+                                        <option value="L/600" ${wall.deflexionMax === 'L/600' ? 'selected' : ''}>L/600</option>
+                                        <option value="L/720" ${wall.deflexionMax === 'L/720' ? 'selected' : ''}>L/720</option>
+                                    </select>
                                 </div>
 
                                 <div class="form-group">
@@ -4191,7 +4198,20 @@ function generateEditForm(wall, originalIndex) {
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="editEspacement2_${originalIndex}"><strong>Espacement 2:</strong></label>
+                                    <label for="editDeflexionMax2_${originalIndex}"><strong>Déflexion Max 2:</strong></label>
+                                    <select id="editDeflexionMax2_${originalIndex}" 
+                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                        <option value="">Select déflexion max...</option>
+                                        <option value="L/180" ${wall.deflexionMax2 === 'L/180' ? 'selected' : ''}>L/180</option>
+                                        <option value="L/240" ${wall.deflexionMax2 === 'L/240' ? 'selected' : ''}>L/240</option>
+                                        <option value="L/360" ${wall.deflexionMax2 === 'L/360' ? 'selected' : ''}>L/360</option>
+                                        <option value="L/480" ${wall.deflexionMax2 === 'L/480' ? 'selected' : ''}>L/480</option>
+                                        <option value="L/600" ${wall.deflexionMax2 === 'L/600' ? 'selected' : ''}>L/600</option>
+                                        <option value="L/720" ${wall.deflexionMax2 === 'L/720' ? 'selected' : ''}>L/720</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
                                     <select id="editEspacement2_${originalIndex}" 
                                             style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                                         <option value="">Select espacement...</option>
@@ -4446,6 +4466,7 @@ if (window.currentWallImages.length > 0) {
         
         // Populate Set 2 fields
         document.getElementById('montantMetallique2').value = wallToDuplicate.montantMetallique2 || '';
+        document.getElementById('deflexionMax2').value = wallToDuplicate.deflexionMax2 || '';
         document.getElementById('espacement2').value = wallToDuplicate.espacement2 || '';
         document.getElementById('lisseSuperieure2').value = wallToDuplicate.lisseSuperieure2 || '';
         document.getElementById('lisseInferieure2').value = wallToDuplicate.lisseInferieure2 || '';
@@ -4510,12 +4531,14 @@ function toggleEditSet2(wallIndex, show, event) {
         
         // Clear Set 2 fields
         const montant2 = document.getElementById(`editMontantMetallique2_${wallIndex}`);
+        const deflexion2 = document.getElementById(`editDeflexionMax2_${wallIndex}`);
         const espacement2 = document.getElementById(`editEspacement2_${wallIndex}`);
         const lisseSuperieure2 = document.getElementById(`editLisseSuperieure2_${wallIndex}`);
         const lisseInferieure2 = document.getElementById(`editLisseInferieure2_${wallIndex}`);
         const entremise2 = document.getElementById(`editEntremise2_${wallIndex}`);
         
         if (montant2) montant2.value = '';
+        if (deflexion2) deflexion2.value = '';
         if (espacement2) espacement2.value = '';
         if (lisseSuperieure2) lisseSuperieure2.value = '';
         if (lisseInferieure2) lisseInferieure2.value = '';
@@ -6174,6 +6197,7 @@ function getWallFormDataWithImages() {
     
     // Get Set 2 elements
     const montantMetallique2El = document.getElementById('montantMetallique2');
+    const deflexionMax2El = document.getElementById('deflexionMax2');
     const lisseSuperieure2El = document.getElementById('lisseSuperieure2');
     const lisseInferieure2El = document.getElementById('lisseInferieure2');
     const entremise2El = document.getElementById('entremise2');
@@ -6213,6 +6237,7 @@ function getWallFormDataWithImages() {
     // Get Set 2 values (optional)
     const set2Visible = document.getElementById('set2').style.display !== 'none';
     const montantMetallique2 = set2Visible && montantMetallique2El ? montantMetallique2El.value.trim() : '';
+    const deflexionMax2 = set2Visible && deflexionMax2El ? deflexionMax2El.value.trim() : '';
     const lisseSuperieure2 = set2Visible && lisseSuperieure2El ? lisseSuperieure2El.value.trim() : '';
     const lisseInferieure2 = set2Visible && lisseInferieure2El ? lisseInferieure2El.value.trim() : '';
     
@@ -6339,6 +6364,7 @@ function getWallFormDataWithImages() {
     // Add Set 2 data if it exists
     if (set2Visible && montantMetallique2) {
         wallData.montantMetallique2 = montantMetallique2;
+        wallData.deflexionMax2 = deflexionMax2;
         wallData.dosADos2 = document.getElementById('dosADos2')?.checked || false;
         wallData.lisseSuperieure2 = lisseSuperieure2;
         wallData.lisseInferieure2 = lisseInferieure2;
