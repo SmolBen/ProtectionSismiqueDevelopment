@@ -4129,7 +4129,7 @@ function generateEditForm(wall, originalIndex) {
                             <input type="text" id="editHauteurMaxMinor${originalIndex}" 
                                    value="${wall.hauteurMaxMinor || ''}"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-                                   placeholder="e.g., 3.5 or 3/4">
+                                   placeholder="">
                             <select id="editHauteurMaxUnit${originalIndex}" 
                                     onchange="toggleEditMinorField(${originalIndex}, 'hauteur')"
                                     style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
@@ -7904,7 +7904,7 @@ function renderWindowList() {
         <div style="display:flex; gap:10px; align-items:center;">
             <input type="number" id="editLargeurMax${id}" value="${win.largeurMax ?? ''}" min="0" step="1" required
                 style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
-            <input type="text" id="editLargeurMaxMinor${id}" value="${win.largeurMaxMinor ?? ''}" placeholder="e.g., 3.5 or 3/4"
+            <input type="text" id="editLargeurMaxMinor${id}" value="${win.largeurMaxMinor ?? ''}" placeholder=""
     style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px; display:${(win.largeurMaxUnit === 'mm' || win.largeurMaxUnit === 'm-mm') ? 'none' : 'block'};">
             <select id="editLargeurMaxUnit${id}" required
                     onchange="toggleEditWindowMinorField(${id}, 'Largeur')"
@@ -7924,7 +7924,7 @@ function renderWindowList() {
         <div style="display:flex; gap:10px; align-items:center;">
             <input type="number" id="editHauteurMax${id}" value="${win.hauteurMax ?? ''}" min="0" step="1" required
                 style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
-            <input type="text" id="editHauteurMaxMinor${id}" value="${win.hauteurMaxMinor ?? ''}" placeholder="e.g., 3.5 or 3/4"
+            <input type="text" id="editHauteurMaxMinor${id}" value="${win.hauteurMaxMinor ?? ''}" placeholder=""
     style="flex:2; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px; display:${(win.hauteurMaxUnit === 'mm' || win.hauteurMaxUnit === 'm-mm') ? 'none' : 'block'};">
             <select id="editHauteurMaxUnit${id}" required
                     onchange="toggleEditWindowMinorField(${id}, 'Hauteur')"
