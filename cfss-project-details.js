@@ -1044,6 +1044,79 @@ function updateAllCompositions(containerId, hiddenInputId) {
   hiddenInput.value = JSON.stringify(compositions);
 }
 
+// Helper: enable/disable EDIT composition builders when type is N/A
+function setEditCompositionDisabled(windowId, section, value) {
+  const isNA = value === 'N/A' || value === 'NA' || value === '#';
+  let builderId, hiddenId;
+
+  switch (section) {
+    case 'jambage':
+      builderId = `editJambageCompositionBuilder${windowId}`;
+      hiddenId  = `editJambageComposition${windowId}`;
+      break;
+    case 'linteau':
+      builderId = `editLinteauCompositionBuilder${windowId}`;
+      hiddenId  = `editLinteauComposition${windowId}`;
+      break;
+    case 'seuil':
+      builderId = `editSeuilCompositionBuilder${windowId}`;
+      hiddenId  = `editSeuilComposition${windowId}`;
+      break;
+    default:
+      return;
+  }
+
+  const builder   = document.getElementById(builderId);
+  const hidden    = document.getElementById(hiddenId);
+  if (!builder || !hidden) return;
+
+  const selects   = builder.querySelectorAll('select');
+  const addButton = document.getElementById(`${builderId}_addBtn`);
+
+  if (isNA) {
+    builder.style.opacity = '0.5';
+    builder.style.pointerEvents = 'none';
+
+    selects.forEach(sel => {
+      sel.disabled = true;
+      sel.value = '';
+    });
+
+    if (addButton) {
+      addButton.disabled = true;
+      addButton.style.opacity = '0.5';
+      addButton.style.cursor = 'not-allowed';
+    }
+
+    // N/A ⇒ empty composition list
+    hidden.value = '[]';
+  } else {
+    builder.style.opacity = '';
+    builder.style.pointerEvents = '';
+
+    selects.forEach(sel => {
+      sel.disabled = false;
+    });
+
+    if (addButton) {
+      addButton.disabled = false;
+      addButton.style.opacity = '';
+      addButton.style.cursor = '';
+    }
+
+    // Recompute composition JSON based on current UI state
+    updateAllCompositions(builderId, hiddenId);
+  }
+}
+
+// Helper: for EDIT form, update image preview + disabled state
+function handleEditTypeChange(windowId, section, value) {
+  const cap = section.charAt(0).toUpperCase() + section.slice(1); // jambage -> Jambage
+  // Only update preview for the image-preview based edit UI
+  updateTypeImage(`edit${cap}${windowId}`, value);
+  setEditCompositionDisabled(windowId, section, value);
+}
+
 // Replace the React-based initialization functions with these simpler ones
 function initializeCompositionBuilders() {
   // Initialize composition builders for new window form
@@ -1059,14 +1132,13 @@ function initializeEditCompositionBuilders(windowId, window) {
       createCompositionBuilder(
         `editJambageCompositionBuilder${windowId}`, 
         `editJambageComposition${windowId}`,
-        window.jambage.compositions // Pass the array
+        window.jambage.compositions
       );
     } else if (window.jambage?.composition) {
-      // Backward compatibility for old single composition format
       createCompositionBuilder(
         `editJambageCompositionBuilder${windowId}`, 
         `editJambageComposition${windowId}`,
-        [window.jambage.composition] // Convert to array
+        [window.jambage.composition]
       );
     } else {
       createCompositionBuilder(
@@ -1114,6 +1186,17 @@ function initializeEditCompositionBuilders(windowId, window) {
         `editSeuilComposition${windowId}`
       );
     }
+
+    // Apply disabled state for any types already set to N/A
+    if (window.jambage?.type) {
+      setEditCompositionDisabled(windowId, 'jambage', window.jambage.type);
+    }
+    if (window.linteau?.type) {
+      setEditCompositionDisabled(windowId, 'linteau', window.linteau.type);
+    }
+    if (window.seuil?.type) {
+      setEditCompositionDisabled(windowId, 'seuil', window.seuil.type);
+    }
   }, 100);
 }
 
@@ -1123,16 +1206,17 @@ function getJambageEditSection(window) {
     <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
         <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 10px;">
             <div class="form-group" style="margin-bottom: 0; width: 180px;">
-          <label for="editJambageType${window.id}">Jambage Type</label>
-          <div class="type-selection-row">
-            <select id="editJambageType${window.id}" required onchange="updateTypeImage('editJambage${window.id}', this.value)" style="width: 72px;">
-              <option value="">Select Jambage Type</option>
-              <option value="JA1" ${window.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
-              <option value="JA2a" ${window.jambage?.type === 'JA2a' ? 'selected' : ''}>JA2a</option>
-              <option value="JA2b" ${window.jambage?.type === 'JA2b' ? 'selected' : ''}>JA2b</option>
-              <option value="JA3a" ${window.jambage?.type === 'JA3a' ? 'selected' : ''}>JA3a</option>
-              <option value="JA4a" ${window.jambage?.type === 'JA4a' ? 'selected' : ''}>JA4a</option>
-            </select>
+                <label for="editJambageType${window.id}">Jambage Type</label>
+            <div class="type-selection-row">
+                <select id="editJambageType${window.id}" required onchange="handleEditTypeChange(${window.id}, 'jambage', this.value)" style="width: 72px;">
+                <option value="">Select Jambage Type</option>
+                <option value="JA1" ${window.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
+                <option value="JA2a" ${window.jambage?.type === 'JA2a' ? 'selected' : ''}>JA2a</option>
+                <option value="JA2b" ${window.jambage?.type === 'JA2b' ? 'selected' : ''}>JA2b</option>
+                <option value="JA3a" ${window.jambage?.type === 'JA3a' ? 'selected' : ''}>JA3a</option>
+                <option value="JA4a" ${window.jambage?.type === 'JA4a' ? 'selected' : ''}>JA4a</option>
+                <option value="NA" ${window.jambage?.type === 'NA' ? 'selected' : ''}>N/A</option>
+                </select>
             <div id="editJambage${window.id}ImagePreview" class="type-image-preview ${window.jambage?.type ? '' : 'empty'}">
               ${window.jambage?.type ? `<img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/jambage-${window.jambage.type}.png" alt="${window.jambage.type}" onerror="handleImageError(this, '${window.jambage.type}')">` : 'Select a type'}
             </div>
@@ -1163,6 +1247,7 @@ function getLinteauEditSection(window) {
               <option value="LT3" ${window.linteau?.type === 'LT3' ? 'selected' : ''}>LT3</option>
               <option value="LT4" ${window.linteau?.type === 'LT4' ? 'selected' : ''}>LT4</option>
               <option value="LT5" ${window.linteau?.type === 'LT5' ? 'selected' : ''}>LT5</option>
+              <option value="NA" ${window.linteau?.type === 'NA' ? 'selected' : ''}>N/A</option>
             </select>
             <div id="editLinteau${window.id}ImagePreview" class="type-image-preview ${window.linteau?.type ? '' : 'empty'}">
               ${window.linteau?.type ? `<img src="https://s3.amazonaws.com/protection-sismique-equipment-images/linteau/${window.linteau.type}.png" alt="${window.linteau.type}" onerror="handleImageError(this, '${window.linteau.type}')">` : 'Select a type'}
@@ -1194,6 +1279,7 @@ function getSeuilEditSection(window) {
               <option value="SE3" ${window.seuil?.type === 'SE3' ? 'selected' : ''}>SE3</option>
               <option value="SE4" ${window.seuil?.type === 'SE4' ? 'selected' : ''}>SE4</option>
               <option value="SE5" ${window.seuil?.type === 'SE5' ? 'selected' : ''}>SE5</option>
+              <option value="NA" ${window.seuil?.type === 'NA' ? 'selected' : ''}>N/A</option>
             </select>
             <div id="editSeuil${window.id}ImagePreview" class="type-image-preview ${window.seuil?.type ? '' : 'empty'}">
               ${window.seuil?.type ? `<img src="https://s3.amazonaws.com/protection-sismique-equipment-images/seuil/${window.seuil.type}.png" alt="${window.seuil.type}" onerror="handleImageError(this, '${window.seuil.type}')">` : 'Select a type'}
@@ -7857,14 +7943,15 @@ function renderWindowList() {
             <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; max-width:520px;">
               <div class="form-group" style="width:220px; margin-bottom:0;">
                 <label for="editJambageType${id}">Jambage Type</label>
-                <select id="editJambageType${id}" required>
-                  <option value="">Select Jambage Type</option>
-                  <option value="JA1" ${win.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
-                  <option value="JA2a" ${win.jambage?.type === 'JA2a' ? 'selected' : ''}>JA2a</option>
-                  <option value="JA2b" ${win.jambage?.type === 'JA2b' ? 'selected' : ''}>JA2b</option>
-                  <option value="JA3a" ${win.jambage?.type === 'JA3a' ? 'selected' : ''}>JA3a</option>
-                  <option value="JA4a" ${win.jambage?.type === 'JA4a' ? 'selected' : ''}>JA4a</option>
-                </select>
+                <select id="editJambageType${id}" required onchange="setEditCompositionDisabled(${id}, 'jambage', this.value)">
+                    <option value="">Select Jambage Type</option>
+                    <option value="JA1" ${win.jambage?.type === 'JA1' ? 'selected' : ''}>JA1</option>
+                    <option value="JA2a" ${win.jambage?.type === 'JA2a' ? 'selected' : ''}>JA2a</option>
+                    <option value="JA2b" ${win.jambage?.type === 'JA2b' ? 'selected' : ''}>JA2b</option>
+                    <option value="JA3a" ${win.jambage?.type === 'JA3a' ? 'selected' : ''}>JA3a</option>
+                    <option value="JA4a" ${win.jambage?.type === 'JA4a' ? 'selected' : ''}>JA4a</option>
+                    <option value="NA" ${win.jambage?.type === 'NA' ? 'selected' : ''}>N/A</option>
+                  </select>
               </div>
               <div class="form-group" style="width:260px; margin-bottom:0;">
                 <label for="editJambageComposition${id}">Jambage Composition</label>
@@ -7879,14 +7966,15 @@ function renderWindowList() {
             <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; max-width:520px;">
               <div class="form-group" style="width:220px; margin-bottom:0;">
                 <label for="editLinteauType${id}">Linteau Type</label>
-                <select id="editLinteauType${id}" required>
-                  <option value="">Select Linteau Type</option>
-                  <option value="LT1" ${win.linteau?.type === 'LT1' ? 'selected' : ''}>LT1</option>
-                  <option value="LT2" ${win.linteau?.type === 'LT2' ? 'selected' : ''}>LT2</option>
-                  <option value="LT3" ${win.linteau?.type === 'LT3' ? 'selected' : ''}>LT3</option>
-                  <option value="LT4" ${win.linteau?.type === 'LT4' ? 'selected' : ''}>LT4</option>
-                  <option value="LT5" ${win.linteau?.type === 'LT5' ? 'selected' : ''}>LT5</option>
-                </select>
+                <select id="editLinteauType${id}" required onchange="setEditCompositionDisabled(${id}, 'linteau', this.value)">
+                    <option value="">Select Linteau Type</option>
+                    <option value="LT1" ${win.linteau?.type === 'LT1' ? 'selected' : ''}>LT1</option>
+                    <option value="LT2" ${win.linteau?.type === 'LT2' ? 'selected' : ''}>LT2</option>
+                    <option value="LT3" ${win.linteau?.type === 'LT3' ? 'selected' : ''}>LT3</option>
+                    <option value="LT4" ${win.linteau?.type === 'LT4' ? 'selected' : ''}>LT4</option>
+                    <option value="LT5" ${win.linteau?.type === 'LT5' ? 'selected' : ''}>LT5</option>
+                    <option value="NA" ${win.linteau?.type === 'NA' ? 'selected' : ''}>N/A</option>
+                  </select>
               </div>
               <div class="form-group" style="width:260px; margin-bottom:0;">
                 <label for="editLinteauComposition${id}">Linteau Composition</label>
@@ -7901,14 +7989,15 @@ function renderWindowList() {
             <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; max-width:520px;">
               <div class="form-group" style="width:220px; margin-bottom:0;">
                 <label for="editSeuilType${id}">Seuil Type</label>
-                <select id="editSeuilType${id}" required>
-                  <option value="">Select Seuil Type</option>
-                  <option value="SE1" ${win.seuil?.type === 'SE1' ? 'selected' : ''}>SE1</option>
-                  <option value="SE2" ${win.seuil?.type === 'SE2' ? 'selected' : ''}>SE2</option>
-                  <option value="SE3" ${win.seuil?.type === 'SE3' ? 'selected' : ''}>SE3</option>
-                  <option value="SE4" ${win.seuil?.type === 'SE4' ? 'selected' : ''}>SE4</option>
-                  <option value="SE5" ${win.seuil?.type === 'SE5' ? 'selected' : ''}>SE5</option>
-                </select>
+                <select id="editSeuilType${id}" required onchange="setEditCompositionDisabled(${id}, 'seuil', this.value)">
+                    <option value="">Select Seuil Type</option>
+                    <option value="SE1" ${win.seuil?.type === 'SE1' ? 'selected' : ''}>SE1</option>
+                    <option value="SE2" ${win.seuil?.type === 'SE2' ? 'selected' : ''}>SE2</option>
+                    <option value="SE3" ${win.seuil?.type === 'SE3' ? 'selected' : ''}>SE3</option>
+                    <option value="SE4" ${win.seuil?.type === 'SE4' ? 'selected' : ''}>SE4</option>
+                    <option value="SE5" ${win.seuil?.type === 'SE5' ? 'selected' : ''}>SE5</option>
+                    <option value="NA" ${win.seuil?.type === 'NA' ? 'selected' : ''}>N/A</option>
+                  </select>
               </div>
               <div class="form-group" style="width:260px; margin-bottom:0;">
                 <label for="editSeuilComposition${id}">Seuil Composition</label>
@@ -9466,41 +9555,88 @@ function renderReviewCustomPages() {
 function updateTypeImage(type, value) {
     const previewId = `${type}ImagePreview`;
     const preview = document.getElementById(previewId);
-    
+
     if (!preview) {
         console.error(`Preview element not found: ${previewId}`);
         return;
     }
-    
+
+    // Enable/disable the composition builder for the main Add New Window form
+    setCompositionDisabledForType(type, value);
+
     if (!value) {
         preview.className = 'type-image-preview empty';
         preview.innerHTML = 'Select a type';
         return;
     }
-    
+
+    // Treat N/A (or NA or # just in case) as "no image"
+    const isNA = value === 'N/A' || value === 'NA' || value === '#';
+    if (isNA) {
+        preview.className = 'type-image-preview empty';
+        preview.innerHTML = 'N/A';
+        return;
+    }
+
     // Construct S3 URL based on type and value
-    // Format: https://bucket-name.s3.region.amazonaws.com/cfss-options/type-number.png
     const bucketUrl = 'https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com';
-    
+
     // Map type to lowercase filename prefix
     const typeMap = {
-        'jambage': 'jambage',
-        'linteau': 'linteau',
-        'seuil': 'seuil'
+        jambage: 'jambage',
+        linteau: 'linteau',
+        seuil: 'seuil'
     };
-    
+
     const filename = typeMap[type];
     if (!filename) {
         console.error(`Unknown type: ${type}`);
         return;
     }
-    
+
     // Use full value for filename (e.g., JA2a -> jambage-JA2a.png)
     const imageUrl = `${bucketUrl}/cfss-options/${filename}-${value}.png`;
-    
+
     // Update preview with image
     preview.className = 'type-image-preview';
     preview.innerHTML = `<img src="${imageUrl}" alt="${value}" onerror="handleImageError(this, '${value}')">`;
+}
+
+function setCompositionDisabledForType(type, value) {
+    // Only handle the main "Add New Window" form types
+    let section = null;
+
+    if (type === 'jambage' || type === 'linteau' || type === 'seuil') {
+        section = type;
+    } else {
+        // Skip edit forms for now
+        return;
+    }
+
+    const builderId = `${section}CompositionBuilder`;
+    const inputId = `${section}Composition`;
+
+    const builderEl = document.getElementById(builderId);
+    const inputEl = document.getElementById(inputId);
+
+    if (!builderEl || !inputEl) return;
+
+    const isNA = value === 'N/A' || value === 'NA' || value === '#';
+
+    if (isNA) {
+        // Grey out + make read-only
+        builderEl.style.opacity = '0.5';
+        builderEl.style.pointerEvents = 'none';
+        builderEl.style.backgroundColor = '#f1f3f5';
+
+        // Clear any previous composition value
+        inputEl.value = '';
+    } else {
+        // Re-enable
+        builderEl.style.opacity = '';
+        builderEl.style.pointerEvents = '';
+        builderEl.style.backgroundColor = '';
+    }
 }
 
 // Handle image load error
@@ -9512,6 +9648,87 @@ function handleImageError(img, typeValue) {
         <div>${typeValue}</div>
         <div style="font-size: 10px;">(Image not found)</div>
     </div>`;
+}
+
+function handleCompositionFieldsForNA(selectEl, section) {
+  let builderId = '';
+  let inputId = '';
+
+  const isEdit = selectEl.id.startsWith('edit');
+  if (isEdit) {
+    const match = selectEl.id.match(/(\d+)$/);
+    const windowId = match ? match[1] : '';
+    if (section === 'jambage') {
+      builderId = `editJambageCompositionBuilder${windowId}`;
+      inputId = `editJambageComposition${windowId}`;
+    } else if (section === 'linteau') {
+      builderId = `editLinteauCompositionBuilder${windowId}`;
+      inputId = `editLinteauComposition${windowId}`;
+    } else if (section === 'seuil') {
+      builderId = `editSeuilCompositionBuilder${windowId}`;
+      inputId = `editSeuilComposition${windowId}`;
+    }
+  } else {
+    if (section === 'jambage') {
+      builderId = 'jambageCompositionBuilder';
+      inputId = 'jambageComposition';
+    } else if (section === 'linteau') {
+      builderId = 'linteauCompositionBuilder';
+      inputId = 'linteauComposition';
+    } else if (section === 'seuil') {
+      builderId = 'seuilCompositionBuilder';
+      inputId = 'seuilComposition';
+    }
+  }
+
+  const builderEl = document.getElementById(builderId);
+  const inputEl = document.getElementById(inputId);
+  if (!builderEl || !inputEl) return;
+
+  if (selectEl.value === 'NA') {
+    builderEl.style.opacity = '0.5';
+    builderEl.style.pointerEvents = 'none';
+    builderEl.style.backgroundColor = '#f1f3f5';
+    inputEl.value = ''; // clear composition JSON
+  } else {
+    builderEl.style.opacity = '';
+    builderEl.style.pointerEvents = '';
+    builderEl.style.backgroundColor = '';
+  }
+}
+
+function handleWindowTypeChange(selectEl, section) {
+  const value = selectEl.value;
+
+  // Determine image prefix for preview
+  let imagePrefix = '';
+  if (selectEl.id.startsWith('edit')) {
+    const match = selectEl.id.match(/edit([A-Za-z]+)Type(\d+)/);
+    if (match) {
+      const namePart = match[1]; // Jambage / Linteau / Seuil
+      const idPart = match[2];
+      imagePrefix = `edit${namePart}${idPart}`;
+    }
+  } else {
+    imagePrefix = section; // jambage / linteau / seuil
+  }
+
+  if (imagePrefix) {
+    const previewId = `${imagePrefix}ImagePreview`;
+    const previewElement = document.getElementById(previewId);
+
+    if (!value || value === 'NA') {
+      if (previewElement) {
+        previewElement.classList.add('empty');
+        previewElement.innerHTML = 'Select a type';
+      }
+    } else {
+      updateTypeImage(imagePrefix, value);
+    }
+  }
+
+  // Apply N/A composition behaviour
+  handleCompositionFieldsForNA(selectEl, section);
 }
 
 
