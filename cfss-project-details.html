@@ -1179,38 +1179,29 @@
                         <input type="text" id="parapetFloor" name="parapetFloor" placeholder="e.g., NV2 - NV3">
                     </div>
 
-                    <!-- Hauteur Max with Units -->
-<div class="form-group">
-    <label for="parapetHauteurMax">Hauteur Max:</label>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <input 
-            type="number" 
-            id="parapetHauteurMax" 
-            name="parapetHauteurMax" 
-            min="0"
-            step="1"
-            required 
-            style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-        >
-        <input 
-            type="number" 
-            id="parapetHauteurMaxMinor" 
-            name="parapetHauteurMaxMinor" 
-            min="0"
-            step="1"
-            style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-        >
-        <select 
+                    <select 
             id="parapetHauteurMaxUnit" 
             name="parapetHauteurMaxUnit" 
             required 
+            onchange="toggleMinorField('parapetHauteur')"
             style="width: 100px; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
         >
             <option value="ft-in" selected>ft-in</option>
             <option value="m-mm">m-mm</option>
         </select>
-    </div>
-</div>
+
+                    <!-- Set 1 and Set 2 Container -->
+    <div id="parapetSetsWrapper" style="display: flex; gap: 20px;">
+        
+        <!-- SET 1 -->
+        <div id="parapetSet1" style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 14px; color: #666;">Set 1</h4>S
+                <button type="button" id="addParapetSet2Btn" onclick="toggleParapetSet2(true)" 
+                        style="background: #28a745; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;">
+                    +
+                </button>
+            </div>
 
                     <!-- Montant Métallique -->
                     <div class="form-group">
@@ -1233,16 +1224,16 @@
                         </select>
                     </div>
 
+                    <!-- Lisse Supérieure -->
+                    <div class="form-group">
+                        <label for="parapetLisseSuperieure">Lisse Supérieure:</label>
+                        <input type="text" id="parapetLisseSuperieure" placeholder="Will be auto-filled..." required>
+                    </div>
+
                     <!-- Lisse Inférieure -->
                     <div class="form-group">
                         <label for="parapetLisseInferieure">Lisse Inférieure:</label>
                         <input type="text" id="parapetLisseInferieure" placeholder="Will be auto-filled..." required>
-                    </div>
-
-                    <!-- Lisse Supérieure -->
-                    <div class="form-group">
-                        <label for="parapetLisseSuperieure">Lisse Supérieure:</label>
-                        <input type="text" id="parapetLisseSuperieure" placeholder="Will match Lisse Inférieure..." required>
                     </div>
 
                     <!-- Entremise -->
@@ -1253,13 +1244,61 @@
                             <option value="150U75-43">150U75-43</option>
                         </select>
                     </div>
+        </div>
 
-                    <!-- Note -->
+        <!-- SET 2 (Initially Hidden) -->
+        <div id="parapetSet2" style="flex: 1; min-width: 0; display: none;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 14px; color: #666;">Set 2</h4>
+                <button type="button" id="removeParapetSet2Btn" onclick="toggleParapetSet2(false)" 
+                        style="background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;">
+                    ×
+                </button>
+            </div>
+
+                    <!-- Montant Métallique 2 -->
                     <div class="form-group">
-                        <label for="parapetNote">Note:</label>
-                        <input type="text" id="parapetNote" maxlength="100" placeholder="Optional note (max 100 characters)...">
-                        <div class="form-hint">Maximum 100 characters</div>
+                        <label for="parapetMontantMetallique2">Montant Métallique 2:</label>
+                        <select id="parapetMontantMetallique2" name="parapetMontantMetallique2">
+                            <option value="">Select montant métallique...</option>
+                            <!-- Options populated by JavaScript -->
+                        </select>
                     </div>
+
+                    <!-- Espacement 2 -->
+                    <div class="form-group">
+                        <label for="parapetEspacement2">Espacement 2:</label>
+                        <select id="parapetEspacement2" name="parapetEspacement2">
+                            <option value="">Select espacement...</option>
+                            <option value="8&quot;c/c">8"c/c</option>
+                            <option value="12&quot;c/c">12"c/c</option>
+                            <option value="16&quot;c/c" selected>16"c/c</option>
+                            <option value="24&quot;c/c">24"c/c</option>
+                        </select>
+                    </div>
+
+                    <!-- Lisse Supérieure 2 -->
+                    <div class="form-group">
+                        <label for="parapetLisseSuperieure2">Lisse Supérieure 2:</label>
+                        <input type="text" id="parapetLisseSuperieure2" placeholder="Will be auto-filled...">
+                    </div>
+
+                    <!-- Lisse Inférieure 2 -->
+                    <div class="form-group">
+                        <label for="parapetLisseInferieure2">Lisse Inférieure 2:</label>
+                        <input type="text" id="parapetLisseInferieure2" placeholder="Will be auto-filled...">
+                    </div>
+
+                    <!-- Entremise 2 -->
+                    <div class="form-group">
+                        <label for="parapetEntremise2">Entremise 2:</label>
+                        <select id="parapetEntremise2" name="parapetEntremise2">
+                            <option value="N/A" selected>N/A</option>
+                            <option value="150U75-43">150U75-43</option>
+                        </select>
+                    </div>
+        </div>
+    </div>
 
                     <!-- Save Button -->
                     <div style="margin-top: 20px;">
@@ -1411,7 +1450,26 @@
     }
 }
 
-    // Populate the Montant Métallique dropdown
+    function toggleParapetSet2(show) {
+    const set2 = document.getElementById('parapetSet2');
+    const addBtn = document.getElementById('addParapetSet2Btn');
+    
+    if (show) {
+        set2.style.display = 'block';
+        addBtn.style.display = 'none';
+    } else {
+        set2.style.display = 'none';
+        addBtn.style.display = 'inline-block';
+        
+        // Clear Set 2 fields
+        document.getElementById('parapetMontantMetallique2').value = '';
+        document.getElementById('parapetEspacement2').value = '';
+        document.getElementById('parapetLisseSuperieure2').value = '';
+        document.getElementById('parapetLisseInferieure2').value = '';
+        document.getElementById('parapetEntremise2').value = '';
+    }
+}
+
 // Populate the Montant Métallique dropdown
 function initializeMontantDropdown() {
     const montantSelect = document.getElementById('montantMetallique');
@@ -1452,6 +1510,18 @@ function initializeMontantDropdown() {
             parapetMontantSelect.appendChild(option);
         });
         console.log(`Populated parapet montant dropdown with ${sortedKeys.length} options`);
+    }
+    
+    // Populate Parapet Montant Set 2 Dropdown
+    const parapetMontantSelect2 = document.getElementById('parapetMontantMetallique2');
+    if (parapetMontantSelect2) {
+        parapetMontantSelect2.innerHTML = '<option value="">Select montant métallique...</option>';
+        sortedKeys.forEach(montant => {
+            const option = document.createElement('option');
+            option.value = montant;
+            option.textContent = montant;
+            parapetMontantSelect2.appendChild(option);
+        });
     }
 
     console.log(`Populated ${sortedKeys.length} montant métallique options for walls and parapets`);
