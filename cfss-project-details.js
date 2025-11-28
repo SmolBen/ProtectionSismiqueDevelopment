@@ -1659,10 +1659,17 @@ function clearParapetForm() {
     const lastWall = projectEquipment && projectEquipment.length > 0 ? projectEquipment[projectEquipment.length - 1] : null;
     let defaultUnit = 'ft-in';
     if (lastWall?.hauteurMaxUnit && lastWall?.hauteurMaxMinorUnit) {
-        defaultUnit = `${lastWall.hauteurMaxUnit}-${lastWall.hauteurMaxMinorUnit}`;
+        if (lastWall?.hauteurMaxUnit === 'mm') {
+    defaultUnit = 'mm';
+} else {
+    defaultUnit = 'ft-in';
+}
     }
     console.log('Setting parapet unit to:', defaultUnit, 'from last wall:', lastWall);
     document.getElementById('parapetHauteurMaxUnit').value = defaultUnit;
+
+    // NEW: make sure minor field visibility matches the unit (ft-in => show, m-mm => hide)
+    toggleMinorField('parapetHauteur');
     
     document.getElementById('parapetHauteurMaxMinor').value = '';
     document.getElementById('parapetMontantMetallique').value = '';
@@ -1703,9 +1710,10 @@ function renderParapetList() {
     }
     
     container.innerHTML = projectParapets.map((parapet, index) => {
-        const heightDisplay = formatHeight(parapet);
+    const heightDisplay = formatHeight(parapet);
+    const hasSet2 = parapet.montantMetallique2 && parapet.montantMetallique2.trim() !== '';
         
-        return `
+    return `
         <div class="equipment-card" id="parapetCard${parapet.id}">
             <!-- View Mode -->
             <div id="parapetView${parapet.id}">
@@ -1796,21 +1804,47 @@ function renderParapetList() {
                     <div class="form-row">
                         <div class="form-group">
                             <label>Hauteur Max</label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0" required>
-                                <input type="number" id="editParapetHauteurMaxMinor${parapet.id}" value="${parapet.hauteurMaxMinor || ''}" min="0">
-                                <select id="editParapetHauteurMaxUnit${parapet.id}" required>
-                                    <option value="ft-in" ${(parapet.hauteurMaxUnit === 'ft' || !parapet.hauteurMaxUnit) ? 'selected' : ''}>ft-in</option>
-                                    <option value="m-mm" ${parapet.hauteurMaxUnit === 'm' ? 'selected' : ''}>m-mm</option>
-                                </select>
-                            </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0" required>
+                                    <input type="number" id="editParapetHauteurMaxMinor${parapet.id}" value="${parapet.hauteurMaxMinor || ''}" min="0">
+                                    <select
+                                        id="editParapetHauteurMaxUnit${parapet.id}"
+                                        required
+                                        onchange="toggleEditMinorField(${parapet.id}, 'parapetHauteur')"
+                                    >
+                                        <option value="ft-in" ${(parapet.hauteurMaxUnit === 'ft-in' || !parapet.hauteurMaxUnit) ? 'selected' : ''}>ft-in</option>
+                                        <option value="mm" ${parapet.hauteurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
+                                    </select>
+                                </div>
                         </div>
 <!-- Set 1 and Set 2 in Edit Form -->
                     <div style="display: flex; gap: 20px; grid-column: 1 / -1;">
                         <!-- Set 1 -->
                         <div style="flex: 1;">
-                            <h4 style="margin-bottom: 10px; font-size: 14px; color: #666;">Set 1</h4>
-                            
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                <h4 style="margin: 0; font-size: 14px; color: #666;">Set 1</h4>
+                                <button 
+                                    type="button" 
+                                    id="editParapetAddSet2Btn${parapet.id}" 
+                                    onclick="toggleEditParapetSet2(${parapet.id}, true, event)"
+                                    style="
+                                        background: #28a745;
+                                        color: white;
+                                        border: none;
+                                        width: 24px;
+                                        height: 24px;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 14px;
+                                        line-height: 1;
+                                        padding: 0;
+                                        display: ${hasSet2 ? 'none' : 'inline-block'};
+                                    "
+                                >
+                                    +
+                                </button>
+                            </div>
+
                             <div class="form-group">
                                 <label>Montant Métallique</label>
                                 <select id="editParapetMontantMetallique${parapet.id}" required>
@@ -1831,12 +1865,22 @@ function renderParapetList() {
                             
                             <div class="form-group">
                                 <label>Lisse Supérieure</label>
-                                <input type="text" id="editParapetLisseSuperieure${parapet.id}" value="${parapet.lisseSuperieure || ''}" required>
+                                <input 
+                                    type="text" 
+                                    id="editParapetLisseSuperieure${parapet.id}" 
+                                    value="${parapet.lisseSuperieure || ''}" 
+                                    required
+                                >
                             </div>
                             
                             <div class="form-group">
                                 <label>Lisse Inférieure</label>
-                                <input type="text" id="editParapetLisseInferieure${parapet.id}" value="${parapet.lisseInferieure || ''}" required>
+                                <input 
+                                    type="text" 
+                                    id="editParapetLisseInferieure${parapet.id}" 
+                                    value="${parapet.lisseInferieure || ''}" 
+                                    required
+                                >
                             </div>
                             
                             <div class="form-group">
@@ -1850,8 +1894,32 @@ function renderParapetList() {
                         </div>
                         
                         <!-- Set 2 -->
-                        <div style="flex: 1;">
-                            <h4 style="margin-bottom: 10px; font-size: 14px; color: #666;">Set 2</h4>
+                        <div 
+                            id="editParapetSet2${parapet.id}" 
+                            style="flex: 1; min-width: 0; display: ${hasSet2 ? 'block' : 'none'};"
+                        >
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                <h4 style="margin: 0; font-size: 14px; color: #666;">Set 2</h4>
+                                <button 
+                                    type="button" 
+                                    id="editParapetRemoveSet2Btn${parapet.id}" 
+                                    onclick="toggleEditParapetSet2(${parapet.id}, false, event)"
+                                    style="
+                                        background: #dc3545;
+                                        color: white;
+                                        border: none;
+                                        width: 24px;
+                                        height: 24px;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 14px;
+                                        line-height: 1;
+                                        padding: 0;
+                                    "
+                                >
+                                    ×
+                                </button>
+                            </div>
                             
                             <div class="form-group">
                                 <label>Montant Métallique 2</label>
@@ -1873,12 +1941,20 @@ function renderParapetList() {
                             
                             <div class="form-group">
                                 <label>Lisse Supérieure 2</label>
-                                <input type="text" id="editParapetLisseSuperieure2${parapet.id}" value="${parapet.lisseSuperieure2 || ''}">
+                                <input 
+                                    type="text" 
+                                    id="editParapetLisseSuperieure2${parapet.id}" 
+                                    value="${parapet.lisseSuperieure2 || ''}"
+                                >
                             </div>
                             
                             <div class="form-group">
                                 <label>Lisse Inférieure 2</label>
-                                <input type="text" id="editParapetLisseInferieure2${parapet.id}" value="${parapet.lisseInferieure2 || ''}">
+                                <input 
+                                    type="text" 
+                                    id="editParapetLisseInferieure2${parapet.id}" 
+                                    value="${parapet.lisseInferieure2 || ''}"
+                                >
                             </div>
                             
                             <div class="form-group">
@@ -2028,6 +2104,9 @@ function editParapet(id) {
     // Hide view mode and show edit mode
     document.getElementById(`parapetView${id}`).style.display = 'none';
     document.getElementById(`parapetEdit${id}`).style.display = 'block';
+
+    // Make sure Hauteur Max minor field matches current unit (ft-in vs mm)
+    toggleEditMinorField(id, 'parapetHauteur');
     
     // Setup image upload handlers for this specific edit form
     setTimeout(() => {
@@ -4787,6 +4866,38 @@ function toggleEditSet2(wallIndex, show, event) {
         
         if (montant2) montant2.value = '';
         if (deflexion2) deflexion2.value = '';
+        if (espacement2) espacement2.value = '';
+        if (lisseSuperieure2) lisseSuperieure2.value = '';
+        if (lisseInferieure2) lisseInferieure2.value = '';
+        if (entremise2) entremise2.value = '';
+    }
+}
+
+function toggleEditParapetSet2(parapetId, show, event) {
+    if (event) event.preventDefault();
+
+    const set2Container = document.getElementById(`editParapetSet2${parapetId}`);
+    const addBtn = document.getElementById(`editParapetAddSet2Btn${parapetId}`);
+
+    if (!set2Container || !addBtn) {
+        return;
+    }
+
+    if (show) {
+        set2Container.style.display = 'block';
+        addBtn.style.display = 'none';
+    } else {
+        set2Container.style.display = 'none';
+        addBtn.style.display = 'inline-block';
+
+        // Clear Set 2 fields
+        const montant2 = document.getElementById(`editParapetMontantMetallique2${parapetId}`);
+        const espacement2 = document.getElementById(`editParapetEspacement2${parapetId}`);
+        const lisseSuperieure2 = document.getElementById(`editParapetLisseSuperieure2${parapetId}`);
+        const lisseInferieure2 = document.getElementById(`editParapetLisseInferieure2${parapetId}`);
+        const entremise2 = document.getElementById(`editParapetEntremise2${parapetId}`);
+
+        if (montant2) montant2.value = '';
         if (espacement2) espacement2.value = '';
         if (lisseSuperieure2) lisseSuperieure2.value = '';
         if (lisseInferieure2) lisseInferieure2.value = '';

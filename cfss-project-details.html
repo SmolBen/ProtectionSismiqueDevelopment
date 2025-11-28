@@ -1179,16 +1179,37 @@
                         <input type="text" id="parapetFloor" name="parapetFloor" placeholder="e.g., NV2 - NV3">
                     </div>
 
-                    <select 
-            id="parapetHauteurMaxUnit" 
-            name="parapetHauteurMaxUnit" 
-            required 
-            onchange="toggleMinorField('parapetHauteur')"
-            style="width: 100px; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-        >
-            <option value="ft-in" selected>ft-in</option>
-            <option value="m-mm">m-mm</option>
-        </select>
+                    <!-- Hauteur Max - Dual Input with Unit Toggle -->
+                    <div class="form-group">
+                        <label for="parapetHauteurMax">Hauteur Max</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input 
+                                type="number" 
+                                id="parapetHauteurMax" 
+                                name="parapetHauteurMax" 
+                                min="0"
+                                step="1"
+                                required 
+                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                            >
+                            <input 
+                                type="text" 
+                                id="parapetHauteurMaxMinor" 
+                                name="parapetHauteurMaxMinor" 
+                                placeholder=""
+                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                            >
+                            <select 
+                                id="parapetHauteurMaxUnit" 
+                                name="parapetHauteurMaxUnit" 
+                                required 
+                                onchange="toggleMinorField('parapetHauteur')"
+                            >
+                                <option value="ft-in" selected>ft-in</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <!-- Set 1 and Set 2 Container -->
     <div id="parapetSetsWrapper" style="display: flex; gap: 20px;">
@@ -1196,7 +1217,7 @@
         <!-- SET 1 -->
         <div id="parapetSet1" style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <h4 style="margin: 0; font-size: 14px; color: #666;">Set 1</h4>S
+                <h4 style="margin: 0; font-size: 14px; color: #666;">Set 1</h4>
                 <button type="button" id="addParapetSet2Btn" onclick="toggleParapetSet2(true)" 
                         style="background: #28a745; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;">
                     +
