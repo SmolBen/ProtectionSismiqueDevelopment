@@ -1415,7 +1415,7 @@ function initializeParapetHandlers() {
                 populateParapetTypeDropdown();
                 
                 parapetForm.style.display = 'block';
-                addParapetButton.innerHTML = 'Hide Form';
+                addParapetButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
                 parapetForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
@@ -2563,7 +2563,7 @@ function duplicateParapet(id) {
     
     if (parapetForm && addParapetButton) {
         parapetForm.style.display = 'block';
-        addParapetButton.innerHTML = 'Hide Form';
+        addParapetButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
         
         // Scroll to form
         parapetForm.scrollIntoView({ 
@@ -4013,7 +4013,7 @@ function hideForm() {
     const newCalcButton = document.getElementById('newCalculationButton');
     equipmentForm.classList.remove('show');
     if (newCalcButton) {
-        newCalcButton.textContent = 'Add Wall';
+        newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
     }
 }
 
@@ -4822,7 +4822,7 @@ if (window.currentWallImages.length > 0) {
     
     if (equipmentForm && newCalcButton) {
         equipmentForm.classList.add('show');
-        newCalcButton.textContent = 'Hide Form';
+        newCalcButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
         
         // Scroll to form
         equipmentForm.scrollIntoView({ 
@@ -5393,7 +5393,7 @@ async function handleSaveEquipment(e) {
         const newCalcButton = document.getElementById('newCalculationButton');
         equipmentForm.classList.remove('show');
         if (newCalcButton) {
-            newCalcButton.textContent = 'Add Wall';
+            newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
         }
         
         setTimeout(() => {
@@ -5448,14 +5448,14 @@ function setupNewCalculationButton() {
             
             if (equipmentForm.classList.contains('show')) {
                 equipmentForm.classList.remove('show');
-                newCalcButton.textContent = 'Add Wall';
+                newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
             } else {
                 // Close all expanded details and other forms before showing form
                 closeAllExpandedDetails();
                 hideAllForms();
                 
                 equipmentForm.classList.add('show');
-                newCalcButton.textContent = 'Hide Form';
+                newCalcButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
                 
                 equipmentForm.scrollIntoView({ 
                     behavior: 'smooth', 
@@ -5542,7 +5542,7 @@ function toggleCFSSForm() {
         }
         const newCalcButton = document.getElementById('newCalculationButton');
         if (newCalcButton) {
-            newCalcButton.textContent = 'Add Wall';
+            newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
         }
         
         // Show CFSS form
@@ -5552,10 +5552,10 @@ function toggleCFSSForm() {
         // Check if we have existing CFSS data and populate form
         if (cfssWindData && (Array.isArray(cfssWindData) ? cfssWindData.length > 0 : cfssWindData.storeys)) {
             populateCFSSForm(cfssWindData);
-            btnText.textContent = 'Hide CFSS Data';
+            btn.innerHTML = '<i class="fas fa-times"></i> <span id="cfss-btn-text">Hide CFSS Data</span>';
         } else {
             setDefaultCFSSValues();
-            btnText.textContent = 'Hide CFSS Data';
+            btn.innerHTML = '<i class="fas fa-times"></i> <span id="cfss-btn-text">Hide CFSS Data</span>';
         }
     } else {
         form.classList.add('hidden');
@@ -5602,8 +5602,14 @@ function setDefaultCFSSValues() {
 }
 
 function updateCFSSButtonText() {
+    const btn = document.querySelector('.cfss-btn');
     const btnText = document.getElementById('cfss-btn-text');
+    const icon = btn.querySelector('i');
+    
     if (!btnText) return;
+    
+    // Restore the original plus icon
+    icon.className = 'fas fa-plus';
     
     // Check if cfssWindData exists and determine structure
     const hasData = cfssWindData && (
@@ -7962,7 +7968,7 @@ function toggleForm(formType) {
     if (formType === 'wall') {
         const form = document.getElementById('equipmentForm');
         form.classList.add('show');
-        document.getElementById('newCalculationButton').textContent = 'Cancel';
+        document.getElementById('newCalculationButton').innerHTML = '<i class="fas fa-th-large"></i> Cancel';
     } else if (formType === 'window') {
         const form = document.getElementById('windowForm');
         form.classList.add('show');
@@ -8020,7 +8026,7 @@ function hideAllForms() {
     
     const newCalcButton = document.getElementById('newCalculationButton');
     if (newCalcButton) {
-        newCalcButton.textContent = 'Add Wall';
+        newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
     }
     
     const addParapetButton = document.getElementById('addParapetButton');

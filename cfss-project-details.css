@@ -94,28 +94,40 @@
 }
 
 .cfss-btn {
-    background: #17a2b8;
+    background: #0066cc;
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 5px;
+    padding: 10px 18px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     display: flex;
     align-items: center;
     gap: 8px;
     transition: all 0.2s ease;
     margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0, 102, 204, 0.15);
 }
 
 .cfss-btn:hover {
-    background: #138496;
+    background: #0052a3;
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
     transform: translateY(-1px);
+}
+
+.cfss-btn:active {
+    transform: translateY(0);
 }
 
 .cfss-btn.expanded {
     background: #dc3545;
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.15);
+}
+
+.cfss-btn.expanded:hover {
+    background: #c82333;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
 }
 
 .cfss-form {
@@ -1532,23 +1544,28 @@ button.cfss-btn {
 .cfss-btn,
 #newCalculationButton,
 #addWindowButton,
-#addParapetButton {
+#addParapetButton,
+#exteriorWallCalcButton {
     position: static !important;
-    display: block !important;
+    display: flex !important;
+    align-items: center !important;
     width: auto !important;
-    margin: 12px 0 !important; /* Uniform margin for all */
-    padding: 10px 20px !important;
+    margin: 12px 0 !important;
+    padding: 10px 18px !important;
     opacity: 1 !important;
     visibility: visible !important;
     clear: both !important;
     float: none !important;
-    background-color: #17a2b8 !important;
+    background-color: #0066cc !important;
     color: white !important;
     border: none !important;
-    border-radius: 5px !important;
+    border-radius: 6px !important;
     cursor: pointer !important;
-    font-size: 14px !important;
-    transition: background-color 0.2s ease !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 6px rgba(0, 102, 204, 0.15) !important;
+    gap: 12px !important;
 }
 
 /* Fix the bottom half section to prevent overlap */
@@ -1581,19 +1598,22 @@ button.cfss-btn {
 /* Ensure all action buttons are visible on hover and always */
 #newCalculationButton,
 #addParapetButton,
-#addWindowButton {
+#addWindowButton,
+#exteriorWallCalcButton {
     margin: 20px 0 !important;
     clear: both !important;
-    background-color: #17a2b8 !important;
+    background-color: #0066cc !important;
     transition: all 0.2s ease !important;
 }
 
 #newCalculationButton:hover,
 #addParapetButton:hover,
 #addWindowButton:hover,
+#exteriorWallCalcButton:hover,
 .cfss-btn:hover {
-    background-color: #138496 !important;
-    transform: none !important; /* Removed translateY */
+    background-color: #0052a3 !important;
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25) !important;
+    transform: translateY(-1px) !important;
 }
 
 /* Fix any transparent button issues */
