@@ -442,6 +442,7 @@ function hideForm(formId) {
 function initializeTabSystem() {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content-section');
+    const saveButtonContainer = document.getElementById('saveOptionsBtnContainer');
 
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -453,7 +454,15 @@ function initializeTabSystem() {
 
             // Add active class to clicked button and corresponding content
             button.classList.add('active');
-            document.getElementById(`${tabName}-content`).classList.add('active');
+            const tabContent = document.getElementById(`${tabName}-content`);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+
+            // Show/hide Save Options button based on active tab
+            if (saveButtonContainer) {
+                saveButtonContainer.style.display = (tabName === 'option-list') ? 'block' : 'none';
+            }
 
             // When opening the Option List tab, preload images (same as regular CFSS)
             if (tabName === 'option-list') {
@@ -463,11 +472,16 @@ function initializeTabSystem() {
             }
         });
     });
+
+    // Ensure correct initial state (Option List tab is active on first load)
+    if (saveButtonContainer) {
+        saveButtonContainer.style.display = 'block';
+    }
 }
 
 // Initialize options for the current project
 function initializeOptionsSystem() {
-    console.log('ðŸ”§ Initializing LIMITED CFSS options system...');
+    console.log('🔧 Initializing LIMITED CFSS options system...');
 
     // Load any saved options from the project if present
     if (currentProject && Array.isArray(currentProject.selectedCFSSOptions)) {
@@ -479,7 +493,21 @@ function initializeOptionsSystem() {
     populateOptionsCategories();
     updateSelectionSummary();
 
-    console.log('âœ… Limited options system initialized');
+    // Hook up Save Options button (if present)
+    const saveOptionsBtn = document.getElementById('saveOptionsBtn');
+    if (saveOptionsBtn) {
+        saveOptionsBtn.addEventListener('click', async () => {
+            try {
+                await saveLimitedCFSSOptions();
+                console.log('✅ Limited CFSS options saved via Save Options button');
+            } catch (error) {
+                console.error('Error saving limited CFSS options via button:', error);
+                alert('Error saving options. Please try again.');
+            }
+        });
+    }
+
+    console.log('✅ Limited options system initialized');
 }
 
 // Define option categories and their corresponding option IDs
