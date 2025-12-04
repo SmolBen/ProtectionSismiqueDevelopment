@@ -188,14 +188,14 @@ async function fetchCFSSProjects() {
     }
 }
 
-// Render CFSS projects in compact list format
+// Render CFSS projects using the same card layout as the regular CFSS dashboard
 function renderCFSSProjects(filteredProjects) {
     const projectList = document.getElementById('projectList');
     projectList.innerHTML = '';
     
     if (filteredProjects.length === 0) {
         projectList.innerHTML = `
-            <div class="list-header">Projects (0)</div>
+            <div class="list-header">CFSS Projects (0)</div>
             <div style="padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
                 No CFSS projects found. Create your first CFSS project to get started!
             </div>
@@ -206,48 +206,85 @@ function renderCFSSProjects(filteredProjects) {
     // Add list header
     const listHeader = document.createElement('div');
     listHeader.className = 'list-header';
-    listHeader.textContent = `Projects (${filteredProjects.length})`;
+    listHeader.textContent = `CFSS Projects (${filteredProjects.length})`;
     projectList.appendChild(listHeader);
     
     filteredProjects.forEach((project) => {
-        const statusClass = project.status.toLowerCase().replace(' ', '-');
+        const formattedAddress = `${project.addressLine1 || ''}${
+            project.city ? ', ' + project.city : ''
+        }${project.province ? ', ' + project.province : ''}${
+            project.country ? ', ' + project.country : ''
+        }`;
+        
+        const formattedDate = project.createdAt
+            ? new Date(project.createdAt).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+              })
+            : 'N/A';
+        
+        // Get status dot class (planning / in-progress / completed)
+        const statusClass = project.status
+            ? project.status.toLowerCase().replace(' ', '-')
+            : 'planning';
         
         const projectCard = document.createElement('div');
-        projectCard.className = 'list-item';
+        projectCard.className = 'project-card';
         projectCard.innerHTML = `
-            <div class="list-item-main">
-                <div class="list-item-title">${project.name}</div>
-                <div class="list-item-subtitle">${project.clientName || 'No client'}</div>
-            </div>
-            <div class="list-item-meta">
-                <span class="status-badge ${statusClass}">${project.status}</span>
-                <div style="display: flex; gap: 8px;">
-                    <button class="icon-btn view-details" title="View Details">
+            <div class="project-main">
+                <div class="project-info">
+                    <h2>${project.name}</h2>
+                    <div class="project-meta">
+                        <span>${project.type || 'CFSS Project'}</span>
+                        <span class="meta-separator">•</span>
+                        <span>${formattedAddress || 'No address'}</span>
+                        <span class="meta-separator">•</span>
+                        <span>${formattedDate}</span>
+                    </div>
+                    <p>${project.description || ''}</p>
+                </div>
+                <div class="project-status">
+                    <div class="status-dot ${statusClass}"></div>
+                    <span class="status-text">${project.status || 'Planning'}</span>
+                </div>
+                <div class="project-actions">
+                    <button class="view-details" title="View Details">
                         <i class="fas fa-eye"></i>
+                        View
                     </button>
-                    <button class="icon-btn delete-project" title="Delete Project" style="color: #dc3545;">
+                    <button class="delete-project" data-id="${project.id}" title="Delete">
                         <i class="fas fa-trash"></i>
+                        Delete
                     </button>
                 </div>
             </div>
+            ${
+                project.createdBy
+                    ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                           Created by: ${project.createdBy}
+                       </div>`
+                    : ''
+            }
         `;
 
         projectList.appendChild(projectCard);
 
-        // Add click event to entire card for navigation
-        projectCard.addEventListener('click', (e) => {
-            if (e.target.closest('button')) {
-                return;
-            }
+        // Click anywhere on the card to open details
+        projectCard.addEventListener('click', () => {
             window.location.href = `limited-cfss-project-details.html?id=${project.id}`;
         });
 
-        // Add event listeners
-        projectCard.querySelector('.view-details').addEventListener('click', (e) => {
-            e.stopPropagation();
-            window.location.href = `limited-cfss-project-details.html?id=${project.id}`;
-        });
+        // View button
+        const viewButton = projectCard.querySelector('.view-details');
+        if (viewButton) {
+            viewButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.location.href = `limited-cfss-project-details.html?id=${project.id}`;
+            });
+        }
 
+        // Delete button
         const deleteButton = projectCard.querySelector('.delete-project');
         if (deleteButton) {
             deleteButton.addEventListener('click', (e) => {
@@ -257,6 +294,7 @@ function renderCFSSProjects(filteredProjects) {
         }
     });
 }
+
 
 // Filter CFSS projects
 async function handleCFSSProjectFilter(e) {

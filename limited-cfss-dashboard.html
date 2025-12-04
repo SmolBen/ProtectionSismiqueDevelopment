@@ -6,7 +6,7 @@
     <title>Protection Sismique - CFSS Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay">
@@ -28,35 +28,44 @@
     </nav>
     
     <main>
-        <div class="dashboard-header">
-            <h1><i class="fas fa-th-large"></i> CFSS Projects Dashboard</h1>
-            <button class="create-btn" id="createProjectButton">
-                <i class="fas fa-plus"></i>
-                New CFSS Project
-            </button>
-        </div>
-        
-        <!-- Stats Section -->
-        <div id="statsGrid" class="stats-grid">
+        <!-- Compact Stats Section -->
+        <div class="stats-grid" id="statsGrid">
             <!-- Stats will be populated by JavaScript -->
         </div>
 
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <input type="text" class="search-input" id="projectSearch" placeholder="Search projects...">
-            <select class="filter-select" id="projectFilter">
-                <option value="all">All Status</option>
-                <option value="planning">Planning</option>
-                <option value="in progress">In Progress</option>
-                <option value="completed">Completed</option>
-            </select>
-        </div>
-        
-        <!-- Project List -->
-        <div class="project-list" id="projectList">
-            <!-- Projects will be populated by JavaScript -->
+        <div id="dashboard" class="page">
+            <div class="header-section">
+                <div class="title-row">
+                    <h1 style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin: 0;">
+                        CFSS Projects
+                    </h1>
+                </div>
+                
+                <div class="controls-row">
+                    <div class="search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="projectSearch" placeholder="Search projects...">
+                    </div>
+                    <div class="filter">
+                        <i class="fas fa-filter"></i>
+                        <select id="projectFilter">
+                            <option value="all">All Status</option>
+                            <option value="Planning">Planning</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <button id="createProjectButton" class="button primary"
+                            style="margin-left: auto; padding: 6px 12px; font-size: 13px;">
+                        <i class="fas fa-plus"></i> New CFSS Project
+                    </button>
+                </div>
+            </div>
+            
+            <div id="projectList" class="project-list"></div>
         </div>
     </main>
+
 
     <!-- AWS Cognito SDK -->
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
