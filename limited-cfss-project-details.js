@@ -56,7 +56,7 @@ function showThumbnailPlaceholder(optionId, message = 'IMG') {
 }
 
 window.addEventListener('load', async function() {
-    console.log('📄 Limited CFSS Project Details page loaded');
+    console.log('ðŸ“„ Limited CFSS Project Details page loaded');
     await initializeProjectDetails();
 });
 
@@ -111,10 +111,10 @@ async function initializeProjectDetails() {
         // Initialize options
         initializeOptionsSystem();
 
-        console.log('✅ Limited CFSS Project Details initialized');
+        console.log('âœ… Limited CFSS Project Details initialized');
 
     } catch (error) {
-        console.error('❌ Error initializing:', error);
+        console.error('âŒ Error initializing:', error);
         document.getElementById('loadingProject').style.display = 'none';
         alert('Error loading project: ' + error.message);
     }
@@ -165,7 +165,7 @@ async function loadProject(projectId) {
         document.getElementById('projectContainer').style.display = 'block';
 
     } catch (error) {
-        console.error('❌ Error loading project:', error);
+        console.error('âŒ Error loading project:', error);
         document.getElementById('loadingProject').style.display = 'none';
         alert('Error loading project: ' + error.message);
         window.location.href = 'limited-cfss-dashboard.html';
@@ -180,56 +180,205 @@ function displayProjectInfo() {
 }
 
 function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
     // Status change
-    document.getElementById('projectStatusDropdown').addEventListener('change', async (e) => {
-        currentProject.status = e.target.value;
-        await saveProject();
-    });
+    const statusDropdown = document.getElementById('projectStatusDropdown');
+    if (statusDropdown) {
+        statusDropdown.addEventListener('change', async (e) => {
+            currentProject.status = e.target.value;
+            await saveProject();
+        });
+    }
 
-    // Add Wall button
-    document.getElementById('newCalculationButton').addEventListener('click', () => {
-        showForm('equipmentForm');
-        editingEquipmentId = null;
-        document.getElementById('equipmentFormElement').reset();
-    });
+    // Add Wall button - toggle behavior
+    const newCalcButton = document.getElementById('newCalculationButton');
+    const equipmentForm = document.getElementById('equipmentForm');
+    
+    console.log('Add Wall button:', newCalcButton);
+    console.log('Equipment form:', equipmentForm);
+    
+    if (newCalcButton && equipmentForm) {
+        newCalcButton.addEventListener('click', () => {
+            console.log('Add Wall button clicked');
+            console.log('Form has show class:', equipmentForm.classList.contains('show'));
+            
+            if (equipmentForm.classList.contains('show')) {
+                hideForm('equipmentForm');
+                newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
+                newCalcButton.classList.remove('expanded');
+            } else {
+                hideAllForms();
+                showForm('equipmentForm');
+                newCalcButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                newCalcButton.classList.add('expanded');
+                editingEquipmentId = null;
+                const formElement = document.getElementById('equipmentFormElement');
+                if (formElement) formElement.reset();
+            }
+        });
+    } else {
+        console.error('Add Wall button or form not found!');
+    }
 
-    // Add Parapet button
-    document.getElementById('addParapetButton').addEventListener('click', () => {
-        showForm('parapetForm');
-        editingParapetId = null;
-        document.getElementById('parapetFormElement').reset();
-    });
+    // Add Parapet button - toggle behavior
+    const addParapetButton = document.getElementById('addParapetButton');
+    const parapetForm = document.getElementById('parapetForm');
+    
+    if (addParapetButton && parapetForm) {
+        addParapetButton.addEventListener('click', () => {
+            console.log('Add Parapet button clicked');
+            if (parapetForm.classList.contains('show')) {
+                hideForm('parapetForm');
+                addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+                addParapetButton.classList.remove('expanded');
+            } else {
+                hideAllForms();
+                showForm('parapetForm');
+                addParapetButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                addParapetButton.classList.add('expanded');
+                editingParapetId = null;
+                const formElement = document.getElementById('parapetFormElement');
+                if (formElement) formElement.reset();
+            }
+        });
+    }
 
-    // Add Window button
-    document.getElementById('addWindowButton').addEventListener('click', () => {
-        showForm('windowForm');
-        editingWindowId = null;
-        document.getElementById('windowFormElement').reset();
-    });
+    // Add Window button - toggle behavior
+    const addWindowButton = document.getElementById('addWindowButton');
+    const windowForm = document.getElementById('windowForm');
+    
+    if (addWindowButton && windowForm) {
+        addWindowButton.addEventListener('click', () => {
+            console.log('Add Window button clicked');
+            if (windowForm.classList.contains('show')) {
+                hideForm('windowForm');
+                addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+                addWindowButton.classList.remove('expanded');
+            } else {
+                hideAllForms();
+                showForm('windowForm');
+                addWindowButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                addWindowButton.classList.add('expanded');
+                editingWindowId = null;
+                const formElement = document.getElementById('windowFormElement');
+                if (formElement) formElement.reset();
+            }
+        });
+    }
 
-    // Cancel buttons
-    document.getElementById('cancelWall').addEventListener('click', () => hideForm('equipmentForm'));
-    document.getElementById('cancelParapet').addEventListener('click', () => hideForm('parapetForm'));
-    document.getElementById('cancelWindow').addEventListener('click', () => hideForm('windowForm'));
+    // Cancel buttons - also reset button text
+    const cancelWall = document.getElementById('cancelWall');
+    if (cancelWall) {
+        cancelWall.addEventListener('click', () => {
+            hideForm('equipmentForm');
+        });
+    }
+    
+    const cancelParapet = document.getElementById('cancelParapet');
+    if (cancelParapet) {
+        cancelParapet.addEventListener('click', () => {
+            hideForm('parapetForm');
+        });
+    }
+    
+    const cancelWindow = document.getElementById('cancelWindow');
+    if (cancelWindow) {
+        cancelWindow.addEventListener('click', () => {
+            hideForm('windowForm');
+        });
+    }
 
     // Form submissions
-    document.getElementById('equipmentFormElement').addEventListener('submit', handleWallSubmit);
-    document.getElementById('parapetFormElement').addEventListener('submit', handleParapetSubmit);
-    document.getElementById('windowFormElement').addEventListener('submit', handleWindowSubmit);
+    const equipmentFormElement = document.getElementById('equipmentFormElement');
+    if (equipmentFormElement) {
+        equipmentFormElement.addEventListener('submit', handleWallSubmit);
+    }
+    
+    const parapetFormElement = document.getElementById('parapetFormElement');
+    if (parapetFormElement) {
+        parapetFormElement.addEventListener('submit', handleParapetSubmit);
+    }
+    
+    const windowFormElement = document.getElementById('windowFormElement');
+    if (windowFormElement) {
+        windowFormElement.addEventListener('submit', handleWindowSubmit);
+    }
+    
+    console.log('Event listeners setup complete');
+}
+
+// Hide all forms and reset all button states
+function hideAllForms() {
+    const forms = ['equipmentForm', 'parapetForm', 'windowForm'];
+    forms.forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) {
+            form.classList.remove('show');
+            form.style.display = 'none';
+        }
+    });
+    
+    // Reset all button states
+    const newCalcButton = document.getElementById('newCalculationButton');
+    const addParapetButton = document.getElementById('addParapetButton');
+    const addWindowButton = document.getElementById('addWindowButton');
+    
+    if (newCalcButton) {
+        newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
+        newCalcButton.classList.remove('expanded');
+    }
+    if (addParapetButton) {
+        addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+        addParapetButton.classList.remove('expanded');
+    }
+    if (addWindowButton) {
+        addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+        addWindowButton.classList.remove('expanded');
+    }
 }
 
 function showForm(formId) {
-    // Hide all forms first
-    document.getElementById('equipmentForm').style.display = 'none';
-    document.getElementById('parapetForm').style.display = 'none';
-    document.getElementById('windowForm').style.display = 'none';
-    
-    // Show requested form
-    document.getElementById(formId).style.display = 'block';
+    // Show requested form using 'show' class (matches CSS)
+    const form = document.getElementById(formId);
+    if (form) {
+        form.classList.add('show');
+        form.style.display = 'block'; // Also set inline as backup
+        console.log('Showing form:', formId);
+        // Scroll form into view
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        console.error('Form not found:', formId);
+    }
 }
 
 function hideForm(formId) {
-    document.getElementById(formId).style.display = 'none';
+    const form = document.getElementById(formId);
+    if (form) {
+        form.classList.remove('show');
+        form.style.display = 'none';
+    }
+    
+    // Reset corresponding button state
+    if (formId === 'equipmentForm') {
+        const btn = document.getElementById('newCalculationButton');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
+            btn.classList.remove('expanded');
+        }
+    } else if (formId === 'parapetForm') {
+        const btn = document.getElementById('addParapetButton');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+            btn.classList.remove('expanded');
+        }
+    } else if (formId === 'windowForm') {
+        const btn = document.getElementById('addWindowButton');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+            btn.classList.remove('expanded');
+        }
+    }
 }
 
 // Tab system
@@ -261,7 +410,7 @@ function initializeTabSystem() {
 
 // Initialize options for the current project
 function initializeOptionsSystem() {
-    console.log('🔧 Initializing LIMITED CFSS options system...');
+    console.log('ðŸ”§ Initializing LIMITED CFSS options system...');
 
     // Load any saved options from the project if present
     if (currentProject && Array.isArray(currentProject.selectedCFSSOptions)) {
@@ -273,7 +422,7 @@ function initializeOptionsSystem() {
     populateOptionsCategories();
     updateSelectionSummary();
 
-    console.log('✅ Limited options system initialized');
+    console.log('âœ… Limited options system initialized');
 }
 
 // Define option categories and their corresponding option IDs
@@ -353,7 +502,7 @@ function populateOptionsCategories() {
         });
     });
 
-    console.log('✅ Limited option categories populated');
+    console.log('âœ… Limited option categories populated');
 }
 
 // Create a single option card with thumbnail (same structure as regular CFSS)
@@ -442,7 +591,7 @@ async function saveLimitedCFSSOptions() {
         return;
     }
 
-    console.log('💾 Saving LIMITED CFSS options:', selectedCFSSOptions);
+    console.log('ðŸ’¾ Saving LIMITED CFSS options:', selectedCFSSOptions);
 
     const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
         method: 'PUT',
@@ -464,7 +613,7 @@ async function preloadOptionImages() {
     console.log('Preloading CFSS option images (limited)...');
 
     const allOptions = [
-        // Lisse trouée options
+        // Lisse trouÃ©e options
         'fixe-beton-lisse-trouee',
         'fixe-structure-dacier-lisse-trouee',
         'fixe-tabiler-metallique-lisse-trouee',
@@ -509,7 +658,7 @@ async function preloadOptionImages() {
         await loadOptionThumbnail(optionName);
     }
 
-    console.log('✅ CFSS option images preloaded (limited)');
+    console.log('âœ… CFSS option images preloaded (limited)');
 }
 
 // Thumbnail loader (same as regular)
@@ -590,10 +739,10 @@ function populateLimitedOptionCategories() {
         });
     });
 
-    console.log('✅ Limited option categories populated');
+    console.log('âœ… Limited option categories populated');
 }
 
-// Create one option card (with image) – similar to full CFSS
+// Create one option card (with image) â€“ similar to full CFSS
 function createLimitedOptionElement(option) {
     const isSelected = currentProject.options && currentProject.options.includes(option.id);
 
@@ -725,6 +874,8 @@ async function handleWallSubmit(e) {
         hauteurMax: document.getElementById('hauteurMax').value,
         hauteurMaxMinor: document.getElementById('hauteurMaxMinor').value,
         hauteurMaxUnit: document.getElementById('hauteurMaxUnit').value,
+        colombageSet1: document.getElementById('colombageSet1').value,
+        colombageSet2: document.getElementById('colombageSet2').value,
         note: document.getElementById('note').value.trim()
     };
 
@@ -798,6 +949,8 @@ window.editWall = function(id) {
     document.getElementById('hauteurMax').value = wall.hauteurMax || '';
     document.getElementById('hauteurMaxMinor').value = wall.hauteurMaxMinor || '';
     document.getElementById('hauteurMaxUnit').value = wall.hauteurMaxUnit || 'ft-in';
+    document.getElementById('colombageSet1').value = wall.colombageSet1 || '';
+    document.getElementById('colombageSet2').value = wall.colombageSet2 || '';
     document.getElementById('note').value = wall.note || '';
 
     showForm('equipmentForm');
@@ -823,6 +976,8 @@ async function handleParapetSubmit(e) {
         hauteurMax: document.getElementById('parapetHauteurMax').value,
         hauteurMaxMinor: document.getElementById('parapetHauteurMaxMinor').value,
         hauteurMaxUnit: document.getElementById('parapetHauteurMaxUnit').value,
+        colombageSet1: document.getElementById('parapetColombageSet1').value,
+        colombageSet2: document.getElementById('parapetColombageSet2').value,
         note: document.getElementById('parapetNote').value.trim()
     };
 
@@ -887,6 +1042,8 @@ window.editParapet = function(id) {
     document.getElementById('parapetHauteurMax').value = parapet.hauteurMax || '';
     document.getElementById('parapetHauteurMaxMinor').value = parapet.hauteurMaxMinor || '';
     document.getElementById('parapetHauteurMaxUnit').value = parapet.hauteurMaxUnit || 'ft-in';
+    document.getElementById('parapetColombageSet1').value = parapet.colombageSet1 || '';
+    document.getElementById('parapetColombageSet2').value = parapet.colombageSet2 || '';
     document.getElementById('parapetNote').value = parapet.note || '';
 
     showForm('parapetForm');
@@ -1018,9 +1175,9 @@ async function saveProject() {
             throw new Error(`HTTP ${response.status}`);
         }
 
-        console.log('✅ Project saved');
+        console.log('âœ… Project saved');
     } catch (error) {
-        console.error('❌ Error saving project:', error);
+        console.error('âŒ Error saving project:', error);
         alert('Error saving project: ' + error.message);
     }
 }

@@ -776,6 +776,7 @@
 /* Show forms when they have the 'show' class */
 #windowForm.show,
 #equipmentForm.show,
+#parapetForm.show,
 #exteriorWallForm.show {
     display: block;
 }
@@ -801,6 +802,8 @@
 .right-section .tab-content {
     flex: 1;
     min-height: 0;
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
 }
 
 .equipment-card.sortable-ghost {
@@ -1640,6 +1643,7 @@ button:not(.image-remove):not(.thumb-delete) {
 #cfss-form:not(.hidden),
 #equipmentForm.show,
 #windowForm.show,
+#parapetForm.show,
 #parapetForm:not([style*="display: none"]) {
     display: block;
 }
