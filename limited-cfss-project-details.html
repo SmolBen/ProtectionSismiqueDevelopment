@@ -81,6 +81,10 @@
                         <i class="fas fa-window-maximize"></i>
                         Window List
                     </button>
+                    <button class="tab-button" data-tab="soffite-list">
+                        <i class="fas fa-grip-lines-vertical"></i>
+                        Soffites List
+                    </button>
                 </div>
 
                 <div class="tab-content">
@@ -195,6 +199,19 @@
                         </div>
                         <div id="windowList" class="equipment-list">
                             <!-- Windows will be displayed here -->
+                        </div>
+                    </div>
+
+                    <!-- NEW: Soffites List Tab Content -->
+                    <div id="soffite-list-content" class="tab-content-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h1 style="margin: 0;">Soffites List</h1>
+                        </div>
+                        <div class="selection-summary" id="soffiteSelectionSummary">
+                            <i class="fas fa-grip-lines-vertical"></i> 0 soffites added
+                        </div>
+                        <div id="soffiteList" class="equipment-list">
+                            <!-- Soffites will be displayed here -->
                         </div>
                     </div>
                 </div>
@@ -450,6 +467,84 @@
                                         <i class="fas fa-save"></i> Save Window
                                     </button>
                                     <button type="button" id="cancelWindow" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simplified Soffite Form -->
+            <div id="soffiteForm" style="display: none;">
+                <div class="calculation-sections">
+                    <div class="equipment-form-section">
+                        <div class="form-fields">
+                            <h2>New Soffite</h2>
+                            <form id="soffiteFormElement">
+                                <!-- Soffite name -->
+                                <div class="form-group">
+                                    <label for="soffiteName">Soffite name: <span style="color: red;">*</span></label>
+                                    <input
+                                        type="text"
+                                        id="soffiteName"
+                                        name="soffiteName"
+                                        placeholder="Enter soffite name..."
+                                        required>
+                                </div>
+
+                                                                <!-- Soffite images: image area stacked under label -->
+                                <div class="form-group">
+                                    <label>Soffite images:</label>
+                                    <small style="display:block; font-size:12px; color:#666;">
+                                        Max 2 images. Drag &amp; drop, browse, or paste (Ctrl+V).
+                                    </small>
+
+                                    <!-- Stacked image upload section, sized like CFSS wall/parapet -->
+                                    <div class="image-upload-section soffite-image-upload" style="max-width: 200px;">
+                                        <div class="upload-controls">
+                                            <button
+                                                type="button"
+                                                class="camera-btn"
+                                                id="soffiteCameraBtn"
+                                                title="Upload Image">
+                                                <i class="fas fa-camera"></i>
+                                                Browse
+                                            </button>
+                                        </div>
+
+                                        <input
+                                            class="drop-zone"
+                                            id="soffiteDropZone"
+                                            placeholder="Drop or paste image here (Ctrl+V)"
+                                            readonly
+                                            tabindex="0">
+
+                                        <div class="image-preview-container" id="soffiteImagePreviewContainer"></div>
+
+                                        <input
+                                            type="file"
+                                            id="soffiteImageFileInput"
+                                            accept="image/*"
+                                            style="display: none;"
+                                            multiple>
+                                    </div>
+                                </div>
+
+
+                                <!-- Save / cancel buttons -->
+                                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                                    <button
+                                        type="submit"
+                                        id="saveSoffite"
+                                        style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                        <i class="fas fa-save"></i> Save Soffite
+                                    </button>
+                                    <button
+                                        type="button"
+                                        id="cancelSoffite"
+                                        style="background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
                                         Cancel
                                     </button>
                                 </div>

@@ -6,6 +6,7 @@ let currentProject = null;
 let editingEquipmentId = null;
 let editingParapetId = null;
 let editingWindowId = null;
+let editingSoffiteId = null;
 
 // Same as regular CFSS: keep CFSS options in this array
 let selectedCFSSOptions = [];
@@ -151,6 +152,7 @@ async function loadProject(projectId) {
         currentProject.parapets = currentProject.parapets || [];
         currentProject.windows = currentProject.windows || [];
         currentProject.options = currentProject.options || [];
+        currentProject.soffites = currentProject.soffites || [];
 
         // Display project info
         displayProjectInfo();
@@ -159,6 +161,7 @@ async function loadProject(projectId) {
         displayEquipmentList();
         displayParapetList();
         displayWindowList();
+        displaySoffiteList();
 
         // Show project container
         document.getElementById('loadingProject').style.display = 'none';
@@ -267,6 +270,33 @@ function setupEventListeners() {
         });
     }
 
+    // Add Soffites button - toggle behavior  ------------------ NEW
+    const addSoffitesButton = document.getElementById('addSoffitesButton');
+    const soffiteForm = document.getElementById('soffiteForm');
+
+    if (addSoffitesButton && soffiteForm) {
+        addSoffitesButton.addEventListener('click', () => {
+            console.log('Add Soffites button clicked');
+            if (soffiteForm.classList.contains('show')) {
+                hideForm('soffiteForm');
+                addSoffitesButton.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
+                addSoffitesButton.classList.remove('expanded');
+            } else {
+                hideAllForms();
+                showForm('soffiteForm');
+                addSoffitesButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                addSoffitesButton.classList.add('expanded');
+                editingSoffiteId = null;
+
+                const formElement = document.getElementById('soffiteFormElement');
+                if (formElement) formElement.reset();
+
+                // Reset image state
+                clearSoffiteImages();
+            }
+        });
+    }
+
     // Cancel buttons - also reset button text
     const cancelWall = document.getElementById('cancelWall');
     if (cancelWall) {
@@ -304,13 +334,30 @@ function setupEventListeners() {
     if (windowFormElement) {
         windowFormElement.addEventListener('submit', handleWindowSubmit);
     }
-    
+
+    // NEW: Soffite form submit
+    const soffiteFormElement = document.getElementById('soffiteFormElement');
+    if (soffiteFormElement) {
+        soffiteFormElement.addEventListener('submit', handleSoffiteSubmit);
+    }
+
+    // NEW: Soffite cancel button
+    const cancelSoffite = document.getElementById('cancelSoffite');
+    if (cancelSoffite) {
+        cancelSoffite.addEventListener('click', () => {
+            hideForm('soffiteForm');
+        });
+    }
+
+    // NEW: Initialize soffite image upload handlers
+    initializeSoffiteImageUpload();
+
     console.log('Event listeners setup complete');
 }
 
 // Hide all forms and reset all button states
 function hideAllForms() {
-    const forms = ['equipmentForm', 'parapetForm', 'windowForm'];
+    const forms = ['equipmentForm', 'parapetForm', 'windowForm', 'soffiteForm'];   // NEW soffiteForm
     forms.forEach(formId => {
         const form = document.getElementById(formId);
         if (form) {
@@ -318,11 +365,11 @@ function hideAllForms() {
             form.style.display = 'none';
         }
     });
-    
-    // Reset all button states
+
     const newCalcButton = document.getElementById('newCalculationButton');
     const addParapetButton = document.getElementById('addParapetButton');
     const addWindowButton = document.getElementById('addWindowButton');
+    const addSoffitesButton = document.getElementById('addSoffitesButton');       // NEW
     
     if (newCalcButton) {
         newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
@@ -335,6 +382,10 @@ function hideAllForms() {
     if (addWindowButton) {
         addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
         addWindowButton.classList.remove('expanded');
+    }
+    if (addSoffitesButton) {                                                      // NEW
+        addSoffitesButton.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
+        addSoffitesButton.classList.remove('expanded');
     }
 }
 
@@ -376,6 +427,12 @@ function hideForm(formId) {
         const btn = document.getElementById('addWindowButton');
         if (btn) {
             btn.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+            btn.classList.remove('expanded');
+        }
+    } else if (formId === 'soffiteForm') {   // NEW
+        const btn = document.getElementById('addSoffitesButton');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
             btn.classList.remove('expanded');
         }
     }
@@ -1093,6 +1150,61 @@ async function handleWindowSubmit(e) {
     editingWindowId = null;
 }
 
+async function handleSoffiteSubmit(e) {
+    e.preventDefault();
+
+    if (!currentProject) {
+        alert('Project not loaded');
+        return;
+    }
+
+    const nameInput = document.getElementById('soffiteName');
+    const name = nameInput ? nameInput.value.trim() : '';
+
+    if (!name) {
+        alert('Please enter a soffite name.');
+        if (nameInput) nameInput.focus();
+        return;
+    }
+
+    const images = window.currentSoffiteImages || [];
+
+    // Require at least one image?  (You can relax this if you want)
+    if (images.length === 0) {
+        const proceed = confirm('No images have been added. Save this soffite anyway?');
+        if (!proceed) return;
+    }
+
+    const soffiteData = {
+        id: editingSoffiteId || Date.now().toString(),
+        name,
+        images
+    };
+
+    currentProject.soffites = currentProject.soffites || [];
+
+    if (editingSoffiteId) {
+        const index = currentProject.soffites.findIndex(s => s.id === editingSoffiteId);
+        if (index !== -1) {
+            currentProject.soffites[index] = soffiteData;
+        } else {
+            currentProject.soffites.push(soffiteData);
+        }
+    } else {
+        currentProject.soffites.push(soffiteData);
+    }
+
+    await saveProject();
+
+    editingSoffiteId = null;
+    const formElement = document.getElementById('soffiteFormElement');
+    if (formElement) formElement.reset();
+    clearSoffiteImages();
+    hideForm('soffiteForm');
+
+    console.log('Soffite saved:', soffiteData);
+}
+
 function displayWindowList() {
     const container = document.getElementById('windowList');
     container.innerHTML = '';
@@ -1119,6 +1231,61 @@ function displayWindowList() {
             </div>
         `;
         container.appendChild(windowDiv);
+    });
+}
+
+function displaySoffiteList() {
+    const container = document.getElementById('soffiteList');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    // If no soffites yet
+    if (!currentProject.soffites || currentProject.soffites.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #666;">No soffites added yet.</p>';
+        const summary = document.getElementById('soffiteSelectionSummary');
+        if (summary) {
+            summary.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> 0 soffites added';
+        }
+        return;
+    }
+
+    // Update summary
+    const summary = document.getElementById('soffiteSelectionSummary');
+    if (summary) {
+        summary.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${currentProject.soffites.length} soffites added`;
+    }
+
+    // Render each soffite card
+    currentProject.soffites.forEach((soffite, index) => {
+        const name =
+            soffite.name ||
+            soffite.soffiteName ||
+            `Soffite ${index + 1}`;
+
+        const images = Array.isArray(soffite.images) ? soffite.images : [];
+        const imageCount = images.length;
+
+        // Try to show filenames if available
+        const filenames = images
+            .map(img => img.filename || img.key || null)
+            .filter(Boolean)
+            .join(', ');
+
+        const soffiteDiv = document.createElement('div');
+        soffiteDiv.className = 'equipment-item';
+        soffiteDiv.innerHTML = `
+            <div class="equipment-info">
+                <strong>${name}</strong>
+                <span>Images: ${imageCount || 0}</span>
+                ${
+                    filenames
+                        ? `<span style="font-size: 12px; color: #666;">Files: ${filenames}</span>`
+                        : ''
+                }
+            </div>
+        `;
+        container.appendChild(soffiteDiv);
     });
 }
 
@@ -1158,6 +1325,292 @@ window.deleteWindow = async function(id) {
     await saveProject();
     displayWindowList();
 };
+
+// Reuse the same S3 upload flow as regular CFSS
+async function uploadImageToS3(file) {
+    if (!currentProject || !currentProject.id) {
+        throw new Error('Project not loaded');
+    }
+
+    const projectId = encodeURIComponent(currentProject.id);
+
+    try {
+        // 1) Ask backend for a pre-signed upload URL
+        const response = await fetch(`${apiUrl}/${projectId}/image-upload-url`, {
+            method: 'POST',
+            headers: {
+                ...authHelper.getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filename: file.name,
+                contentType: file.type
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to get upload URL');
+        }
+
+        const uploadData = await response.json();
+
+        // 2) Upload the file directly to S3
+        const uploadResponse = await fetch(uploadData.uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Content-Type': file.type
+            }
+        });
+
+        if (!uploadResponse.ok) {
+            throw new Error('Failed to upload image to S3');
+        }
+
+        // 3) Return a compact descriptor that we store on the project
+        return {
+            key: uploadData.key,
+            filename: file.name,
+            uploadedAt: new Date().toISOString()
+        };
+    } catch (error) {
+        console.error('Error in uploadImageToS3:', error);
+        throw error;
+    }
+}
+
+function updateSoffiteImageLayout() {
+    const container = document.getElementById('soffiteImagePreviewContainer');
+    if (!container) return;
+
+    const count = window.currentSoffiteImages?.length || 0;
+
+    container.classList.remove('one-image', 'two-images');
+
+    if (count === 1) {
+        container.classList.add('one-image');
+    } else if (count === 2) {
+        container.classList.add('two-images');
+    }
+}
+
+function initializeSoffiteImageUpload() {
+    if (!window.currentSoffiteImages) {
+        window.currentSoffiteImages = [];
+    }
+
+    setupSoffiteImageUploadHandlers();
+    updateSoffiteDropZoneState();
+    console.log('Soffite image upload initialized');
+}
+
+function setupSoffiteImageUploadHandlers() {
+    const cameraBtn = document.getElementById('soffiteCameraBtn');
+    const dropZone = document.getElementById('soffiteDropZone');
+    const fileInput = document.getElementById('soffiteImageFileInput');
+
+    if (!cameraBtn || !dropZone || !fileInput) {
+        console.warn('Soffite image upload elements not found');
+        return;
+    }
+
+    // Browse button
+    cameraBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.click();
+    });
+
+    // File input change
+    fileInput.addEventListener('change', handleSoffiteFileSelect);
+
+    // Drop zone events (no click handler - use button for browsing)
+    dropZone.addEventListener('paste', handleSoffitePaste);
+    dropZone.addEventListener('dragover', handleSoffiteDragOver);
+    dropZone.addEventListener('dragleave', handleSoffiteDragLeave);
+    dropZone.addEventListener('drop', handleSoffiteDrop);
+
+    // Focus/blur for visual feedback
+    dropZone.addEventListener('focus', () => {
+        dropZone.style.borderColor = '#007bff';
+        dropZone.style.boxShadow = '0 0 0 2px rgba(0, 123, 255, 0.25)';
+    });
+
+    dropZone.addEventListener('blur', () => {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.boxShadow = 'none';
+    });
+}
+
+function handleSoffiteFileSelect(event) {
+    const files = Array.from(event.target.files || []);
+    if (files.length > 0) {
+        processSoffiteFiles(files);
+    }
+}
+
+function handleSoffitePaste(event) {
+    const items = event.clipboardData ? event.clipboardData.items : [];
+    const files = [];
+
+    for (let item of items) {
+        if (item.type && item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+        }
+    }
+
+    if (files.length > 0) {
+        event.preventDefault();
+        processSoffiteFiles(files);
+    }
+}
+
+function handleSoffiteDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('dragover');
+}
+
+function handleSoffiteDragLeave(event) {
+    event.currentTarget.classList.remove('dragover');
+}
+
+function handleSoffiteDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+
+    const files = Array.from(event.dataTransfer.files || []);
+    if (files.length > 0) {
+        processSoffiteFiles(files);
+    }
+}
+
+// Max 2 images per soffite
+async function processSoffiteFiles(files) {
+    const validFiles = files.filter(file => file.type && file.type.startsWith('image/'));
+
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+
+    if (!window.currentSoffiteImages) {
+        window.currentSoffiteImages = [];
+    }
+
+    const currentCount = window.currentSoffiteImages.length;
+    const remainingSlots = 2 - currentCount;
+
+    if (remainingSlots <= 0) {
+        alert('Maximum 2 images allowed per soffite. Please remove an image to add another one.');
+        return;
+    }
+
+    const filesToUpload = validFiles.slice(0, remainingSlots);
+
+    const dropZone = document.getElementById('soffiteDropZone');
+    if (dropZone) {
+        dropZone.placeholder = 'Uploading image(s)...';
+    }
+
+    for (const file of filesToUpload) {
+        try {
+            const imageData = await uploadImageToS3(file);
+            window.currentSoffiteImages.push(imageData);
+            addSoffiteImagePreview(imageData, file);
+        } catch (error) {
+            console.error('Error uploading soffite image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+
+    updateSoffiteImageLayout();
+    updateSoffiteDropZoneState();
+}
+
+function addSoffiteImagePreview(imageData, file) {
+    const container = document.getElementById('soffiteImagePreviewContainer');
+    if (!container) return;
+
+    const preview = document.createElement('div');
+    preview.className = 'image-preview';
+
+    // Use a local object URL so user sees the real image immediately
+    const objectUrl = file ? URL.createObjectURL(file) : '';
+
+    preview.innerHTML = `
+        <img
+            src="${objectUrl}"
+            alt="${imageData.filename}"
+            style="width: 100%; height: 100%; object-fit: cover;">
+        <button type="button" class="image-remove" title="Remove image">&times;</button>
+    `;
+
+    container.appendChild(preview);
+
+    const removeButton = preview.querySelector('.image-remove');
+    removeButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        removeSoffiteImage(imageData.key);
+        if (objectUrl) {
+            URL.revokeObjectURL(objectUrl);
+        }
+    });
+}
+
+function removeSoffiteImage(imageKey) {
+    if (!window.currentSoffiteImages) {
+        window.currentSoffiteImages = [];
+    }
+
+    window.currentSoffiteImages = window.currentSoffiteImages.filter(img => img.key !== imageKey);
+
+    const container = document.getElementById('soffiteImagePreviewContainer');
+    if (container) {
+        container.innerHTML = '';
+        window.currentSoffiteImages.forEach(img => {
+            // For already-uploaded images we no longer have the file,
+            // so just show a simple placeholder box with the filename.
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.innerHTML = `
+                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; padding: 4px; text-align: center;">
+                    ${img.filename}
+                </div>
+            `;
+            container.appendChild(preview);
+        });
+    }
+
+    updateSoffiteImageLayout();
+    updateSoffiteDropZoneState();
+}
+
+function clearSoffiteImages() {
+    window.currentSoffiteImages = [];
+    const container = document.getElementById('soffiteImagePreviewContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
+    updateSoffiteDropZoneState();
+}
+
+function updateSoffiteDropZoneState() {
+    const dropZone = document.getElementById('soffiteDropZone');
+    if (!dropZone) return;
+
+    const count = window.currentSoffiteImages ? window.currentSoffiteImages.length : 0;
+
+    if (count >= 2) {
+        dropZone.placeholder = 'Maximum 2 images reached. Remove an image to add a new one.';
+        dropZone.classList.add('max-reached');
+    } else {
+        dropZone.placeholder = 'Drop or paste image here (Ctrl+V)';
+        dropZone.classList.remove('max-reached');
+    }
+}
 
 // Save project
 async function saveProject() {
