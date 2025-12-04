@@ -7,33 +7,53 @@ let editingEquipmentId = null;
 let editingParapetId = null;
 let editingWindowId = null;
 
-// Options data for the option list tab
-const optionsData = {
-    'lisse-trouee': [
-        { id: 'lt-1', name: 'Lisse trouée - Standard', description: 'Configuration standard' },
-        { id: 'lt-2', name: 'Lisse trouée - Renforcée', description: 'Configuration renforcée' }
-    ],
-    'double-lisse': [
-        { id: 'dl-1', name: 'Double lisse - Type A', description: 'Type A standard' },
-        { id: 'dl-2', name: 'Double lisse - Type B', description: 'Type B renforcé' }
-    ],
-    'assemblage': [
-        { id: 'as-1', name: 'Vis #10 x 3/4"', description: 'Assemblage standard' },
-        { id: 'as-2', name: 'Vis #10 x 1"', description: 'Assemblage renforcé' }
-    ],
-    'clip-deflexion': [
-        { id: 'cd-1', name: 'Clip standard', description: 'Déflexion standard' },
-        { id: 'cd-2', name: 'Clip renforcé', description: 'Déflexion importante' }
-    ],
-    'ancrage-beton': [
-        { id: 'ab-1', name: 'Ancrage 3/8"', description: 'Béton standard' },
-        { id: 'ab-2', name: 'Ancrage 1/2"', description: 'Béton haute résistance' }
-    ],
-    'ancrage-acier': [
-        { id: 'aa-1', name: 'Boulon 3/8"', description: 'Acier standard' },
-        { id: 'aa-2', name: 'Boulon 1/2"', description: 'Acier haute résistance' }
-    ]
-};
+// Same as regular CFSS: keep CFSS options in this array
+let selectedCFSSOptions = [];
+
+// Load option thumbnail from the public S3 bucket
+async function loadOptionThumbnail(optionId) {
+    const imgElement = document.getElementById(`img-${optionId}`);
+    
+    if (!imgElement) {
+        console.warn(`Image element not found for ${optionId}`);
+        return;
+    }
+
+    console.log(`Loading thumbnail for limited option: ${optionId}`);
+    
+    // Direct image loading - no CORS issues
+    const pngUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionId}.png`;
+    const jpgUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionId}.jpg`;
+    
+    imgElement.onload = () => {
+        console.log(`Thumbnail loaded successfully: ${optionId}`);
+    };
+    
+    imgElement.onerror = () => {
+        console.log(`PNG failed for ${optionId}, trying JPG.`);
+        // Try JPG as fallback
+        imgElement.onerror = () => {
+            console.log(`Both formats failed for ${optionId}, showing placeholder`);
+            showThumbnailPlaceholder(optionId, 'No Image');
+        };
+        imgElement.src = jpgUrl;
+    };
+    
+    // Start with PNG
+    imgElement.src = pngUrl;
+}
+
+// Show a simple SVG placeholder if no image
+function showThumbnailPlaceholder(optionId, message = 'IMG') {
+    const imgElement = document.getElementById(`img-${optionId}`);
+    if (imgElement) {
+        imgElement.src =
+            `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='40'%3E` +
+            `%3Crect width='50' height='40' fill='%23f5f5f5' stroke='%23ddd'/%3E` +
+            `%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='8'%3E` +
+            `${encodeURIComponent(message)}%3C/text%3E%3C/svg%3E`;
+    }
+}
 
 window.addEventListener('load', async function() {
     console.log('📄 Limited CFSS Project Details page loaded');
@@ -228,46 +248,408 @@ function initializeTabSystem() {
             // Add active class to clicked button and corresponding content
             button.classList.add('active');
             document.getElementById(`${tabName}-content`).classList.add('active');
+
+            // When opening the Option List tab, preload images (same as regular CFSS)
+            if (tabName === 'option-list') {
+                setTimeout(() => {
+                    preloadOptionImages();
+                }, 200);
+            }
         });
     });
 }
 
-// Options system
+// Initialize options for the current project
 function initializeOptionsSystem() {
-    Object.keys(optionsData).forEach(category => {
-        const container = document.getElementById(`${category}-options`);
-        if (!container) return;
+    console.log('🔧 Initializing LIMITED CFSS options system...');
 
-        container.innerHTML = '';
-        optionsData[category].forEach(option => {
-            const isSelected = currentProject.options && currentProject.options.includes(option.id);
-            const optionDiv = document.createElement('div');
-            optionDiv.className = `option-item ${isSelected ? 'selected' : ''}`;
-            optionDiv.innerHTML = `
-                <input type="checkbox" id="${option.id}" ${isSelected ? 'checked' : ''}>
-                <label for="${option.id}">
-                    <strong>${option.name}</strong>
-                    <span>${option.description}</span>
-                </label>
-            `;
-            
-            optionDiv.addEventListener('click', () => toggleOption(option.id, optionDiv));
-            container.appendChild(optionDiv);
+    // Load any saved options from the project if present
+    if (currentProject && Array.isArray(currentProject.selectedCFSSOptions)) {
+        selectedCFSSOptions = [...currentProject.selectedCFSSOptions];
+    } else {
+        selectedCFSSOptions = [];
+    }
+
+    populateOptionsCategories();
+    updateSelectionSummary();
+
+    console.log('✅ Limited options system initialized');
+}
+
+// Define option categories and their corresponding option IDs
+function populateOptionsCategories() {
+    const optionCategories = {
+        'lisse-trouee': {
+            container: 'lisse-trouee-options',
+            options: [
+                'fixe-beton-lisse-trouee',
+                'fixe-structure-dacier-lisse-trouee',
+                'fixe-tabiler-metallique-lisse-trouee',
+                'fixe-bois-lisse-trouee',
+                'detail-lisse-trouee',
+                'identification'
+            ]
+        },
+        'double-lisse': {
+            container: 'double-lisse-options',
+            options: [
+                'fixe-beton-double-lisse',
+                'fixe-structure-dacier-double-lisse',
+                'fixe-tabiler-metallique-double-lisse',
+                'detail-double-lisse'
+            ]
+        },
+        'lisse-basse': {
+            container: 'lisse-basse-options',
+            options: [
+                'fixe-beton-lisse-basse',
+                'fixe-structure-dacier-lisse-basse',
+                'fixe-bois-lisse-basse',
+                'detail-entremise-1',
+                'detail-entremise-2',
+                'detail-lisse-basse'
+            ]
+        },
+        'parapet': {
+            container: 'parapet-options',
+            options: [
+                'parapet-1', 'parapet-2', 'parapet-3', 'parapet-4', 'parapet-5',
+                'parapet-6', 'parapet-7', 'parapet-8', 'parapet-9', 'parapet-10',
+                'parapet-11', 'parapet-12', 'parapet-13'
+            ]
+        },
+        'fenetre': {
+            container: 'fenetre-options',
+            options: [
+                'fenetre'
+            ]
+        },
+        'jambages-linteaux-seuils': {
+            container: 'jambages-linteaux-seuils-options',
+            options: [
+                // Jambages
+                'jambage-JA1', 'jambage-JA2a', 'jambage-JA2b', 'jambage-JA3a', 'jambage-JA4a',
+                // Linteaux
+                'linteau-LT1', 'linteau-LT2', 'linteau-LT3', 'linteau-LT4', 'linteau-LT5',
+                'linteau-LT6', 'linteau-LT7', 'linteau-LT8',
+                // Seuils
+                'seuil-SE1', 'seuil-SE2', 'seuil-SE3'
+            ]
+        }
+    };
+
+    Object.values(optionCategories).forEach(({ container, options }) => {
+        const containerEl = document.getElementById(container);
+        if (!containerEl) {
+            console.warn(`Container not found: ${container}`);
+            return;
+        }
+
+        containerEl.innerHTML = '';
+
+        options.forEach(optionName => {
+            const optionElement = createOptionElement(optionName);
+            containerEl.appendChild(optionElement);
         });
     });
+
+    console.log('✅ Limited option categories populated');
+}
+
+// Create a single option card with thumbnail (same structure as regular CFSS)
+function createOptionElement(optionName) {
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'option-item';
+    optionDiv.setAttribute('data-option', optionName);
+
+    const displayName = formatOptionDisplayName(optionName);
+    const isSelected = selectedCFSSOptions.includes(optionName);
+
+    optionDiv.innerHTML = `
+        <input type="checkbox"
+               class="option-checkbox"
+               id="option-${optionName}"
+               value="${optionName}"
+               ${isSelected ? 'checked' : ''}>
+        <div class="option-thumbnail" id="thumbnail-${optionName}">
+            <img
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='40'%3E%3Crect width='50' height='40' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='8'%3ELoading...%3C/text%3E%3C/svg%3E"
+                alt="${displayName}"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 3px;"
+                id="img-${optionName}">
+        </div>
+        <div class="option-name">${displayName}</div>
+    `;
+
+    if (isSelected) {
+        optionDiv.classList.add('selected');
+    }
+
+    const checkbox = optionDiv.querySelector('.option-checkbox');
+
+    checkbox.addEventListener('change', function () {
+        handleOptionToggle(optionName, this.checked);
+    });
+
+    optionDiv.addEventListener('click', function (e) {
+        if (e.target.type !== 'checkbox') {
+            checkbox.click();
+        }
+    });
+
+    setTimeout(() => {
+        loadOptionThumbnail(optionName);
+    }, 100);
+
+    return optionDiv;
+}
+
+// Nicely format the option name for display
+function formatOptionDisplayName(optionName) {
+    return optionName
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase())
+        .replace(/Dacier/g, "D'acier")
+        .replace(/Tabiler/g, 'Tablier');
+}
+
+// Toggle option in selectedCFSSOptions and auto-save
+function handleOptionToggle(optionName, isSelected) {
+    const optionItem = document.querySelector(`[data-option="${optionName}"]`);
+
+    if (isSelected) {
+        if (!selectedCFSSOptions.includes(optionName)) {
+            selectedCFSSOptions.push(optionName);
+        }
+        if (optionItem) optionItem.classList.add('selected');
+    } else {
+        selectedCFSSOptions = selectedCFSSOptions.filter(opt => opt !== optionName);
+        if (optionItem) optionItem.classList.remove('selected');
+    }
+
+    // Keep a copy on the currentProject object as well
+    currentProject.selectedCFSSOptions = [...selectedCFSSOptions];
 
     updateSelectionSummary();
+    saveLimitedCFSSOptions().catch(err => {
+        console.error('Error saving limited CFSS options', err);
+    });
 }
 
-async function toggleOption(optionId, element) {
-    const checkbox = element.querySelector('input[type="checkbox"]');
-    checkbox.checked = !checkbox.checked;
-    element.classList.toggle('selected', checkbox.checked);
+// Auto-save selectedCFSSOptions for limited users
+async function saveLimitedCFSSOptions() {
+    if (!currentProject || !currentProject.id) {
+        return;
+    }
 
-    // Update project options
-    if (!currentProject.options) currentProject.options = [];
-    
-    if (checkbox.checked) {
+    console.log('💾 Saving LIMITED CFSS options:', selectedCFSSOptions);
+
+    const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+        method: 'PUT',
+        headers: authHelper.getAuthHeaders(),
+        body: JSON.stringify({
+            id: currentProject.id,
+            selectedCFSSOptions: [...selectedCFSSOptions]
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+}
+
+// Preload all thumbnails when Option List tab opens
+async function preloadOptionImages() {
+    console.log('Preloading CFSS option images (limited)...');
+
+    const allOptions = [
+        // Lisse trouée options
+        'fixe-beton-lisse-trouee',
+        'fixe-structure-dacier-lisse-trouee',
+        'fixe-tabiler-metallique-lisse-trouee',
+        'fixe-bois-lisse-trouee',
+        'detail-lisse-trouee',
+        'identification',
+
+        // Double lisse options
+        'fixe-beton-double-lisse',
+        'fixe-structure-dacier-double-lisse',
+        'fixe-tabiler-metallique-double-lisse',
+        'detail-double-lisse',
+
+        // Lisse basse options
+        'fixe-beton-lisse-basse',
+        'fixe-structure-dacier-lisse-basse',
+        'fixe-bois-lisse-basse',
+        'detail-entremise-1',
+        'detail-entremise-2',
+        'detail-lisse-basse',
+
+        // Parapet options
+        'parapet-1', 'parapet-2', 'parapet-3', 'parapet-4', 'parapet-5',
+        'parapet-6', 'parapet-7', 'parapet-8', 'parapet-9', 'parapet-10',
+        'parapet-11', 'parapet-12', 'parapet-13',
+
+        // Fenetre
+        'fenetre',
+
+        // Jambages
+        'jambage-JA1', 'jambage-JA2a', 'jambage-JA2b', 'jambage-JA3a', 'jambage-JA4a',
+
+        // Linteaux
+        'linteau-LT1', 'linteau-LT2', 'linteau-LT3', 'linteau-LT4', 'linteau-LT5',
+        'linteau-LT6', 'linteau-LT7', 'linteau-LT8',
+
+        // Seuils
+        'seuil-SE1', 'seuil-SE2', 'seuil-SE3'
+    ];
+
+    for (const optionName of allOptions) {
+        await loadOptionThumbnail(optionName);
+    }
+
+    console.log('✅ CFSS option images preloaded (limited)');
+}
+
+// Thumbnail loader (same as regular)
+async function loadOptionThumbnail(optionName) {
+    const imgElement = document.getElementById(`img-${optionName}`);
+    if (!imgElement) return;
+
+    const pngUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionName}.png`;
+    const jpgUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionName}.jpg`;
+
+    imgElement.onload = () => {
+        // Successfully loaded
+    };
+
+    imgElement.onerror = () => {
+        imgElement.onerror = () => {
+            showThumbnailPlaceholder(optionName, 'No Image');
+        };
+        imgElement.src = jpgUrl;
+    };
+
+    imgElement.src = pngUrl;
+}
+
+// Placeholder if no image exists
+function showThumbnailPlaceholder(optionName, message = 'IMG') {
+    const imgElement = document.getElementById(`img-${optionName}`);
+    if (!imgElement) return;
+
+    imgElement.src =
+        `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='40'%3E` +
+        `%3Crect width='50' height='40' fill='%23f5f5f5' stroke='%23ddd'/%3E` +
+        `%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='8'%3E` +
+        `${encodeURIComponent(message)}%3C/text%3E%3C/svg%3E`;
+}
+
+// Map limited categories to containers and option lists
+function populateLimitedOptionCategories() {
+    const optionCategories = {
+        'lisse-trouee': {
+            container: 'lisse-trouee-options',
+            options: optionsData['lisse-trouee']
+        },
+        'double-lisse': {
+            container: 'double-lisse-options',
+            options: optionsData['double-lisse']
+        },
+        'assemblage': {
+            container: 'assemblage-options',
+            options: optionsData['assemblage']
+        },
+        'clip-deflexion': {
+            container: 'clip-deflexion-options',
+            options: optionsData['clip-deflexion']
+        },
+        'ancrage-beton': {
+            container: 'ancrage-beton-options',
+            options: optionsData['ancrage-beton']
+        },
+        'ancrage-acier': {
+            container: 'ancrage-acier-options',
+            options: optionsData['ancrage-acier']
+        }
+    };
+
+    Object.values(optionCategories).forEach(({ container, options }) => {
+        const containerEl = document.getElementById(container);
+        if (!containerEl) {
+            console.warn(`Container not found: ${container}`);
+            return;
+        }
+
+        containerEl.innerHTML = '';
+
+        options.forEach(option => {
+            const optionElement = createLimitedOptionElement(option);
+            containerEl.appendChild(optionElement);
+        });
+    });
+
+    console.log('✅ Limited option categories populated');
+}
+
+// Create one option card (with image) – similar to full CFSS
+function createLimitedOptionElement(option) {
+    const isSelected = currentProject.options && currentProject.options.includes(option.id);
+
+    const optionDiv = document.createElement('div');
+    optionDiv.className = `option-item ${isSelected ? 'selected' : ''}`;
+    optionDiv.setAttribute('data-option', option.id);
+
+    optionDiv.innerHTML = `
+        <input type="checkbox"
+               class="option-checkbox"
+               id="option-${option.id}"
+               value="${option.id}"
+               ${isSelected ? 'checked' : ''}>
+        <div class="option-thumbnail" id="thumbnail-${option.id}">
+            <img
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='40'%3E%3Crect width='50' height='40' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='8'%3ELoading...%3C/text%3E%3C/svg%3E"
+                alt="${option.name}"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 3px;"
+                id="img-${option.id}">
+        </div>
+        <div class="option-name">
+            <strong>${option.name}</strong><br>
+            <span style="font-size: 12px; color: #666;">${option.description}</span>
+        </div>
+    `;
+
+    const checkbox = optionDiv.querySelector('.option-checkbox');
+
+    // When checkbox changes, update project + selection summary
+    checkbox.addEventListener('change', function () {
+        handleLimitedOptionToggle(option.id, this.checked);
+        optionDiv.classList.toggle('selected', this.checked);
+    });
+
+    // Make entire row clickable (like regular CFSS)
+    optionDiv.addEventListener('click', function (e) {
+        if (e.target.type !== 'checkbox') {
+            checkbox.click();
+        }
+    });
+
+    // Load thumbnail after element is in DOM
+    setTimeout(() => {
+        loadOptionThumbnail(option.id);
+    }, 100);
+
+    return optionDiv;
+}
+
+// Update currentProject.options and save
+function handleLimitedOptionToggle(optionId, isChecked) {
+    if (!currentProject.options) {
+        currentProject.options = [];
+    }
+
+    if (isChecked) {
         if (!currentProject.options.includes(optionId)) {
             currentProject.options.push(optionId);
         }
@@ -276,16 +658,61 @@ async function toggleOption(optionId, element) {
     }
 
     updateSelectionSummary();
-    await saveProject();
+    saveProject().catch(err => console.error('Error saving project options', err));
 }
 
+// Selection summary text
 function updateSelectionSummary() {
     const count = currentProject.options ? currentProject.options.length : 0;
     const summary = document.getElementById('selectionSummary');
     if (summary) {
-        summary.innerHTML = `<i class="fas fa-check-circle"></i> ${count} options selected`;
+        summary.innerHTML = `<i class="fas fa-check-circle"></i> ${count} option${count !== 1 ? 's' : ''} selected`;
     }
 }
+
+// Thumbnail loader (same behaviour as full CFSS, but using option.id)
+async function loadOptionThumbnail(optionId) {
+    const imgElement = document.getElementById(`img-${optionId}`);
+    
+    if (!imgElement) {
+        console.warn(`Image element not found for ${optionId}`);
+        return;
+    }
+
+    console.log(`Loading thumbnail for limited option: ${optionId}`);
+
+    const pngUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionId}.png`;
+    const jpgUrl = `https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/${optionId}.jpg`;
+
+    imgElement.onload = () => {
+        console.log(`Thumbnail loaded successfully: ${optionId}`);
+    };
+
+    imgElement.onerror = () => {
+        console.log(`PNG failed for ${optionId}, trying JPG...`);
+        imgElement.onerror = () => {
+            console.log(`Both formats failed for ${optionId}, showing placeholder`);
+            showThumbnailPlaceholder(optionId, 'No Image');
+        };
+        imgElement.src = jpgUrl;
+    };
+
+    // Start with PNG
+    imgElement.src = pngUrl;
+}
+
+// Placeholder if no image exists
+function showThumbnailPlaceholder(optionId, message = 'IMG') {
+    const imgElement = document.getElementById(`img-${optionId}`);
+    if (imgElement) {
+        imgElement.src =
+            `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='40'%3E` +
+            `%3Crect width='50' height='40' fill='%23f5f5f5' stroke='%23ddd'/%3E` +
+            `%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='8'%3E` +
+            `${encodeURIComponent(message)}%3C/text%3E%3C/svg%3E`;
+    }
+}
+
 
 // Wall handling
 async function handleWallSubmit(e) {
