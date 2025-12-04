@@ -43,6 +43,13 @@ async function initializeCFSSDashboard() {
 
         console.log('👤 User authenticated:', userData.email);
 
+        // Redirect limited users to limited CFSS dashboard
+        if (authHelper.isLimited()) {
+            console.log('🚀 Limited user detected, redirecting to limited CFSS dashboard');
+            window.location.href = 'limited-cfss-dashboard.html';
+            return;
+        }
+
         // Update UI with user info
         authHelper.updateUserInterface();
         authHelper.showAdminElements();

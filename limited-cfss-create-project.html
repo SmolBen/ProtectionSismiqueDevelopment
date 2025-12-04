@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New CFSS Project</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="create-project.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="title-area">
+                <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique - CFSS</a>
+                <a href="limited-cfss-dashboard.html" class="dashboard-btn">
+                    <i class="fas fa-th-large"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="user-info" id="userInfo">
+                <!-- User info will be populated by JavaScript -->
+            </div>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="form-container">
+            <h1>Create New CFSS Project</h1>
+            <form id="createCFSSProjectForm">
+                <div class="form-group">
+                    <label for="name">Project Name: <span style="color: red;">*</span></label>
+                    <input type="text" id="name" name="name" required placeholder="Enter project name...">
+                </div>
+
+                <div class="form-group">
+                    <label for="clientName">Client Name:</label>
+                    <input type="text" id="clientName" name="clientName" placeholder="Enter client name...">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="4" placeholder="Enter project description..."></textarea>
+                </div>
+
+                <button type="submit" class="button primary">Create CFSS Project</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- AWS Cognito SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-helper.js"></script>
+    <script src="limited-cfss-create-project.js"></script>
+</body>
+</html>

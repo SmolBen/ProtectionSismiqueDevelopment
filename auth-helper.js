@@ -63,6 +63,14 @@ class AuthHelper {
                         return;
                     }
 
+                    // Determine user role (backward compatible)
+                    // Priority: custom:user_role > custom:is_admin
+                    let userRole = userData['custom:user_role'];
+                    if (!userRole) {
+                        // Fallback to is_admin check for backward compatibility
+                        userRole = userData['custom:is_admin'] === 'true' ? 'admin' : 'regular';
+                    }
+
                     this.currentUserData = {
                         userId: userData.sub,
                         email: userData.email,
@@ -70,11 +78,13 @@ class AuthHelper {
                         lastName: userData.family_name || '',
                         companyName: userData['custom:company_name'] || '',
                         domain: userData['custom:domain'] || '',
-                        isAdmin: userData['custom:is_admin'] === 'true',
+                        isAdmin: userRole === 'admin',
+                        isLimited: userRole === 'limited',
+                        userRole: userRole,
                         approvalStatus: approvalStatus || 'approved'
                     };
 
-                    console.log('✅ User authenticated:', this.currentUserData.email);
+                    console.log('✅ User authenticated:', this.currentUserData.email, 'Role:', userRole);
                     resolve(this.currentUserData);
                 });
             });
@@ -128,6 +138,16 @@ class AuthHelper {
         return this.currentUserData?.isAdmin || false;
     }
 
+    // Check if current user is limited
+    isLimited() {
+        return this.currentUserData?.isLimited || false;
+    }
+
+    // Get current user role ('admin', 'regular', or 'limited')
+    getUserRole() {
+        return this.currentUserData?.userRole || 'regular';
+    }
+
     // Get current user data
     getCurrentUser() {
         return this.currentUserData;
@@ -167,12 +187,23 @@ class AuthHelper {
 
         const initials = (this.currentUserData.firstName.charAt(0) + this.currentUserData.lastName.charAt(0)).toUpperCase();
         
+        // Determine badge
+        let badge = '';
+        let avatarClass = '';
+        if (this.isAdmin()) {
+            badge = '<span class="admin-badge">ADMIN</span>';
+            avatarClass = 'admin';
+        } else if (this.isLimited()) {
+            badge = '<span class="admin-badge" style="background: #6c757d;">LIMITED</span>';
+            avatarClass = 'limited';
+        }
+        
         userInfo.innerHTML = `
-            <div class="user-avatar ${this.isAdmin() ? 'admin' : ''}">${initials}</div>
+            <div class="user-avatar ${avatarClass}">${initials}</div>
             <div class="user-details">
                 <div class="user-name">
                     ${this.currentUserData.firstName} ${this.currentUserData.lastName}
-                    ${this.isAdmin() ? '<span class="admin-badge">ADMIN</span>' : ''}
+                    ${badge}
                 </div>
                 <div class="user-role">${this.currentUserData.companyName} - ${this.currentUserData.domain}</div>
             </div>

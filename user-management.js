@@ -176,7 +176,8 @@ async function loadAllUsers() {
                         { Name: 'family_name', Value: user.lastName || extractName(user.email, 'last') },
                         { Name: 'custom:company_name', Value: user.companyName || 'Unknown Company' },
                         { Name: 'custom:domain', Value: user.domain || 'unknown' },
-                        { Name: 'custom:is_admin', Value: user.isAdmin ? 'true' : 'false' }
+                        { Name: 'custom:is_admin', Value: user.isAdmin ? 'true' : 'false' },
+                        { Name: 'custom:user_role', Value: user.userRole || (user.isAdmin ? 'admin' : 'regular') }
                     ],
                     UserStatus: user.enabled ? 'CONFIRMED' : 'DISABLED',
                     UserCreateDate: new Date(user.created || Date.now())
@@ -320,20 +321,42 @@ function renderUsers() {
         const companyName = getUserAttribute(user, 'custom:company_name');
         const domain = getUserAttribute(user, 'custom:domain');
         const isAdmin = getUserAttribute(user, 'custom:is_admin') === 'true';
+        
+        // Get user role (backward compatible)
+        let userRole = getUserAttribute(user, 'custom:user_role');
+        if (!userRole) {
+            userRole = isAdmin ? 'admin' : 'regular';
+        }
+        const isLimited = userRole === 'limited';
+        
         const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
         const isEnabled = user.UserStatus === 'CONFIRMED';
         const currentUser = authHelper.getCurrentUser();
 
+        // Determine badge and card class
+        let badge = '';
+        let cardClass = 'user-card';
+        let avatarClass = '';
+        if (userRole === 'admin') {
+            badge = '<span class="admin-badge">ADMIN</span>';
+            cardClass += ' admin';
+            avatarClass = 'admin';
+        } else if (userRole === 'limited') {
+            badge = '<span class="admin-badge" style="background: #6c757d;">LIMITED</span>';
+            cardClass += ' limited';
+            avatarClass = 'limited';
+        }
+
         const userCard = document.createElement('div');
-        userCard.className = `user-card ${isAdmin ? 'admin' : ''}`;
+        userCard.className = cardClass;
         
         userCard.innerHTML = `
             <div class="user-header">
-                <div class="user-avatar ${isAdmin ? 'admin' : ''}">${initials}</div>
+                <div class="user-avatar ${avatarClass}">${initials}</div>
                 <div class="user-info">
                     <h3>
                         ${firstName} ${lastName}
-                        ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
+                        ${badge}
                     </h3>
                     <p>${email}</p>
                 </div>
@@ -359,17 +382,26 @@ function renderUsers() {
                         </button>
                     ` : ''}
                     
-                    ${!isAdmin ? `
+                    ${userRole === 'regular' ? `
                         <button class="action-btn promote-btn" onclick="promoteUser('${email}')">
                             <i class="fas fa-user-shield"></i>
-                            Promote
+                            Promote to Admin
                         </button>
-                    ` : `
+                        <button class="action-btn demote-btn" onclick="demoteToLimited('${email}')" style="background: #6c757d;">
+                            <i class="fas fa-user-minus"></i>
+                            Demote to Limited
+                        </button>
+                    ` : userRole === 'admin' ? `
                         <button class="action-btn demote-btn" onclick="demoteUser('${email}')">
                             <i class="fas fa-user-minus"></i>
-                            Demote
+                            Demote to Regular
                         </button>
-                    `}
+                    ` : userRole === 'limited' ? `
+                        <button class="action-btn promote-btn" onclick="promoteToRegular('${email}')" style="background: #28a745;">
+                            <i class="fas fa-user-plus"></i>
+                            Promote to Regular
+                        </button>
+                    ` : ''}
                     
                     <button class="action-btn delete-btn" onclick="deleteUser('${email}')">
                         <i class="fas fa-user-times"></i>
@@ -387,13 +419,18 @@ function renderUsers() {
 
 function updateStats() {
     const totalUsers = allUsers.length;
-    const adminUsers = allUsers.filter(user => 
-        getUserAttribute(user, 'custom:is_admin') === 'true'
+    const adminUsers = allUsers.filter(user => {
+        const userRole = getUserAttribute(user, 'custom:user_role');
+        if (userRole) return userRole === 'admin';
+        return getUserAttribute(user, 'custom:is_admin') === 'true';
+    }).length;
+    const limitedUsers = allUsers.filter(user => 
+        getUserAttribute(user, 'custom:user_role') === 'limited'
     ).length;
     const activeUsers = allUsers.filter(user => 
         user.UserStatus === 'CONFIRMED'
     ).length;
-    const regularUsers = totalUsers - adminUsers;
+    const regularUsers = totalUsers - adminUsers - limitedUsers;
 
     const statsBar = document.getElementById('statsBar');
     statsBar.innerHTML = `
@@ -407,11 +444,15 @@ function updateStats() {
         </div>
         <div class="stat-item">
             <div class="stat-number">${regularUsers}</div>
-            <div class="stat-label">Regular Users</div>
+            <div class="stat-label">Regular</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">${limitedUsers}</div>
+            <div class="stat-label">Limited</div>
         </div>
         <div class="stat-item">
             <div class="stat-number">${activeUsers}</div>
-            <div class="stat-label">Active Users</div>
+            <div class="stat-label">Active</div>
         </div>
     `;
 }
@@ -427,16 +468,29 @@ function filterUsers() {
         const lastName = getUserAttribute(user, 'family_name').toLowerCase();
         const fullName = `${firstName} ${lastName}`;
         const domain = getUserAttribute(user, 'custom:domain');
-        const isAdmin = getUserAttribute(user, 'custom:is_admin') === 'true';
+        
+        // Get user role (backward compatible)
+        let userRole = getUserAttribute(user, 'custom:user_role');
+        if (!userRole) {
+            const isAdmin = getUserAttribute(user, 'custom:is_admin') === 'true';
+            userRole = isAdmin ? 'admin' : 'regular';
+        }
 
         // Search filter
         const matchesSearch = email.includes(searchTerm) || 
                             fullName.includes(searchTerm);
 
         // Role filter
-        const matchesRole = roleFilter === 'all' || 
-                          (roleFilter === 'admin' && isAdmin) ||
-                          (roleFilter === 'user' && !isAdmin);
+        let matchesRole = false;
+        if (roleFilter === 'all') {
+            matchesRole = true;
+        } else if (roleFilter === 'admin') {
+            matchesRole = userRole === 'admin';
+        } else if (roleFilter === 'user') {
+            matchesRole = userRole === 'regular';
+        } else if (roleFilter === 'limited') {
+            matchesRole = userRole === 'limited';
+        }
 
         // Domain filter
         const matchesDomain = domainFilter === 'all' || domain === domainFilter;
@@ -643,9 +697,98 @@ async function approveUserAccount(email) {
     }
 }
 
+async function demoteToLimited(email) {
+    const currentUser = authHelper.getCurrentUser();
+    
+    if (email === currentUser.email) {
+        alert('You cannot demote yourself!');
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to demote ${email} to limited user?\n\nLimited users can only access CFSS projects with simplified features.`)) {
+        return;
+    }
+
+    try {
+        console.log(`Demoting user to limited: ${email}`);
+        addDebugInfo(`Attempting to demote user to limited: ${email}`);
+        document.getElementById('loadingOverlay').classList.add('show');
+        
+        const apiUrl = 'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/users/demote-to-limited';
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: authHelper.getAuthHeaders(),
+            body: JSON.stringify({ email })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to demote user to limited');
+        }
+        
+        const result = await response.json();
+        console.log('Demotion to limited response:', result);
+        
+        document.getElementById('loadingOverlay').classList.remove('show');
+        addDebugInfo(`User ${email} demoted to limited successfully`);
+        alert(`${email} has been demoted to limited user!\n\nThe user will need to log out and log back in for changes to take effect.`);
+        
+        await loadAllUsers();
+        
+    } catch (error) {
+        console.error('Error demoting user to limited:', error);
+        addDebugInfo(`Error demoting user to limited: ${error.message}`);
+        document.getElementById('loadingOverlay').classList.remove('show');
+        alert('Error demoting user to limited: ' + error.message);
+    }
+}
+
+async function promoteToRegular(email) {
+    if (!confirm(`Are you sure you want to promote ${email} to regular user?`)) {
+        return;
+    }
+
+    try {
+        console.log(`Promoting user to regular: ${email}`);
+        addDebugInfo(`Attempting to promote user to regular: ${email}`);
+        document.getElementById('loadingOverlay').classList.add('show');
+        
+        const apiUrl = 'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/users/promote-to-regular';
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: authHelper.getAuthHeaders(),
+            body: JSON.stringify({ email })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to promote user to regular');
+        }
+        
+        const result = await response.json();
+        console.log('Promotion to regular response:', result);
+        
+        document.getElementById('loadingOverlay').classList.remove('show');
+        addDebugInfo(`User ${email} promoted to regular successfully`);
+        alert(`${email} has been promoted to regular user!\n\nThe user will need to log out and log back in for changes to take effect.`);
+        
+        await loadAllUsers();
+        
+    } catch (error) {
+        console.error('Error promoting user to regular:', error);
+        addDebugInfo(`Error promoting user to regular: ${error.message}`);
+        document.getElementById('loadingOverlay').classList.remove('show');
+        alert('Error promoting user to regular: ' + error.message);
+    }
+}
+
 // Make functions available globally
 window.promoteUser = promoteUser;
 window.demoteUser = demoteUser;
 window.deleteUser = deleteUser;
 window.toggleDebug = toggleDebug;
 window.approveUserAccount = approveUserAccount;
+window.demoteToLimited = demoteToLimited;
+window.promoteToRegular = promoteToRegular;
