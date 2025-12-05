@@ -57,7 +57,7 @@ function showThumbnailPlaceholder(optionId, message = 'IMG') {
 }
 
 window.addEventListener('load', async function() {
-    console.log('ðŸ“„ Limited CFSS Project Details page loaded');
+    console.log('Ã°Å¸â€œâ€ž Limited CFSS Project Details page loaded');
     await initializeProjectDetails();
 });
 
@@ -112,10 +112,10 @@ async function initializeProjectDetails() {
         // Initialize options
         initializeOptionsSystem();
 
-        console.log('âœ… Limited CFSS Project Details initialized');
+        console.log('Ã¢Å“â€¦ Limited CFSS Project Details initialized');
 
     } catch (error) {
-        console.error('âŒ Error initializing:', error);
+        console.error('Ã¢ÂÅ’ Error initializing:', error);
         document.getElementById('loadingProject').style.display = 'none';
         alert('Error loading project: ' + error.message);
     }
@@ -168,7 +168,7 @@ async function loadProject(projectId) {
         document.getElementById('projectContainer').style.display = 'block';
 
     } catch (error) {
-        console.error('âŒ Error loading project:', error);
+        console.error('Ã¢ÂÅ’ Error loading project:', error);
         document.getElementById('loadingProject').style.display = 'none';
         alert('Error loading project: ' + error.message);
         window.location.href = 'limited-cfss-dashboard.html';
@@ -481,7 +481,7 @@ function initializeTabSystem() {
 
 // Initialize options for the current project
 function initializeOptionsSystem() {
-    console.log('🔧 Initializing LIMITED CFSS options system...');
+    console.log('ðŸ”§ Initializing LIMITED CFSS options system...');
 
     // Load any saved options from the project if present
     if (currentProject && Array.isArray(currentProject.selectedCFSSOptions)) {
@@ -499,7 +499,7 @@ function initializeOptionsSystem() {
         saveOptionsBtn.addEventListener('click', async () => {
             try {
                 await saveLimitedCFSSOptions();
-                console.log('✅ Limited CFSS options saved via Save Options button');
+                console.log('âœ… Limited CFSS options saved via Save Options button');
             } catch (error) {
                 console.error('Error saving limited CFSS options via button:', error);
                 alert('Error saving options. Please try again.');
@@ -507,7 +507,7 @@ function initializeOptionsSystem() {
         });
     }
 
-    console.log('✅ Limited options system initialized');
+    console.log('âœ… Limited options system initialized');
 }
 
 // Define option categories and their corresponding option IDs
@@ -587,7 +587,7 @@ function populateOptionsCategories() {
         });
     });
 
-    console.log('âœ… Limited option categories populated');
+    console.log('Ã¢Å“â€¦ Limited option categories populated');
 }
 
 // Create a single option card with thumbnail (same structure as regular CFSS)
@@ -676,7 +676,7 @@ async function saveLimitedCFSSOptions() {
         return;
     }
 
-    console.log('ðŸ’¾ Saving LIMITED CFSS options:', selectedCFSSOptions);
+    console.log('Ã°Å¸â€™Â¾ Saving LIMITED CFSS options:', selectedCFSSOptions);
 
     const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
         method: 'PUT',
@@ -698,7 +698,7 @@ async function preloadOptionImages() {
     console.log('Preloading CFSS option images (limited)...');
 
     const allOptions = [
-        // Lisse trouÃ©e options
+        // Lisse trouÃƒÂ©e options
         'fixe-beton-lisse-trouee',
         'fixe-structure-dacier-lisse-trouee',
         'fixe-tabiler-metallique-lisse-trouee',
@@ -743,7 +743,7 @@ async function preloadOptionImages() {
         await loadOptionThumbnail(optionName);
     }
 
-    console.log('âœ… CFSS option images preloaded (limited)');
+    console.log('Ã¢Å“â€¦ CFSS option images preloaded (limited)');
 }
 
 // Thumbnail loader (same as regular)
@@ -824,10 +824,10 @@ function populateLimitedOptionCategories() {
         });
     });
 
-    console.log('âœ… Limited option categories populated');
+    console.log('Ã¢Å“â€¦ Limited option categories populated');
 }
 
-// Create one option card (with image) â€“ similar to full CFSS
+// Create one option card (with image) Ã¢â‚¬â€œ similar to full CFSS
 function createLimitedOptionElement(option) {
     const isSelected = currentProject.options && currentProject.options.includes(option.id);
 
@@ -897,7 +897,7 @@ function handleLimitedOptionToggle(optionId, isChecked) {
 
 // Selection summary text
 function updateSelectionSummary() {
-    const count = currentProject.options ? currentProject.options.length : 0;
+    const count = selectedCFSSOptions ? selectedCFSSOptions.length : 0;
     const summary = document.getElementById('selectionSummary');
     if (summary) {
         summary.innerHTML = `<i class="fas fa-check-circle"></i> ${count} option${count !== 1 ? 's' : ''} selected`;
@@ -998,21 +998,48 @@ function displayEquipmentList() {
 
     document.getElementById('wallSelectionSummary').innerHTML = `<i class="fas fa-th-large"></i> ${currentProject.equipment.length} walls added`;
 
-    currentProject.equipment.forEach(wall => {
-        const wallDiv = document.createElement('div');
-        wallDiv.className = 'equipment-item';
-        wallDiv.innerHTML = `
-            <div class="equipment-info">
-                <strong>${wall.name}</strong>
-                <span>Floor: ${wall.floor || 'N/A'} | Height: ${formatHeight(wall)}</span>
-                ${wall.note ? `<span style="font-style: italic; color: #666;">Note: ${wall.note}</span>` : ''}
+    currentProject.equipment.forEach((wall, index) => {
+        const wallCard = document.createElement('div');
+        wallCard.className = 'equipment-card';
+        wallCard.id = `wallCard${wall.id}`;
+        
+        wallCard.innerHTML = `
+            <div class="equipment-header" onclick="toggleWallDetails('${wall.id}')">
+                <div class="equipment-info-compact">
+                    <h4>${wall.name}</h4>
+                    <div class="equipment-meta-compact">
+                        <span>Floor: ${wall.floor || 'N/A'}</span>
+                        <span class="meta-separator">•</span>
+                        <span>Height: ${formatHeight(wall)}</span>
+                        ${wall.colombageSet1 ? `<span class="meta-separator">•</span><span>Set 1: ${wall.colombageSet1}</span>` : ''}
+                        ${wall.colombageSet2 ? `<span class="meta-separator">•</span><span>Set 2: ${wall.colombageSet2}</span>` : ''}
+                    </div>
+                </div>
+                <div class="equipment-actions-compact">
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleWallDetails('${wall.id}')">Details</button>
+                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateWall('${wall.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteWall('${wall.id}')">Delete</button>
+                </div>
             </div>
-            <div class="equipment-actions">
-                <button class="edit-btn" onclick="editWall('${wall.id}')"><i class="fas fa-edit"></i></button>
-                <button class="delete-btn" onclick="deleteWall('${wall.id}')"><i class="fas fa-trash"></i></button>
+            <div class="equipment-details" id="wallDetails${wall.id}">
+                <div class="equipment-details-container">
+                    <div class="equipment-info-section">
+                        <p><strong>Wall Name:</strong> ${wall.name}</p>
+                        <p><strong>Floor:</strong> ${wall.floor || 'N/A'}</p>
+                        <p><strong>Height:</strong> ${formatHeight(wall)}</p>
+                        <p><strong>Colombage Set 1:</strong> ${wall.colombageSet1 || 'N/A'}</p>
+                        <p><strong>Colombage Set 2:</strong> ${wall.colombageSet2 || 'N/A'}</p>
+                        ${wall.note ? `<p><strong>Note:</strong> ${wall.note}</p>` : ''}
+                    </div>
+                </div>
+                <button class="button primary" onclick="editWall('${wall.id}')" style="margin-top: 15px;">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
             </div>
         `;
-        container.appendChild(wallDiv);
+        container.appendChild(wallCard);
     });
 }
 
@@ -1045,6 +1072,32 @@ window.deleteWall = async function(id) {
     if (!confirm('Are you sure you want to delete this wall?')) return;
 
     currentProject.equipment = currentProject.equipment.filter(e => e.id !== id);
+    await saveProject();
+    displayEquipmentList();
+};
+
+window.toggleWallDetails = function(id) {
+    const details = document.getElementById(`wallDetails${id}`);
+    const btn = document.querySelector(`#wallCard${id} .details-btn`);
+    if (details) {
+        details.classList.toggle('show');
+        if (btn) {
+            const isOpen = details.classList.contains('show');
+            btn.innerHTML = isOpen ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Details';
+        }
+    }
+};
+
+window.duplicateWall = async function(id) {
+    const wall = currentProject.equipment.find(e => e.id === id);
+    if (!wall) return;
+
+    const newWall = {
+        ...wall,
+        id: Date.now().toString(),
+        name: `${wall.name} (Copy)`
+    };
+    currentProject.equipment.push(newWall);
     await saveProject();
     displayEquipmentList();
 };
@@ -1098,21 +1151,52 @@ function displayParapetList() {
 
     document.getElementById('parapetSelectionSummary').innerHTML = `<i class="fas fa-building"></i> ${currentProject.parapets.length} parapets added`;
 
-    currentProject.parapets.forEach(parapet => {
-        const parapetDiv = document.createElement('div');
-        parapetDiv.className = 'equipment-item';
-        parapetDiv.innerHTML = `
-            <div class="equipment-info">
-                <strong>${parapet.name}</strong>
-                <span>Type: ${parapet.type || 'N/A'} | Floor: ${parapet.floor || 'N/A'} | Height: ${formatHeight(parapet)}</span>
-                ${parapet.note ? `<span style="font-style: italic; color: #666;">Note: ${parapet.note}</span>` : ''}
+    currentProject.parapets.forEach((parapet, index) => {
+        const parapetCard = document.createElement('div');
+        parapetCard.className = 'equipment-card';
+        parapetCard.id = `parapetCard${parapet.id}`;
+
+        const heightDisplay = formatHeight(parapet);
+        const title = parapet.parapetName || parapet.name || `Parapet ${index + 1}`;
+        
+        parapetCard.innerHTML = `
+            <div class="equipment-header" onclick="toggleParapetDetails('${parapet.id}')">
+                <div class="equipment-info-compact">
+                    <h4>${title}</h4>
+                    <div class="equipment-meta-compact">
+                        <span>Height: ${heightDisplay}</span>
+                        <span class="meta-separator">•</span>
+                        <span>Montant: ${parapet.montantMetallique || 'N/A'}</span>
+                        <span class="meta-separator">•</span>
+                        <span>Espacement: ${parapet.espacement || 'N/A'}</span>
+                    </div>
+                </div>
+                <div class="equipment-actions-compact">
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">Details</button>
+                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateParapet('${parapet.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteParapet('${parapet.id}')">Delete</button>
+                </div>
             </div>
-            <div class="equipment-actions">
-                <button class="edit-btn" onclick="editParapet('${parapet.id}')"><i class="fas fa-edit"></i></button>
-                <button class="delete-btn" onclick="deleteParapet('${parapet.id}')"><i class="fas fa-trash"></i></button>
+            <div class="equipment-details" id="parapetDetails${parapet.id}">
+                <div class="equipment-details-container">
+                    <div class="equipment-info-section">
+                        <p><strong>Parapet Name:</strong> ${title}</p>
+                        <p><strong>Type:</strong> ${parapet.type || 'N/A'}</p>
+                        <p><strong>Floor:</strong> ${parapet.floor || 'N/A'}</p>
+                        <p><strong>Height:</strong> ${formatHeight(parapet)}</p>
+                        <p><strong>Colombage Set 1:</strong> ${parapet.colombageSet1 || 'N/A'}</p>
+                        <p><strong>Colombage Set 2:</strong> ${parapet.colombageSet2 || 'N/A'}</p>
+                        ${parapet.note ? `<p><strong>Note:</strong> ${parapet.note}</p>` : ''}
+                    </div>
+                </div>
+                <button class="button primary" onclick="editParapet('${parapet.id}')" style="margin-top: 15px;">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
             </div>
         `;
-        container.appendChild(parapetDiv);
+        container.appendChild(parapetCard);
     });
 }
 
@@ -1138,6 +1222,32 @@ window.deleteParapet = async function(id) {
     if (!confirm('Are you sure you want to delete this parapet?')) return;
 
     currentProject.parapets = currentProject.parapets.filter(p => p.id !== id);
+    await saveProject();
+    displayParapetList();
+};
+
+window.toggleParapetDetails = function(id) {
+    const details = document.getElementById(`parapetDetails${id}`);
+    const btn = document.querySelector(`#parapetCard${id} .details-btn`);
+    if (details) {
+        details.classList.toggle('show');
+        if (btn) {
+            const isOpen = details.classList.contains('show');
+            btn.innerHTML = isOpen ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Details';
+        }
+    }
+};
+
+window.duplicateParapet = async function(id) {
+    const parapet = currentProject.parapets.find(p => p.id === id);
+    if (!parapet) return;
+
+    const newParapet = {
+        ...parapet,
+        id: Date.now().toString(),
+        name: `${parapet.name} (Copy)`
+    };
+    currentProject.parapets.push(newParapet);
     await saveProject();
     displayParapetList();
 };
@@ -1245,20 +1355,47 @@ function displayWindowList() {
 
     document.getElementById('windowSelectionSummary').innerHTML = `<i class="fas fa-window-maximize"></i> ${currentProject.windows.length} windows added`;
 
-    currentProject.windows.forEach(window => {
-        const windowDiv = document.createElement('div');
-        windowDiv.className = 'equipment-item';
-        windowDiv.innerHTML = `
-            <div class="equipment-info">
-                <strong>${window.type}</strong>
-                <span>Floor: ${window.floor || 'N/A'} | Width: ${formatDimension(window, 'largeur')} | Height: ${formatDimension(window, 'hauteur')}</span>
+    currentProject.windows.forEach((win, index) => {
+        const windowCard = document.createElement('div');
+        windowCard.className = 'equipment-card';
+        windowCard.id = `windowCard${win.id}`;
+        
+        const title = win.windowName || win.name || win.type || `Window ${index + 1}`;
+        const largeurDisplay = formatDimension(win, 'largeur');
+        const hauteurDisplay = formatDimension(win, 'hauteur');
+        const dims = `${largeurDisplay} × ${hauteurDisplay}`;
+        
+        windowCard.innerHTML = `
+            <div class="equipment-header" onclick="toggleWindowDetails('${win.id}')">
+                <div class="equipment-info-compact">
+                    <h4>${title}</h4>
+                    <div class="equipment-meta-compact">
+                        <span>${dims}</span>
+                    </div>
+                </div>
+                <div class="equipment-actions-compact">
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleWindowDetails('${win.id}')">Details</button>
+                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateWindow('${win.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteWindow('${win.id}')">Delete</button>
+                </div>
             </div>
-            <div class="equipment-actions">
-                <button class="edit-btn" onclick="editWindow('${window.id}')"><i class="fas fa-edit"></i></button>
-                <button class="delete-btn" onclick="deleteWindow('${window.id}')"><i class="fas fa-trash"></i></button>
+            <div class="equipment-details" id="windowDetails${win.id}">
+                <div class="equipment-details-container">
+                    <div class="equipment-info-section">
+                        <p><strong>Window Type:</strong> ${win.type}</p>
+                        <p><strong>Floor:</strong> ${win.floor || 'N/A'}</p>
+                        <p><strong>Width (Largeur):</strong> ${formatDimension(win, 'largeur')}</p>
+                        <p><strong>Height (Hauteur):</strong> ${formatDimension(win, 'hauteur')}</p>
+                    </div>
+                </div>
+                <button class="button primary" onclick="editWindow('${win.id}')" style="margin-top: 15px;">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
             </div>
         `;
-        container.appendChild(windowDiv);
+        container.appendChild(windowCard);
     });
 }
 
@@ -1286,34 +1423,55 @@ function displaySoffiteList() {
 
     // Render each soffite card
     currentProject.soffites.forEach((soffite, index) => {
-        const name =
-            soffite.name ||
-            soffite.soffiteName ||
-            `Soffite ${index + 1}`;
-
+        const name = soffite.name || soffite.soffiteName || `Soffite ${index + 1}`;
         const images = Array.isArray(soffite.images) ? soffite.images : [];
         const imageCount = images.length;
 
-        // Try to show filenames if available
-        const filenames = images
-            .map(img => img.filename || img.key || null)
-            .filter(Boolean)
-            .join(', ');
-
-        const soffiteDiv = document.createElement('div');
-        soffiteDiv.className = 'equipment-item';
-        soffiteDiv.innerHTML = `
-            <div class="equipment-info">
-                <strong>${name}</strong>
-                <span>Images: ${imageCount || 0}</span>
-                ${
-                    filenames
-                        ? `<span style="font-size: 12px; color: #666;">Files: ${filenames}</span>`
-                        : ''
-                }
+        const soffiteCard = document.createElement('div');
+        soffiteCard.className = 'equipment-card';
+        soffiteCard.id = `soffiteCard${soffite.id}`;
+        
+        soffiteCard.innerHTML = `
+            <div class="equipment-header" onclick="toggleSoffiteDetails('${soffite.id}')">
+                <div class="equipment-info-compact">
+                    <h4>${name}</h4>
+                    <div class="equipment-meta-compact">
+                        <span>Images: ${imageCount}</span>
+                    </div>
+                </div>
+                <div class="equipment-actions-compact">
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">Details</button>
+                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateSoffite('${soffite.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteSoffite('${soffite.id}')">Delete</button>
+                </div>
+            </div>
+            <div class="equipment-details" id="soffiteDetails${soffite.id}">
+                <div class="equipment-details-container">
+                    <div class="equipment-info-section">
+                        <p><strong>Soffite Name:</strong> ${name}</p>
+                        <p><strong>Images:</strong> ${imageCount}</p>
+                        ${imageCount > 0 ? `
+                            <div class="soffite-images-preview" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                                ${images.map(img => `
+                                    <div style="width: 80px; height: 60px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
+                                        <img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/${img.key}" 
+                                             alt="${img.filename || 'Soffite image'}"
+                                             style="width: 100%; height: 100%; object-fit: cover;"
+                                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2760%27%3E%3Crect width=%2780%27 height=%2760%27 fill=%27%23f0f0f0%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27 font-size=%2710%27%3ENo Image%3C/text%3E%3C/svg%3E'">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <button class="button primary" onclick="editSoffite('${soffite.id}')" style="margin-top: 15px;">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
             </div>
         `;
-        container.appendChild(soffiteDiv);
+        container.appendChild(soffiteCard);
     });
 }
 
@@ -1352,6 +1510,103 @@ window.deleteWindow = async function(id) {
     currentProject.windows = currentProject.windows.filter(w => w.id !== id);
     await saveProject();
     displayWindowList();
+};
+
+window.toggleWindowDetails = function(id) {
+    const details = document.getElementById(`windowDetails${id}`);
+    const btn = document.querySelector(`#windowCard${id} .details-btn`);
+    if (details) {
+        details.classList.toggle('show');
+        if (btn) {
+            const isOpen = details.classList.contains('show');
+            btn.innerHTML = isOpen ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Details';
+        }
+    }
+};
+
+window.duplicateWindow = async function(id) {
+    const win = currentProject.windows.find(w => w.id === id);
+    if (!win) return;
+
+    const newWindow = {
+        ...win,
+        id: Date.now().toString(),
+        type: `${win.type} (Copy)`
+    };
+    currentProject.windows.push(newWindow);
+    await saveProject();
+    displayWindowList();
+};
+
+window.toggleSoffiteDetails = function(id) {
+    const details = document.getElementById(`soffiteDetails${id}`);
+    const btn = document.querySelector(`#soffiteCard${id} .details-btn`);
+    if (details) {
+        details.classList.toggle('show');
+        if (btn) {
+            const isOpen = details.classList.contains('show');
+            btn.innerHTML = isOpen ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Details';
+        }
+    }
+};
+
+window.deleteSoffite = async function(id) {
+    if (!confirm('Are you sure you want to delete this soffite?')) return;
+
+    currentProject.soffites = currentProject.soffites.filter(s => s.id !== id);
+    await saveProject();
+    displaySoffiteList();
+};
+
+window.duplicateSoffite = async function(id) {
+    const soffite = currentProject.soffites.find(s => s.id === id);
+    if (!soffite) return;
+
+    const newSoffite = {
+        ...soffite,
+        id: Date.now().toString(),
+        name: `${soffite.name || 'Soffite'} (Copy)`,
+        images: [...(soffite.images || [])] // Copy images array
+    };
+    currentProject.soffites.push(newSoffite);
+    await saveProject();
+    displaySoffiteList();
+};
+
+window.editSoffite = function(id) {
+    const soffite = currentProject.soffites.find(s => s.id === id);
+    if (!soffite) return;
+
+    editingSoffiteId = id;
+    document.getElementById('soffiteName').value = soffite.name || '';
+    
+    // Load existing images into preview
+    window.currentSoffiteImages = [...(soffite.images || [])];
+    const container = document.getElementById('soffiteImagePreviewContainer');
+    if (container) {
+        container.innerHTML = '';
+        window.currentSoffiteImages.forEach(img => {
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.innerHTML = `
+                <img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/${img.key}" 
+                     alt="${img.filename || 'Soffite image'}"
+                     style="width: 100%; height: 100%; object-fit: cover;">
+                <button type="button" class="image-remove" title="Remove image">&times;</button>
+            `;
+            container.appendChild(preview);
+            
+            const removeButton = preview.querySelector('.image-remove');
+            removeButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                removeSoffiteImage(img.key);
+            });
+        });
+    }
+    updateSoffiteDropZoneState();
+
+    showForm('soffiteForm');
 };
 
 // Reuse the same S3 upload flow as regular CFSS
@@ -1656,9 +1911,9 @@ async function saveProject() {
             throw new Error(`HTTP ${response.status}`);
         }
 
-        console.log('âœ… Project saved');
+        console.log('Ã¢Å“â€¦ Project saved');
     } catch (error) {
-        console.error('âŒ Error saving project:', error);
+        console.error('Ã¢ÂÅ’ Error saving project:', error);
         alert('Error saving project: ' + error.message);
     }
 }

@@ -675,6 +675,266 @@
 .equipment-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: relative;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.equipment-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* LIMITED CFSS: make cards look like regular flat rows (no white card box) */
+.limited-cfss-page .equipment-card {
+    padding: 14px 16px;
+    border-bottom: 2px solid #f1f5f9;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    position: relative;
+    background: transparent;      /* remove white box */
+    border-radius: 0;
+    box-shadow: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    margin: 0;
+    display: block !important;
+    width: 100% !important;
+    float: none !important;
+    flex: none !important;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.limited-cfss-page .equipment-card:hover {
+    background: #f8fafc;
+    transform: none;              /* no “lift” */
+    box-shadow: none;
+}
+
+/* Equipment Header - clickable row */
+.equipment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    cursor: pointer;
+    background: #fafafa;
+    border-bottom: 1px solid transparent;
+    transition: background 0.2s ease;
+}
+
+.equipment-header:hover {
+    background: #f0f0f0;
+}
+
+/* Compact info section */
+.equipment-info-compact {
+    flex: 1;
+    min-width: 0;
+    margin-right: 15px;
+}
+
+.equipment-info-compact h4 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.equipment-meta-compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 13px;
+    color: #666;
+}
+
+.equipment-meta-compact .meta-separator {
+    color: #ccc;
+    margin: 0 2px;
+}
+
+/* Action buttons container */
+.equipment-actions-compact {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.equipment-actions-compact button {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.equipment-actions-compact .details-btn {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.equipment-actions-compact .details-btn:hover {
+    background: #dee2e6;
+}
+
+/* Limited CFSS page: use teal "Details" button like regular CFSS UI */
+.limited-cfss-page .equipment-actions-compact .details-btn {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 60px;
+    justify-content: center;
+}
+
+.limited-cfss-page .equipment-actions-compact .details-btn:hover {
+    background-color: #138496;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.3);
+}
+
+.equipment-actions-compact .duplicate-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.equipment-actions-compact .duplicate-btn:hover {
+    background: #138496;
+}
+
+.equipment-actions-compact .delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.equipment-actions-compact .delete-btn:hover {
+    background: #c82333;
+}
+
+/* Equipment Details - expandable section */
+.equipment-details {
+    display: none;
+    padding: 0;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+}
+
+.equipment-details.show {
+    display: block;
+    padding: 15px;
+}
+
+.equipment-details .details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.equipment-details .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.equipment-details .details-grid p {
+    margin: 0;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.equipment-details .details-grid p strong {
+    color: #495057;
+}
+
+.equipment-details .details-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e9ecef;
+}
+
+.equipment-details .details-actions .edit-btn {
+    background: #ffc107;
+    color: #212529;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s ease;
+}
+
+.equipment-details .details-actions .edit-btn:hover {
+    background: #e0a800;
+}
+
+/* Button primary style */
+.button.primary {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s ease;
+}
+
+.button.primary:hover {
+    background: #0056b3;
+}
+
+/* Equipment details container */
+.equipment-details-container {
+    display: flex;
+    gap: 20px;
+}
+
+.equipment-info-section {
+    flex: 1;
+}
+
+.equipment-info-section p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.equipment-info-section p strong {
+    color: #495057;
+}
+
+/* Soffite image previews in details */
+.soffite-images-preview {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 0;
+}
+
+.soffite-image-thumb {
+    width: 80px;
+    height: 60px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.soffite-image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .equipment-card.sortable-ghost {
@@ -2121,4 +2381,67 @@ button:not(.image-remove):not(.thumb-delete) {
     .wind-breakdown-content {
         padding: 20px;
     }
+}
+
+/* ========================================================================
+   LIMITED CFSS PAGE – FIX CARD LOOK & BUTTON ALIGNMENT
+   ======================================================================== */
+
+/* 1. Remove white card boxes + shadows, make rows flat like regular CFSS */
+.limited-cfss-page .equipment-card {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid #f1f5f9 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 14px 16px !important;
+    box-shadow: none !important;
+}
+
+/* Remove the grey background from wall cards */
+.limited-cfss-page .equipment-header {
+    background: transparent !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Hover style to match normal CFSS */
+.limited-cfss-page .equipment-card:hover {
+    background: #f8fafc !important;
+}
+
+.limited-cfss-page .equipment-actions-compact {
+    /* behave like regular CFSS: group is right-aligned,
+       but not glued to the edge */
+    margin-left: auto !important;
+    margin-right: 45px !important;
+    padding-right: 0 !important;
+    gap: 8px !important;
+}
+
+/* 3. Ensure Details button uses teal (CFSS style) */
+.limited-cfss-page .equipment-actions-compact .details-btn {
+    background-color: #17a2b8 !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+}
+
+.limited-cfss-page .equipment-actions-compact .details-btn:hover {
+    background-color: #138496 !important;
+}
+
+/* 4. Remove special padding used for drag-handle spacing (limited page does NOT use drag handle) */
+.limited-cfss-page .equipment-card.draggable .equipment-header {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* 5. Fix spacing so rows look like regular CFSS */
+.limited-cfss-page .equipment-info-compact {
+    margin-right: 10px !important;
+}
+
+.limited-cfss-page .equipment-meta-compact {
+    font-size: 13px !important;
 }
