@@ -240,7 +240,7 @@ async function initializeWallData(project, projectId) {
             const firstRevision = {
                 id: `rev_${Date.now()}`,
                 number: 1,
-                description: 'Migrated from legacy data',
+                description: 'Pour construction',
                 createdAt: new Date().toISOString(),
                 createdBy: 'system-migration',
                 walls: [...project.equipment]
