@@ -257,23 +257,27 @@ function setupEventListeners() {
     const parapetForm = document.getElementById('parapetForm');
     
     if (addParapetButton && parapetForm) {
-        addParapetButton.addEventListener('click', () => {
-            console.log('Add Parapet button clicked');
-            if (parapetForm.classList.contains('show')) {
-                hideForm('parapetForm');
-                addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
-                addParapetButton.classList.remove('expanded');
-            } else {
-                hideAllForms();
-                showForm('parapetForm');
-                addParapetButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
-                addParapetButton.classList.add('expanded');
-                editingParapetId = null;
-                const formElement = document.getElementById('parapetFormElement');
-                if (formElement) formElement.reset();
-            }
-        });
-    }
+    addParapetButton.addEventListener('click', () => {
+        console.log('Add Parapet button clicked');
+        if (parapetForm.classList.contains('show')) {
+            hideForm('parapetForm');
+            addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+            addParapetButton.classList.remove('expanded');
+        } else {
+            hideAllForms();
+            showForm('parapetForm');
+            addParapetButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+            addParapetButton.classList.add('expanded');
+            editingParapetId = null;
+            const formElement = document.getElementById('parapetFormElement');
+            if (formElement) formElement.reset();
+            
+            // Populate parapet type dropdown and setup image preview
+            populateParapetTypeDropdown();
+            updateParapetTypeImage('');
+        }
+    });
+}
 
     // Add Window button - toggle behavior
     const addWindowButton = document.getElementById('addWindowButton');
@@ -1226,6 +1230,10 @@ window.editParapet = function(id) {
     if (!parapet) return;
 
     editingParapetId = id;
+    
+    // Populate dropdown first, then set value
+    populateParapetTypeDropdown();
+    
     document.getElementById('parapetName').value = parapet.name || '';
     document.getElementById('parapetType').value = parapet.type || '';
     document.getElementById('parapetFloor').value = parapet.floor || '';
@@ -1235,6 +1243,9 @@ window.editParapet = function(id) {
     document.getElementById('parapetColombageSet1').value = parapet.colombageSet1 || '';
     document.getElementById('parapetColombageSet2').value = parapet.colombageSet2 || '';
     document.getElementById('parapetNote').value = parapet.note || '';
+
+    // Update image preview for current type
+    updateParapetTypeImage(parapet.type || '');
 
     showForm('parapetForm');
 };
@@ -2706,4 +2717,69 @@ function updateEditDropZoneState(wallId) {
         dropZone.style.background = 'white';
         dropZone.style.borderColor = '#ccc';
     }
+}
+
+// Populate parapet type dropdown based on selected options
+function populateParapetTypeDropdown() {
+    const parapetTypeSelect = document.getElementById('parapetType');
+    if (!parapetTypeSelect) return;
+    
+    // Get selected parapet options from the options list
+    const selectedParapetOptions = selectedCFSSOptions.filter(opt => opt.startsWith('parapet-'));
+    
+    // Clear existing options
+    parapetTypeSelect.innerHTML = '<option value="">Select Parapet Type</option>';
+    
+    if (selectedParapetOptions.length === 0) {
+        // No parapet options selected - show all types (1-13)
+        for (let i = 1; i <= 13; i++) {
+            const option = document.createElement('option');
+            option.value = `Type ${i}`;
+            option.textContent = `Type ${i}`;
+            parapetTypeSelect.appendChild(option);
+        }
+        console.log('No parapet options selected - showing all 13 types');
+    } else {
+        // Show only selected types
+        selectedParapetOptions.forEach(opt => {
+            const typeNumber = opt.replace('parapet-', '');
+            const option = document.createElement('option');
+            option.value = `Type ${typeNumber}`;
+            option.textContent = `Type ${typeNumber}`;
+            parapetTypeSelect.appendChild(option);
+        });
+        console.log(`Filtered parapet types - showing ${selectedParapetOptions.length} selected types`);
+    }
+    
+    // Setup change listener for image preview
+    parapetTypeSelect.removeEventListener('change', handleParapetTypeChange);
+    parapetTypeSelect.addEventListener('change', handleParapetTypeChange);
+}
+
+function handleParapetTypeChange() {
+    updateParapetTypeImage(this.value);
+}
+
+// Update parapet type image preview
+function updateParapetTypeImage(selectedType) {
+    const previewBox = document.getElementById('parapetTypeImagePreview');
+    if (!previewBox) return;
+    
+    if (!selectedType) {
+        previewBox.innerHTML = '<span style="color: #999; font-size: 13px; text-align: center;">Select a type</span>';
+        return;
+    }
+    
+    // Extract type number (e.g., "Type 1" -> "1")
+    const typeNumber = selectedType.replace('Type ', '');
+    const imageUrl = `https://protection-sismique-equipment-images.s3.amazonaws.com/cfss-options/parapet-${typeNumber}.png`;
+    
+    previewBox.innerHTML = `
+        <img 
+            src="${imageUrl}" 
+            alt="${selectedType}"
+            style="max-width: 105px; max-height: 105px; object-fit: contain;"
+            onerror="this.parentElement.innerHTML='<span style=\\'color: #999; font-size: 11px; text-align: center;\\'><i class=\\'fas fa-image\\' style=\\'font-size: 20px; margin-bottom: 4px; display: block;\\'></i>${selectedType}<br/>(image not found)</span>';"
+        >
+    `;
 }
