@@ -1582,7 +1582,8 @@ function displayWindowList() {
                 </div>
             </div>
             <div class="equipment-details" id="windowDetails${win.id}">
-                <div class="equipment-details-container">
+                <!-- View Mode -->
+                <div class="equipment-details-container" id="windowView${win.id}">
                     <div class="equipment-info-section">
                         <p><strong>Window Type:</strong> ${win.type}</p>
                         <p><strong>Floor:</strong> ${win.floor || 'N/A'}</p>
@@ -1591,10 +1592,13 @@ function displayWindowList() {
                         <p><strong>L1:</strong> ${formatL(win, 'l1')}</p>
                         <p><strong>L2:</strong> ${formatL(win, 'l2')}</p>
                     </div>
+                    <button class="button primary" onclick="showWindowEditForm('${win.id}')" style="margin-top: 15px;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
                 </div>
-                <button class="button primary" onclick="editWindow('${win.id}')" style="margin-top: 15px;">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
+                
+                <!-- Edit Mode -->
+                ${generateWindowEditForm(win)}
             </div>
         `;
         container.appendChild(windowCard);
@@ -1701,27 +1705,170 @@ function formatL(item, prefix) {
     return `${value}' ${minor || 0}"`;
 }
 
-window.editWindow = function(id) {
-    const window = currentProject.windows.find(w => w.id === id);
-    if (!window) return;
+function generateWindowEditForm(win) {
+    return `
+        <form id="windowEditForm${win.id}" style="display: none; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px;" onsubmit="saveWindowEdit('${win.id}', event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Left Column -->
+                <div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Window Type:</strong></label>
+                        <input type="text" id="editWindowType${win.id}" value="${win.type || ''}" required 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Floor:</strong></label>
+                        <input type="text" id="editWindowFloor${win.id}" value="${win.floor || ''}" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Largeur Max:</strong></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="editWindowLargeurMax${win.id}" value="${win.largeurMax || ''}" min="0" step="1"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="editWindowLargeurMaxMinor${win.id}" value="${win.largeurMaxMinor || ''}"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="editWindowLargeurMaxUnit${win.id}" 
+                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft-in" ${win.largeurMaxUnit === 'ft-in' || !win.largeurMaxUnit ? 'selected' : ''}>ft-in</option>
+                                <option value="mm" ${win.largeurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Hauteur Max:</strong></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="editWindowHauteurMax${win.id}" value="${win.hauteurMax || ''}" min="0" step="1"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="editWindowHauteurMaxMinor${win.id}" value="${win.hauteurMaxMinor || ''}"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="editWindowHauteurMaxUnit${win.id}" 
+                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft-in" ${win.hauteurMaxUnit === 'ft-in' || !win.hauteurMaxUnit ? 'selected' : ''}>ft-in</option>
+                                <option value="mm" ${win.hauteurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>L1:</strong></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="editWindowL1${win.id}" value="${win.l1 || ''}" min="0" step="1"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="editWindowL1Minor${win.id}" value="${win.l1Minor || ''}"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="editWindowL1Unit${win.id}" 
+                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft-in" ${win.l1Unit === 'ft-in' || !win.l1Unit ? 'selected' : ''}>ft-in</option>
+                                <option value="mm" ${win.l1Unit === 'mm' ? 'selected' : ''}>mm</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>L2:</strong></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="editWindowL2${win.id}" value="${win.l2 || ''}" min="0" step="1"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="editWindowL2Minor${win.id}" value="${win.l2Minor || ''}"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="editWindowL2Unit${win.id}" 
+                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft-in" ${win.l2Unit === 'ft-in' || !win.l2Unit ? 'selected' : ''}>ft-in</option>
+                                <option value="mm" ${win.l2Unit === 'mm' ? 'selected' : ''}>mm</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Window Reference Image -->
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Reference:</strong></label>
+                        <div style="
+                            width: 100%;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                            background: white;
+                            display: flex;
+                            justify-content: center;
+                        ">
+                            <img 
+                                src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/fenetre.png" 
+                                alt="Window Reference"
+                                style="
+                                    max-width: 100%;
+                                    height: auto;
+                                    border-radius: 4px;
+                                "
+                                onerror="this.style.display='none';">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button type="button" onclick="cancelWindowEdit('${win.id}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    `;
+}
 
-    editingWindowId = id;
-    document.getElementById('windowType').value = window.type || '';
-    document.getElementById('windowFloor').value = window.floor || '';
-    document.getElementById('windowLargeurMax').value = window.largeurMax || '';
-    document.getElementById('windowLargeurMaxMinor').value = window.largeurMaxMinor || '';
-    document.getElementById('windowLargeurMaxUnit').value = window.largeurMaxUnit || 'ft-in';
-    document.getElementById('windowHauteurMax').value = window.hauteurMax || '';
-    document.getElementById('windowHauteurMaxMinor').value = window.hauteurMaxMinor || '';
-    document.getElementById('windowHauteurMaxUnit').value = window.hauteurMaxUnit || 'ft-in';
-    document.getElementById('windowL1').value = window.l1 || '';
-    document.getElementById('windowL1Minor').value = window.l1Minor || '';
-    document.getElementById('windowL1Unit').value = window.l1Unit || 'ft-in';
-    document.getElementById('windowL2').value = window.l2 || '';
-    document.getElementById('windowL2Minor').value = window.l2Minor || '';
-    document.getElementById('windowL2Unit').value = window.l2Unit || 'ft-in';
+window.showWindowEditForm = function(windowId) {
+    const viewSection = document.getElementById(`windowView${windowId}`);
+    const editForm = document.getElementById(`windowEditForm${windowId}`);
+    
+    if (viewSection) viewSection.style.display = 'none';
+    if (editForm) editForm.style.display = 'block';
+};
 
-    showForm('windowForm');
+window.cancelWindowEdit = function(windowId) {
+    const viewSection = document.getElementById(`windowView${windowId}`);
+    const editForm = document.getElementById(`windowEditForm${windowId}`);
+    
+    if (viewSection) viewSection.style.display = 'block';
+    if (editForm) editForm.style.display = 'none';
+};
+
+window.saveWindowEdit = async function(windowId, event) {
+    event.preventDefault();
+    
+    const win = currentProject.windows.find(w => w.id === windowId);
+    if (!win) return;
+    
+    const index = currentProject.windows.findIndex(w => w.id === windowId);
+    
+    currentProject.windows[index] = {
+        ...win,
+        type: document.getElementById(`editWindowType${windowId}`).value.trim(),
+        floor: document.getElementById(`editWindowFloor${windowId}`).value.trim(),
+        largeurMax: document.getElementById(`editWindowLargeurMax${windowId}`).value,
+        largeurMaxMinor: document.getElementById(`editWindowLargeurMaxMinor${windowId}`).value,
+        largeurMaxUnit: document.getElementById(`editWindowLargeurMaxUnit${windowId}`).value,
+        hauteurMax: document.getElementById(`editWindowHauteurMax${windowId}`).value,
+        hauteurMaxMinor: document.getElementById(`editWindowHauteurMaxMinor${windowId}`).value,
+        hauteurMaxUnit: document.getElementById(`editWindowHauteurMaxUnit${windowId}`).value,
+        l1: document.getElementById(`editWindowL1${windowId}`).value,
+        l1Minor: document.getElementById(`editWindowL1Minor${windowId}`).value,
+        l1Unit: document.getElementById(`editWindowL1Unit${windowId}`).value,
+        l2: document.getElementById(`editWindowL2${windowId}`).value,
+        l2Minor: document.getElementById(`editWindowL2Minor${windowId}`).value,
+        l2Unit: document.getElementById(`editWindowL2Unit${windowId}`).value
+    };
+    
+    await saveProject();
+    displayWindowList();
+    alert('Window updated successfully!');
 };
 
 window.deleteWindow = async function(id) {
