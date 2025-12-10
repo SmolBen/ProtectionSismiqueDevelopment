@@ -3661,6 +3661,9 @@ async function reloadProjectData() {
             }
             
             console.log('✅ Project data reloaded successfully');
+
+            // Setup floor input listener
+            setupFloorInputListener();
         }
         
     } catch (error) {
@@ -5457,6 +5460,9 @@ function setupNewCalculationButton() {
                 equipmentForm.classList.add('show');
                 newCalcButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
                 
+                // Setup floor listener
+                setupFloorInputListener();
+                
                 equipmentForm.scrollIntoView({ 
                     behavior: 'smooth', 
                     block: 'start' 
@@ -5464,6 +5470,131 @@ function setupNewCalculationButton() {
             }
         });
     }
+}
+
+// Setup floor input listener for ULS/SLS display
+function setupFloorInputListener() {
+    const floorInput = document.getElementById('floor');
+    const ulsDisplay = document.getElementById('floorULSDisplay');
+    const slsDisplay = document.getElementById('floorSLSDisplay');
+    
+    if (!floorInput || !ulsDisplay || !slsDisplay) return;
+    
+    floorInput.addEventListener('input', function() {
+        updateFloorULSSLS(floorInput.value, ulsDisplay, slsDisplay);
+    });
+    
+    // Also update on form show
+    floorInput.addEventListener('focus', function() {
+        updateFloorULSSLS(floorInput.value, ulsDisplay, slsDisplay);
+    });
+}
+
+function updateFloorULSSLS(floorValue, ulsDisplay, slsDisplay) {
+    if (!floorValue || !projectData || !projectData.cfssWindData) {
+        ulsDisplay.textContent = '--';
+        slsDisplay.textContent = '--';
+        return;
+    }
+    
+    const cfssData = projectData.cfssWindData;
+    if (!cfssData.storeys || cfssData.storeys.length === 0) {
+        ulsDisplay.textContent = '--';
+        slsDisplay.textContent = '--';
+        return;
+    }
+    
+    // Parse floor input - could be "NV1", "NV2-6", "NV1-NV3", etc.
+    const floorInput = floorValue.trim().toUpperCase();
+    
+    // Try to find matching floor(s)
+    let matchedIndices = [];
+    
+    // FIRST: Try exact match with a single floor label
+    cfssData.storeys.forEach((storey, index) => {
+        if (storey.label.toUpperCase() === floorInput) {
+            matchedIndices.push(index);
+        }
+    });
+    
+    // If exact match found, use it
+    if (matchedIndices.length > 0) {
+        const firstFloor = cfssData.storeys[matchedIndices[0]];
+        
+        // Check if this floor is in a group
+        const floorGroups = cfssData.floorGroups || [];
+        let groupInfo = null;
+        
+        for (const group of floorGroups) {
+            if (matchedIndices[0] >= group.firstIndex && matchedIndices[0] <= group.lastIndex) {
+                groupInfo = group;
+                break;
+            }
+        }
+        
+        if (groupInfo) {
+            ulsDisplay.textContent = groupInfo.uls.toFixed(1);
+            slsDisplay.textContent = groupInfo.sls.toFixed(1);
+        } else {
+            ulsDisplay.textContent = firstFloor.uls.toFixed(1);
+            slsDisplay.textContent = firstFloor.sls.toFixed(1);
+        }
+        return;
+    }
+    
+    // SECOND: If no exact match, try to interpret as a range (only if it contains "-")
+    if (floorInput.includes('-')) {
+        const parts = floorInput.split('-').map(p => p.trim());
+        if (parts.length === 2) {
+            const startFloor = parts[0];
+            const endFloor = parts[1];
+            
+            let startIndex = -1;
+            let endIndex = -1;
+            
+            cfssData.storeys.forEach((storey, index) => {
+                const label = storey.label.toUpperCase();
+                if (label === startFloor) startIndex = index;
+                if (label === endFloor) endIndex = index;
+            });
+            
+            if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
+                for (let i = startIndex; i <= endIndex; i++) {
+                    matchedIndices.push(i);
+                }
+                
+                // Check if these floors are in a group
+                const floorGroups = cfssData.floorGroups || [];
+                let groupInfo = null;
+                
+                // Check if all matched indices are in the same group
+                for (const group of floorGroups) {
+                    const allInGroup = matchedIndices.every(idx => 
+                        idx >= group.firstIndex && idx <= group.lastIndex
+                    );
+                    if (allInGroup) {
+                        groupInfo = group;
+                        break;
+                    }
+                }
+                
+                // If in a group, use group's values, otherwise use the first matched floor's values
+                if (groupInfo) {
+                    ulsDisplay.textContent = groupInfo.uls.toFixed(1);
+                    slsDisplay.textContent = groupInfo.sls.toFixed(1);
+                } else {
+                    const firstFloor = cfssData.storeys[matchedIndices[0]];
+                    ulsDisplay.textContent = firstFloor.uls.toFixed(1);
+                    slsDisplay.textContent = firstFloor.sls.toFixed(1);
+                }
+                return;
+            }
+        }
+    }
+    
+    // No match found
+    ulsDisplay.textContent = '--';
+    slsDisplay.textContent = '--';
 }
 
 function setupCFSSDataButton() {

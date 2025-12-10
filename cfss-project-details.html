@@ -685,7 +685,17 @@
                                 <!-- 2. Floor -->
                                 <div class="form-group">
                                     <label for="floor">Floor:</label>
-                                    <input type="text" id="floor" name="floor" placeholder="Enter floor..." required>
+                                    <div style="display: flex; gap: 15px; align-items: center;">
+                                        <input type="text" id="floor" name="floor" placeholder="Enter floor..." required style="flex: 1;">
+                                        <div style="display: flex; gap: 15px; font-size: 13px; color: #666;">
+                                            <span style="padding: 4px 8px; background: #e7f5e9; border-radius: 4px; min-width: 80px;">
+                                                <strong style="color: #28a745;">ULS:</strong> <span id="floorULSDisplay">--</span>
+                                            </span>
+                                            <span style="padding: 4px 8px; background: #d1ecf1; border-radius: 4px; min-width: 80px;">
+                                                <strong style="color: #17a2b8;">SLS:</strong> <span id="floorSLSDisplay">--</span>
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- 3. Hauteur Max - MANUAL INPUT WITH UNIT SELECTION -->
