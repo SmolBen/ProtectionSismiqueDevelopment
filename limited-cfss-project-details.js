@@ -994,6 +994,8 @@ async function handleWallSubmit(e) {
         hauteurMaxUnit: document.getElementById('hauteurMaxUnit').value,
         colombageSet1: document.getElementById('colombageSet1').value,
         colombageSet2: document.getElementById('colombageSet2').value,
+        deflexionSet1: document.getElementById('deflexionSet1').value,
+        deflexionSet2: document.getElementById('deflexionSet2').value,
         note: document.getElementById('note').value.trim(),
         images: [...(window.currentWallImages || [])]
     };
@@ -1067,6 +1069,8 @@ function displayEquipmentList() {
                         <p><strong>Height:</strong> ${formatHeight(wall)}</p>
                         <p><strong>Colombage Set 1:</strong> ${wall.colombageSet1 || 'N/A'}</p>
                         <p><strong>Colombage Set 2:</strong> ${wall.colombageSet2 || 'N/A'}</p>
+                        <p><strong>Déflexion Set 1:</strong> ${wall.deflexionSet1 || 'N/A'}</p>
+                        <p><strong>Déflexion Set 2:</strong> ${wall.deflexionSet2 || 'N/A'}</p>
                         ${wall.note ? `<p><strong>Note:</strong> ${wall.note}</p>` : ''}
                     </div>
                     <div class="equipment-images-section">
@@ -3189,6 +3193,36 @@ function generateWallEditForm(wall) {
                         </select>
                     </div>
                     
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Déflexion Set 1:</strong></label>
+                        <select id="editDeflexionSet1${wall.id}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Select...</option>
+                            <option value="L/180" ${wall.deflexionSet1 === 'L/180' ? 'selected' : ''}>L/180</option>
+                            <option value="L/240" ${wall.deflexionSet1 === 'L/240' ? 'selected' : ''}>L/240</option>
+                            <option value="L/360" ${wall.deflexionSet1 === 'L/360' ? 'selected' : ''}>L/360</option>
+                            <option value="L/480" ${wall.deflexionSet1 === 'L/480' ? 'selected' : ''}>L/480</option>
+                            <option value="L/600" ${wall.deflexionSet1 === 'L/600' ? 'selected' : ''}>L/600</option>
+                            <option value="L/720" ${wall.deflexionSet1 === 'L/720' ? 'selected' : ''}>L/720</option>
+                            <option value="N/A" ${wall.deflexionSet1 === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Déflexion Set 2:</strong></label>
+                        <select id="editDeflexionSet2${wall.id}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Select...</option>
+                            <option value="L/180" ${wall.deflexionSet2 === 'L/180' ? 'selected' : ''}>L/180</option>
+                            <option value="L/240" ${wall.deflexionSet2 === 'L/240' ? 'selected' : ''}>L/240</option>
+                            <option value="L/360" ${wall.deflexionSet2 === 'L/360' ? 'selected' : ''}>L/360</option>
+                            <option value="L/480" ${wall.deflexionSet2 === 'L/480' ? 'selected' : ''}>L/480</option>
+                            <option value="L/600" ${wall.deflexionSet2 === 'L/600' ? 'selected' : ''}>L/600</option>
+                            <option value="L/720" ${wall.deflexionSet2 === 'L/720' ? 'selected' : ''}>L/720</option>
+                            <option value="N/A" ${wall.deflexionSet2 === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </div>
+                    
                     <!-- Image Upload Section -->
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label><strong>Images:</strong></label>
@@ -3277,6 +3311,8 @@ window.saveWallEdit = async function(wallId, event) {
         hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${wallId}`).value,
         colombageSet1: document.getElementById(`editColombageSet1${wallId}`).value,
         colombageSet2: document.getElementById(`editColombageSet2${wallId}`).value,
+        deflexionSet1: document.getElementById(`editDeflexionSet1${wallId}`).value,
+        deflexionSet2: document.getElementById(`editDeflexionSet2${wallId}`).value,
         note: document.getElementById(`editNote${wallId}`).value.trim(),
         images: editingWallImages[wallId] || []
     };
