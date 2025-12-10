@@ -1459,7 +1459,13 @@ async function handleWindowSubmit(e) {
         largeurMaxUnit: document.getElementById('windowLargeurMaxUnit').value,
         hauteurMax: document.getElementById('windowHauteurMax').value,
         hauteurMaxMinor: document.getElementById('windowHauteurMaxMinor').value,
-        hauteurMaxUnit: document.getElementById('windowHauteurMaxUnit').value
+        hauteurMaxUnit: document.getElementById('windowHauteurMaxUnit').value,
+        l1: document.getElementById('windowL1').value,
+        l1Minor: document.getElementById('windowL1Minor').value,
+        l1Unit: document.getElementById('windowL1Unit').value,
+        l2: document.getElementById('windowL2').value,
+        l2Minor: document.getElementById('windowL2Minor').value,
+        l2Unit: document.getElementById('windowL2Unit').value
     };
 
     if (!windowData.type) {
@@ -1582,6 +1588,8 @@ function displayWindowList() {
                         <p><strong>Floor:</strong> ${win.floor || 'N/A'}</p>
                         <p><strong>Width (Largeur):</strong> ${formatDimension(win, 'largeur')}</p>
                         <p><strong>Height (Hauteur):</strong> ${formatDimension(win, 'hauteur')}</p>
+                        <p><strong>L1:</strong> ${formatL(win, 'l1')}</p>
+                        <p><strong>L2:</strong> ${formatL(win, 'l2')}</p>
                     </div>
                 </div>
                 <button class="button primary" onclick="editWindow('${win.id}')" style="margin-top: 15px;">
@@ -1681,6 +1689,18 @@ function formatDimension(item, prefix) {
     return `${value}' ${minor || 0}"`;
 }
 
+function formatL(item, prefix) {
+    const value = item[prefix];
+    const minor = item[`${prefix}Minor`];
+    const unit = item[`${prefix}Unit`];
+    
+    if (!value) return 'N/A';
+    if (unit === 'mm') {
+        return `${value} mm`;
+    }
+    return `${value}' ${minor || 0}"`;
+}
+
 window.editWindow = function(id) {
     const window = currentProject.windows.find(w => w.id === id);
     if (!window) return;
@@ -1694,6 +1714,12 @@ window.editWindow = function(id) {
     document.getElementById('windowHauteurMax').value = window.hauteurMax || '';
     document.getElementById('windowHauteurMaxMinor').value = window.hauteurMaxMinor || '';
     document.getElementById('windowHauteurMaxUnit').value = window.hauteurMaxUnit || 'ft-in';
+    document.getElementById('windowL1').value = window.l1 || '';
+    document.getElementById('windowL1Minor').value = window.l1Minor || '';
+    document.getElementById('windowL1Unit').value = window.l1Unit || 'ft-in';
+    document.getElementById('windowL2').value = window.l2 || '';
+    document.getElementById('windowL2Minor').value = window.l2Minor || '';
+    document.getElementById('windowL2Unit').value = window.l2Unit || 'ft-in';
 
     showForm('windowForm');
 };

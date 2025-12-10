@@ -580,58 +580,117 @@
             <div id="windowForm" style="display: none;">
                 <div class="calculation-sections">
                     <div class="equipment-form-section">
-                        <div class="form-fields">
-                            <h2>New Window</h2>
-                            <form id="windowFormElement">
-                                <div class="form-group">
-                                    <label for="windowType">Window Type: <span style="color: red;">*</span></label>
-                                    <input type="text" id="windowType" name="windowType" placeholder="Enter window type..." required>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="windowFloor">Floor:</label>
-                                    <input type="text" id="windowFloor" name="windowFloor" placeholder="e.g., 2-5">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="windowLargeurMax">Largeur Max:</label>
-                                    <div style="display: flex; gap: 10px; align-items: center;">
-                                        <input type="number" id="windowLargeurMax" name="windowLargeurMax" min="0" step="1"
-                                            style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                                        <input type="text" id="windowLargeurMaxMinor" name="windowLargeurMaxMinor" placeholder=""
-                                            style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                                        <select id="windowLargeurMaxUnit" name="windowLargeurMaxUnit"
-                                            style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
-                                            <option value="ft-in" selected>ft-in</option>
-                                            <option value="mm">mm</option>
-                                        </select>
+                        <div style="display: grid; grid-template-columns: 1fr auto; gap: 30px;">
+                            <!-- Left side: Form -->
+                            <div class="form-fields">
+                                <h2>New Window</h2>
+                                <form id="windowFormElement">
+                                    <div class="form-group">
+                                        <label for="windowType">Window Type: <span style="color: red;">*</span></label>
+                                        <input type="text" id="windowType" name="windowType" placeholder="Enter window type..." required>
                                     </div>
-                                </div>
 
-                                <div class="form-group">
-                                    <label for="windowHauteurMax">Hauteur Max:</label>
-                                    <div style="display: flex; gap: 10px; align-items: center;">
-                                        <input type="number" id="windowHauteurMax" name="windowHauteurMax" min="0" step="1"
-                                            style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                                        <input type="text" id="windowHauteurMaxMinor" name="windowHauteurMaxMinor" placeholder=""
-                                            style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                                        <select id="windowHauteurMaxUnit" name="windowHauteurMaxUnit"
-                                            style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
-                                            <option value="ft-in" selected>ft-in</option>
-                                            <option value="mm">mm</option>
-                                        </select>
+                                    <div class="form-group">
+                                        <label for="windowFloor">Floor:</label>
+                                        <input type="text" id="windowFloor" name="windowFloor" placeholder="e.g., 2-5">
                                     </div>
-                                </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="windowLargeurMax">Largeur Max:</label>
+                                        <div style="display: flex; gap: 10px; align-items: center;">
+                                            <input type="number" id="windowLargeurMax" name="windowLargeurMax" min="0" step="1"
+                                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <input type="text" id="windowLargeurMaxMinor" name="windowLargeurMaxMinor" placeholder=""
+                                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <select id="windowLargeurMaxUnit" name="windowLargeurMaxUnit"
+                                                style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                                <option value="ft-in" selected>ft-in</option>
+                                                <option value="mm">mm</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-                                <div style="display: flex; gap: 15px; margin-top: 20px;">
-                                    <button type="submit" id="saveWindow" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                        <i class="fas fa-save"></i> Save Window
-                                    </button>
-                                    <button type="button" id="cancelWindow" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                        Cancel
-                                    </button>
+                                    <div class="form-group">
+                                        <label for="windowHauteurMax">Hauteur Max:</label>
+                                        <div style="display: flex; gap: 10px; align-items: center;">
+                                            <input type="number" id="windowHauteurMax" name="windowHauteurMax" min="0" step="1"
+                                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <input type="text" id="windowHauteurMaxMinor" name="windowHauteurMaxMinor" placeholder=""
+                                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <select id="windowHauteurMaxUnit" name="windowHauteurMaxUnit"
+                                                style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                                <option value="ft-in" selected>ft-in</option>
+                                                <option value="mm">mm</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="windowL1">L1:</label>
+                                        <div style="display: flex; gap: 10px; align-items: center;">
+                                            <input type="number" id="windowL1" name="windowL1" min="0" step="1"
+                                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <input type="text" id="windowL1Minor" name="windowL1Minor" placeholder=""
+                                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <select id="windowL1Unit" name="windowL1Unit"
+                                                style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                                <option value="ft-in" selected>ft-in</option>
+                                                <option value="mm">mm</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="windowL2">L2:</label>
+                                        <div style="display: flex; gap: 10px; align-items: center;">
+                                            <input type="number" id="windowL2" name="windowL2" min="0" step="1"
+                                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <input type="text" id="windowL2Minor" name="windowL2Minor" placeholder=""
+                                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <select id="windowL2Unit" name="windowL2Unit"
+                                                style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                                <option value="ft-in" selected>ft-in</option>
+                                                <option value="mm">mm</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                                        <button type="submit" id="saveWindow" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                            <i class="fas fa-save"></i> Save Window
+                                        </button>
+                                        <button type="button" id="cancelWindow" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Right side: Window Image -->
+                            <div style="display: flex; align-items: flex-start; justify-content: center; padding-top: 50px;">
+                                <div style="
+                                    width: 400px;
+                                    padding: 20px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                    background: #f9f9f9;
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                ">
+                                    <img 
+                                        src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/cfss-options/fenetre.png" 
+                                        alt="Window Reference"
+                                        style="
+                                            width: 100%;
+                                            height: auto;
+                                            border-radius: 4px;
+                                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                        "
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <span style="display: none; color: #999; font-size: 13px; text-align: center; padding: 20px;">Image not available</span>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
