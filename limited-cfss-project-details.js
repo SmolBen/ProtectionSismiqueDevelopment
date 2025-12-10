@@ -191,6 +191,9 @@ function displayProjectInfo() {
     ].filter(part => part && part.trim());
     document.getElementById('projectAddress').textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Not specified';
     
+    document.getElementById('projectDeflectionMax').textContent = currentProject.deflectionMax || 'Not specified';
+    document.getElementById('projectThicknessMin').textContent = currentProject.thicknessMin || 'Not specified';
+    
     document.getElementById('projectStatusDropdown').value = currentProject.status || 'Planning';
     
     // Display floors

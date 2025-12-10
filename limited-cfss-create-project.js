@@ -89,6 +89,8 @@ async function handleFormSubmit(e) {
             city: document.getElementById('city').value.trim(),
             province: document.getElementById('province').value.trim(),
             country: document.getElementById('country').value.trim(),
+            deflectionMax: document.getElementById('deflectionMax').value,
+            thicknessMin: document.getElementById('thicknessMin').value,
             status: 'Planning',
             createdBy: currentUser.email,
             createdAt: new Date().toISOString(),
