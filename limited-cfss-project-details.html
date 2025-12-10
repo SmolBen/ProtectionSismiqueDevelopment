@@ -8,6 +8,88 @@
     <link rel="stylesheet" href="project-details.css">
     <link rel="stylesheet" href="cfss-project-details.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style>
+    .image-upload-section {
+        margin-top: 15px;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: #fafafa;
+    }
+    .upload-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .camera-btn {
+        background: #17a2b8 !important;
+        color: white !important;
+        border: none !important;
+        padding: 12px 24px !important;
+        border-radius: 4px !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        font-size: 14px !important;
+        width: 100% !important;
+    }
+    .camera-btn:hover {
+        background: #138496 !important;
+    }
+    .drop-zone {
+        width: 100% !important;
+        padding: 20px !important;
+        border: 2px dashed #ccc !important;
+        border-radius: 4px !important;
+        background: white !important;
+        text-align: center !important;
+        color: #666 !important;
+        font-size: 13px !important;
+        min-height: 60px !important;
+        box-sizing: border-box !important;
+    }
+    .drop-zone.dragover {
+        border-color: #17a2b8 !important;
+        background: #f0f9ff !important;
+    }
+    .image-preview-container {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+    .image-preview {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .image-remove {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+    }
+</style>
+
 </head>
 <body class="limited-cfss-page">
     <nav class="navbar">
@@ -346,7 +428,28 @@
                                 </div>
                             </form>
                         </div>
+                        
+                        <!-- Image Upload Section -->
+                        <div class="image-upload-section">
+                            <div class="upload-controls">
+                                <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
+                                    <i class="fas fa-camera"></i>
+                                    Browse
+                                </button>
+                                
+                                <input 
+                                    class="drop-zone" 
+                                    id="dropZone" 
+                                    placeholder="Drop or paste images here (Ctrl+V)"
+                                    readonly
+                                    tabindex="0">
+                            </div>
+                            
+                            <div class="image-preview-container" id="imagePreviewContainer"></div>
+                        </div>
+                        <input type="file" id="imageFileInput" multiple accept="image/*" style="display: none;">
                     </div>
+                </div>
                 </div>
             </div>
 

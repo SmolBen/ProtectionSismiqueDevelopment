@@ -230,6 +230,7 @@ function setupEventListeners() {
     
     if (newCalcButton && equipmentForm) {
         newCalcButton.addEventListener('click', () => {
+            initializeImageUpload();
             console.log('Add Wall button clicked');
             console.log('Form has show class:', equipmentForm.classList.contains('show'));
             
@@ -988,7 +989,8 @@ async function handleWallSubmit(e) {
         hauteurMaxUnit: document.getElementById('hauteurMaxUnit').value,
         colombageSet1: document.getElementById('colombageSet1').value,
         colombageSet2: document.getElementById('colombageSet2').value,
-        note: document.getElementById('note').value.trim()
+        note: document.getElementById('note').value.trim(),
+        images: [...(window.currentWallImages || [])]
     };
 
     if (!wallData.name) {
@@ -1011,6 +1013,7 @@ async function handleWallSubmit(e) {
     hideForm('equipmentForm');
     displayEquipmentList();
     editingEquipmentId = null;
+    clearWallImages();
 }
 
 function displayEquipmentList() {
@@ -1051,7 +1054,8 @@ function displayEquipmentList() {
                 </div>
             </div>
             <div class="equipment-details" id="wallDetails${wall.id}">
-                <div class="equipment-details-container">
+                <!-- View Mode -->
+                <div class="equipment-details-container" id="wallView${wall.id}">
                     <div class="equipment-info-section">
                         <p><strong>Wall Name:</strong> ${wall.name}</p>
                         <p><strong>Floor:</strong> ${wall.floor || 'N/A'}</p>
@@ -1060,10 +1064,17 @@ function displayEquipmentList() {
                         <p><strong>Colombage Set 2:</strong> ${wall.colombageSet2 || 'N/A'}</p>
                         ${wall.note ? `<p><strong>Note:</strong> ${wall.note}</p>` : ''}
                     </div>
+                    <div class="equipment-images-section">
+                        <h4 style="margin: 10px 0 5px 0; font-size: 14px;">Images:</h4>
+                        ${renderWallImages(wall, index)}
+                    </div>
+                    <button class="button primary" onclick="showWallEditForm('${wall.id}')" style="margin-top: 15px;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
                 </div>
-                <button class="button primary" onclick="editWall('${wall.id}')" style="margin-top: 15px;">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
+                
+                <!-- Edit Mode -->
+                ${generateWallEditForm(wall)}
             </div>
         `;
         container.appendChild(wallCard);
@@ -1077,23 +1088,6 @@ function formatHeight(item) {
     }
     return `${item.hauteurMax}' ${item.hauteurMaxMinor || 0}"`;
 }
-
-window.editWall = function(id) {
-    const wall = currentProject.equipment.find(e => e.id === id);
-    if (!wall) return;
-
-    editingEquipmentId = id;
-    document.getElementById('equipment').value = wall.name || '';
-    document.getElementById('floor').value = wall.floor || '';
-    document.getElementById('hauteurMax').value = wall.hauteurMax || '';
-    document.getElementById('hauteurMaxMinor').value = wall.hauteurMaxMinor || '';
-    document.getElementById('hauteurMaxUnit').value = wall.hauteurMaxUnit || 'ft-in';
-    document.getElementById('colombageSet1').value = wall.colombageSet1 || '';
-    document.getElementById('colombageSet2').value = wall.colombageSet2 || '';
-    document.getElementById('note').value = wall.note || '';
-
-    showForm('equipmentForm');
-};
 
 window.deleteWall = async function(id) {
     if (!confirm('Are you sure you want to delete this wall?')) return;
@@ -2047,4 +2041,669 @@ async function saveFloors() {
     currentProject.floors = floors;
     await saveProject();
     alert('Floors saved successfully!');
+}
+
+// Image Upload Functions
+let currentWallImages = [];
+
+function initializeImageUpload() {
+    if (!window.currentWallImages) {
+        window.currentWallImages = [];
+    }
+    setupImageUploadHandlers();
+}
+
+function setupImageUploadHandlers() {
+    const cameraBtn = document.getElementById('cameraBtn');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('imageFileInput');
+    
+    if (!cameraBtn || !dropZone || !fileInput) {
+        console.warn('Image upload elements not found');
+        return;
+    }
+    
+    cameraBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.click();
+    });
+    
+    fileInput.addEventListener('change', handleFileSelect);
+    dropZone.addEventListener('paste', handlePaste);
+    dropZone.addEventListener('dragover', handleDragOver);
+    dropZone.addEventListener('dragleave', handleDragLeave);
+    dropZone.addEventListener('drop', handleDrop);
+    
+    dropZone.addEventListener('focus', () => {
+        dropZone.style.borderColor = '#17a2b8';
+        dropZone.style.boxShadow = '0 0 0 2px rgba(23, 162, 184, 0.25)';
+    });
+    
+    dropZone.addEventListener('blur', () => {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.boxShadow = 'none';
+    });
+    
+    console.log('Image upload handlers setup successfully');
+}
+
+function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    processFiles(files);
+}
+
+function handlePaste(event) {
+    const items = event.clipboardData.items;
+    const files = [];
+    
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+        }
+    }
+    
+    if (files.length > 0) {
+        event.preventDefault();
+        processFiles(files);
+    }
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('dragover');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('dragover');
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+    
+    const files = Array.from(event.dataTransfer.files);
+    processFiles(files);
+}
+
+async function processFiles(files) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+    
+    const currentImageCount = window.currentWallImages?.length || 0;
+    const remainingSlots = 2 - currentImageCount;
+    
+    if (remainingSlots <= 0) {
+        alert('Maximum 2 images allowed per wall. Please remove existing images to add new ones.');
+        return;
+    }
+    
+    if (validFiles.length > remainingSlots) {
+        alert(`You can only add ${remainingSlots} more image(s). Maximum 2 images allowed per wall.`);
+        return;
+    }
+    
+    const dropZone = document.getElementById('dropZone');
+    if (dropZone) {
+        dropZone.placeholder = `Uploading ${validFiles.length} image(s)...`;
+    }
+    
+    if (!window.currentWallImages) {
+        window.currentWallImages = [];
+    }
+    
+    for (const file of validFiles) {
+        try {
+            const imageData = await uploadImageToS3(file);
+            window.currentWallImages.push(imageData);
+            addImagePreview(imageData);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+    
+    updateDropZoneState();
+}
+
+async function uploadImageToS3(file) {
+    const projectId = new URLSearchParams(window.location.search).get('id');
+    
+    const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${projectId}/image-upload-url`, {
+        method: 'POST',
+        headers: authHelper.getAuthHeaders(),
+        body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type
+        })
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to get upload URL');
+    }
+    
+    const uploadData = await response.json();
+    
+    const uploadResponse = await fetch(uploadData.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+            'Content-Type': file.type
+        }
+    });
+    
+    if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image to S3');
+    }
+    
+    return {
+        key: uploadData.key,
+        filename: file.name,
+        uploadedAt: new Date().toISOString()
+    };
+}
+
+function addImagePreview(imageData) {
+    const container = document.getElementById('imagePreviewContainer');
+    
+    const preview = document.createElement('div');
+    preview.className = 'image-preview';
+    preview.dataset.imageKey = imageData.key;
+    preview.innerHTML = `
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
+        <button type="button" class="image-remove" title="Remove image">×</button>
+    `;
+    
+    container.appendChild(preview);
+    
+    const removeButton = preview.querySelector('.image-remove');
+    removeButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        removeImage(imageData.key);
+    });
+    
+    loadImagePreview(preview.querySelector('img'), imageData.key);
+}
+
+async function loadImagePreview(imgElement, imageKey) {
+    const projectId = new URLSearchParams(window.location.search).get('id');
+    
+    try {
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${projectId}/images/sign?key=${encodeURIComponent(imageKey)}`, {
+            headers: authHelper.getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            imgElement.src = data.url;
+        }
+    } catch (error) {
+        console.error('Error loading image preview:', error);
+    }
+}
+
+function removeImage(imageKey) {
+    if (!window.currentWallImages) {
+        window.currentWallImages = [];
+    }
+    window.currentWallImages = window.currentWallImages.filter(img => img.key !== imageKey);
+    
+    const container = document.getElementById('imagePreviewContainer');
+    const preview = container.querySelector(`[data-image-key="${imageKey}"]`);
+    if (preview) {
+        preview.remove();
+    }
+    
+    updateDropZoneState();
+}
+
+function updateDropZoneState() {
+    const dropZone = document.getElementById('dropZone');
+    if (!dropZone) return;
+    
+    const currentCount = window.currentWallImages?.length || 0;
+    
+    if (currentCount >= 2) {
+        dropZone.placeholder = 'Maximum 2 images reached. Remove images to add new ones.';
+        dropZone.style.background = '#fff5f5';
+        dropZone.style.borderColor = '#ffc107';
+    } else {
+        dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+        dropZone.style.background = 'white';
+        dropZone.style.borderColor = '#ccc';
+    }
+}
+
+function clearWallImages() {
+    window.currentWallImages = [];
+    const container = document.getElementById('imagePreviewContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
+    updateDropZoneState();
+}
+
+// Render wall images in the wall list
+function renderWallImages(wall, index) {
+    if (!wall.images || wall.images.length === 0) {
+        return '<p style="color: #666; font-style: italic;">No images</p>';
+    }
+    
+    const imagesToShow = wall.images.slice(0, 2);
+    
+    let imagesHTML = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-width: 200px;">';
+    
+    imagesToShow.forEach((image, imgIndex) => {
+        const imageId = `wall-image-${wall.id}-${imgIndex}`;
+        const imageWidth = imagesToShow.length === 1 ? '100px' : '90px';
+        
+        imagesHTML += `
+            <div style="position: relative; width: ${imageWidth}; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd; background: #f5f5f5;">
+                <img id="${imageId}" 
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" 
+                     alt="${image.filename || 'Wall image'}"
+                     style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                     onclick="openImageModal('${image.key}', '${image.filename || 'Wall image'}')">
+            </div>
+        `;
+    });
+    
+    imagesHTML += '</div>';
+    
+    // Load actual images
+    setTimeout(() => {
+        imagesToShow.forEach((image, imgIndex) => {
+            const imageId = `wall-image-${wall.id}-${imgIndex}`;
+            const imgElement = document.getElementById(imageId);
+            if (imgElement) {
+                loadWallImage(imgElement, image.key);
+            }
+        });
+    }, 100);
+    
+    return imagesHTML;
+}
+
+// Load wall image from S3
+async function loadWallImage(imgElement, imageKey) {
+    if (!imgElement || !imageKey) return;
+    
+    const projectId = new URLSearchParams(window.location.search).get('id');
+    
+    try {
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${projectId}/images/sign?key=${encodeURIComponent(imageKey)}`, {
+            headers: authHelper.getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.url) {
+                imgElement.src = data.url;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading wall image:', error);
+        imgElement.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect width="80" height="80" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EError%3C/text%3E%3C/svg%3E';
+    }
+}
+
+// Open image in modal for full view
+window.openImageModal = function(imageKey, filename) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.8); display: flex; align-items: center; 
+        justify-content: center; z-index: 1000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="position: relative; max-width: 90%; max-height: 90%;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23fff'%3ELoading...%3C/text%3E%3C/svg%3E" 
+                style="max-width: 100%; max-height: 100%; border-radius: 8px;"
+                alt="${filename}">
+            <button style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer;"
+                    onclick="this.closest('.image-modal').remove()">×</button>
+        </div>
+    `;
+    
+    modal.className = 'image-modal';
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    
+    document.body.appendChild(modal);
+    
+    // Load the full-size image
+    loadWallImage(modal.querySelector('img'), imageKey);
+};
+
+function generateWallEditForm(wall) {
+    return `
+        <form id="wallEditForm${wall.id}" style="display: none; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px;" onsubmit="saveWallEdit('${wall.id}', event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Left Column -->
+                <div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Wall Name:</strong></label>
+                        <input type="text" id="editName${wall.id}" value="${wall.name || ''}" required 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Floor:</strong></label>
+                        <input type="text" id="editFloor${wall.id}" value="${wall.floor || ''}" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Hauteur Max:</strong></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="editHauteurMax${wall.id}" value="${wall.hauteurMax || ''}" min="0" step="1"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="editHauteurMaxMinor${wall.id}" value="${wall.hauteurMaxMinor || ''}"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="editHauteurMaxUnit${wall.id}" 
+                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft-in" ${wall.hauteurMaxUnit === 'ft-in' || !wall.hauteurMaxUnit ? 'selected' : ''}>ft-in</option>
+                                <option value="mm" ${wall.hauteurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Note:</strong></label>
+                        <input type="text" id="editNote${wall.id}" value="${wall.note || ''}" maxlength="100"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Colombage Set 1:</strong></label>
+                        <select id="editColombageSet1${wall.id}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Select...</option>
+                            <option value="1-5/8" ${wall.colombageSet1 === '1-5/8' ? 'selected' : ''}>1-5/8</option>
+                            <option value="2-1/2" ${wall.colombageSet1 === '2-1/2' ? 'selected' : ''}>2-1/2</option>
+                            <option value="3-5/8" ${wall.colombageSet1 === '3-5/8' ? 'selected' : ''}>3-5/8</option>
+                            <option value="6" ${wall.colombageSet1 === '6' ? 'selected' : ''}>6</option>
+                            <option value="8" ${wall.colombageSet1 === '8' ? 'selected' : ''}>8</option>
+                            <option value="10" ${wall.colombageSet1 === '10' ? 'selected' : ''}>10</option>
+                            <option value="N/A" ${wall.colombageSet1 === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Colombage Set 2:</strong></label>
+                        <select id="editColombageSet2${wall.id}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Select...</option>
+                            <option value="1-5/8" ${wall.colombageSet2 === '1-5/8' ? 'selected' : ''}>1-5/8</option>
+                            <option value="2-1/2" ${wall.colombageSet2 === '2-1/2' ? 'selected' : ''}>2-1/2</option>
+                            <option value="3-5/8" ${wall.colombageSet2 === '3-5/8' ? 'selected' : ''}>3-5/8</option>
+                            <option value="6" ${wall.colombageSet2 === '6' ? 'selected' : ''}>6</option>
+                            <option value="8" ${wall.colombageSet2 === '8' ? 'selected' : ''}>8</option>
+                            <option value="10" ${wall.colombageSet2 === '10' ? 'selected' : ''}>10</option>
+                            <option value="N/A" ${wall.colombageSet2 === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Image Upload Section -->
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Images:</strong></label>
+                        <div class="edit-image-upload-section" id="editImageSection${wall.id}">
+                            <div class="upload-controls">
+                                <button type="button" class="camera-btn" id="editCameraBtn${wall.id}" title="Upload Images">
+                                    <i class="fas fa-camera"></i> Browse
+                                </button>
+                                <input class="drop-zone" id="editDropZone${wall.id}" placeholder="Drop or paste images here (Ctrl+V)" readonly tabindex="0">
+                            </div>
+                            <div class="image-preview-container" id="editImagePreviewContainer${wall.id}"></div>
+                        </div>
+                        <input type="file" id="editImageFileInput${wall.id}" multiple accept="image/*" style="display: none;">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button type="button" onclick="cancelWallEdit('${wall.id}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    `;
+}
+
+// Track current editing wall images
+let editingWallImages = {};
+
+window.showWallEditForm = function(wallId) {
+    const viewSection = document.getElementById(`wallView${wallId}`);
+    const editForm = document.getElementById(`wallEditForm${wallId}`);
+    
+    if (viewSection) viewSection.style.display = 'none';
+    if (editForm) {
+        editForm.style.display = 'block';
+        
+        // Load existing images for this wall
+        const wall = currentProject.equipment.find(e => e.id === wallId);
+        if (wall && wall.images) {
+            editingWallImages[wallId] = [...wall.images];
+            const container = document.getElementById(`editImagePreviewContainer${wallId}`);
+            if (container) {
+                container.innerHTML = '';
+                wall.images.forEach(imageData => {
+                    addEditImagePreview(wallId, imageData);
+                });
+            }
+        } else {
+            editingWallImages[wallId] = [];
+        }
+        
+        // Setup image upload handlers for this edit form
+        setupEditImageUploadHandlers(wallId);
+    }
+};
+
+window.cancelWallEdit = function(wallId) {
+    const viewSection = document.getElementById(`wallView${wallId}`);
+    const editForm = document.getElementById(`wallEditForm${wallId}`);
+    
+    if (viewSection) viewSection.style.display = 'block';
+    if (editForm) editForm.style.display = 'none';
+    
+    // Clear editing images
+    delete editingWallImages[wallId];
+};
+
+window.saveWallEdit = async function(wallId, event) {
+    event.preventDefault();
+    
+    const wall = currentProject.equipment.find(e => e.id === wallId);
+    if (!wall) return;
+    
+    const index = currentProject.equipment.findIndex(e => e.id === wallId);
+    
+    currentProject.equipment[index] = {
+        ...wall,
+        name: document.getElementById(`editName${wallId}`).value.trim(),
+        floor: document.getElementById(`editFloor${wallId}`).value.trim(),
+        hauteurMax: document.getElementById(`editHauteurMax${wallId}`).value,
+        hauteurMaxMinor: document.getElementById(`editHauteurMaxMinor${wallId}`).value,
+        hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${wallId}`).value,
+        colombageSet1: document.getElementById(`editColombageSet1${wallId}`).value,
+        colombageSet2: document.getElementById(`editColombageSet2${wallId}`).value,
+        note: document.getElementById(`editNote${wallId}`).value.trim(),
+        images: editingWallImages[wallId] || []
+    };
+    
+    await saveProject();
+    displayEquipmentList();
+    alert('Wall updated successfully!');
+};
+
+function setupEditImageUploadHandlers(wallId) {
+    const cameraBtn = document.getElementById(`editCameraBtn${wallId}`);
+    const dropZone = document.getElementById(`editDropZone${wallId}`);
+    const fileInput = document.getElementById(`editImageFileInput${wallId}`);
+    
+    if (!cameraBtn || !dropZone || !fileInput) return;
+    
+    cameraBtn.onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.click();
+    };
+    
+    fileInput.onchange = (event) => {
+        const files = Array.from(event.target.files);
+        processEditFiles(wallId, files);
+    };
+    
+    dropZone.onpaste = (event) => {
+        const items = event.clipboardData.items;
+        const files = [];
+        for (let item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const file = item.getAsFile();
+                if (file) files.push(file);
+            }
+        }
+        if (files.length > 0) {
+            event.preventDefault();
+            processEditFiles(wallId, files);
+        }
+    };
+    
+    dropZone.ondragover = (event) => {
+        event.preventDefault();
+        dropZone.classList.add('dragover');
+    };
+    
+    dropZone.ondragleave = () => {
+        dropZone.classList.remove('dragover');
+    };
+    
+    dropZone.ondrop = (event) => {
+        event.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = Array.from(event.dataTransfer.files);
+        processEditFiles(wallId, files);
+    };
+    
+    dropZone.onfocus = () => {
+        dropZone.style.borderColor = '#17a2b8';
+        dropZone.style.boxShadow = '0 0 0 2px rgba(23, 162, 184, 0.25)';
+    };
+    
+    dropZone.onblur = () => {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.boxShadow = 'none';
+    };
+}
+
+async function processEditFiles(wallId, files) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+    
+    if (!editingWallImages[wallId]) {
+        editingWallImages[wallId] = [];
+    }
+    
+    const currentCount = editingWallImages[wallId].length;
+    const remainingSlots = 2 - currentCount;
+    
+    if (remainingSlots <= 0) {
+        alert('Maximum 2 images allowed per wall.');
+        return;
+    }
+    
+    if (validFiles.length > remainingSlots) {
+        alert(`You can only add ${remainingSlots} more image(s).`);
+        return;
+    }
+    
+    const dropZone = document.getElementById(`editDropZone${wallId}`);
+    if (dropZone) {
+        dropZone.placeholder = `Uploading ${validFiles.length} image(s)...`;
+    }
+    
+    for (const file of validFiles) {
+        try {
+            const imageData = await uploadImageToS3(file);
+            editingWallImages[wallId].push(imageData);
+            addEditImagePreview(wallId, imageData);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+    
+    updateEditDropZoneState(wallId);
+}
+
+function addEditImagePreview(wallId, imageData) {
+    const container = document.getElementById(`editImagePreviewContainer${wallId}`);
+    if (!container) return;
+    
+    const preview = document.createElement('div');
+    preview.className = 'image-preview';
+    preview.dataset.imageKey = imageData.key;
+    preview.innerHTML = `
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename || 'Image'}">
+        <button type="button" class="image-remove" title="Remove image">×</button>
+    `;
+    
+    container.appendChild(preview);
+    
+    preview.querySelector('.image-remove').onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        removeEditImage(wallId, imageData.key);
+    };
+    
+    loadWallImage(preview.querySelector('img'), imageData.key);
+}
+
+function removeEditImage(wallId, imageKey) {
+    if (!editingWallImages[wallId]) return;
+    
+    editingWallImages[wallId] = editingWallImages[wallId].filter(img => img.key !== imageKey);
+    
+    const container = document.getElementById(`editImagePreviewContainer${wallId}`);
+    const preview = container?.querySelector(`[data-image-key="${imageKey}"]`);
+    if (preview) {
+        preview.remove();
+    }
+    
+    updateEditDropZoneState(wallId);
+}
+
+function updateEditDropZoneState(wallId) {
+    const dropZone = document.getElementById(`editDropZone${wallId}`);
+    if (!dropZone) return;
+    
+    const currentCount = editingWallImages[wallId]?.length || 0;
+    
+    if (currentCount >= 2) {
+        dropZone.placeholder = 'Maximum 2 images reached.';
+        dropZone.style.background = '#fff5f5';
+        dropZone.style.borderColor = '#ffc107';
+    } else {
+        dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+        dropZone.style.background = 'white';
+        dropZone.style.borderColor = '#ccc';
+    }
 }
