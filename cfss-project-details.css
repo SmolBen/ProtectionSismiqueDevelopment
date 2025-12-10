@@ -673,7 +673,7 @@
 
 /* Drag and Drop Styles */
 .equipment-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
     position: relative;
     background: white;
     border: 1px solid #e0e0e0;
@@ -683,6 +683,7 @@
 }
 
 .equipment-card:hover {
+    background: #f8fafc;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -710,7 +711,7 @@
 
 .limited-cfss-page .equipment-card:hover {
     background: #f8fafc;
-    transform: none;              /* no “lift” */
+    transform: none;              /* no "lift" */
     box-shadow: none;
 }
 
@@ -721,13 +722,13 @@
     justify-content: space-between;
     padding: 12px 15px;
     cursor: pointer;
-    background: #fafafa;
+    background: transparent;
     border-bottom: 1px solid transparent;
     transition: background 0.2s ease;
 }
 
 .equipment-header:hover {
-    background: #f0f0f0;
+    background: transparent;
 }
 
 /* Compact info section */
