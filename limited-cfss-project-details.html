@@ -613,10 +613,24 @@
                             <div class="form-fields">
                                 <h2>New Window</h2>
                                 <form id="windowFormElement">
-                                    <div class="form-group">
+                                    <div style="display: flex; gap: 15px;">
+                                    <div class="form-group" style="flex: 1;">
                                         <label for="windowType">Window Type: <span style="color: red;">*</span></label>
                                         <input type="text" id="windowType" name="windowType" placeholder="Enter window type..." required>
                                     </div>
+                                    <div class="form-group" style="flex: 1;">
+                                        <label for="windowColombageSize">Colombage:</label>
+                                        <select id="windowColombageSize" name="windowColombageSize" 
+                                            style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                                            <option value="">Select colombage...</option>
+                                            <option value="3-5/8">3-5/8</option>
+                                            <option value="6">6"</option>
+                                            <option value="8">8"</option>
+                                            <option value="10">10"</option>
+                                            <option value="N/A">N/A</option>
+                                        </select>
+                                    </div>
+                                </div>
 
                                     <div class="form-group">
                                         <label for="windowFloor">Floor:</label>

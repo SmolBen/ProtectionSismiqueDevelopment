@@ -1457,6 +1457,7 @@ async function handleWindowSubmit(e) {
     const windowData = {
         id: editingWindowId || Date.now().toString(),
         type: document.getElementById('windowType').value.trim(),
+        colombageSize: document.getElementById('windowColombageSize').value,
         floor: document.getElementById('windowFloor').value.trim(),
         largeurMax: document.getElementById('windowLargeurMax').value,
         largeurMaxMinor: document.getElementById('windowLargeurMaxMinor').value,
@@ -1590,6 +1591,7 @@ function displayWindowList() {
                 <div class="equipment-details-container" id="windowView${win.id}">
                     <div class="equipment-info-section">
                         <p><strong>Window Type:</strong> ${win.type}</p>
+                        <p><strong>Colombage:</strong> ${win.colombageSize || 'N/A'}</p>
                         <p><strong>Floor:</strong> ${win.floor || 'N/A'}</p>
                         <p><strong>Width (Largeur):</strong> ${formatDimension(win, 'largeur')}</p>
                         <p><strong>Height (Hauteur):</strong> ${formatDimension(win, 'hauteur')}</p>
@@ -1719,6 +1721,19 @@ function generateWindowEditForm(win) {
                         <label><strong>Window Type:</strong></label>
                         <input type="text" id="editWindowType${win.id}" value="${win.type || ''}" required 
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Colombage:</strong></label>
+                        <select id="editWindowColombageSize${win.id}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Select...</option>
+                            <option value="3-5/8" ${win.colombageSize === '3-5/8' ? 'selected' : ''}>3-5/8</option>
+                            <option value="6" ${win.colombageSize === '6' ? 'selected' : ''}>6"</option>
+                            <option value="8" ${win.colombageSize === '8' ? 'selected' : ''}>8"</option>
+                            <option value="10" ${win.colombageSize === '10' ? 'selected' : ''}>10"</option>
+                            <option value="N/A" ${win.colombageSize === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 15px;">
@@ -1855,6 +1870,7 @@ window.saveWindowEdit = async function(windowId, event) {
     currentProject.windows[index] = {
         ...win,
         type: document.getElementById(`editWindowType${windowId}`).value.trim(),
+        colombageSize: document.getElementById(`editWindowColombageSize${windowId}`).value,
         floor: document.getElementById(`editWindowFloor${windowId}`).value.trim(),
         largeurMax: document.getElementById(`editWindowLargeurMax${windowId}`).value,
         largeurMaxMinor: document.getElementById(`editWindowLargeurMaxMinor${windowId}`).value,
