@@ -52,6 +52,11 @@ async function initializeCreateProject() {
 
         console.log('✅ Limited CFSS Create Project initialized');
 
+        // Initialize autocomplete if Google Maps already loaded
+        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+            initAddressAutocomplete();
+        }
+
     } catch (error) {
         console.error('❌ Error initializing:', error);
         alert('Error initializing page: ' + error.message);
@@ -78,6 +83,11 @@ async function handleFormSubmit(e) {
             name: name,
             clientName: clientName || '',
             description: description || '',
+            addressLine1: document.getElementById('addressLine1').value.trim(),
+            addressLine2: document.getElementById('addressLine2').value.trim(),
+            city: document.getElementById('city').value.trim(),
+            province: document.getElementById('province').value.trim(),
+            country: document.getElementById('country').value.trim(),
             status: 'Planning',
             createdBy: currentUser.email,
             createdAt: new Date().toISOString(),
@@ -114,4 +124,55 @@ async function handleFormSubmit(e) {
         console.error('❌ Error creating project:', error);
         alert('Error creating project: ' + error.message);
     }
+}
+
+// Initialize Google Places Autocomplete for address field
+function initAddressAutocomplete() {
+    const address1Input = document.getElementById('addressLine1');
+    
+    if (!address1Input) return;
+    
+    if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+        setTimeout(initAddressAutocomplete, 100);
+        return;
+    }
+    
+    const options = {
+        componentRestrictions: { country: "ca" },
+        fields: ["address_components"],
+        types: ["address"]
+    };
+    
+    const autocomplete = new google.maps.places.Autocomplete(address1Input, options);
+    
+    autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        
+        // Reset fields
+        address1Input.value = '';
+        document.getElementById('addressLine2').value = '';
+        document.getElementById('city').value = '';
+        document.getElementById('province').value = '';
+        document.getElementById('country').value = 'Canada';
+        
+        // Fill in the address components
+        place.address_components.forEach(component => {
+            const types = component.types;
+            if (types.includes("street_number")) {
+                address1Input.value += component.long_name + ' ';
+            }
+            if (types.includes("route")) {
+                address1Input.value += component.short_name;
+            }
+            if (types.includes("subpremise")) {
+                document.getElementById('addressLine2').value = component.long_name;
+            }
+            if (types.includes("locality")) {
+                document.getElementById('city').value = component.long_name;
+            }
+            if (types.includes("administrative_area_level_1")) {
+                document.getElementById('province').value = component.short_name;
+            }
+        });
+    });
 }
