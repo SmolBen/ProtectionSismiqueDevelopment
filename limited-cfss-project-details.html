@@ -63,6 +63,30 @@
                             </select>
                         </p>
                 </div>
+                
+                <!-- Floor Table -->
+                    <div class="floor-section" style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #17a2b8; padding-bottom: 5px;">
+                            <h4 style="margin: 0; color: #17a2b8; font-size: 14px;">Calculs par étage</h4>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #17a2b8; color: white;">
+                                    <th style="padding: 8px; text-align: left;">Étage</th>
+                                    <th style="padding: 8px; text-align: center;">H (m)</th>
+                                    <th style="padding: 8px; text-align: center; width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="floorTableBody">
+                            </tbody>
+                        </table>
+                        <button type="button" id="addFloorBtn" style="margin-top: 10px; background-color: #17a2b8; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-plus"></i> Add Floor
+                        </button>
+                        <button type="button" id="saveFloorsBtn" style="margin-top: 10px; margin-left: 10px; background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
             </div>
             <div class="right-section">
                 <!-- Tab Interface - No Custom Pages for limited users -->

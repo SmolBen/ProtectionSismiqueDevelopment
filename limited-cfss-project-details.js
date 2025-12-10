@@ -192,6 +192,9 @@ function displayProjectInfo() {
     document.getElementById('projectAddress').textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Not specified';
     
     document.getElementById('projectStatusDropdown').value = currentProject.status || 'Planning';
+    
+    // Display floors
+    displayFloors();
 }
 
 function setupEventListeners() {
@@ -204,6 +207,18 @@ function setupEventListeners() {
             currentProject.status = e.target.value;
             await saveProject();
         });
+    }
+
+    // Add Floor button
+    const addFloorBtn = document.getElementById('addFloorBtn');
+    if (addFloorBtn) {
+        addFloorBtn.addEventListener('click', addFloor);
+    }
+
+    // Save Floors button
+    const saveFloorsBtn = document.getElementById('saveFloorsBtn');
+    if (saveFloorsBtn) {
+        saveFloorsBtn.addEventListener('click', saveFloors);
     }
 
     // Add Wall button - toggle behavior
@@ -1928,4 +1943,108 @@ async function saveProject() {
         console.error('Ã¢ÂÅ’ Error saving project:', error);
         alert('Error saving project: ' + error.message);
     }
+}
+
+// Floor management
+let floorCounter = 0;
+
+function getFloorLabel(index) {
+    if (index === 0) return 'RDC';
+    return `NV${index + 1}`;
+}
+
+function displayFloors() {
+    const tbody = document.getElementById('floorTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    floorCounter = 0;
+    
+    const floors = currentProject.floors || [];
+    
+    if (floors.length === 0) {
+        // Add one default floor
+        addFloor();
+    } else {
+        floors.forEach((floor, index) => {
+            addFloorRow(floor.name || getFloorLabel(index), floor.height || '');
+        });
+    }
+}
+
+function addFloor() {
+    const label = getFloorLabel(floorCounter);
+    addFloorRow(label, '');
+}
+
+function addFloorRow(name, height) {
+    const tbody = document.getElementById('floorTableBody');
+    const row = document.createElement('tr');
+    
+    const rowIndex = document.getElementById('floorTableBody').children.length;
+    const bgColor = rowIndex % 2 === 0 ? '#f8f9fa' : 'white';
+
+    row.style.background = bgColor;
+    row.innerHTML = `
+        <td style="padding: 8px;">
+            <input type="text" class="floor-name" value="${name}" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; background: white;">
+        </td>
+        <td style="padding: 8px; text-align: center;">
+            <input type="number" class="floor-height" value="${height}" placeholder="0" step="0.1" min="0" style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+        </td>
+        <td style="padding: 8px; text-align: center;">
+            <button type="button" class="remove-floor-btn" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    floorCounter++;
+    
+    // Add event listeners
+    const nameInput = row.querySelector('.floor-name');
+    const heightInput = row.querySelector('.floor-height');
+    const removeBtn = row.querySelector('.remove-floor-btn');
+    
+    removeBtn.addEventListener('click', () => removeFloor(row));
+}
+
+function removeFloor(row) {
+    const tbody = document.getElementById('floorTableBody');
+    const rows = tbody.querySelectorAll('tr');
+    
+    if (rows.length <= 1) {
+        alert('At least one floor is required.');
+        return;
+    }
+    
+    row.remove();
+    
+    // Re-label floors
+    const remainingRows = tbody.querySelectorAll('tr');
+    remainingRows.forEach((r, index) => {
+        const nameInput = r.querySelector('.floor-name');
+        if (nameInput && nameInput.value.match(/^(RDC|NV\d+)$/)) {
+            nameInput.value = getFloorLabel(index);
+        }
+    });
+    
+    floorCounter = remainingRows.length;
+}
+
+async function saveFloors() {
+    const tbody = document.getElementById('floorTableBody');
+    const rows = tbody.querySelectorAll('tr');
+    
+    const floors = [];
+    rows.forEach(row => {
+        const name = row.querySelector('.floor-name').value.trim();
+        const height = parseFloat(row.querySelector('.floor-height').value) || 0;
+        floors.push({ name, height });
+    });
+    
+    currentProject.floors = floors;
+    await saveProject();
+    alert('Floors saved successfully!');
 }
