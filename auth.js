@@ -687,10 +687,11 @@ function setupSignupHandler() {
         const firstName = document.getElementById('firstName').value;
         const lastName = document.getElementById('lastName').value;
         const companyName = document.getElementById('companyName').value;
+        const phoneNumber = document.getElementById('phoneNumber').value;
         const domain = document.getElementById('domain').value;
 
         // Validation
-        if (!email || !password || !firstName || !lastName || !companyName || !domain) {
+        if (!email || !password || !firstName || !lastName || !companyName || !phoneNumber || !domain) {
             showMessage('Please fill in all fields', 'error');
             return;
         }
@@ -702,6 +703,13 @@ function setupSignupHandler() {
 
         if (password.length < 8) {
             showMessage('Password must be at least 8 characters', 'error');
+            return;
+        }
+
+        const formattedPhone = phoneNumber.replace(/\s/g, '');
+        const phoneRegex = /^\+[1-9]\d{6,14}$/;
+        if (!phoneRegex.test(formattedPhone)) {
+            showMessage('Phone number must be in E.164 format (e.g., +15551234567)', 'error');
             return;
         }
 
@@ -720,6 +728,7 @@ function setupSignupHandler() {
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'given_name', Value: firstName}),
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'family_name', Value: lastName}),
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'custom:company_name', Value: companyName}),
+                new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'phone_number', Value: formattedPhone}),
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'custom:domain', Value: domain}),
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'custom:is_admin', Value: 'false'})
             ];
