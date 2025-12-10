@@ -81,6 +81,7 @@ async function handleFormSubmit(e) {
 
         const projectData = {
             name: name,
+            companyName: currentUser.companyName || '',
             clientName: clientName || '',
             description: description || '',
             addressLine1: document.getElementById('addressLine1').value.trim(),
@@ -97,6 +98,9 @@ async function handleFormSubmit(e) {
             windows: [],
             options: []
         };
+
+        console.log('Project data being sent:', projectData);
+
 
         console.log('📤 Creating CFSS project:', projectData);
 

@@ -177,8 +177,20 @@ async function loadProject(projectId) {
 
 function displayProjectInfo() {
     document.getElementById('projectName').textContent = currentProject.name || '';
+    document.getElementById('companyName').textContent = currentProject.companyName || 'Not specified';
     document.getElementById('clientName').textContent = currentProject.clientName || 'Not specified';
     document.getElementById('projectDescription').textContent = currentProject.description || 'No description';
+    
+    // Build address string
+    const addressParts = [
+        currentProject.addressLine1,
+        currentProject.addressLine2,
+        currentProject.city,
+        currentProject.province,
+        currentProject.country
+    ].filter(part => part && part.trim());
+    document.getElementById('projectAddress').textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Not specified';
+    
     document.getElementById('projectStatusDropdown').value = currentProject.status || 'Planning';
 }
 
