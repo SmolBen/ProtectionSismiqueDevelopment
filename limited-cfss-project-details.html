@@ -551,6 +551,27 @@
                                 </div>
                             </form>
                         </div>
+                        
+                        <!-- Image Upload Section -->
+                        <div class="image-upload-section">
+                            <div class="upload-controls">
+                                <button type="button" class="camera-btn" id="parapetCameraBtn" title="Upload Images">
+                                    <i class="fas fa-camera"></i>
+                                    Browse
+                                </button>
+                                
+                                <input 
+                                    class="drop-zone" 
+                                    id="parapetDropZone" 
+                                    placeholder="Drop or paste images here (Ctrl+V)"
+                                    readonly
+                                    tabindex="0">
+                            </div>
+                            
+                            <div class="image-preview-container" id="parapetImagePreviewContainer"></div>
+                        </div>
+                        <input type="file" id="parapetImageFileInput" multiple accept="image/*" style="display: none;">
+                        </div>
                     </div>
                 </div>
             </div>

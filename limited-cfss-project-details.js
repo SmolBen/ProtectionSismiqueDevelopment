@@ -258,6 +258,7 @@ function setupEventListeners() {
     
     if (addParapetButton && parapetForm) {
     addParapetButton.addEventListener('click', () => {
+        initializeParapetImageUpload();
         console.log('Add Parapet button clicked');
         if (parapetForm.classList.contains('show')) {
             hideForm('parapetForm');
@@ -1141,7 +1142,8 @@ async function handleParapetSubmit(e) {
         hauteurMaxUnit: document.getElementById('parapetHauteurMaxUnit').value,
         colombageSet1: document.getElementById('parapetColombageSet1').value,
         colombageSet2: document.getElementById('parapetColombageSet2').value,
-        note: document.getElementById('parapetNote').value.trim()
+        note: document.getElementById('parapetNote').value.trim(),
+        images: [...(window.currentParapetImages || [])]
     };
 
     if (!parapetData.name) {
@@ -1162,6 +1164,7 @@ async function handleParapetSubmit(e) {
     hideForm('parapetForm');
     displayParapetList();
     editingParapetId = null;
+    clearParapetImages();
 }
 
 function displayParapetList() {
@@ -2298,6 +2301,196 @@ function clearWallImages() {
         container.innerHTML = '';
     }
     updateDropZoneState();
+}
+
+// Parapet Image Upload Functions
+function initializeParapetImageUpload() {
+    if (!window.currentParapetImages) {
+        window.currentParapetImages = [];
+    }
+    setupParapetImageUploadHandlers();
+}
+
+function setupParapetImageUploadHandlers() {
+    const cameraBtn = document.getElementById('parapetCameraBtn');
+    const dropZone = document.getElementById('parapetDropZone');
+    const fileInput = document.getElementById('parapetImageFileInput');
+    
+    if (!cameraBtn || !dropZone || !fileInput) {
+        console.warn('Parapet image upload elements not found');
+        return;
+    }
+    
+    cameraBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.click();
+    });
+    
+    fileInput.addEventListener('change', handleParapetFileSelect);
+    dropZone.addEventListener('paste', handleParapetPaste);
+    dropZone.addEventListener('dragover', handleParapetDragOver);
+    dropZone.addEventListener('dragleave', handleParapetDragLeave);
+    dropZone.addEventListener('drop', handleParapetDrop);
+    
+    dropZone.addEventListener('focus', () => {
+        dropZone.style.borderColor = '#17a2b8';
+        dropZone.style.boxShadow = '0 0 0 2px rgba(23, 162, 184, 0.25)';
+    });
+    
+    dropZone.addEventListener('blur', () => {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.boxShadow = 'none';
+    });
+    
+    console.log('Parapet image upload handlers setup successfully');
+}
+
+function handleParapetFileSelect(event) {
+    const files = Array.from(event.target.files);
+    processParapetFiles(files);
+}
+
+function handleParapetPaste(event) {
+    const items = event.clipboardData.items;
+    const files = [];
+    
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+        }
+    }
+    
+    if (files.length > 0) {
+        event.preventDefault();
+        processParapetFiles(files);
+    }
+}
+
+function handleParapetDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('dragover');
+}
+
+function handleParapetDragLeave(event) {
+    event.currentTarget.classList.remove('dragover');
+}
+
+function handleParapetDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+    
+    const files = Array.from(event.dataTransfer.files);
+    processParapetFiles(files);
+}
+
+async function processParapetFiles(files) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+    
+    const currentImageCount = window.currentParapetImages?.length || 0;
+    const remainingSlots = 2 - currentImageCount;
+    
+    if (remainingSlots <= 0) {
+        alert('Maximum 2 images allowed per parapet. Please remove existing images to add new ones.');
+        return;
+    }
+    
+    if (validFiles.length > remainingSlots) {
+        alert(`You can only add ${remainingSlots} more image(s). Maximum 2 images allowed per parapet.`);
+        return;
+    }
+    
+    const dropZone = document.getElementById('parapetDropZone');
+    if (dropZone) {
+        dropZone.placeholder = `Uploading ${validFiles.length} image(s)...`;
+    }
+    
+    if (!window.currentParapetImages) {
+        window.currentParapetImages = [];
+    }
+    
+    for (const file of validFiles) {
+        try {
+            const imageData = await uploadImageToS3(file);
+            window.currentParapetImages.push(imageData);
+            addParapetImagePreview(imageData);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+    
+    updateParapetDropZoneState();
+}
+
+function addParapetImagePreview(imageData) {
+    const container = document.getElementById('parapetImagePreviewContainer');
+    
+    const preview = document.createElement('div');
+    preview.className = 'image-preview';
+    preview.dataset.imageKey = imageData.key;
+    preview.innerHTML = `
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
+        <button type="button" class="image-remove" title="Remove image">×</button>
+    `;
+    
+    container.appendChild(preview);
+    
+    const removeButton = preview.querySelector('.image-remove');
+    removeButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        removeParapetImage(imageData.key);
+    });
+    
+    loadImagePreview(preview.querySelector('img'), imageData.key);
+}
+
+function removeParapetImage(imageKey) {
+    if (!window.currentParapetImages) {
+        window.currentParapetImages = [];
+    }
+    window.currentParapetImages = window.currentParapetImages.filter(img => img.key !== imageKey);
+    
+    const container = document.getElementById('parapetImagePreviewContainer');
+    const preview = container.querySelector(`[data-image-key="${imageKey}"]`);
+    if (preview) {
+        preview.remove();
+    }
+    
+    updateParapetDropZoneState();
+}
+
+function updateParapetDropZoneState() {
+    const dropZone = document.getElementById('parapetDropZone');
+    if (!dropZone) return;
+    
+    const currentCount = window.currentParapetImages?.length || 0;
+    
+    if (currentCount >= 2) {
+        dropZone.placeholder = 'Maximum 2 images reached. Remove images to add new ones.';
+        dropZone.style.background = '#fff5f5';
+        dropZone.style.borderColor = '#ffc107';
+    } else {
+        dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+        dropZone.style.background = 'white';
+        dropZone.style.borderColor = '#ccc';
+    }
+}
+
+function clearParapetImages() {
+    window.currentParapetImages = [];
+    const container = document.getElementById('parapetImagePreviewContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
+    updateParapetDropZoneState();
 }
 
 // Render wall images in the wall list
