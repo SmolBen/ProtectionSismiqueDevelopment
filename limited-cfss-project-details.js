@@ -1208,7 +1208,8 @@ function displayParapetList() {
                 </div>
             </div>
             <div class="equipment-details" id="parapetDetails${parapet.id}">
-                <div class="equipment-details-container">
+                <!-- View Mode -->
+                <div class="equipment-details-container" id="parapetView${parapet.id}">
                     <div class="equipment-info-section">
                         <p><strong>Parapet Name:</strong> ${title}</p>
                         <p><strong>Type:</strong> ${parapet.type || 'N/A'}</p>
@@ -1218,39 +1219,197 @@ function displayParapetList() {
                         <p><strong>Colombage Set 2:</strong> ${parapet.colombageSet2 || 'N/A'}</p>
                         ${parapet.note ? `<p><strong>Note:</strong> ${parapet.note}</p>` : ''}
                     </div>
+                    <div class="equipment-images-section">
+                        <h4 style="margin: 10px 0 5px 0; font-size: 14px;">Images:</h4>
+                        ${renderParapetImages(parapet, index)}
+                    </div>
+                    <button class="button primary" onclick="showParapetEditForm('${parapet.id}')" style="margin-top: 15px;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
                 </div>
-                <button class="button primary" onclick="editParapet('${parapet.id}')" style="margin-top: 15px;">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
+                
+                <!-- Edit Mode -->
+                ${generateParapetEditForm(parapet)}
             </div>
         `;
         container.appendChild(parapetCard);
     });
 }
 
-window.editParapet = function(id) {
-    const parapet = currentProject.parapets.find(p => p.id === id);
+function generateParapetEditForm(parapet) {
+    return `
+        <form id="parapetEditForm${parapet.id}" style="display: none; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px;" onsubmit="saveParapetEdit('${parapet.id}', event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Left Column -->
+                <div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Parapet Name:</strong></label>
+                        <input type="text" id="editParapetName${parapet.id}" value="${parapet.name || ''}" required 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Type:</strong></label>
+                        <input type="text" id="editParapetType${parapet.id}" value="${parapet.type || ''}" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Floor:</strong></label>
+                        <input type="text" id="editParapetFloor${parapet.id}" value="${parapet.floor || ''}" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Hauteur Max:</strong></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0" step="1"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="editParapetHauteurMaxMinor${parapet.id}" value="${parapet.hauteurMaxMinor || ''}"
+                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="editParapetHauteurMaxUnit${parapet.id}" 
+                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft-in" ${parapet.hauteurMaxUnit === 'ft-in' || !parapet.hauteurMaxUnit ? 'selected' : ''}>ft-in</option>
+                                <option value="mm" ${parapet.hauteurMaxUnit === 'mm' ? 'selected' : ''}>mm</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Note:</strong></label>
+                        <input type="text" id="editParapetNote${parapet.id}" value="${parapet.note || ''}" maxlength="100"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Colombage Set 1:</strong></label>
+                        <select id="editParapetColombageSet1${parapet.id}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Select...</option>
+                            <option value="1-5/8" ${parapet.colombageSet1 === '1-5/8' ? 'selected' : ''}>1-5/8</option>
+                            <option value="2-1/2" ${parapet.colombageSet1 === '2-1/2' ? 'selected' : ''}>2-1/2</option>
+                            <option value="3-5/8" ${parapet.colombageSet1 === '3-5/8' ? 'selected' : ''}>3-5/8</option>
+                            <option value="6" ${parapet.colombageSet1 === '6' ? 'selected' : ''}>6</option>
+                            <option value="8" ${parapet.colombageSet1 === '8' ? 'selected' : ''}>8</option>
+                            <option value="10" ${parapet.colombageSet1 === '10' ? 'selected' : ''}>10</option>
+                            <option value="N/A" ${parapet.colombageSet1 === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Colombage Set 2:</strong></label>
+                        <select id="editParapetColombageSet2${parapet.id}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Select...</option>
+                            <option value="1-5/8" ${parapet.colombageSet2 === '1-5/8' ? 'selected' : ''}>1-5/8</option>
+                            <option value="2-1/2" ${parapet.colombageSet2 === '2-1/2' ? 'selected' : ''}>2-1/2</option>
+                            <option value="3-5/8" ${parapet.colombageSet2 === '3-5/8' ? 'selected' : ''}>3-5/8</option>
+                            <option value="6" ${parapet.colombageSet2 === '6' ? 'selected' : ''}>6</option>
+                            <option value="8" ${parapet.colombageSet2 === '8' ? 'selected' : ''}>8</option>
+                            <option value="10" ${parapet.colombageSet2 === '10' ? 'selected' : ''}>10</option>
+                            <option value="N/A" ${parapet.colombageSet2 === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Image Upload Section -->
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><strong>Images:</strong></label>
+                        <div class="edit-image-upload-section" id="editParapetImageSection${parapet.id}">
+                            <div class="upload-controls">
+                                <button type="button" class="camera-btn" id="editParapetCameraBtn${parapet.id}" title="Upload Images">
+                                    <i class="fas fa-camera"></i> Browse
+                                </button>
+                                <input class="drop-zone" id="editParapetDropZone${parapet.id}" placeholder="Drop or paste images here (Ctrl+V)" readonly tabindex="0">
+                            </div>
+                            <div class="image-preview-container" id="editParapetImagePreviewContainer${parapet.id}"></div>
+                        </div>
+                        <input type="file" id="editParapetImageFileInput${parapet.id}" multiple accept="image/*" style="display: none;">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button type="button" onclick="cancelParapetEdit('${parapet.id}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    `;
+}
+
+// Track current editing parapet images
+let editingParapetImages = {};
+
+window.showParapetEditForm = function(parapetId) {
+    const viewSection = document.getElementById(`parapetView${parapetId}`);
+    const editForm = document.getElementById(`parapetEditForm${parapetId}`);
+    
+    if (viewSection) viewSection.style.display = 'none';
+    if (editForm) {
+        editForm.style.display = 'block';
+        
+        // Load existing images for this parapet
+        const parapet = currentProject.parapets.find(p => p.id === parapetId);
+        if (parapet && parapet.images) {
+            editingParapetImages[parapetId] = [...parapet.images];
+            const container = document.getElementById(`editParapetImagePreviewContainer${parapetId}`);
+            if (container) {
+                container.innerHTML = '';
+                parapet.images.forEach(imageData => {
+                    addEditParapetImagePreview(parapetId, imageData);
+                });
+            }
+        } else {
+            editingParapetImages[parapetId] = [];
+        }
+        
+        // Setup image upload handlers for this edit form
+        setupEditParapetImageUploadHandlers(parapetId);
+    }
+};
+
+window.cancelParapetEdit = function(parapetId) {
+    const viewSection = document.getElementById(`parapetView${parapetId}`);
+    const editForm = document.getElementById(`parapetEditForm${parapetId}`);
+    
+    if (viewSection) viewSection.style.display = 'block';
+    if (editForm) editForm.style.display = 'none';
+    
+    // Clear editing images
+    delete editingParapetImages[parapetId];
+};
+
+window.saveParapetEdit = async function(parapetId, event) {
+    event.preventDefault();
+    
+    const parapet = currentProject.parapets.find(p => p.id === parapetId);
     if (!parapet) return;
-
-    editingParapetId = id;
     
-    // Populate dropdown first, then set value
-    populateParapetTypeDropdown();
+    const index = currentProject.parapets.findIndex(p => p.id === parapetId);
     
-    document.getElementById('parapetName').value = parapet.name || '';
-    document.getElementById('parapetType').value = parapet.type || '';
-    document.getElementById('parapetFloor').value = parapet.floor || '';
-    document.getElementById('parapetHauteurMax').value = parapet.hauteurMax || '';
-    document.getElementById('parapetHauteurMaxMinor').value = parapet.hauteurMaxMinor || '';
-    document.getElementById('parapetHauteurMaxUnit').value = parapet.hauteurMaxUnit || 'ft-in';
-    document.getElementById('parapetColombageSet1').value = parapet.colombageSet1 || '';
-    document.getElementById('parapetColombageSet2').value = parapet.colombageSet2 || '';
-    document.getElementById('parapetNote').value = parapet.note || '';
-
-    // Update image preview for current type
-    updateParapetTypeImage(parapet.type || '');
-
-    showForm('parapetForm');
+    currentProject.parapets[index] = {
+        ...parapet,
+        name: document.getElementById(`editParapetName${parapetId}`).value.trim(),
+        type: document.getElementById(`editParapetType${parapetId}`).value,
+        floor: document.getElementById(`editParapetFloor${parapetId}`).value.trim(),
+        hauteurMax: document.getElementById(`editParapetHauteurMax${parapetId}`).value,
+        hauteurMaxMinor: document.getElementById(`editParapetHauteurMaxMinor${parapetId}`).value,
+        hauteurMaxUnit: document.getElementById(`editParapetHauteurMaxUnit${parapetId}`).value,
+        colombageSet1: document.getElementById(`editParapetColombageSet1${parapetId}`).value,
+        colombageSet2: document.getElementById(`editParapetColombageSet2${parapetId}`).value,
+        note: document.getElementById(`editParapetNote${parapetId}`).value.trim(),
+        images: editingParapetImages[parapetId] || []
+    };
+    
+    await saveProject();
+    displayParapetList();
+    alert('Parapet updated successfully!');
 };
 
 window.deleteParapet = async function(id) {
@@ -2555,6 +2714,206 @@ async function loadWallImage(imgElement, imageKey) {
         console.error('Error loading wall image:', error);
         imgElement.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect width="80" height="80" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EError%3C/text%3E%3C/svg%3E';
     }
+}
+
+// Parapet Edit Image Handlers
+function setupEditParapetImageUploadHandlers(parapetId) {
+    const cameraBtn = document.getElementById(`editParapetCameraBtn${parapetId}`);
+    const dropZone = document.getElementById(`editParapetDropZone${parapetId}`);
+    const fileInput = document.getElementById(`editParapetImageFileInput${parapetId}`);
+    
+    if (!cameraBtn || !dropZone || !fileInput) return;
+    
+    cameraBtn.onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.click();
+    };
+    
+    fileInput.onchange = (event) => {
+        const files = Array.from(event.target.files);
+        processEditParapetFiles(parapetId, files);
+    };
+    
+    dropZone.onpaste = (event) => {
+        const items = event.clipboardData.items;
+        const files = [];
+        for (let item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const file = item.getAsFile();
+                if (file) files.push(file);
+            }
+        }
+        if (files.length > 0) {
+            event.preventDefault();
+            processEditParapetFiles(parapetId, files);
+        }
+    };
+    
+    dropZone.ondragover = (event) => {
+        event.preventDefault();
+        dropZone.classList.add('dragover');
+    };
+    
+    dropZone.ondragleave = () => {
+        dropZone.classList.remove('dragover');
+    };
+    
+    dropZone.ondrop = (event) => {
+        event.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = Array.from(event.dataTransfer.files);
+        processEditParapetFiles(parapetId, files);
+    };
+    
+    dropZone.onfocus = () => {
+        dropZone.style.borderColor = '#17a2b8';
+        dropZone.style.boxShadow = '0 0 0 2px rgba(23, 162, 184, 0.25)';
+    };
+    
+    dropZone.onblur = () => {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.boxShadow = 'none';
+    };
+}
+
+async function processEditParapetFiles(parapetId, files) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+    
+    if (!editingParapetImages[parapetId]) {
+        editingParapetImages[parapetId] = [];
+    }
+    
+    const currentCount = editingParapetImages[parapetId].length;
+    const remainingSlots = 2 - currentCount;
+    
+    if (remainingSlots <= 0) {
+        alert('Maximum 2 images allowed per parapet.');
+        return;
+    }
+    
+    if (validFiles.length > remainingSlots) {
+        alert(`You can only add ${remainingSlots} more image(s).`);
+        return;
+    }
+    
+    const dropZone = document.getElementById(`editParapetDropZone${parapetId}`);
+    if (dropZone) {
+        dropZone.placeholder = `Uploading ${validFiles.length} image(s)...`;
+    }
+    
+    for (const file of validFiles) {
+        try {
+            const imageData = await uploadImageToS3(file);
+            editingParapetImages[parapetId].push(imageData);
+            addEditParapetImagePreview(parapetId, imageData);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+    
+    updateEditParapetDropZoneState(parapetId);
+}
+
+function addEditParapetImagePreview(parapetId, imageData) {
+    const container = document.getElementById(`editParapetImagePreviewContainer${parapetId}`);
+    if (!container) return;
+    
+    const preview = document.createElement('div');
+    preview.className = 'image-preview';
+    preview.dataset.imageKey = imageData.key;
+    preview.innerHTML = `
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename || 'Image'}">
+        <button type="button" class="image-remove" title="Remove image">×</button>
+    `;
+    
+    container.appendChild(preview);
+    
+    preview.querySelector('.image-remove').onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        removeEditParapetImage(parapetId, imageData.key);
+    };
+    
+    loadWallImage(preview.querySelector('img'), imageData.key);
+}
+
+function removeEditParapetImage(parapetId, imageKey) {
+    if (!editingParapetImages[parapetId]) return;
+    
+    editingParapetImages[parapetId] = editingParapetImages[parapetId].filter(img => img.key !== imageKey);
+    
+    const container = document.getElementById(`editParapetImagePreviewContainer${parapetId}`);
+    const preview = container?.querySelector(`[data-image-key="${imageKey}"]`);
+    if (preview) {
+        preview.remove();
+    }
+    
+    updateEditParapetDropZoneState(parapetId);
+}
+
+function updateEditParapetDropZoneState(parapetId) {
+    const dropZone = document.getElementById(`editParapetDropZone${parapetId}`);
+    if (!dropZone) return;
+    
+    const currentCount = editingParapetImages[parapetId]?.length || 0;
+    
+    if (currentCount >= 2) {
+        dropZone.placeholder = 'Maximum 2 images reached.';
+        dropZone.style.background = '#fff5f5';
+        dropZone.style.borderColor = '#ffc107';
+    } else {
+        dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+        dropZone.style.background = 'white';
+        dropZone.style.borderColor = '#ccc';
+    }
+}
+
+// Render parapet images in the parapet list
+function renderParapetImages(parapet, index) {
+    if (!parapet.images || parapet.images.length === 0) {
+        return '<p style="color: #666; font-style: italic;">No images</p>';
+    }
+    
+    const imagesToShow = parapet.images.slice(0, 2);
+    
+    let imagesHTML = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-width: 200px;">';
+    
+    imagesToShow.forEach((image, imgIndex) => {
+        const imageId = `parapet-image-${parapet.id}-${imgIndex}`;
+        const imageWidth = imagesToShow.length === 1 ? '100px' : '90px';
+        
+        imagesHTML += `
+            <div style="position: relative; width: ${imageWidth}; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd; background: #f5f5f5;">
+                <img id="${imageId}" 
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" 
+                     alt="${image.filename || 'Parapet image'}"
+                     style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                     onclick="openImageModal('${image.key}', '${image.filename || 'Parapet image'}')">
+            </div>
+        `;
+    });
+    
+    imagesHTML += '</div>';
+    
+    // Load actual images
+    setTimeout(() => {
+        imagesToShow.forEach((image, imgIndex) => {
+            const imageId = `parapet-image-${parapet.id}-${imgIndex}`;
+            const imgElement = document.getElementById(imageId);
+            if (imgElement) {
+                loadWallImage(imgElement, image.key);
+            }
+        });
+    }, 100);
+    
+    return imagesHTML;
 }
 
 // Open image in modal for full view
