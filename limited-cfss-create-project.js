@@ -41,6 +41,12 @@ async function initializeCreateProject() {
         // Update UI
         authHelper.updateUserInterface();
 
+        // Populate company name field
+        const companyNameField = document.getElementById('companyName');
+        if (companyNameField && userData.companyName) {
+            companyNameField.value = userData.companyName;
+        }
+
         // Setup form submission
         document.getElementById('createCFSSProjectForm').addEventListener('submit', handleFormSubmit);
 
