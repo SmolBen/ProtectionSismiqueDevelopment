@@ -77,6 +77,7 @@ class AuthHelper {
                         firstName: userData.given_name || '',
                         lastName: userData.family_name || '',
                         companyName: userData['custom:company_name'] || '',
+                        phoneNumber: userData.phone_number || '',
                         domain: userData['custom:domain'] || '',
                         isAdmin: userRole === 'admin',
                         isLimited: userRole === 'limited',
