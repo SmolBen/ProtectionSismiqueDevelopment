@@ -52,16 +52,28 @@ function parseInchInput(value) {
  * When mm or m-mm is selected, hide the minor field
  */
 function toggleMinorField(fieldPrefix) {
-    const unitSelect = document.getElementById(`${fieldPrefix}MaxUnit`);
-    const minorInput = document.getElementById(`${fieldPrefix}MaxMinor`);
+    // Handle both formats: "windowLargeur" and "windowL1"
+    let unitSelect, minorField;
     
-    if (!unitSelect || !minorInput) return;
-    
-    if (unitSelect.value === 'mm' || unitSelect.value === 'm-mm') {
-        minorInput.style.display = 'none';
-        minorInput.value = ''; // Clear minor value
+    if (fieldPrefix === 'windowL1' || fieldPrefix === 'windowL2') {
+        // For L1 and L2 fields
+        unitSelect = document.getElementById(`${fieldPrefix}Unit`);
+        minorField = document.getElementById(`${fieldPrefix}Minor`);
     } else {
-        minorInput.style.display = '';
+        // For largeur and hauteur fields
+        unitSelect = document.getElementById(`${fieldPrefix}MaxUnit`);
+        minorField = document.getElementById(`${fieldPrefix}MaxMinor`);
+    }
+    
+    if (!unitSelect || !minorField) return;
+    
+    const selectedUnit = unitSelect.value;
+    
+    if (selectedUnit === 'mm' || selectedUnit === 'm-mm') {
+        minorField.style.display = 'none';
+        minorField.value = '';
+    } else {
+        minorField.style.display = 'block';
     }
 }
 
@@ -86,8 +98,17 @@ function toggleEditMinorField(index, fieldType) {
  * Toggle visibility of minor field in edit window forms
  */
 function toggleEditWindowMinorField(windowId, fieldType) {
-    const unitSelect = document.getElementById(`edit${fieldType}MaxUnit${windowId}`);
-    const minorInput = document.getElementById(`edit${fieldType}MaxMinor${windowId}`);
+    let unitSelect, minorInput;
+    
+    if (fieldType === 'L1' || fieldType === 'L2') {
+        // For L1 and L2 fields
+        unitSelect = document.getElementById(`editWindow${fieldType}Unit${windowId}`);
+        minorInput = document.getElementById(`editWindow${fieldType}Minor${windowId}`);
+    } else {
+        // For Largeur and Hauteur fields
+        unitSelect = document.getElementById(`edit${fieldType}MaxUnit${windowId}`);
+        minorInput = document.getElementById(`edit${fieldType}MaxMinor${windowId}`);
+    }
     
     if (!unitSelect || !minorInput) {
         console.log(`Toggle failed - elements not found for window ${windowId}, field ${fieldType}`);
@@ -7006,6 +7027,86 @@ document.addEventListener('DOMContentLoaded', function() {
     setupWindowHauteurPreview();
 });
 
+// Setup L1 preview
+    const l1Major = document.getElementById('windowL1');
+    const l1Minor = document.getElementById('windowL1Minor');
+    const l1Unit = document.getElementById('windowL1Unit');
+    const l1Preview = document.getElementById('l1Preview');
+    
+    if (l1Major && l1Minor && l1Unit && l1Preview) {
+        function updateL1Preview() {
+            const major = l1Major.value || '0';
+            const minor = l1Minor.value || '0';
+            const unit = l1Unit.value || 'ft-in';
+            
+            if (unit === 'mm') {
+                if (major === '0') {
+                    l1Preview.textContent = 'Preview: --';
+                    l1Preview.style.color = '#666';
+                } else {
+                    l1Preview.textContent = `Preview: ${major}mm`;
+                    l1Preview.style.color = '#2c5aa0';
+                }
+                return;
+            }
+            
+            const [majorUnit, minorUnit] = unit.split('-');
+            if (major === '0' && minor === '0') {
+                l1Preview.textContent = 'Preview: --';
+                l1Preview.style.color = '#666';
+            } else {
+                const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+                l1Preview.textContent = `Preview: ${formatted}`;
+                l1Preview.style.color = '#2c5aa0';
+            }
+        }
+        
+        l1Major.addEventListener('input', updateL1Preview);
+        l1Minor.addEventListener('input', updateL1Preview);
+        l1Unit.addEventListener('change', updateL1Preview);
+        updateL1Preview();
+    }
+    
+    // Setup L2 preview
+    const l2Major = document.getElementById('windowL2');
+    const l2Minor = document.getElementById('windowL2Minor');
+    const l2Unit = document.getElementById('windowL2Unit');
+    const l2Preview = document.getElementById('l2Preview');
+    
+    if (l2Major && l2Minor && l2Unit && l2Preview) {
+        function updateL2Preview() {
+            const major = l2Major.value || '0';
+            const minor = l2Minor.value || '0';
+            const unit = l2Unit.value || 'ft-in';
+            
+            if (unit === 'mm') {
+                if (major === '0') {
+                    l2Preview.textContent = 'Preview: --';
+                    l2Preview.style.color = '#666';
+                } else {
+                    l2Preview.textContent = `Preview: ${major}mm`;
+                    l2Preview.style.color = '#2c5aa0';
+                }
+                return;
+            }
+            
+            const [majorUnit, minorUnit] = unit.split('-');
+            if (major === '0' && minor === '0') {
+                l2Preview.textContent = 'Preview: --';
+                l2Preview.style.color = '#666';
+            } else {
+                const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+                l2Preview.textContent = `Preview: ${formatted}`;
+                l2Preview.style.color = '#2c5aa0';
+            }
+        }
+        
+        l2Major.addEventListener('input', updateL2Preview);
+        l2Minor.addEventListener('input', updateL2Preview);
+        l2Unit.addEventListener('change', updateL2Preview);
+        updateL2Preview();
+    }
+
 // ====================
 // PARAPET IMAGE UPLOAD FUNCTIONS
 // ====================
@@ -8197,6 +8298,12 @@ function handleWindowSubmit(e) {
     hauteurMax: parseFloat(formData.get('windowHauteurMax')) || 0,
     hauteurMaxMinor: formData.get('windowHauteurMaxMinor') || '',
     hauteurMaxUnit: formData.get('windowHauteurMaxUnit'),
+    l1: formData.get('windowL1') || '',
+    l1Minor: formData.get('windowL1Minor') || '',
+    l1Unit: formData.get('windowL1Unit') || 'ft-in',
+    l2: formData.get('windowL2') || '',
+    l2Minor: formData.get('windowL2Minor') || '',
+    l2Unit: formData.get('windowL2Unit') || 'ft-in',
     jambage: {
         type: formData.get('jambageType'),
         compositions: parseComposition(formData.get('jambageComposition'))
@@ -8271,6 +8378,8 @@ function renderWindowList() {
                 <p><strong>Type:</strong> ${win.type || 'N/A'}</p>
                 ${win.floor ? `<p><strong>Floor:</strong> ${win.floor}</p>` : ''}
                 <p><strong>Dimensions:</strong> ${dims}</p>
+                ${win.l1 || win.l1Minor ? `<p><strong>L1:</strong> ${formatWindowDimension(win.l1, win.l1Minor, win.l1Unit)}</p>` : ''}
+                ${win.l2 || win.l2Minor ? `<p><strong>L2:</strong> ${formatWindowDimension(win.l2, win.l2Minor, win.l2Unit)}</p>` : ''}
 
               <p><strong>Jambage:</strong> ${win.jambage?.type || 'N/A'}</p>
               ${win.jambage?.compositions?.length ? `<div style="margin:6px 0 10px 12px;color:#6c757d;">• ${win.jambage.compositions.join('<br>• ')}</div>` : ''}
@@ -8417,6 +8526,46 @@ function renderWindowList() {
             </div>
           </div>
 
+          <!-- L1 Field -->
+          <div class="form-group">
+            <label for="editWindowL1${id}">L1:</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="number" id="editWindowL1${id}" value="${win.l1 || ''}" min="0" step="1"
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" id="editWindowL1Minor${id}" value="${win.l1Minor || ''}" placeholder=""
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; display: ${(win.l1Unit === 'mm') ? 'none' : 'block'};">
+                <select id="editWindowL1Unit${id}"
+                    onchange="toggleEditWindowMinorField(${id}, 'L1')"
+                    style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="ft-in" ${(!win.l1Unit || win.l1Unit === 'ft-in') ? 'selected' : ''}>ft-in</option>
+                    <option value="mm" ${win.l1Unit === 'mm' ? 'selected' : ''}>mm</option>
+                </select>
+            </div>
+            <div id="editL1Preview${id}" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
+                Preview: --
+            </div>
+          </div>
+
+          <!-- L2 Field -->
+          <div class="form-group">
+            <label for="editWindowL2${id}">L2:</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="number" id="editWindowL2${id}" value="${win.l2 || ''}" min="0" step="1"
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" id="editWindowL2Minor${id}" value="${win.l2Minor || ''}" placeholder=""
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; display: ${(win.l2Unit === 'mm') ? 'none' : 'block'};">
+                <select id="editWindowL2Unit${id}"
+                    onchange="toggleEditWindowMinorField(${id}, 'L2')"
+                    style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="ft-in" ${(!win.l2Unit || win.l2Unit === 'ft-in') ? 'selected' : ''}>ft-in</option>
+                    <option value="mm" ${win.l2Unit === 'mm' ? 'selected' : ''}>mm</option>
+                </select>
+            </div>
+            <div id="editL2Preview${id}" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
+                Preview: --
+            </div>
+          </div>
+
           <!-- Form actions -->
           <div class="form-actions" style="display:flex; gap:10px; margin-top:20px;">
             <button type="submit" class="save-btn"><i class="fas fa-save"></i> Save Changes</button>
@@ -8544,6 +8693,102 @@ function setupEditWindowDimensionPreviews(id, win) {
         }
         updateHauteurPreview();
     }
+
+    // Setup L1 preview
+    const l1Major = document.getElementById(`editWindowL1${id}`);
+    const l1Minor = document.getElementById(`editWindowL1Minor${id}`);
+    const l1Unit = document.getElementById(`editWindowL1Unit${id}`);
+    const l1Preview = document.getElementById(`editL1Preview${id}`);
+    
+    if (l1Major && l1Minor && l1Unit && l1Preview) {
+        function updateL1Preview() {
+            const major = l1Major.value || '0';
+            const minor = l1Minor.value || '0';
+            const unit = l1Unit.value || 'ft-in';
+            
+            if (unit === 'mm') {
+                if (major === '0') {
+                    l1Preview.textContent = 'Preview: --';
+                    l1Preview.style.color = '#666';
+                } else {
+                    l1Preview.textContent = `Preview: ${major}mm`;
+                    l1Preview.style.color = '#2c5aa0';
+                }
+                return;
+            }
+            
+            const [majorUnit, minorUnit] = unit.split('-');
+            if (major === '0' && minor === '0') {
+                l1Preview.textContent = 'Preview: --';
+                l1Preview.style.color = '#666';
+            } else {
+                const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+                l1Preview.textContent = `Preview: ${formatted}`;
+                l1Preview.style.color = '#2c5aa0';
+            }
+        }
+        
+        l1Unit.addEventListener('change', () => {
+            toggleEditWindowMinorField(id, 'L1');
+            updateL1Preview();
+        });
+        l1Major.addEventListener('input', updateL1Preview);
+        l1Minor.addEventListener('input', updateL1Preview);
+        
+        if (l1Unit.value === 'mm') {
+            l1Minor.style.display = 'none';
+            l1Minor.value = '';
+        }
+        updateL1Preview();
+    }
+    
+    // Setup L2 preview
+    const l2Major = document.getElementById(`editWindowL2${id}`);
+    const l2Minor = document.getElementById(`editWindowL2Minor${id}`);
+    const l2Unit = document.getElementById(`editWindowL2Unit${id}`);
+    const l2Preview = document.getElementById(`editL2Preview${id}`);
+    
+    if (l2Major && l2Minor && l2Unit && l2Preview) {
+        function updateL2Preview() {
+            const major = l2Major.value || '0';
+            const minor = l2Minor.value || '0';
+            const unit = l2Unit.value || 'ft-in';
+            
+            if (unit === 'mm') {
+                if (major === '0') {
+                    l2Preview.textContent = 'Preview: --';
+                    l2Preview.style.color = '#666';
+                } else {
+                    l2Preview.textContent = `Preview: ${major}mm`;
+                    l2Preview.style.color = '#2c5aa0';
+                }
+                return;
+            }
+            
+            const [majorUnit, minorUnit] = unit.split('-');
+            if (major === '0' && minor === '0') {
+                l2Preview.textContent = 'Preview: --';
+                l2Preview.style.color = '#666';
+            } else {
+                const formatted = formatPreviewDisplay(major, majorUnit, minor, minorUnit);
+                l2Preview.textContent = `Preview: ${formatted}`;
+                l2Preview.style.color = '#2c5aa0';
+            }
+        }
+        
+        l2Unit.addEventListener('change', () => {
+            toggleEditWindowMinorField(id, 'L2');
+            updateL2Preview();
+        });
+        l2Major.addEventListener('input', updateL2Preview);
+        l2Minor.addEventListener('input', updateL2Preview);
+        
+        if (l2Unit.value === 'mm') {
+            l2Minor.style.display = 'none';
+            l2Minor.value = '';
+        }
+        updateL2Preview();
+    }
 }
 
 // Function to enter edit mode for a window
@@ -8625,6 +8870,12 @@ async function saveWindowEdit(windowId, event) {
             hauteurMax: parseFloat(document.getElementById(`editHauteurMax${windowId}`).value) || 0,
             hauteurMaxMinor: document.getElementById(`editHauteurMaxMinor${windowId}`).value || '',
             hauteurMaxUnit: document.getElementById(`editHauteurMaxUnit${windowId}`).value,
+            l1: document.getElementById(`editWindowL1${windowId}`)?.value || '',
+            l1Minor: document.getElementById(`editWindowL1Minor${windowId}`)?.value || '',
+            l1Unit: document.getElementById(`editWindowL1Unit${windowId}`)?.value || 'ft-in',
+            l2: document.getElementById(`editWindowL2${windowId}`)?.value || '',
+            l2Minor: document.getElementById(`editWindowL2Minor${windowId}`)?.value || '',
+            l2Unit: document.getElementById(`editWindowL2Unit${windowId}`)?.value || 'ft-in',
             jambage: {
                 type: document.getElementById(`editJambageType${windowId}`).value,
                 compositions: parseComposition(document.getElementById(`editJambageComposition${windowId}`).value)
@@ -8744,6 +8995,14 @@ document.getElementById('windowHauteurMaxUnit').value =
     (windowToDuplicate.hauteurMaxUnit === 'm' || windowToDuplicate.hauteurMaxUnit === 'mm' || windowToDuplicate.hauteurMaxUnit === 'm-mm') 
     ? 'm-mm' 
     : 'ft-in';
+
+    // Populate L1 and L2 data
+    document.getElementById('windowL1').value = windowToDuplicate.l1 || '';
+    document.getElementById('windowL1Minor').value = windowToDuplicate.l1Minor || '';
+    document.getElementById('windowL1Unit').value = windowToDuplicate.l1Unit || 'ft-in';
+    document.getElementById('windowL2').value = windowToDuplicate.l2 || '';
+    document.getElementById('windowL2Minor').value = windowToDuplicate.l2Minor || '';
+    document.getElementById('windowL2Unit').value = windowToDuplicate.l2Unit || 'ft-in';
     
     // Populate Jambage data
     if (windowToDuplicate.jambage) {

@@ -1797,12 +1797,13 @@ function generateWindowEditForm(win) {
                         <label><strong>L1:</strong></label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="number" id="editWindowL1${win.id}" value="${win.l1 || ''}" min="0" step="1"
-                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
                             <input type="text" id="editWindowL1Minor${win.id}" value="${win.l1Minor || ''}"
-                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; display: ${(win.l1Unit === 'mm') ? 'none' : 'block'};">
                             <select id="editWindowL1Unit${win.id}" 
-                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                                <option value="ft-in" ${win.l1Unit === 'ft-in' || !win.l1Unit ? 'selected' : ''}>ft-in</option>
+                                onchange="toggleEditMinorField(${win.id}, 'L1')"
+                                style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft-in" ${(!win.l1Unit || win.l1Unit === 'ft-in') ? 'selected' : ''}>ft-in</option>
                                 <option value="mm" ${win.l1Unit === 'mm' ? 'selected' : ''}>mm</option>
                             </select>
                         </div>
@@ -1812,12 +1813,13 @@ function generateWindowEditForm(win) {
                         <label><strong>L2:</strong></label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="number" id="editWindowL2${win.id}" value="${win.l2 || ''}" min="0" step="1"
-                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
                             <input type="text" id="editWindowL2Minor${win.id}" value="${win.l2Minor || ''}"
-                                   style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; display: ${(win.l2Unit === 'mm') ? 'none' : 'block'};">
                             <select id="editWindowL2Unit${win.id}" 
-                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                                <option value="ft-in" ${win.l2Unit === 'ft-in' || !win.l2Unit ? 'selected' : ''}>ft-in</option>
+                                onchange="toggleEditMinorField(${win.id}, 'L2')"
+                                style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="ft-in" ${(!win.l2Unit || win.l2Unit === 'ft-in') ? 'selected' : ''}>ft-in</option>
                                 <option value="mm" ${win.l2Unit === 'mm' ? 'selected' : ''}>mm</option>
                             </select>
                         </div>
@@ -3709,6 +3711,58 @@ function displayProjectFiles() {
             </tr>
         `;
     }).join('');
+}
+
+function toggleMinorField(fieldPrefix) {
+    // Handle both formats: "windowLargeur"/"windowHauteur" and "windowL1"/"windowL2"
+    let unitSelect, minorField;
+    
+    if (fieldPrefix === 'windowL1' || fieldPrefix === 'windowL2') {
+        // For L1 and L2 fields
+        unitSelect = document.getElementById(`${fieldPrefix}Unit`);
+        minorField = document.getElementById(`${fieldPrefix}Minor`);
+    } else {
+        // For largeur and hauteur fields
+        unitSelect = document.getElementById(`${fieldPrefix}MaxUnit`);
+        minorField = document.getElementById(`${fieldPrefix}MaxMinor`);
+    }
+    
+    if (!unitSelect || !minorField) return;
+    
+    const selectedUnit = unitSelect.value;
+    
+    if (selectedUnit === 'mm' || selectedUnit === 'm-mm') {
+        minorField.style.display = 'none';
+        minorField.value = '';
+    } else {
+        minorField.style.display = 'block';
+    }
+}
+
+function toggleEditMinorField(windowId, fieldType) {
+    let unitSelect, minorInput;
+    
+    if (fieldType === 'L1' || fieldType === 'L2') {
+        // For L1 and L2 fields
+        unitSelect = document.getElementById(`editWindow${fieldType}Unit${windowId}`);
+        minorInput = document.getElementById(`editWindow${fieldType}Minor${windowId}`);
+    } else {
+        // For Largeur and Hauteur fields
+        unitSelect = document.getElementById(`edit${fieldType}MaxUnit${windowId}`);
+        minorInput = document.getElementById(`edit${fieldType}MaxMinor${windowId}`);
+    }
+    
+    if (!unitSelect || !minorInput) {
+        console.log(`Toggle failed - elements not found for window ${windowId}, field ${fieldType}`);
+        return;
+    }
+    
+    if (unitSelect.value === 'mm' || unitSelect.value === 'm-mm') {
+        minorInput.style.display = 'none';
+        minorInput.value = '';
+    } else {
+        minorInput.style.display = 'block';
+    }
 }
 
 // Download project file

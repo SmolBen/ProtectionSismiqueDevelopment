@@ -651,12 +651,13 @@
                 </div>
 
                 <!-- Form Actions -->
-                <div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit" class="button primary">Calculate</button>
-                    <button type="button" id="cancelWallCalc" class="button secondary">Cancel</button>
-                </div>
-            </form>
+        <div class="form-actions">
+            <button type="submit" class="button success">
+                <i class="fas fa-save"></i> Save Window
+            </button>
         </div>
+    </form>
+</div>
 
         <!-- Right side: Results -->
         <div style="flex: 1; min-width: 0;">
@@ -953,6 +954,8 @@
 <div id="windowForm" class="equipment-form">
     <h3>Add New Window</h3>
     <form id="windowDataForm">
+    <div style="display: flex; gap: 30px; align-items: stretch;">
+        <div style="flex: 1; max-width: 600px;">
         <!-- Basic Information -->
         <div class="form-group">
             <label for="windowType">Window Type</label>
@@ -1032,37 +1035,76 @@
                     <option value="mm">mm</option>
                 </select>
             </div>
-            <div id="hauteurWindowPreview" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
+        <div id="hauteurWindowPreview" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
+            Preview: --
+        </div>
+        </div>
+
+        <!-- L1 Field -->
+        <div class="form-group">
+            <label for="windowL1">L1:</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="number" id="windowL1" name="windowL1" min="0" step="1"
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" id="windowL1Minor" name="windowL1Minor" placeholder=""
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                <select id="windowL1Unit" name="windowL1Unit"
+                    onchange="toggleMinorField('windowL1')"
+                    style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="ft-in" selected>ft-in</option>
+                    <option value="mm">mm</option>
+                </select>
+            </div>
+            <div id="l1Preview" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
                 Preview: --
             </div>
         </div>
-        
-<div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
-    <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 10px;">
-        <div class="form-group" style="margin-bottom: 0;">
-            <label for="jambageType">Jambage Type</label>
-            <div class="type-selection-row">
-                <select id="jambageType" name="jambageType" required onchange="updateTypeImage('jambage', this.value)" style="width: 180px;">
-                    <option value="">Select Jambage Type</option>
-                    <option value="JA1">JA1</option>
-                    <option value="JA2a">JA2a</option>
-                    <option value="JA2b">JA2b</option>
-                    <option value="JA3a">JA3a</option>
-                    <option value="JA4a">JA4a</option>
-                    <option value="NA">N/A</option>
+
+        <!-- L2 Field -->
+        <div class="form-group">
+            <label for="windowL2">L2:</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="number" id="windowL2" name="windowL2" min="0" step="1"
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" id="windowL2Minor" name="windowL2Minor" placeholder=""
+                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                <select id="windowL2Unit" name="windowL2Unit"
+                    onchange="toggleMinorField('windowL2')"
+                    style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="ft-in" selected>ft-in</option>
+                    <option value="mm">mm</option>
                 </select>
-                <div id="jambageImagePreview" class="type-image-preview empty">
-                    Select a type
-                </div>
+            </div>
+            <div id="l2Preview" style="margin-top: 5px; font-size: 12px; color: #666; font-style: italic;">
+                Preview: --
             </div>
         </div>
-        <div class="form-group" style="width: 250px;">
-            <label for="jambageComposition">Jambage Composition</label>
-            <div id="jambageCompositionBuilder"></div>
-            <input type="hidden" id="jambageComposition" name="jambageComposition">
+        </div>
+        
+        <!-- Window Reference Image -->
+        <div style="flex: 0 0 auto; display: flex; align-self: flex-start;">
+            <div style="
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: #f9f9f9;
+            ">
+                <img 
+                    src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/window-form-images/window-form-image.png" 
+                    alt="Window Reference"
+                    style="
+                        width: 450px;
+                        height: auto;
+                        max-width: 100%;
+                        display: block;
+                        border-radius: 4px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    "
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span style="display: none; color: #999; font-size: 13px; text-align: center; padding: 20px;">Image not available</span>
+            </div>
         </div>
     </div>
-</div>
 
 <!-- Replace the Linteau Type section with this -->
 <div style="border-top: 1px solid #e9ecef; margin: 15px 0 10px 0; padding-top: 12px;">
