@@ -3697,12 +3697,14 @@ function displayProjectFiles() {
                 <td style="padding: 12px 10px; color: #666; font-size: 12px;">${file.type}</td>
                 <td style="padding: 12px 10px; color: #666; font-size: 12px;">${date}</td>
                 <td style="padding: 12px 10px; text-align: center;">
-                    <button onclick="downloadProjectFile('${file.id}')" style="background: none; border: 1px solid #17a2b8; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #17a2b8; margin-right: 5px;" title="Download">
-                        <i class="fas fa-download"></i>
-                    </button>
-                    <button onclick="deleteProjectFile('${file.id}')" style="background: none; border: 1px solid #dc3545; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #dc3545;" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div style="display: flex; gap: 5px; justify-content: center;">
+                        <button onclick="downloadProjectFile('${file.id}')" style="background: none; border: 1px solid #17a2b8; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #17a2b8;" title="Download">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button onclick="deleteProjectFile('${file.id}')" style="background: none; border: 1px solid #dc3545; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #dc3545;" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;

@@ -183,24 +183,24 @@
                     </div>
 
                     <div id="uploadFileRow" style="display: none; background: #e8f5f7; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 2px dashed #17a2b8;">
-                        <div style="display: grid; grid-template-columns: 2fr 3fr auto; gap: 15px; align-items: end;">
-                            <div>
+                        <div style="display: flex; gap: 15px; align-items: flex-end;">
+                            <div style="flex: 2;">
                                 <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
                                     File Name <span style="color: red;">*</span>
                                 </label>
-                                <input type="text" id="uploadFileName" placeholder="Enter file name..." style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px;">
+                                <input type="text" id="uploadFileName" placeholder="Enter file name..." style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; height: 34px; box-sizing: border-box;">
                             </div>
-                            <div>
+                            <div style="flex: 3;">
                                 <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
                                     Select File <span style="color: red;">*</span>
                                 </label>
-                                <input type="file" id="uploadFileInput" accept="image/*,.pdf" style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; background: white;">
+                                <input type="file" id="uploadFileInput" accept="image/*,.pdf" style="width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; background: white; height: 34px; box-sizing: border-box;">
                             </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button id="uploadFileSubmitBtn" style="background: #28a745; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap;">
+                            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                <button id="uploadFileSubmitBtn" style="background: #28a745; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; height: 34px;">
                                     <i class="fas fa-upload"></i> Upload
                                 </button>
-                                <button id="uploadFileCancelBtn" style="background: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                                <button id="uploadFileCancelBtn" style="background: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; height: 34px;">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -226,7 +226,7 @@
                         <p style="margin: 0;">No files uploaded yet. Click "Upload File" to add files.</p>
                     </div>
                 </div>
-                
+
             </div>
             <div class="right-section">
                 <!-- Tab Interface - No Custom Pages for limited users -->
