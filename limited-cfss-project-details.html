@@ -171,6 +171,62 @@
                             <i class="fas fa-save"></i> Save
                         </button>
                     </div>
+
+                    <!-- Project Files Section -->
+                <div class="files-section" style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #17a2b8; padding-bottom: 5px;">
+                        <h4 style="margin: 0; color: #17a2b8; font-size: 14px;">Project Files</h4>
+                        <button id="showUploadFileBtn" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-plus"></i>
+                            Upload File
+                        </button>
+                    </div>
+
+                    <div id="uploadFileRow" style="display: none; background: #e8f5f7; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 2px dashed #17a2b8;">
+                        <div style="display: grid; grid-template-columns: 2fr 3fr auto; gap: 15px; align-items: end;">
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
+                                    File Name <span style="color: red;">*</span>
+                                </label>
+                                <input type="text" id="uploadFileName" placeholder="Enter file name..." style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
+                                    Select File <span style="color: red;">*</span>
+                                </label>
+                                <input type="file" id="uploadFileInput" accept="image/*,.pdf" style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; background: white;">
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button id="uploadFileSubmitBtn" style="background: #28a745; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap;">
+                                    <i class="fas fa-upload"></i> Upload
+                                </button>
+                                <button id="uploadFileCancelBtn" style="background: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;" id="filesTable">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 50%;">File Name</th>
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 20%;">Type</th>
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 20%;">Date</th>
+                                <th style="text-align: center; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 10%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTableBody">
+                            <!-- Files will be populated here -->
+                        </tbody>
+                    </table>
+
+                    <div id="filesEmptyState" style="display: none; text-align: center; padding: 50px; color: #999;">
+                        <i class="fas fa-folder-open" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px;"></i>
+                        <p style="margin: 0;">No files uploaded yet. Click "Upload File" to add files.</p>
+                    </div>
+                </div>
+                
             </div>
             <div class="right-section">
                 <!-- Tab Interface - No Custom Pages for limited users -->

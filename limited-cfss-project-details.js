@@ -153,6 +153,7 @@ async function loadProject(projectId) {
         currentProject.windows = currentProject.windows || [];
         currentProject.options = currentProject.options || [];
         currentProject.soffites = currentProject.soffites || [];
+        currentProject.files = currentProject.files || [];
 
         // Display project info
         displayProjectInfo();
@@ -162,6 +163,7 @@ async function loadProject(projectId) {
         displayParapetList();
         displayWindowList();
         displaySoffiteList();
+        displayProjectFiles();
 
         // Show project container
         document.getElementById('loadingProject').style.display = 'none';
@@ -202,6 +204,19 @@ function displayProjectInfo() {
 
 function setupEventListeners() {
     console.log('Setting up event listeners...');
+
+    // File upload listeners
+    document.getElementById('showUploadFileBtn').addEventListener('click', () => {
+        document.getElementById('uploadFileRow').style.display = 'block';
+        document.getElementById('uploadFileName').value = '';
+        document.getElementById('uploadFileInput').value = '';
+    });
+
+    document.getElementById('uploadFileCancelBtn').addEventListener('click', () => {
+        document.getElementById('uploadFileRow').style.display = 'none';
+    });
+
+    document.getElementById('uploadFileSubmitBtn').addEventListener('click', handleFileUpload);
     
     // Status change
     const statusDropdown = document.getElementById('projectStatusDropdown');
@@ -3562,4 +3577,221 @@ function updateParapetTypeImage(selectedType) {
             onerror="this.parentElement.innerHTML='<span style=\\'color: #999; font-size: 11px; text-align: center;\\'><i class=\\'fas fa-image\\' style=\\'font-size: 20px; margin-bottom: 4px; display: block;\\'></i>${selectedType}<br/>(image not found)</span>';"
         >
     `;
+}
+
+// File upload handler
+async function handleFileUpload() {
+    const fileName = document.getElementById('uploadFileName').value.trim();
+    const fileInput = document.getElementById('uploadFileInput');
+    const file = fileInput.files[0];
+
+    if (!fileName) {
+        alert('Please enter a file name');
+        return;
+    }
+
+    if (!file) {
+        alert('Please select a file');
+        return;
+    }
+
+    try {
+        document.getElementById('uploadFileSubmitBtn').disabled = true;
+        document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+        // Get upload URL from backend
+        const uploadUrlResponse = await fetch(`${apiUrl}/${currentProject.id}/file-upload-url`, {
+            method: 'POST',
+            headers: {
+                ...authHelper.getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filename: file.name,
+                contentType: file.type
+            })
+        });
+
+        if (!uploadUrlResponse.ok) {
+            throw new Error('Failed to get upload URL');
+        }
+
+        const { uploadUrl, key } = await uploadUrlResponse.json();
+
+        // Upload file to S3
+        const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Content-Type': file.type
+            }
+        });
+
+        if (!uploadResponse.ok) {
+            throw new Error('Failed to upload file');
+        }
+
+        // Save file metadata to project
+        const fileMetadata = {
+            id: Date.now().toString(),
+            name: fileName,
+            key: key,
+            type: file.type.startsWith('image/') ? 'Image' : 'PDF',
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: authHelper.getCurrentUser().email
+        };
+
+        currentProject.files = currentProject.files || [];
+        currentProject.files.push(fileMetadata);
+
+        await updateProject(currentProject.id, { files: currentProject.files });
+
+        // Reset form and refresh display
+        document.getElementById('uploadFileRow').style.display = 'none';
+        displayProjectFiles();
+        
+        alert('File uploaded successfully!');
+
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('Error uploading file: ' + error.message);
+    } finally {
+        document.getElementById('uploadFileSubmitBtn').disabled = false;
+        document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-upload"></i> Upload';
+    }
+}
+
+// Display project files in table
+function displayProjectFiles() {
+    const tbody = document.getElementById('filesTableBody');
+    const emptyState = document.getElementById('filesEmptyState');
+    const files = currentProject.files || [];
+
+    if (files.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+
+    tbody.innerHTML = files.map(file => {
+        const date = new Date(file.uploadedAt).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
+        
+        const icon = file.type === 'PDF' ? 'fa-file-pdf' : 'fa-image';
+
+        return `
+            <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 12px 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #17a2b8; color: white; border-radius: 4px; font-size: 14px;">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span style="font-weight: 500; color: #333;">${file.name}</span>
+                    </div>
+                </td>
+                <td style="padding: 12px 10px; color: #666; font-size: 12px;">${file.type}</td>
+                <td style="padding: 12px 10px; color: #666; font-size: 12px;">${date}</td>
+                <td style="padding: 12px 10px; text-align: center;">
+                    <button onclick="downloadProjectFile('${file.id}')" style="background: none; border: 1px solid #17a2b8; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #17a2b8; margin-right: 5px;" title="Download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button onclick="deleteProjectFile('${file.id}')" style="background: none; border: 1px solid #dc3545; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #dc3545;" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Download project file
+async function downloadProjectFile(fileId) {
+    try {
+        const file = currentProject.files.find(f => f.id === fileId);
+        if (!file) {
+            alert('File not found');
+            return;
+        }
+
+        // Get signed URL from backend
+        const response = await fetch(`${apiUrl}/${currentProject.id}/file-download-url?key=${encodeURIComponent(file.key)}`, {
+            method: 'GET',
+            headers: authHelper.getAuthHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to get download URL');
+        }
+
+        const { url } = await response.json();
+        
+        // Open in new tab or download
+        window.open(url, '_blank');
+
+    } catch (error) {
+        console.error('Error downloading file:', error);
+        alert('Error downloading file: ' + error.message);
+    }
+}
+
+// Delete project file
+async function deleteProjectFile(fileId) {
+    if (!confirm('Are you sure you want to delete this file?')) {
+        return;
+    }
+
+    try {
+        const file = currentProject.files.find(f => f.id === fileId);
+        if (!file) {
+            alert('File not found');
+            return;
+        }
+
+        // Delete from S3
+        await fetch(`${apiUrl}/${currentProject.id}/file-delete`, {
+            method: 'POST',
+            headers: {
+                ...authHelper.getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ key: file.key })
+        });
+
+        // Remove from project
+        currentProject.files = currentProject.files.filter(f => f.id !== fileId);
+        await updateProject(currentProject.id, { files: currentProject.files });
+
+        displayProjectFiles();
+        alert('File deleted successfully');
+
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        alert('Error deleting file: ' + error.message);
+    }
+}
+
+// Update project helper
+async function updateProject(projectId, updates) {
+    const response = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+            ...authHelper.getAuthHeaders(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: projectId,
+            ...updates
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to update project');
+    }
+
+    return await response.json();
 }
