@@ -183,6 +183,19 @@
                     </div>
 
                     <div id="uploadFileRow" style="display: none; background: #e8f5f7; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 2px dashed #17a2b8;">
+                        <!-- Toggle Pills -->
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 12px; font-weight: 500; color: #333;">Source:</span>
+                            <div style="display: inline-flex; background: #d4d4d4; border-radius: 6px; padding: 3px;">
+                                <button type="button" id="uploadModeFile" class="upload-mode-btn active" style="padding: 6px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; background: #17a2b8; color: white; transition: all 0.2s;">
+                                    Upload File
+                                </button>
+                                <button type="button" id="uploadModeLink" class="upload-mode-btn" style="padding: 6px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: #555; transition: all 0.2s;">
+                                    Paste Link
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Input Row -->
                         <div style="display: flex; gap: 15px; align-items: flex-end;">
                             <div style="flex: 2;">
                                 <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
@@ -191,13 +204,16 @@
                                 <input type="text" id="uploadFileName" placeholder="Enter file name..." style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; height: 34px; box-sizing: border-box;">
                             </div>
                             <div style="flex: 3;">
-                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
+                                <label id="uploadInputLabel" style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
                                     Select File <span style="color: red;">*</span>
                                 </label>
+                                <!-- File Input (shown by default) -->
                                 <input type="file" id="uploadFileInput" accept="image/*,.pdf" style="width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; background: white; height: 34px; box-sizing: border-box;">
+                                <!-- Link Input (hidden by default) -->
+                                <input type="text" id="uploadLinkInput" placeholder="https://example.com/file.pdf" style="display: none; width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; height: 34px; box-sizing: border-box;">
                             </div>
                             <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                                <button id="uploadFileSubmitBtn" style="background: #28a745; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; height: 34px;">
+                                <button id="uploadFileSubmitBtn" style="background: #28a745; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; height: 34px; min-width: 80px;">
                                     <i class="fas fa-upload"></i> Upload
                                 </button>
                                 <button id="uploadFileCancelBtn" style="background: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; height: 34px;">

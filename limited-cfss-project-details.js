@@ -210,6 +210,9 @@ function setupEventListeners() {
         document.getElementById('uploadFileRow').style.display = 'block';
         document.getElementById('uploadFileName').value = '';
         document.getElementById('uploadFileInput').value = '';
+        document.getElementById('uploadLinkInput').value = '';
+        // Reset to file mode
+        setUploadMode('file');
     });
 
     document.getElementById('uploadFileCancelBtn').addEventListener('click', () => {
@@ -217,6 +220,10 @@ function setupEventListeners() {
     });
 
     document.getElementById('uploadFileSubmitBtn').addEventListener('click', handleFileUpload);
+
+    // Upload mode toggle listeners
+    document.getElementById('uploadModeFile').addEventListener('click', () => setUploadMode('file'));
+    document.getElementById('uploadModeLink').addEventListener('click', () => setUploadMode('link'));
     
     // Status change
     const statusDropdown = document.getElementById('projectStatusDropdown');
@@ -3581,85 +3588,169 @@ function updateParapetTypeImage(selectedType) {
     `;
 }
 
+// Track current upload mode
+let currentUploadMode = 'file';
+
+function setUploadMode(mode) {
+    currentUploadMode = mode;
+    const fileBtn = document.getElementById('uploadModeFile');
+    const linkBtn = document.getElementById('uploadModeLink');
+    const fileInput = document.getElementById('uploadFileInput');
+    const linkInput = document.getElementById('uploadLinkInput');
+    const inputLabel = document.getElementById('uploadInputLabel');
+
+    if (mode === 'file') {
+        fileBtn.style.background = '#17a2b8';
+        fileBtn.style.color = 'white';
+        linkBtn.style.background = 'transparent';
+        linkBtn.style.color = '#555';
+        fileInput.style.display = 'block';
+        linkInput.style.display = 'none';
+        inputLabel.innerHTML = 'Select File <span style="color: red;">*</span>';
+    } else {
+        linkBtn.style.background = '#17a2b8';
+        linkBtn.style.color = 'white';
+        fileBtn.style.background = 'transparent';
+        fileBtn.style.color = '#555';
+        fileInput.style.display = 'none';
+        linkInput.style.display = 'block';
+        inputLabel.innerHTML = 'Paste Link <span style="color: red;">*</span>';
+    }
+}
+
 // File upload handler
 async function handleFileUpload() {
     const fileName = document.getElementById('uploadFileName').value.trim();
-    const fileInput = document.getElementById('uploadFileInput');
-    const file = fileInput.files[0];
 
     if (!fileName) {
         alert('Please enter a file name');
         return;
     }
 
-    if (!file) {
-        alert('Please select a file');
-        return;
-    }
-
-    try {
-        document.getElementById('uploadFileSubmitBtn').disabled = true;
-        document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-
-        // Get upload URL from backend
-        const uploadUrlResponse = await fetch(`${apiUrl}/${currentProject.id}/file-upload-url`, {
-            method: 'POST',
-            headers: {
-                ...authHelper.getAuthHeaders(),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                filename: file.name,
-                contentType: file.type
-            })
-        });
-
-        if (!uploadUrlResponse.ok) {
-            throw new Error('Failed to get upload URL');
-        }
-
-        const { uploadUrl, key } = await uploadUrlResponse.json();
-
-        // Upload file to S3
-        const uploadResponse = await fetch(uploadUrl, {
-            method: 'PUT',
-            body: file,
-            headers: {
-                'Content-Type': file.type
-            }
-        });
-
-        if (!uploadResponse.ok) {
-            throw new Error('Failed to upload file');
-        }
-
-        // Save file metadata to project
-        const fileMetadata = {
-            id: Date.now().toString(),
-            name: fileName,
-            key: key,
-            type: file.type.startsWith('image/') ? 'Image' : 'PDF',
-            uploadedAt: new Date().toISOString(),
-            uploadedBy: authHelper.getCurrentUser().email
-        };
-
-        currentProject.files = currentProject.files || [];
-        currentProject.files.push(fileMetadata);
-
-        await updateProject(currentProject.id, { files: currentProject.files });
-
-        // Reset form and refresh display
-        document.getElementById('uploadFileRow').style.display = 'none';
-        displayProjectFiles();
+    if (currentUploadMode === 'link') {
+        // Handle link upload
+        const linkUrl = document.getElementById('uploadLinkInput').value.trim();
         
-        alert('File uploaded successfully!');
+        if (!linkUrl) {
+            alert('Please paste a link');
+            return;
+        }
 
-    } catch (error) {
-        console.error('Error uploading file:', error);
-        alert('Error uploading file: ' + error.message);
-    } finally {
-        document.getElementById('uploadFileSubmitBtn').disabled = false;
-        document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-upload"></i> Upload';
+        // Basic URL validation
+        try {
+            new URL(linkUrl);
+        } catch {
+            alert('Please enter a valid URL');
+            return;
+        }
+
+        try {
+            document.getElementById('uploadFileSubmitBtn').disabled = true;
+            document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+            // Save link metadata to project
+            const fileMetadata = {
+                id: Date.now().toString(),
+                name: fileName,
+                url: linkUrl,
+                type: 'Link',
+                uploadedAt: new Date().toISOString(),
+                uploadedBy: authHelper.getCurrentUser().email
+            };
+
+            currentProject.files = currentProject.files || [];
+            currentProject.files.push(fileMetadata);
+
+            await updateProject(currentProject.id, { files: currentProject.files });
+
+            // Reset form and refresh display
+            document.getElementById('uploadFileRow').style.display = 'none';
+            displayProjectFiles();
+            
+            alert('Link added successfully!');
+
+        } catch (error) {
+            console.error('Error adding link:', error);
+            alert('Error adding link: ' + error.message);
+        } finally {
+            document.getElementById('uploadFileSubmitBtn').disabled = false;
+            document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-upload"></i> Upload';
+        }
+
+    } else {
+        // Handle file upload
+        const fileInput = document.getElementById('uploadFileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Please select a file');
+            return;
+        }
+
+        try {
+            document.getElementById('uploadFileSubmitBtn').disabled = true;
+            document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            // Get upload URL from backend
+            const uploadUrlResponse = await fetch(`${apiUrl}/${currentProject.id}/file-upload-url`, {
+                method: 'POST',
+                headers: {
+                    ...authHelper.getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filename: file.name,
+                    contentType: file.type
+                })
+            });
+
+            if (!uploadUrlResponse.ok) {
+                throw new Error('Failed to get upload URL');
+            }
+
+            const { uploadUrl, key } = await uploadUrlResponse.json();
+
+            // Upload file to S3
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                body: file,
+                headers: {
+                    'Content-Type': file.type
+                }
+            });
+
+            if (!uploadResponse.ok) {
+                throw new Error('Failed to upload file');
+            }
+
+            // Save file metadata to project
+            const fileMetadata = {
+                id: Date.now().toString(),
+                name: fileName,
+                key: key,
+                type: file.type.startsWith('image/') ? 'Image' : 'PDF',
+                uploadedAt: new Date().toISOString(),
+                uploadedBy: authHelper.getCurrentUser().email
+            };
+
+            currentProject.files = currentProject.files || [];
+            currentProject.files.push(fileMetadata);
+
+            await updateProject(currentProject.id, { files: currentProject.files });
+
+            // Reset form and refresh display
+            document.getElementById('uploadFileRow').style.display = 'none';
+            displayProjectFiles();
+            
+            alert('File uploaded successfully!');
+
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Error uploading file: ' + error.message);
+        } finally {
+            document.getElementById('uploadFileSubmitBtn').disabled = false;
+            document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-upload"></i> Upload';
+        }
     }
 }
 
@@ -3684,13 +3775,23 @@ function displayProjectFiles() {
             year: 'numeric' 
         });
         
-        const icon = file.type === 'PDF' ? 'fa-file-pdf' : 'fa-image';
+        const icon = file.type === 'PDF' ? 'fa-file-pdf' : file.type === 'Link' ? 'fa-link' : 'fa-image';
+        const iconBg = file.type === 'Link' ? '#6f42c1' : '#17a2b8';
+
+        // Different action button for links vs files
+        const actionButton = file.type === 'Link' 
+            ? `<button onclick="window.open('${file.url}', '_blank')" style="background: none; border: 1px solid #6f42c1; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #6f42c1;" title="Open Link">
+                   <i class="fas fa-external-link-alt"></i>
+               </button>`
+            : `<button onclick="downloadProjectFile('${file.id}')" style="background: none; border: 1px solid #17a2b8; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #17a2b8;" title="Download">
+                   <i class="fas fa-download"></i>
+               </button>`;
 
         return `
             <tr style="border-bottom: 1px solid #e0e0e0;">
                 <td style="padding: 12px 10px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #17a2b8; color: white; border-radius: 4px; font-size: 14px;">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: ${iconBg}; color: white; border-radius: 4px; font-size: 14px;">
                             <i class="fas ${icon}"></i>
                         </div>
                         <span style="font-weight: 500; color: #333;">${file.name}</span>
@@ -3700,9 +3801,7 @@ function displayProjectFiles() {
                 <td style="padding: 12px 10px; color: #666; font-size: 12px;">${date}</td>
                 <td style="padding: 12px 10px; text-align: center;">
                     <div style="display: flex; gap: 5px; justify-content: center;">
-                        <button onclick="downloadProjectFile('${file.id}')" style="background: none; border: 1px solid #17a2b8; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #17a2b8;" title="Download">
-                            <i class="fas fa-download"></i>
-                        </button>
+                        ${actionButton}
                         <button onclick="deleteProjectFile('${file.id}')" style="background: none; border: 1px solid #dc3545; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #dc3545;" title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
