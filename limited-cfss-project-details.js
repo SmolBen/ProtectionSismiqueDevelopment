@@ -82,8 +82,8 @@ async function initializeProjectDetails() {
             return;
         }
 
-        // Verify user is limited
-        if (!authHelper.isLimited()) {
+        // Verify user is limited OR admin (admins can view limited projects)
+        if (!authHelper.isLimited() && !authHelper.isAdmin()) {
             const projectId = new URLSearchParams(window.location.search).get('id');
             window.location.href = `cfss-project-details.html?id=${projectId}`;
             return;
@@ -139,9 +139,9 @@ async function loadProject(projectId) {
             throw new Error('Project not found');
         }
 
-        // Check if user owns this project
+        // Check if user owns this project (admins can view any project)
         const currentUser = authHelper.getCurrentUser();
-        if (currentProject.createdBy !== currentUser.email) {
+        if (!authHelper.isAdmin() && currentProject.createdBy !== currentUser.email) {
             document.getElementById('loadingProject').style.display = 'none';
             document.getElementById('accessDenied').style.display = 'block';
             return;

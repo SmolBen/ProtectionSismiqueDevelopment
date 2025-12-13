@@ -324,7 +324,7 @@ function renderCFSSProjects(filteredProjects) {
     projectList.appendChild(listHeader);
     
     filteredProjects.forEach((project) => {
-        const formattedAddress = `${project.addressLine1}, ${project.city}, ${project.province}, ${project.country}`;
+        const formattedAddress = `${project.addressLine1 || ''}${project.city ? ', ' + project.city : ''}${project.province ? ', ' + project.province : ''}${project.country ? ', ' + project.country : ''}`;
         const formattedDate = project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', { 
             month: 'short', 
             day: 'numeric', 
@@ -332,26 +332,26 @@ function renderCFSSProjects(filteredProjects) {
         }) : 'N/A';
         
         // Get status dot class
-        const statusClass = project.status.toLowerCase().replace(' ', '-');
+        const statusClass = project.status ? project.status.toLowerCase().replace(' ', '-') : 'planning';
         
         const projectCard = document.createElement('div');
         projectCard.className = 'project-card';
         projectCard.innerHTML = `
             <div class="project-main">
                 <div class="project-info">
-                    <h2>${project.name}</h2>
+                    <h2>${project.name || 'Untitled'}</h2>
                     <div class="project-meta">
-                        <span>${project.type}</span>
+                        <span>${project.type || 'CFSS Project'}</span>
                         <span class="meta-separator">•</span>
-                        <span>${formattedAddress}</span>
+                        <span>${formattedAddress || 'No address'}</span>
                         <span class="meta-separator">•</span>
                         <span>${formattedDate}</span>
                     </div>
-                    <p>${project.description}</p>
+                    <p>${project.description || ''}</p>
                 </div>
                 <div class="project-status">
                     <div class="status-dot ${statusClass}"></div>
-                    <span class="status-text">${project.status}</span>
+                    <span class="status-text">${project.status || 'Planning'}</span>
                 </div>
                 <div class="project-actions">
                     <button class="view-details" title="View Details">
@@ -380,14 +380,16 @@ function renderCFSSProjects(filteredProjects) {
         projectList.appendChild(projectCard);
 
         // Add click event to entire card for navigation
+        const detailsPage = project.isLimitedProject ? 'limited-cfss-project-details.html' : 'cfss-project-details.html';
+        
         projectCard.addEventListener('click', () => {
-            window.location.href = `cfss-project-details.html?id=${project.id}`;
+            window.location.href = `${detailsPage}?id=${project.id}`;
         });
 
         // Add event listeners
         projectCard.querySelector('.view-details').addEventListener('click', (e) => {
             e.stopPropagation();
-            window.location.href = `cfss-project-details.html?id=${project.id}`;
+            window.location.href = `${detailsPage}?id=${project.id}`;
         });
 
         const duplicateButton = projectCard.querySelector('.duplicate-project');
