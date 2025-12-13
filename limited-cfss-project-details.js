@@ -3636,9 +3636,13 @@ async function handleFileUpload() {
             return;
         }
 
-        // Basic URL validation
+        // URL validation - only allow https://
         try {
-            new URL(linkUrl);
+            const urlObj = new URL(linkUrl);
+            if (urlObj.protocol !== 'https:') {
+                alert('Only secure HTTPS links are allowed');
+                return;
+            }
         } catch {
             alert('Please enter a valid URL');
             return;
@@ -3780,7 +3784,7 @@ function displayProjectFiles() {
 
         // Different action button for links vs files
         const actionButton = file.type === 'Link' 
-            ? `<button onclick="window.open('${file.url}', '_blank')" style="background: none; border: 1px solid #6f42c1; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #6f42c1;" title="Open Link">
+            ? `<button onclick="window.open('${file.url}', '_blank')" style="background: none; border: 1px solid #6f42c1; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #6f42c1;" title="${file.url}">
                    <i class="fas fa-external-link-alt"></i>
                </button>`
             : `<button onclick="downloadProjectFile('${file.id}')" style="background: none; border: 1px solid #17a2b8; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #17a2b8;" title="Download">
