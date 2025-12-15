@@ -94,6 +94,7 @@ async function handleFormSubmit(e) {
             status: 'Planning',
             createdBy: currentUser.email,
             createdAt: new Date().toISOString(),
+            isLimitedProject: true,
             // CFSS projects don't have domain field
             equipment: [],
             parapets: [],
