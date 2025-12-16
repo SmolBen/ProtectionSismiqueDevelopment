@@ -79,11 +79,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 initializeProjectDetailsEditButton();
 
                 // INITIALIZE WALL DATA - UNIFIED APPROACH
-                console.log('🔄 Initializing CFSS wall data...');
+                console.log('ðŸ”„ Initializing CFSS wall data...');
                 await initializeWallData(project, projectId);
 
                 // Load CFSS wind data
-                console.log('🔍 Loading CFSS wind data...');
+                console.log('ðŸ” Loading CFSS wind data...');
                 
                 // Check if cfssWindData exists (both old array format and new object format)
                 const hasCFSSData = project.cfssWindData && (
@@ -92,20 +92,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                 );
                 
                 if (hasCFSSData) {
-                    console.log('✅ CFSS data found, loading display...');
+                    console.log('âœ… CFSS data found, loading display...');
                     cfssWindData = project.cfssWindData;
                     
                     setTimeout(() => {
                         try {
                             displayCFSSData(project.cfssWindData);
                             updateCFSSButtonText();
-                            console.log('✅ CFSS data display updated successfully');
+                            console.log('âœ… CFSS data display updated successfully');
                         } catch (error) {
-                            console.error('❌ Error updating CFSS data display:', error);
+                            console.error('âŒ Error updating CFSS data display:', error);
                         }
                     }, 100);
                 } else {
-                    console.log('⚠️ No CFSS data found in project');
+                    console.log('âš ï¸ No CFSS data found in project');
                     const cfssDisplay = document.getElementById('cfssDataDisplay');
                     if (cfssDisplay) {
                         cfssDisplay.style.display = 'none';
@@ -134,12 +134,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setupWindowHandlers();
                 initExteriorWallCalculator();
                 loadWindowsFromProject(project);
-                console.log('📋 About to call loadParapetsFromProject...');
+                console.log('ðŸ“‹ About to call loadParapetsFromProject...');
                 console.log('Project object keys:', Object.keys(project));
                 loadParapetsFromProject(project);
                 renderParapetList();
                 updateParapetSummary();
                 initializeParapetHandlers();
+                
+                // Load soffites
+                loadSoffitesFromProject(project);
+                initializeSoffiteHandlers();
+                
+                // Load files
+                loadFilesFromProject(project);
+                initializeFileHandlers();
+                
                 initializeCustomPages();
                 setupCFSSReportButtonWithRevisionModal();
                 updateCustomPagesSummary();
@@ -168,7 +177,7 @@ function syncRightSectionHeight() {
     }
 }
 
-                console.log('📄 Initializing custom pages...');
+                console.log('ðŸ“„ Initializing custom pages...');
                 initializeCustomPagesWithData(project);
                 setBlankCFSSBackground();
 
@@ -195,7 +204,7 @@ function syncRightSectionHeight() {
                     observer.observe(leftSection, { childList: true, subtree: true });
                 }
 
-                console.log('✅ CFSS initialization completed successfully');
+                console.log('âœ… CFSS initialization completed successfully');
 
             } else {
                 console.error("CFSS Project not found.");
@@ -216,25 +225,25 @@ function syncRightSectionHeight() {
 });
 
 async function initializeWallData(project, projectId) {
-    console.log('📋 Starting wall data initialization...');
+    console.log('ðŸ“‹ Starting wall data initialization...');
     
     // Check if project has revision system
     if (project.wallRevisions && project.wallRevisions.length > 0) {
-        console.log('✅ Project has revision system - initializing revisions');
+        console.log('âœ… Project has revision system - initializing revisions');
         initializeRevisionSystem(project);
         
         if (projectEquipment && projectEquipment.length > 0) {
-            console.log(`✅ Loaded ${projectEquipment.length} walls from revision system`);
+            console.log(`âœ… Loaded ${projectEquipment.length} walls from revision system`);
             return;
         } else {
-            console.warn('⚠️ Revision system initialized but no walls loaded');
+            console.warn('âš ï¸ Revision system initialized but no walls loaded');
         }
     } else {
-        console.log('📋 No revision system found - checking for legacy data to migrate');
+        console.log('ðŸ“‹ No revision system found - checking for legacy data to migrate');
         
         // Try to migrate legacy data if it exists
         if (project.equipment && project.equipment.length > 0) {
-            console.log('📋 Found legacy walls, creating initial revision...');
+            console.log('ðŸ“‹ Found legacy walls, creating initial revision...');
             
             // Create first revision from legacy data
             const firstRevision = {
@@ -253,9 +262,9 @@ async function initializeWallData(project, projectId) {
             // Save the migration to database
             try {
                 await saveRevisionsToDatabase();
-                console.log('✅ Legacy data migrated to revision system');
+                console.log('âœ… Legacy data migrated to revision system');
             } catch (error) {
-                console.error('❌ Failed to migrate legacy data:', error);
+                console.error('âŒ Failed to migrate legacy data:', error);
                 // Continue with local data even if save failed
             }
             
@@ -264,16 +273,16 @@ async function initializeWallData(project, projectId) {
     }
     
     // Initialize empty state
-    console.log('📋 No wall data found - initializing empty state');
+    console.log('ðŸ“‹ No wall data found - initializing empty state');
     projectEquipment = [];
     projectRevisions = [];
     currentRevisionId = null;
     
-    console.log('✅ Wall data initialization completed');
+    console.log('âœ… Wall data initialization completed');
 }
 
 function initializeCustomPagesWithData(project) {
-    console.log('🎨 Initializing Custom Pages with project data...');
+    console.log('ðŸŽ¨ Initializing Custom Pages with project data...');
     
     // Initialize the UI
     initializeCustomPages();
@@ -282,7 +291,7 @@ function initializeCustomPagesWithData(project) {
     loadCustomPagesFromProject(project);
     updateCustomPagesSummary();
     
-    console.log('✅ Custom pages initialization complete');
+    console.log('âœ… Custom pages initialization complete');
 }
 
 // FIXED: Report generation uses ONLY revision system
@@ -311,7 +320,7 @@ async function generateCFSSProjectReportWithRevisions() {
             : (projectData.customPages || [])
         };
         
-        console.log('📊 Report data being sent:', {
+        console.log('ðŸ“Š Report data being sent:', {
             name: cfssProjectData.name,
             wallsCount: cfssProjectData.walls?.length || 0,
             revisionsCount: cfssProjectData.wallRevisions?.length || 0,
@@ -360,11 +369,11 @@ async function generateCFSSProjectReportWithRevisions() {
             throw new Error('No download URL received from server');
         }
 
-        console.log('✅ Opening CFSS download URL:', result.downloadUrl);
+        console.log('âœ… Opening CFSS download URL:', result.downloadUrl);
         window.location.href = result.downloadUrl;
         
     } catch (error) {
-        console.error('❌ CFSS PDF generation error:', error);
+        console.error('âŒ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
             alert('CFSS PDF generation timed out. Please try again in a few minutes.');
         } else {
@@ -393,9 +402,9 @@ function setupCFSSReportButtonWithRevisionModal() {
             });
         });
         
-        console.log(`✅ CFSS Report buttons setup completed (${generateButtons.length} buttons)`);
+        console.log(`âœ… CFSS Report buttons setup completed (${generateButtons.length} buttons)`);
     } else {
-        console.warn('⚠️ CFSS Report buttons not found');
+        console.warn('âš ï¸ CFSS Report buttons not found');
     }
 }
 
@@ -497,7 +506,7 @@ function getFreshProjectMeta() {
   const projectName   = liveName.trim();
   const projectNumber = liveNumber.trim();
 
-  // Normalize emails → unique, trimmed
+  // Normalize emails â†’ unique, trimmed
 const clientEmailsArray = [...new Set(
   liveEmails.split(/[;,]/).map(s => s.trim()).filter(Boolean)
 )];
@@ -567,11 +576,11 @@ async function onSendReportToClientsClicked() {
             throw new Error(`Make webhook error: HTTP ${hookResp.status}: ${t}`);
         }
         
-        console.log('📤 Make.com webhook payload (success):', payload);
+        console.log('ðŸ“¤ Make.com webhook payload (success):', payload);
         
         alert('Report sent successfully!');
     } catch (err) {
-        console.error('❌ Send Report flow error:', err);
+        console.error('âŒ Send Report flow error:', err);
         alert('Error: ' + err.message);
     } finally {
         const btn = document.getElementById('sendReportToClientsButton');
@@ -595,7 +604,7 @@ async function loadEmailTemplates() {
         }
         
         const data = await response.json();
-        console.log('📧 Templates response:', data); // Debug log
+        console.log('ðŸ“§ Templates response:', data); // Debug log
         
         // Handle both possible response structures
         if (Array.isArray(data)) {
@@ -1066,7 +1075,7 @@ function setupSendReportToClientsButton() {
             btn.removeEventListener('click', onSendReportToClientsClicked);
             btn.addEventListener('click', onSendReportToClientsClicked);
         });
-        console.log(`✅ Send Report to Client(s) buttons wired up (${buttons.length} buttons)`);
+        console.log(`âœ… Send Report to Client(s) buttons wired up (${buttons.length} buttons)`);
     }
 }
 

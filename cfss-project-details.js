@@ -10,6 +10,13 @@ let storeyCounter = 0; // Counter for storey labels (RDC, NV1, NV2...)
 // Global state for floor selection
 let selectedFloorIndices = new Set();
 
+// Soffite state
+let editingSoffiteId = null;
+window.currentSoffiteImages = [];
+
+// Files state
+let currentUploadMode = 'file'; // 'file' or 'link'
+
 /**
  * Parse various inch formats: 3.5, 3/4, 9 3/4
  * Returns decimal value or null if invalid
@@ -381,12 +388,16 @@ let windowsSaveTimer = null;
 
 let projectParapets = []; // Store parapets
 
+let projectSoffites = []; // Store soffites
+
+let projectFiles = []; // Store project files
+
 // Global variable to track edit mode
 let isEditingProjectDetails = false;
 
 // Available CFSS options in logical order
 const CFSS_OPTIONS = [
-    // Page S-2: Lisse trouée options
+    // Page S-2: Lisse Trouée options
     'fixe-beton-lisse-trouee',
     'fixe-structure-dacier-lisse-trouee', 
     'fixe-tabiler-metallique-lisse-trouee',
@@ -782,7 +793,7 @@ async function saveProjectDetails() {
             return;
         }
         
-        console.log('💾 Saving updated project details:', updatedData);
+        console.log('ðŸ’¾ Saving updated project details:', updatedData);
         
         // Show loading state
         const saveBtn = document.querySelector('.save-btn');
@@ -803,7 +814,7 @@ async function saveProjectDetails() {
         }
         
         const result = await response.json();
-        console.log('✅ Project details updated successfully:', result);
+        console.log('âœ… Project details updated successfully:', result);
         
         // Update the display with new values
         document.getElementById('projectName').textContent = updatedData.name;
@@ -844,7 +855,7 @@ async function saveProjectDetails() {
         await reloadProjectData();
         
     } catch (error) {
-        console.error('❌ Error saving project details:', error);
+        console.error('âŒ Error saving project details:', error);
         alert('Error saving project details: ' + error.message);
         
         // Reset button
@@ -1109,7 +1120,7 @@ function setEditCompositionDisabled(windowId, section, value) {
       addButton.style.cursor = 'not-allowed';
     }
 
-    // N/A ⇒ empty composition list
+    // N/A â‡’ empty composition list
     hidden.value = '[]';
   } else {
     builder.style.opacity = '';
@@ -1357,7 +1368,7 @@ function getWallDisplayOrder() {
 
 // Add this function to save the wall display order
 async function saveWallDisplayOrder(newOrder) {
-    console.log('💾 Saving wall display order...', newOrder);
+    console.log('ðŸ’¾ Saving wall display order...', newOrder);
     
     try {
         // Update current revision with new display order
@@ -1369,12 +1380,12 @@ async function saveWallDisplayOrder(newOrder) {
             
             // Save to database
             await saveRevisionsToDatabase();
-            console.log('✅ Wall display order saved successfully');
+            console.log('âœ… Wall display order saved successfully');
         } else {
-            console.warn('⚠️ No current revision found to save display order');
+            console.warn('âš ï¸ No current revision found to save display order');
         }
     } catch (error) {
-        console.error('❌ Error saving wall display order:', error);
+        console.error('âŒ Error saving wall display order:', error);
     }
 }
 
@@ -1512,7 +1523,7 @@ function setupParapetMontantAutoFill() {
             if (selectedMontant && colombageData && colombageData[selectedMontant]) {
                 const data = colombageData[selectedMontant];
                 lisseInferieureInput.value = data.lisseInferieure;
-                // For parapets, lisse supérieure defaults to same as inférieure
+                // For parapets, lisse Supérieure defaults to same as Inférieure
                 lisseSuperieureInput.value = data.lisseInferieure;
                 
                 lisseInferieureInput.classList.add('auto-filled');
@@ -1534,7 +1545,7 @@ function setupParapetMontantAutoFill() {
             if (selectedMontant && colombageData && colombageData[selectedMontant]) {
                 const data = colombageData[selectedMontant];
                 lisseInferieureInput2.value = data.lisseInferieure;
-                // For parapets, lisse supérieure defaults to same as inférieure
+                // For parapets, lisse Supérieure defaults to same as Inférieure
                 lisseSuperieureInput2.value = data.lisseInferieure;
                 
                 lisseInferieureInput2.classList.add('auto-filled');
@@ -1628,11 +1639,11 @@ function getParapetFormData() {
         return null;
     }
     if (!lisseInferieure) {
-        alert('Please enter lisse inférieure.');
+        alert('Please enter lisse Inférieure.');
         return null;
     }
     if (!lisseSuperieure) {
-        alert('Please enter lisse supérieure.');
+        alert('Please enter lisse Supérieure.');
         return null;
     }
     if (!entremise) {
@@ -1938,7 +1949,7 @@ function renderParapetList() {
                                         padding: 0;
                                     "
                                 >
-                                    ×
+                                    Ã—
                                 </button>
                             </div>
                             
@@ -2302,7 +2313,7 @@ function displayParapetEditImages(parapetId) {
             <button type="button" class="edit-image-remove" 
                     title="Remove image"
                     style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                ×
+                Ã—
             </button>
         `;
         
@@ -2559,7 +2570,7 @@ function duplicateParapet(id) {
                 preview.className = 'image-preview';
                 preview.innerHTML = `
                     <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-                    <button type="button" class="image-remove" title="Remove image">×</button>
+                    <button type="button" class="image-remove" title="Remove image">Ã—</button>
                 `;
                 previewContainer.appendChild(preview);
                 
@@ -2672,13 +2683,13 @@ async function saveParapetsToDatabase() {
 
 // Load parapets from project data
 function loadParapetsFromProject(project) {
-    console.log('🔄 loadParapetsFromProject called');
+    console.log('ðŸ”„ loadParapetsFromProject called');
     console.log('Project has parapets?', !!project.parapets);
     console.log('Parapets value:', project.parapets);
     
     projectParapets = project.parapets || [];
     
-    console.log(`✅ Loaded ${projectParapets.length} parapets from project`);
+    console.log(`âœ… Loaded ${projectParapets.length} parapets from project`);
     
     if (projectParapets.length > 0) {
         console.log('First parapet:', projectParapets[0]);
@@ -2688,9 +2699,664 @@ function loadParapetsFromProject(project) {
     updateParapetSummary();
 }
 
+// ============================================
+// SOFFITES FUNCTIONS
+// ============================================
+
+// Load soffites from project data
+function loadSoffitesFromProject(project) {
+    console.log('📄 loadSoffitesFromProject called');
+    projectSoffites = project.soffites || [];
+    console.log(`✅ Loaded ${projectSoffites.length} soffites from project`);
+    renderSoffiteList();
+    updateSoffiteSummary();
+}
+
+// Initialize soffite handlers
+function initializeSoffiteHandlers() {
+    const addSoffitesButton = document.getElementById('addSoffitesButton');
+    const soffiteForm = document.getElementById('soffiteForm');
+    const soffiteFormElement = document.getElementById('soffiteFormElement');
+    const cancelSoffite = document.getElementById('cancelSoffite');
+    
+    if (addSoffitesButton && soffiteForm) {
+        addSoffitesButton.addEventListener('click', function() {
+            if (soffiteForm.style.display !== 'none') {
+                soffiteForm.style.display = 'none';
+                addSoffitesButton.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
+            } else {
+                hideAllForms();
+                clearSoffiteForm();
+                soffiteForm.style.display = 'block';
+                addSoffitesButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                soffiteForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+    
+    if (soffiteFormElement) {
+        soffiteFormElement.addEventListener('submit', handleSaveSoffite);
+    }
+    
+    if (cancelSoffite) {
+        cancelSoffite.addEventListener('click', function() {
+            soffiteForm.style.display = 'none';
+            addSoffitesButton.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
+            clearSoffiteForm();
+        });
+    }
+    
+    initializeSoffiteImageUpload();
+}
+
+// Handle save soffite
+async function handleSaveSoffite(e) {
+    e.preventDefault();
+    
+    const nameInput = document.getElementById('soffiteName');
+    const name = nameInput ? nameInput.value.trim() : '';
+    
+    if (!name) {
+        alert('Please enter a soffite name.');
+        return;
+    }
+    
+    const images = window.currentSoffiteImages || [];
+    
+    const soffiteData = {
+        id: editingSoffiteId || Date.now().toString(),
+        name,
+        images
+    };
+    
+    if (editingSoffiteId) {
+        const index = projectSoffites.findIndex(s => s.id === editingSoffiteId);
+        if (index !== -1) {
+            projectSoffites[index] = soffiteData;
+        }
+    } else {
+        projectSoffites.push(soffiteData);
+    }
+    
+    await saveSoffitesToProject();
+    
+    editingSoffiteId = null;
+    clearSoffiteForm();
+    document.getElementById('soffiteForm').style.display = 'none';
+    document.getElementById('addSoffitesButton').innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
+    
+    renderSoffiteList();
+    updateSoffiteSummary();
+}
+
+// Clear soffite form
+function clearSoffiteForm() {
+    const form = document.getElementById('soffiteFormElement');
+    if (form) form.reset();
+    window.currentSoffiteImages = [];
+    const preview = document.getElementById('soffiteImagePreviewContainer');
+    if (preview) preview.innerHTML = '';
+    editingSoffiteId = null;
+    document.getElementById('soffiteFormTitle').textContent = 'Add Soffite';
+}
+
+// Render soffite list
+function renderSoffiteList() {
+    const container = document.getElementById('soffiteList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!projectSoffites || projectSoffites.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #666;">No soffites added yet.</p>';
+        return;
+    }
+    
+    projectSoffites.forEach((soffite, index) => {
+        const name = soffite.name || `Soffite ${index + 1}`;
+        const images = Array.isArray(soffite.images) ? soffite.images : [];
+        const imageCount = images.length;
+        
+        const soffiteCard = document.createElement('div');
+        soffiteCard.className = 'equipment-card';
+        soffiteCard.id = `soffiteCard${soffite.id}`;
+        
+        soffiteCard.innerHTML = `
+            <div class="equipment-header" onclick="toggleSoffiteDetails('${soffite.id}')">
+                <div class="equipment-info-compact">
+                    <h4>${name}</h4>
+                    <div class="equipment-meta-compact">
+                        <span>Images: ${imageCount}</span>
+                    </div>
+                </div>
+                <div class="equipment-actions-compact">
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">Details</button>
+                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateSoffite('${soffite.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteSoffite('${soffite.id}')">Delete</button>
+                </div>
+            </div>
+            <div class="equipment-details" id="soffiteDetails${soffite.id}">
+                <div class="equipment-details-container">
+                    <div class="equipment-info-section">
+                        <p><strong>Soffite Name:</strong> ${name}</p>
+                        <p><strong>Images:</strong> ${imageCount}</p>
+                        ${imageCount > 0 ? `
+                            <div class="soffite-images-preview" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                                ${images.map(img => `
+                                    <div style="width: 80px; height: 60px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
+                                        <img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/${img.key}" 
+                                             alt="${img.filename || 'Soffite image'}"
+                                             style="width: 100%; height: 100%; object-fit: cover;"
+                                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2760%27%3E%3Crect width=%2780%27 height=%2760%27 fill=%27%23f0f0f0%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27 font-size=%2710%27%3ENo Image%3C/text%3E%3C/svg%3E'">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <button class="button primary" onclick="editSoffite('${soffite.id}')" style="margin-top: 15px;">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+        `;
+        container.appendChild(soffiteCard);
+    });
+}
+
+// Update soffite summary
+function updateSoffiteSummary() {
+    const summary = document.getElementById('soffiteSelectionSummary');
+    if (summary) {
+        summary.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${projectSoffites.length} soffites added`;
+    }
+}
+
+// Toggle soffite details
+window.toggleSoffiteDetails = function(id) {
+    const details = document.getElementById(`soffiteDetails${id}`);
+    if (details) {
+        details.classList.toggle('show');
+    }
+};
+
+// Edit soffite
+window.editSoffite = function(id) {
+    const soffite = projectSoffites.find(s => s.id === id);
+    if (!soffite) return;
+    
+    editingSoffiteId = id;
+    document.getElementById('soffiteName').value = soffite.name || '';
+    document.getElementById('soffiteFormTitle').textContent = 'Edit Soffite';
+    
+    window.currentSoffiteImages = soffite.images || [];
+    renderSoffiteImagePreviews();
+    
+    document.getElementById('soffiteForm').style.display = 'block';
+    document.getElementById('addSoffitesButton').innerHTML = '<i class="fas fa-times"></i> Hide Form';
+    document.getElementById('soffiteForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// Duplicate soffite
+window.duplicateSoffite = async function(id) {
+    const soffite = projectSoffites.find(s => s.id === id);
+    if (!soffite) return;
+    
+    const newSoffite = {
+        ...soffite,
+        id: Date.now().toString(),
+        name: `${soffite.name} (Copy)`
+    };
+    projectSoffites.push(newSoffite);
+    await saveSoffitesToProject();
+    renderSoffiteList();
+    updateSoffiteSummary();
+};
+
+// Delete soffite
+window.deleteSoffite = async function(id) {
+    if (!confirm('Are you sure you want to delete this soffite?')) return;
+    
+    projectSoffites = projectSoffites.filter(s => s.id !== id);
+    await saveSoffitesToProject();
+    renderSoffiteList();
+    updateSoffiteSummary();
+};
+
+// Save soffites to project
+async function saveSoffitesToProject() {
+    try {
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: currentProjectId,
+                soffites: projectSoffites
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save soffites');
+        }
+        
+        console.log('✅ Soffites saved successfully');
+    } catch (error) {
+        console.error('❌ Error saving soffites:', error);
+        alert('Error saving soffites: ' + error.message);
+    }
+}
+
+// Initialize soffite image upload
+function initializeSoffiteImageUpload() {
+    const fileInput = document.getElementById('soffiteImageInput');
+    const dropZone = document.getElementById('soffiteDropZone');
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            handleSoffiteImageFiles(e.target.files);
+        });
+    }
+    
+    if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleSoffiteImageFiles(e.dataTransfer.files);
+        });
+    }
+}
+
+// Handle soffite image files
+async function handleSoffiteImageFiles(files) {
+    for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        
+        try {
+            const uploadResult = await uploadSoffiteImage(file);
+            if (uploadResult) {
+                window.currentSoffiteImages.push(uploadResult);
+                renderSoffiteImagePreviews();
+            }
+        } catch (error) {
+            console.error('Error uploading soffite image:', error);
+        }
+    }
+}
+
+// Upload soffite image to S3
+async function uploadSoffiteImage(file) {
+    try {
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`, {
+            method: 'POST',
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filename: file.name,
+                contentType: file.type
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to get upload URL');
+        
+        const { uploadUrl, key } = await response.json();
+        
+        await fetch(uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: { 'Content-Type': file.type }
+        });
+        
+        return { key, filename: file.name };
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        return null;
+    }
+}
+
+// Render soffite image previews
+function renderSoffiteImagePreviews() {
+    const container = document.getElementById('soffiteImagePreviewContainer');
+    if (!container) return;
+    
+    container.innerHTML = window.currentSoffiteImages.map((img, index) => `
+        <div class="image-preview" style="position: relative; width: 80px; height: 80px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+            <img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/${img.key}" 
+                 alt="${img.filename}" 
+                 style="width: 100%; height: 100%; object-fit: cover;">
+            <button type="button" class="image-remove" onclick="removeSoffiteImage(${index})" 
+                    style="position: absolute; top: 2px; right: 2px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+        </div>
+    `).join('');
+}
+
+// Remove soffite image
+window.removeSoffiteImage = function(index) {
+    window.currentSoffiteImages.splice(index, 1);
+    renderSoffiteImagePreviews();
+};
+
+// ============================================
+// FILES FUNCTIONS
+// ============================================
+
+// Load files from project data
+function loadFilesFromProject(project) {
+    console.log('📁 loadFilesFromProject called');
+    projectFiles = project.files || [];
+    console.log(`✅ Loaded ${projectFiles.length} files from project`);
+    displayProjectFiles();
+}
+
+// Initialize file handlers
+function initializeFileHandlers() {
+    const showUploadBtn = document.getElementById('showUploadFileBtn');
+    const uploadRow = document.getElementById('uploadFileRow');
+    const cancelBtn = document.getElementById('uploadFileCancelBtn');
+    const submitBtn = document.getElementById('uploadFileSubmitBtn');
+    const modeFileBtn = document.getElementById('uploadModeFile');
+    const modeLinkBtn = document.getElementById('uploadModeLink');
+    
+    if (showUploadBtn) {
+        showUploadBtn.addEventListener('click', () => {
+            uploadRow.style.display = uploadRow.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            uploadRow.style.display = 'none';
+            clearFileUploadForm();
+        });
+    }
+    
+    if (submitBtn) {
+        submitBtn.addEventListener('click', handleFileUpload);
+    }
+    
+    if (modeFileBtn && modeLinkBtn) {
+        modeFileBtn.addEventListener('click', () => {
+            currentUploadMode = 'file';
+            modeFileBtn.style.background = '#17a2b8';
+            modeFileBtn.style.color = 'white';
+            modeLinkBtn.style.background = 'transparent';
+            modeLinkBtn.style.color = '#555';
+            document.getElementById('uploadFileInput').style.display = 'block';
+            document.getElementById('uploadLinkInput').style.display = 'none';
+            document.getElementById('uploadInputLabel').textContent = 'Select File';
+        });
+        
+        modeLinkBtn.addEventListener('click', () => {
+            currentUploadMode = 'link';
+            modeLinkBtn.style.background = '#17a2b8';
+            modeLinkBtn.style.color = 'white';
+            modeFileBtn.style.background = 'transparent';
+            modeFileBtn.style.color = '#555';
+            document.getElementById('uploadFileInput').style.display = 'none';
+            document.getElementById('uploadLinkInput').style.display = 'block';
+            document.getElementById('uploadInputLabel').textContent = 'Paste Link';
+        });
+    }
+}
+
+// Handle file upload
+async function handleFileUpload() {
+    const fileName = document.getElementById('uploadFileName').value.trim();
+    
+    if (!fileName) {
+        alert('Please enter a file name');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('uploadFileSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+    
+    try {
+        if (currentUploadMode === 'link') {
+            const linkUrl = document.getElementById('uploadLinkInput').value.trim();
+            if (!linkUrl) {
+                alert('Please enter a link URL');
+                return;
+            }
+            
+            const fileData = {
+                id: Date.now().toString(),
+                name: fileName,
+                type: 'Link',
+                url: linkUrl,
+                uploadedAt: new Date().toISOString(),
+                uploadedBy: currentUser?.email || 'unknown'
+            };
+            
+            projectFiles.push(fileData);
+            await saveFilesToProject();
+            
+        } else {
+            const fileInput = document.getElementById('uploadFileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            // Get upload URL
+            const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/file-upload-url`, {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filename: file.name,
+                    contentType: file.type
+                })
+            });
+            
+            if (!response.ok) throw new Error('Failed to get upload URL');
+            
+            const { uploadUrl, key } = await response.json();
+            
+            // Upload file to S3
+            await fetch(uploadUrl, {
+                method: 'PUT',
+                body: file,
+                headers: { 'Content-Type': file.type }
+            });
+            
+            const fileType = file.type.includes('pdf') ? 'PDF' : 'Image';
+            
+            const fileData = {
+                id: Date.now().toString(),
+                name: fileName,
+                type: fileType,
+                key: key,
+                uploadedAt: new Date().toISOString(),
+                uploadedBy: currentUser?.email || 'unknown'
+            };
+            
+            projectFiles.push(fileData);
+            await saveFilesToProject();
+        }
+        
+        displayProjectFiles();
+        document.getElementById('uploadFileRow').style.display = 'none';
+        clearFileUploadForm();
+        alert('File uploaded successfully!');
+        
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('Error uploading file: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+    }
+}
+
+// Clear file upload form
+function clearFileUploadForm() {
+    document.getElementById('uploadFileName').value = '';
+    document.getElementById('uploadFileInput').value = '';
+    document.getElementById('uploadLinkInput').value = '';
+}
+
+// Save files to project
+async function saveFilesToProject() {
+    try {
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: currentProjectId,
+                files: projectFiles
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save files');
+        
+        console.log('✅ Files saved successfully');
+    } catch (error) {
+        console.error('❌ Error saving files:', error);
+        throw error;
+    }
+}
+
+// Display project files
+function displayProjectFiles() {
+    const tbody = document.getElementById('filesTableBody');
+    const emptyState = document.getElementById('filesEmptyState');
+    
+    if (!projectFiles || projectFiles.length === 0) {
+        if (tbody) tbody.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+    
+    if (emptyState) emptyState.style.display = 'none';
+    
+    if (tbody) {
+        tbody.innerHTML = projectFiles.map(file => {
+            const date = new Date(file.uploadedAt).toLocaleDateString('en-US', { 
+                month: 'short', day: 'numeric', year: 'numeric' 
+            });
+            
+            const icon = file.type === 'PDF' ? 'fa-file-pdf' : file.type === 'Link' ? 'fa-link' : 'fa-image';
+            const iconBg = file.type === 'Link' ? '#6f42c1' : '#17a2b8';
+            
+            const actionButton = file.type === 'Link' 
+                ? `<button onclick="window.open('${file.url}', '_blank')" style="background: none; border: 1px solid #6f42c1; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #6f42c1;">
+                       <i class="fas fa-external-link-alt"></i>
+                   </button>`
+                : `<button onclick="downloadProjectFile('${file.id}')" style="background: none; border: 1px solid #17a2b8; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #17a2b8;">
+                       <i class="fas fa-download"></i>
+                   </button>`;
+            
+            return `
+                <tr style="border-bottom: 1px solid #e0e0e0;">
+                    <td style="padding: 12px 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: ${iconBg}; color: white; border-radius: 4px; font-size: 14px;">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                            <span style="font-weight: 500; color: #333;">${file.name}</span>
+                        </div>
+                    </td>
+                    <td style="padding: 12px 10px; color: #666; font-size: 12px;">${file.type}</td>
+                    <td style="padding: 12px 10px; color: #666; font-size: 12px;">${date}</td>
+                    <td style="padding: 12px 10px; text-align: center;">
+                        <div style="display: flex; gap: 5px; justify-content: center;">
+                            ${actionButton}
+                            <button onclick="deleteProjectFile('${file.id}')" style="background: none; border: 1px solid #dc3545; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+}
+
+// Download project file
+window.downloadProjectFile = async function(fileId) {
+    try {
+        const file = projectFiles.find(f => f.id === fileId);
+        if (!file) {
+            alert('File not found');
+            return;
+        }
+        
+        const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/file-download-url?key=${encodeURIComponent(file.key)}`, {
+            method: 'GET',
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) throw new Error('Failed to get download URL');
+        
+        const { url } = await response.json();
+        window.open(url, '_blank');
+        
+    } catch (error) {
+        console.error('Error downloading file:', error);
+        alert('Error downloading file: ' + error.message);
+    }
+};
+
+// Delete project file
+window.deleteProjectFile = async function(fileId) {
+    if (!confirm('Are you sure you want to delete this file?')) return;
+    
+    try {
+        const file = projectFiles.find(f => f.id === fileId);
+        if (!file) {
+            alert('File not found');
+            return;
+        }
+        
+        // Delete from S3 if it's a file (not a link)
+        if (file.key) {
+            await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/file-delete`, {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ key: file.key })
+            });
+        }
+        
+        projectFiles = projectFiles.filter(f => f.id !== fileId);
+        await saveFilesToProject();
+        displayProjectFiles();
+        alert('File deleted successfully');
+        
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        alert('Error deleting file: ' + error.message);
+    }
+};
+
 // Initialize revision system when project loads
 function initializeRevisionSystem(project) {
-    console.log('🔄 Initializing revision system...');
+    console.log('ðŸ”„ Initializing revision system...');
     
     // Load existing revisions or initialize empty
     projectRevisions = project.wallRevisions || [];
@@ -2704,7 +3370,7 @@ function initializeRevisionSystem(project) {
     }
     
     updateRevisionIndicator();
-    console.log(`✅ Revision system initialized with ${projectRevisions.length} revisions`);
+    console.log(`âœ… Revision system initialized with ${projectRevisions.length} revisions`);
 }
 
 // Update the revision indicator in wall list header
@@ -2918,7 +3584,7 @@ function processRevisionChoice() {
 
 // New function specifically for creating the first revision
 async function createFirstRevision(description, callback) {
-    console.log('📄 Creating first revision with description:', description);
+    console.log('ðŸ“„ Creating first revision with description:', description);
     
     try {
         const firstRevision = {
@@ -2933,7 +3599,7 @@ async function createFirstRevision(description, callback) {
         projectRevisions.push(firstRevision);
         currentRevisionId = firstRevision.id;
         
-        console.log('📄 Saving first revision to database...', {
+        console.log('ðŸ“„ Saving first revision to database...', {
             revisionId: firstRevision.id,
             wallCount: firstRevision.walls.length,
             description: description || '(no description)'
@@ -2950,7 +3616,7 @@ async function createFirstRevision(description, callback) {
             return;
         }
         
-        console.log('✅ First revision created successfully');
+        console.log('âœ… First revision created successfully');
         
         // Success path
         renderEquipmentList();
@@ -3286,7 +3952,7 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
             throw new Error('No download URL received from server');
         }
 
-        console.log(`✅ Opening CFSS download URL for Revision ${selectedRevision.number}`);
+        console.log(`âœ… Opening CFSS download URL for Revision ${selectedRevision.number}`);
         
         // Handle Google Drive upload based on user choice
         if (shouldShowPopups && saveToGoogleDrive) {
@@ -3298,7 +3964,7 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
         }
         
     } catch (error) {
-        console.error('❌ CFSS PDF generation error:', error);
+        console.error('âŒ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
             alert('CFSS PDF generation timed out. Please try again in a few minutes.');
         } else {
@@ -3372,7 +4038,7 @@ async function generateCFSSReportForRevision(selectedRevision) {
             cfssWindData: cfssWindData
         };
         
-        console.log('📊 Report data for revision', selectedRevision.number, ':', {
+        console.log('ðŸ“Š Report data for revision', selectedRevision.number, ':', {
             name: cfssProjectData.name,
             selectedRevision: selectedRevision.number,
             wallsCount: cfssProjectData.walls?.length || 0,
@@ -3421,11 +4087,11 @@ async function generateCFSSReportForRevision(selectedRevision) {
             throw new Error('No download URL received from server');
         }
 
-        console.log(`✅ Opening CFSS download URL for Revision ${selectedRevision.number}:`, result.downloadUrl);
+        console.log(`âœ… Opening CFSS download URL for Revision ${selectedRevision.number}:`, result.downloadUrl);
         window.location.href = result.downloadUrl;
         
     } catch (error) {
-        console.error('❌ CFSS PDF generation error:', error);
+        console.error('âŒ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
             alert('CFSS PDF generation timed out. Please try again in a few minutes.');
         } else {
@@ -3439,7 +4105,7 @@ async function generateCFSSReportForRevision(selectedRevision) {
 
 // Create new revision
 async function createNewRevision(description, callback) {
-    console.log('📝 Creating new revision with description:', description);
+    console.log('ðŸ“ Creating new revision with description:', description);
     
     const newRevisionNumber = projectRevisions.length;
     const newRevision = {
@@ -3457,14 +4123,14 @@ async function createNewRevision(description, callback) {
     await saveRevisionsToDatabase();
     updateRevisionIndicator();
     
-    console.log(`✅ Created revision ${newRevisionNumber}: ${description || '(no description)'}`);
+    console.log(`âœ… Created revision ${newRevisionNumber}: ${description || '(no description)'}`);
     
     if (callback) callback();
 }
 
 // Update current revision
 async function updateCurrentRevision(callback) {
-    console.log('📝 Updating current revision');
+    console.log('ðŸ“ Updating current revision');
     
     const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
     if (currentRevision) {
@@ -3473,7 +4139,7 @@ async function updateCurrentRevision(callback) {
         currentRevision.lastModifiedBy = currentUser?.email || 'unknown';
         
         await saveRevisionsToDatabase();
-        console.log(`✅ Updated revision ${currentRevision.number}`);
+        console.log(`âœ… Updated revision ${currentRevision.number}`);
     }
     
     if (callback) callback();
@@ -3481,7 +4147,7 @@ async function updateCurrentRevision(callback) {
 
 async function saveRevisionsToDatabase() {
     try {
-        console.log('💾 Saving revisions to database...', {
+        console.log('ðŸ’¾ Saving revisions to database...', {
             totalRevisions: projectRevisions.length,
             currentRevisionId: currentRevisionId,
             projectId: currentProjectId,
@@ -3510,7 +4176,7 @@ async function saveRevisionsToDatabase() {
             currentWallRevisionId: currentRevisionId
         };
         
-        console.log('📤 Sending revision data:', {
+        console.log('ðŸ“¤ Sending revision data:', {
             revisionsCount: projectRevisions.length,
             currentRevisionId: currentRevisionId,
             wallsInCurrentRevision: currentRevision?.walls?.length || 0
@@ -3522,7 +4188,7 @@ async function saveRevisionsToDatabase() {
             body: JSON.stringify(requestBody)
         });
         
-        console.log('📥 Server response:', {
+        console.log('ðŸ“¥ Server response:', {
             status: response.status,
             statusText: response.statusText,
             ok: response.ok
@@ -3535,16 +4201,16 @@ async function saveRevisionsToDatabase() {
                 if (errorData.error) {
                     errorMessage = errorData.error;
                 }
-                console.error('❌ Server error details:', errorData);
+                console.error('âŒ Server error details:', errorData);
             } catch (parseError) {
                 try {
                     const errorText = await response.text();
-                    console.error('❌ Server error text:', errorText);
+                    console.error('âŒ Server error text:', errorText);
                     if (errorText) {
                         errorMessage += ` - ${errorText}`;
                     }
                 } catch (textError) {
-                    console.error('❌ Could not parse error response:', parseError);
+                    console.error('âŒ Could not parse error response:', parseError);
                 }
             }
             throw new Error(errorMessage);
@@ -3554,16 +4220,16 @@ async function saveRevisionsToDatabase() {
         let responseData;
         try {
             responseData = await response.json();
-            console.log('✅ Save response data:', responseData);
+            console.log('âœ… Save response data:', responseData);
         } catch (parseError) {
-            console.warn('⚠️ Could not parse success response as JSON, but save appears successful');
+            console.warn('âš ï¸ Could not parse success response as JSON, but save appears successful');
         }
         
-        console.log('✅ Revisions saved successfully to database');
+        console.log('âœ… Revisions saved successfully to database');
         return true;
         
     } catch (error) {
-        console.error('❌ Error saving revisions:', error);
+        console.error('âŒ Error saving revisions:', error);
         
         // Show user-friendly error message
         let userMessage = 'Error saving wall revisions: ';
@@ -3636,7 +4302,7 @@ function debugCurrentState() {
 // Function to manually reload project data
 async function reloadProjectData() {
     try {
-        console.log('🔄 Manually reloading project data...');
+        console.log('ðŸ”„ Manually reloading project data...');
         
         const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects?id=${currentProjectId}`, {
             headers: getAuthHeaders()
@@ -3653,7 +4319,7 @@ async function reloadProjectData() {
             window.projectData = project;
             projectData = project;
             
-            console.log('📊 Reloaded project data:', {
+            console.log('ðŸ“Š Reloaded project data:', {
                 name: project.name,
                 hasRevisions: !!(project.wallRevisions && project.wallRevisions.length > 0),
                 revisionCount: project.wallRevisions?.length || 0,
@@ -3681,14 +4347,14 @@ async function reloadProjectData() {
                 project.cfssWindData.floorGroups = [];
             }
             
-            console.log('✅ Project data reloaded successfully');
+            console.log('âœ… Project data reloaded successfully');
 
             // Setup floor input listener
             setupFloorInputListener();
         }
         
     } catch (error) {
-        console.error('❌ Error reloading project data:', error);
+        console.error('âŒ Error reloading project data:', error);
         alert('Error reloading project data: ' + error.message);
     }
 }
@@ -3696,21 +4362,21 @@ async function reloadProjectData() {
 // Function to force save current state
 async function forceSaveCurrentState() {
     try {
-        console.log('💾 Force saving current state...');
+        console.log('ðŸ’¾ Force saving current state...');
         
         // Save both revisions and equipment
         const revisionSaveResult = await saveRevisionsToDatabase();
         const equipmentSaveResult = await saveEquipmentToProject({ silent: true });
         
         if (revisionSaveResult && equipmentSaveResult !== false) {
-            console.log('✅ Force save completed successfully');
+            console.log('âœ… Force save completed successfully');
             alert('Current state saved successfully');
         } else {
             throw new Error('One or more save operations failed');
         }
         
     } catch (error) {
-        console.error('❌ Error force saving:', error);
+        console.error('âŒ Error force saving:', error);
         alert('Error saving current state: ' + error.message);
     }
 }
@@ -3721,7 +4387,7 @@ async function handleSaveEquipmentWithRevisions(e) {
         return;
     }
     
-    console.log('💾 Save button clicked for CFSS wall with revisions!');
+    console.log('ðŸ’¾ Save button clicked for CFSS wall with revisions!');
     
     try {
         const wallData = getWallFormData();
@@ -3739,11 +4405,11 @@ async function handleSaveEquipmentWithRevisions(e) {
         const isFirstWall = projectRevisions.length === 0;
         
         if (isFirstWall) {
-            console.log('📄 First wall - showing revision popup for Revision 1');
+            console.log('ðŸ“„ First wall - showing revision popup for Revision 1');
             
             // Show revision popup for first wall
             showRevisionPopup('add', wallData.equipment, async () => {
-                console.log('📄 Creating first revision...');
+                console.log('ðŸ“„ Creating first revision...');
                 
                 // This will be handled by processRevisionChoice
                 // No additional logic needed here since the callback handles success
@@ -3752,7 +4418,7 @@ async function handleSaveEquipmentWithRevisions(e) {
         } else {
             // Show revision popup for subsequent saves
             showRevisionPopup('add', wallData.equipment, async () => {
-                console.log('📄 Saving wall to existing revision system...');
+                console.log('ðŸ“„ Saving wall to existing revision system...');
                 
                 // SINGLE SAVE OPERATION - revisions only
                 const saveResult = await saveRevisionsToDatabase();
@@ -3763,7 +4429,7 @@ async function handleSaveEquipmentWithRevisions(e) {
                     return;
                 }
                 
-                console.log('✅ Wall saved to revision successfully');
+                console.log('âœ… Wall saved to revision successfully');
                 
                 renderEquipmentList();
                 clearWallForm();
@@ -3880,12 +4546,12 @@ async function saveEquipmentEditWithRevisions(index, event) {
         }
 
         if (!lisseSuperieure) {
-            alert('Please enter lisse supérieure.');
+            alert('Please enter lisse Supérieure.');
             return;
         }
 
         if (!lisseInferieure) {
-            alert('Please enter lisse inférieure.');
+            alert('Please enter lisse Inférieure.');
             return;
         }
 
@@ -3905,11 +4571,11 @@ async function saveEquipmentEditWithRevisions(index, event) {
                 return;
             }
             if (!lisseSuperieure2) {
-                alert('Please enter lisse supérieure 2.');
+                alert('Please enter lisse Supérieure 2.');
                 return;
             }
             if (!lisseInferieure2) {
-                alert('Please enter lisse inférieure 2.');
+                alert('Please enter lisse Inférieure 2.');
                 return;
             }
             if (!entremise2) {
@@ -4068,7 +4734,7 @@ function showSuccessMessage() {
 // Function to check authentication
 async function checkAuthentication() {
     try {
-        console.log('🔍 Checking authentication using authHelper...');
+        console.log('ðŸ” Checking authentication using authHelper...');
         
         if (!window.authHelper) {
             window.authHelper = new AuthHelper();
@@ -4078,13 +4744,13 @@ async function checkAuthentication() {
         const userData = await authHelper.checkAuthentication();
         
         if (!userData) {
-            console.log('❌ No user authenticated');
+            console.log('âŒ No user authenticated');
             document.getElementById('loadingProject').style.display = 'none';
             document.getElementById('authError').style.display = 'block';
             return false;
         }
 
-        console.log('✅ User authenticated:', userData.email);
+        console.log('âœ… User authenticated:', userData.email);
         currentUser = userData;
         isAdmin = userData.isAdmin;
         
@@ -4093,7 +4759,7 @@ async function checkAuthentication() {
         return true;
 
     } catch (error) {
-        console.error('❌ Authentication error:', error);
+        console.error('âŒ Authentication error:', error);
         document.getElementById('loadingProject').style.display = 'none';
         document.getElementById('authError').style.display = 'block';
         return false;
@@ -4166,7 +4832,7 @@ function renderEquipmentList() {
         const displayOrder = getWallDisplayOrder();
         
         if (displayOrder && displayOrder.length > 0) {
-            console.log('📋 Using custom display order:', displayOrder);
+            console.log('ðŸ“‹ Using custom display order:', displayOrder);
             // Sort walls according to saved display order
             wallsToDisplay.sort((a, b) => {
                 const indexA = displayOrder.indexOf(a.id || `${a.equipment}_${a.floor}_${a.dateAdded}`);
@@ -4180,7 +4846,7 @@ function renderEquipmentList() {
                 return indexA - indexB;
             });
         } else {
-            console.log('📋 Using alphabetical order (default)');
+            console.log('ðŸ“‹ Using alphabetical order (default)');
             // SORT WALLS BY NAME (DEFAULT)
             wallsToDisplay.sort((a, b) => {
                 const nameA = (a.equipment || '').toLowerCase();
@@ -4319,7 +4985,7 @@ function generateWallDetailsContent(wall, originalIndex) {
                     <p><strong>Hauteur Max:</strong> ${formatHauteurDisplay(wall)}</p>
                     
                     ${hasSet2 ? '<p style="margin-top: 15px; font-weight: bold; color: #666;">Set 1:</p>' : ''}
-                    <p><strong>Montant Métallique:</strong> ${wall.montantMetallique || 'N/A'}${wall.dosADos ? ' dos-à-dos' : ''}</p>
+                    <p><strong>Montant Métallique:</strong> ${wall.montantMetallique || 'N/A'}${wall.dosADos ? ' dos-Ã -dos' : ''}</p>
                     <p><strong>Déflexion Max:</strong> ${wall.deflexionMax || 'N/A'}</p>
                     <p><strong>Espacement:</strong> ${wall.espacement || 'N/A'}</p>
                     <p><strong>Lisse Supérieure:</strong> ${wall.lisseSuperieure || 'N/A'}</p>
@@ -4328,7 +4994,7 @@ function generateWallDetailsContent(wall, originalIndex) {
                     
                     ${hasSet2 ? `
                         <p style="margin-top: 15px; font-weight: bold; color: #666;">Set 2:</p>
-                        <p><strong>Montant Métallique 2:</strong> ${wall.montantMetallique2 || 'N/A'}${wall.dosADos2 ? ' dos-à-dos' : ''}</p>
+                        <p><strong>Montant Métallique 2:</strong> ${wall.montantMetallique2 || 'N/A'}${wall.dosADos2 ? ' dos-Ã -dos' : ''}</p>
                         <p><strong>Déflexion Max 2:</strong> ${wall.deflexionMax2 || 'N/A'}</p>
                         <p><strong>Espacement 2:</strong> ${wall.espacement2 || 'N/A'}</p>
                         <p><strong>Lisse Supérieure 2:</strong> ${wall.lisseSuperieure2 || 'N/A'}</p>
@@ -4442,7 +5108,7 @@ function generateEditForm(wall, originalIndex) {
                                         </select>
                                         <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                                             <input type="checkbox" id="editDosADos${originalIndex}" ${wall.dosADos ? 'checked' : ''} style="margin: 0;">
-                                            <span>dos-à-dos</span>
+                                            <span>dos-Ã -dos</span>
                                         </label>
                                     </div>
                                 </div>
@@ -4529,7 +5195,7 @@ function generateEditForm(wall, originalIndex) {
                                     <h4 style="margin: 0; font-size: 13px; color: #666;">Set 2</h4>
                                     <button type="button" id="editRemoveSet2Btn${originalIndex}" onclick="toggleEditSet2(${originalIndex}, false, event)" 
                                             style="background: #dc3545; color: white; border: none; width: 20px; height: 20px; border-radius: 3px; cursor: pointer; font-size: 14px; line-height: 1; padding: 0;">
-                                        ×
+                                        Ã—
                                     </button>
                                 </div>
 
@@ -4543,7 +5209,7 @@ function generateEditForm(wall, originalIndex) {
                                         </select>
                                         <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                                             <input type="checkbox" id="editDosADos2_${originalIndex}" ${wall.dosADos2 ? 'checked' : ''} style="margin: 0;">
-                                            <span>dos-à-dos</span>
+                                            <span>dos-Ã -dos</span>
                                         </label>
                                     </div>
                                 </div>
@@ -4701,18 +5367,18 @@ function initializeSortable() {
         swapThreshold: 0.65,
         
         onStart: function(evt) {
-            console.log('🎯 Started dragging wall:', evt.item.querySelector('h4').textContent);
+            console.log('ðŸŽ¯ Started dragging wall:', evt.item.querySelector('h4').textContent);
         },
         
         onEnd: async function(evt) {
-            console.log('✋ Dropped wall at new position');
+            console.log('âœ‹ Dropped wall at new position');
             
             // Get the new order of wall IDs
             const newOrder = Array.from(container.children).map(card => 
                 card.getAttribute('data-wall-id')
             );
             
-            console.log('📋 New wall order:', newOrder);
+            console.log('ðŸ“‹ New wall order:', newOrder);
             
             // Update the actual projectEquipment array order
             const reorderedWalls = [];
@@ -4733,7 +5399,7 @@ function initializeSortable() {
         }
     });
     
-    console.log('✅ SortableJS initialized for wall cards');
+    console.log('âœ… SortableJS initialized for wall cards');
 }
 
 function duplicateEquipment(index) {
@@ -4789,7 +5455,7 @@ if (window.currentWallImages.length > 0) {
             preview.className = 'image-preview';
             preview.innerHTML = `
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-                <button type="button" class="image-remove" title="Remove image">×</button>
+                <button type="button" class="image-remove" title="Remove image">Ã—</button>
             `;
             previewContainer.appendChild(preview);
             
@@ -5729,9 +6395,9 @@ function setDefaultCFSSValues() {
     const defaults = {
         maxDeflection: 'L/360',
         maxSpacing: '48" c./c. (1200mm c./c)',
-        framingAssembly: 'Vis Auto-perçante #8-1/2"',
-        concreteAnchor: 'clous à fixation directe (fixateur pistoscellé) Hilti X-P 20 ou équivalent approuvé à 12" c./c.',
-        steelAnchor: 'clous à fixation directe (fixateur pistoscellé) Hilti X-P 14 ou équivalent approuvé à 12" c./c.'
+        framingAssembly: 'Vis Auto-perÃ§ante #8-1/2"',
+        concreteAnchor: 'clous Ã  fixation directe (fixateur pistoscellé) Hilti X-P 20 ou équivalent approuvé Ã  12" c./c.',
+        steelAnchor: 'clous Ã  fixation directe (fixateur pistoscellé) Hilti X-P 14 ou équivalent approuvé Ã  12" c./c.'
     };
     
     // Apply defaults to form fields
@@ -5750,7 +6416,7 @@ function setDefaultCFSSValues() {
         addStoreyRow();
     }
     
-    console.log('✅ Default CFSS values set');
+    console.log('âœ… Default CFSS values set');
 }
 
 function updateCFSSButtonText() {
@@ -5920,9 +6586,9 @@ function displayCFSSData(cfssData) {
         <table id="cfss-storeys-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
                         <thead>
                             <tr style="background: #17a2b8; color: white;">
-                                <th style="padding: 8px; text-align: left;">Étage</th>
+                                <th style="padding: 8px; text-align: left;">Ã‰tage</th>
                                 <th style="padding: 8px; text-align: center;">H (m)</th>
-                                <th style="padding: 8px; text-align: center;">A (m²)</th>
+                                <th style="padding: 8px; text-align: center;">A (mÂ²)</th>
                                 <th style="padding: 8px; text-align: center;">ULS (psf)</th>
                                 <th style="padding: 8px; text-align: center;">SLS (psf)</th>
                             </tr>
@@ -5942,10 +6608,10 @@ function displayCFSSData(cfssData) {
     let floorLabel = storey.label;
     let arrowHtml = '';
     if (isFirstInGroup) {
-        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">▼</span>';
+        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">â–¼</span>';
     }
     if (isLastInGroup) {
-        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">▲</span>';
+        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">â–²</span>';
     }
     
     html += `
@@ -6591,7 +7257,7 @@ function addImagePreview(imageData) {
     preview.className = 'image-preview';
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">×</button>
+        <button type="button" class="image-remove" title="Remove image">Ã—</button>
     `;
     
     container.appendChild(preview);
@@ -6810,12 +7476,12 @@ function getWallFormDataWithImages() {
     }
 
     if (!lisseSuperieure) {
-        alert('Please enter lisse supérieure.');
+        alert('Please enter lisse Supérieure.');
         return null;
     }
 
     if (!lisseInferieure) {
-        alert('Please enter lisse inférieure.');
+        alert('Please enter lisse Inférieure.');
         return null;
     }
 
@@ -6841,11 +7507,11 @@ function getWallFormDataWithImages() {
             return null;
         }
         if (!lisseSuperieure2) {
-            alert('Please enter lisse supérieure 2.');
+            alert('Please enter lisse Supérieure 2.');
             return null;
         }
         if (!lisseInferieure2) {
-            alert('Please enter lisse inférieure 2.');
+            alert('Please enter lisse Inférieure 2.');
             return null;
         }
         if (!entremise2) {
@@ -7005,7 +7671,7 @@ function openImageModal(imageKey, filename) {
                 style="max-width: 100%; max-height: 100%; border-radius: 8px;"
                 alt="${filename}">
             <button style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer;"
-                    onclick="this.closest('.modal').remove()">×</button>
+                    onclick="this.closest('.modal').remove()">Ã—</button>
         </div>
     `;
     
@@ -7282,7 +7948,7 @@ function addParapetImagePreview(imageData) {
     preview.className = 'image-preview';
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">×</button>
+        <button type="button" class="image-remove" title="Remove image">Ã—</button>
     `;
     
     container.appendChild(preview);
@@ -7631,7 +8297,7 @@ async function generateCFSSProjectReport() {
             windows: projectWindows
         };
         
-        console.log('📊 CFSS Project data being sent:', {
+        console.log('ðŸ“Š CFSS Project data being sent:', {
             name: cfssProjectData.name,
             wallsCount: cfssProjectData.walls?.length || 0,
             windDataCount: cfssProjectData.cfssWindData?.length || 0
@@ -7672,16 +8338,16 @@ async function generateCFSSProjectReport() {
             throw new Error('No download URL received from server');
         }
 
-        console.log('✅ Opening CFSS download URL:', result.downloadUrl);
+        console.log('âœ… Opening CFSS download URL:', result.downloadUrl);
 
          await sendReportToMakeWebhook(result.downloadUrl);
 
         window.location.href = result.downloadUrl;
         
-        console.log('✅ CFSS PDF download completed successfully');
+        console.log('âœ… CFSS PDF download completed successfully');
         
     } catch (error) {
-        console.error('❌ CFSS PDF generation error:', error);
+        console.error('âŒ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
             alert('CFSS PDF generation timed out. Please try again in a few minutes.');
         } else {
@@ -7705,7 +8371,7 @@ async function sendReportToMakeWebhook(downloadUrl) {
     const webhookUrl = 'https://hook.us1.make.com/eto1idfk8idlmtk7ncamulepeefcmh84';
     
     try {
-        console.log('📤 Sending report URL to Make.com webhook...');
+        console.log('ðŸ“¤ Sending report URL to Make.com webhook...');
 
             // Get projectNumber safely from the UI or in-memory projectData
     let projectNumber = '';
@@ -7724,9 +8390,9 @@ async function sendReportToMakeWebhook(downloadUrl) {
                 projectNumber
         });
 
-        console.log('✅ Report URL sent to Google Drive successfully');
+        console.log('âœ… Report URL sent to Google Drive successfully');
     } catch (error) {
-        console.error('❌ Error sending to webhook:', error);
+        console.error('âŒ Error sending to webhook:', error);
     }
 }
 
@@ -7750,7 +8416,7 @@ function showSignaturePopup() {
         modal.innerHTML = `
             <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">
-                    🖊️ Sign Document
+                    ðŸ–Šï¸ Sign Document
                 </h3>
                 <p style="margin: 0 0 25px 0; color: #666; font-size: 15px; line-height: 1.5;">
                     Do you want to sign and flatten this document?
@@ -7800,7 +8466,7 @@ function showGoogleDrivePopup() {
         modal.innerHTML = `
             <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">
-                    💾 Save to Google Drive
+                    ðŸ’¾ Save to Google Drive
                 </h3>
                 <p style="margin: 0 0 25px 0; color: #666; font-size: 15px; line-height: 1.5;">
                     Do you want to save this document to Google Drive?
@@ -7848,9 +8514,9 @@ function setupCFSSReportButton() {
     const generateButton = document.getElementById('generateCFSSReportButton');
     if (generateButton) {
         generateButton.addEventListener('click', generateCFSSProjectReport);
-        console.log('✅ CFSS Report button setup completed');
+        console.log('âœ… CFSS Report button setup completed');
     } else {
-        console.warn('⚠️ CFSS Report button not found');
+        console.warn('âš ï¸ CFSS Report button not found');
     }
 }
 
@@ -8056,7 +8722,7 @@ function addEditImagePreview(imageData, wallIndex) {
         <button type="button" class="edit-image-remove" 
                 title="Remove image"
                 style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-            ×
+            Ã—
         </button>
     `;
     
@@ -8138,7 +8804,7 @@ let selectedCFSSOptions = [];
 
 // Initialize the tab system
 function initializeTabSystem() {
-    console.log('🔄 Initializing CFSS tab system...');
+    console.log('ðŸ”„ Initializing CFSS tab system...');
     
     // Get tab buttons
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -8151,7 +8817,7 @@ function initializeTabSystem() {
         });
     });
     
-    console.log('✅ Tab system initialized');
+    console.log('âœ… Tab system initialized');
 }
 
 function setupWindowHandlers() {
@@ -8351,7 +9017,7 @@ function renderWindowList() {
     const title = win.windowName || win.name || win.type || `Window ${idx + 1}`;
     const largeurDisplay = formatWindowDimension(win.largeurMax, win.largeurMaxMinor, win.largeurMaxUnit);
     const hauteurDisplay = formatWindowDimension(win.hauteurMax, win.hauteurMaxMinor, win.hauteurMaxUnit);
-    const dims = `${largeurDisplay} × ${hauteurDisplay}`;
+    const dims = `${largeurDisplay} Ã— ${hauteurDisplay}`;
 
     return `
     <div class="equipment-card" id="windowCard${id}">
@@ -9127,7 +9793,7 @@ function switchTab(tabId) {
 
 // Initialize the options system
 function initializeOptionsSystem() {
-    console.log('🔧 Initializing CFSS options system...');
+    console.log('ðŸ”§ Initializing CFSS options system...');
     
     // Populate options by category
     populateOptionsCategories();
@@ -9138,7 +9804,7 @@ function initializeOptionsSystem() {
         saveOptionsBtn.addEventListener('click', saveCFSSOptions);
     }
     
-    console.log('✅ Options system initialized');
+    console.log('âœ… Options system initialized');
 }
 
 // Populate options by categories
@@ -9218,7 +9884,7 @@ function populateOptionsCategories() {
         });
     });
 
-    console.log('✅ Option categories populated');
+    console.log('âœ… Option categories populated');
 }
 
 // Updated createOptionElement function with actual image loading
@@ -9363,7 +10029,7 @@ async function preloadOptionImages() {
     console.log('Preloading CFSS option images...');
     
     const allOptions = [
-        // Lisse trouée options
+        // Lisse Trouée options
         'fixe-beton-lisse-trouee',
         'fixe-structure-dacier-lisse-trouee', 
         'fixe-tabiler-metallique-lisse-trouee',
@@ -9430,7 +10096,7 @@ function formatOptionDisplayName(optionName) {
 
 // Handle option toggle
 function handleOptionToggle(optionName, isSelected) {
-    console.log(`🔧 Option ${optionName} ${isSelected ? 'selected' : 'deselected'}`);
+    console.log(`ðŸ”§ Option ${optionName} ${isSelected ? 'selected' : 'deselected'}`);
     
     const optionItem = document.querySelector(`[data-option="${optionName}"]`);
     
@@ -9467,7 +10133,7 @@ async function saveCFSSOptions() {
         return;
     }
 
-    console.log('💾 Saving CFSS options to database:', selectedCFSSOptions);
+    console.log('ðŸ’¾ Saving CFSS options to database:', selectedCFSSOptions);
 
     try {
         const saveButton = document.getElementById('saveOptionsBtn');
@@ -9498,7 +10164,7 @@ async function saveCFSSOptions() {
 
         // Show success message
         alert(`Successfully saved ${selectedCFSSOptions.length} CFSS construction options!`);
-        console.log('✅ CFSS options saved successfully to database');
+        console.log('âœ… CFSS options saved successfully to database');
 
         // NEW: Automatically switch back to wall list tab after successful save
         switchTab('wall-list');
@@ -9507,7 +10173,7 @@ async function saveCFSSOptions() {
         populateParapetTypeDropdown();
         
     } catch (error) {
-        console.error('❌ Error saving CFSS options:', error);
+        console.error('âŒ Error saving CFSS options:', error);
         alert('Error saving CFSS options: ' + error.message);
     } finally {
         const saveButton = document.getElementById('saveOptionsBtn');
@@ -9520,7 +10186,7 @@ async function saveCFSSOptions() {
 
 // Load saved options (call this when initializing the page)
 function loadSavedCFSSOptions() {
-    console.log('🔄 Loading saved CFSS options...');
+    console.log('ðŸ”„ Loading saved CFSS options...');
     
     if (window.projectData && window.projectData.selectedCFSSOptions) {
         selectedCFSSOptions = [...window.projectData.selectedCFSSOptions];
@@ -9539,9 +10205,9 @@ function loadSavedCFSSOptions() {
         });
         
         updateSelectionSummary();
-        console.log(`✅ Loaded ${selectedCFSSOptions.length} saved CFSS options`);
+        console.log(`âœ… Loaded ${selectedCFSSOptions.length} saved CFSS options`);
     } else {
-        console.log('ℹ️ No saved CFSS options found, starting with empty selection');
+        console.log('â„¹ï¸ No saved CFSS options found, starting with empty selection');
         selectedCFSSOptions = [];
         updateSelectionSummary();
     }
@@ -9549,7 +10215,7 @@ function loadSavedCFSSOptions() {
 
 // Utility functions for option management
 function selectAllOptions() {
-    console.log('🔧 Selecting all CFSS options...');
+    console.log('ðŸ”§ Selecting all CFSS options...');
     
     // Get all option checkboxes
     const checkboxes = document.querySelectorAll('.option-checkbox');
@@ -9561,7 +10227,7 @@ function selectAllOptions() {
 }
 
 function clearAllOptions() {
-    console.log('🔧 Clearing all CFSS options...');
+    console.log('ðŸ”§ Clearing all CFSS options...');
     
     // Get all checked option checkboxes
     const checkboxes = document.querySelectorAll('.option-checkbox:checked');
@@ -9620,9 +10286,9 @@ async function saveWindowsToDatabase(immediate = false) {
       }
       // keep local cache in sync
       if (window.projectData) window.projectData.windows = [...projectWindows];
-      console.log(`✅ Saved ${projectWindows.length} windows to database`);
+      console.log(`âœ… Saved ${projectWindows.length} windows to database`);
     } catch (err) {
-      console.error('❌ Error saving windows:', err);
+      console.error('âŒ Error saving windows:', err);
       alert('Error saving windows: ' + err.message);
     }
   };
@@ -9648,7 +10314,7 @@ function loadWindowsFromProject(project) {
 
 // Render Review Tab
 function renderReviewTab() {
-    console.log('📋 Rendering Review tab...');
+    console.log('ðŸ“‹ Rendering Review tab...');
     
     // Update summary
     const wallCount = projectEquipment?.length || 0;
@@ -9715,7 +10381,7 @@ function renderReviewWalls() {
                             <span>${montantInfo}</span>
                         </div>
                     </div>
-                    <span class="expand-icon">▼</span>
+                    <span class="expand-icon">â–¼</span>
                 </div>
                 <div class="accordion-details">
                     ${hasSet2 ? `
@@ -9960,7 +10626,7 @@ function renderReviewParapets() {
                             <span><i class="fas fa-arrows-alt-v"></i> ${heightDisplay}</span>
                         </div>
                     </div>
-                    <span class="expand-icon">▼</span>
+                    <span class="expand-icon">â–¼</span>
                 </div>
                 <div class="accordion-details">
                     <div class="detail-grid">
@@ -10087,7 +10753,7 @@ function renderReviewWindows() {
     
     const rows = windows.map((window, index) => {
         const type = window.type || 'Unknown Type';
-        const size = `${window.largeurMax || 0}${window.largeurMaxUnit === 'm' ? 'mm' : (window.largeurMaxUnit || 'mm')} × ${window.hauteurMax || 0}${window.hauteurMaxUnit === 'm' ? 'mm' : (window.hauteurMaxUnit || 'mm')}`;
+        const size = `${window.largeurMax || 0}${window.largeurMaxUnit === 'm' ? 'mm' : (window.largeurMaxUnit || 'mm')} Ã— ${window.hauteurMax || 0}${window.hauteurMaxUnit === 'm' ? 'mm' : (window.hauteurMaxUnit || 'mm')}`;
         
         // Get composition lists
         const jambageCompositions = window.jambage?.compositions || [];
@@ -10103,7 +10769,7 @@ function renderReviewWindows() {
                             <span><i class="fas fa-expand"></i> ${size}</span>
                         </div>
                     </div>
-                    <span class="expand-icon">▼</span>
+                    <span class="expand-icon">â–¼</span>
                 </div>
                 <div class="accordion-details">
                     <div class="detail-grid">
@@ -10313,7 +10979,7 @@ function handleImageError(img, typeValue) {
     const preview = img.parentElement;
     preview.className = 'type-image-preview empty';
     preview.innerHTML = `<div style="text-align: center; font-size: 12px; color: #999;">
-        <div style="font-size: 18px; margin-bottom: 4px;">📷</div>
+        <div style="font-size: 18px; margin-bottom: 4px;">ðŸ“·</div>
         <div>${typeValue}</div>
         <div style="font-size: 10px;">(Image not found)</div>
     </div>`;
@@ -10945,7 +11611,7 @@ function calculateStoreyWindLoad(params) {
     let Pe, Pi;
     
     if (H <= 20) {
-        // H ≤ 20m: Use CpCg (area-dependent), no separate Cg factor
+        // H â‰¤ 20m: Use CpCg (area-dependent), no separate Cg factor
         const cpCg = calculateCpCg(A);
         
         Pe = {

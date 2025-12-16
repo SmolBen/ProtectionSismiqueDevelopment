@@ -156,7 +156,7 @@
                         <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                             <thead>
                                 <tr style="background: #17a2b8; color: white;">
-                                    <th style="padding: 8px; text-align: left;">Étage</th>
+                                    <th style="padding: 8px; text-align: left;">Ã‰tage</th>
                                     <th style="padding: 8px; text-align: center;">H (m)</th>
                                     <th style="padding: 8px; text-align: center; width: 50px;"></th>
                                 </tr>
@@ -243,6 +243,31 @@
                     </div>
                 </div>
 
+                <!-- Submit to Admin Section -->
+                <div class="submit-admin-section" style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: white;">
+                            <h4 style="margin: 0 0 5px 0; font-size: 16px; font-weight: 600;">
+                                <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
+                                Submit Project to Admin
+                            </h4>
+                            <p id="submitStatusText" style="margin: 0; font-size: 13px; opacity: 0.9;">
+                                Send this project for admin review and processing.
+                            </p>
+                        </div>
+                        <button id="submitToAdminBtn" onclick="submitToAdmin()" style="background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <i class="fas fa-paper-plane"></i>
+                            <span id="submitBtnText">Submit</span>
+                        </button>
+                    </div>
+                    <div id="submittedInfo" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <p style="margin: 0; color: white; font-size: 12px; opacity: 0.9;">
+                            <i class="fas fa-check-circle" style="margin-right: 6px;"></i>
+                            <span id="submittedDate"></span>
+                        </p>
+                    </div>
+                </div>
+
             </div>
             <div class="right-section">
                 <!-- Tab Interface - No Custom Pages for limited users -->
@@ -304,7 +329,7 @@
                             <i class="fas fa-check-circle"></i> 0 options selected
                         </div>
 
-                        <!-- Category 1: Lisse TrouÃ©\ -->
+                        <!-- Category 1: Lisse TrouÃƒÂ©\ -->
                         <div class="options-category">
                             <div class="category-header">
                                 <i class="fas fa-grip-lines"></i>
@@ -348,7 +373,7 @@
                             </div>
                         </div>
 
-                        <!-- Category 5: FenÃªtre -->
+                        <!-- Category 5: FenÃƒÂªtre -->
                         <div class="options-category">
                             <div class="category-header">
                                 <i class="fas fa-window-restore"></i>

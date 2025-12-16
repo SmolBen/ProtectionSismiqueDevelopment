@@ -88,6 +88,77 @@
                 <div id="projectOwnerInfo">
                     <!-- Owner info will be populated for admins -->
                 </div>
+
+                <!-- Project Files Section -->
+                <div class="files-section" style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #17a2b8; padding-bottom: 5px;">
+                        <h4 style="margin: 0; color: #17a2b8; font-size: 14px;">Project Files</h4>
+                        <button id="showUploadFileBtn" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-plus"></i>
+                            Upload File
+                        </button>
+                    </div>
+
+                    <div id="uploadFileRow" style="display: none; background: #e8f5f7; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 2px dashed #17a2b8;">
+                        <!-- Toggle Pills -->
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 12px; font-weight: 500; color: #333;">Source:</span>
+                            <div style="display: inline-flex; background: #d4d4d4; border-radius: 6px; padding: 3px;">
+                                <button type="button" id="uploadModeFile" class="upload-mode-btn active" style="padding: 6px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; background: #17a2b8; color: white; transition: all 0.2s;">
+                                    Upload File
+                                </button>
+                                <button type="button" id="uploadModeLink" class="upload-mode-btn" style="padding: 6px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: #555; transition: all 0.2s;">
+                                    Paste Link
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Input Row -->
+                        <div style="display: flex; gap: 15px; align-items: flex-end;">
+                            <div style="flex: 2;">
+                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
+                                    File Name <span style="color: red;">*</span>
+                                </label>
+                                <input type="text" id="uploadFileName" placeholder="Enter file name..." style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; height: 34px; box-sizing: border-box;">
+                            </div>
+                            <div style="flex: 3;">
+                                <label id="uploadInputLabel" style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
+                                    Select File <span style="color: red;">*</span>
+                                </label>
+                                <!-- File Input (shown by default) -->
+                                <input type="file" id="uploadFileInput" accept="image/*,.pdf" style="width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; background: white; height: 34px; box-sizing: border-box;">
+                                <!-- Link Input (hidden by default) -->
+                                <input type="text" id="uploadLinkInput" placeholder="https://example.com/file.pdf" style="display: none; width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; height: 34px; box-sizing: border-box;">
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                <button id="uploadFileSubmitBtn" style="background: #28a745; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; height: 34px; min-width: 80px;">
+                                    <i class="fas fa-upload"></i> Upload
+                                </button>
+                                <button id="uploadFileCancelBtn" style="background: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; height: 34px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;" id="filesTable">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 50%;">File Name</th>
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 20%;">Type</th>
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 20%;">Date</th>
+                                <th style="text-align: center; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 10%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTableBody">
+                            <!-- Files will be populated here -->
+                        </tbody>
+                    </table>
+
+                    <div id="filesEmptyState" style="display: none; text-align: center; padding: 50px; color: #999;">
+                        <i class="fas fa-folder-open" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px;"></i>
+                        <p style="margin: 0;">No files uploaded yet. Click "Upload File" to add files.</p>
+                    </div>
+                </div>
             </div>
             <div class="right-section">
                 <!-- NEW: Tab Interface -->
@@ -107,6 +178,10 @@
                     <button class="tab-button" data-tab="window-list">
                         <i class="fas fa-window-maximize"></i>
                         Window List
+                    </button>
+                    <button class="tab-button" data-tab="soffite-list">
+                        <i class="fas fa-grip-lines-vertical"></i>
+                        Soffites List
                     </button>
                     <button class="tab-button" data-tab="custom-pages">
                         <i class="fas fa-file-alt"></i>
@@ -261,6 +336,58 @@
                     </div>
                     <div id="windowList" class="equipment-list">
                         <!-- Windows will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Soffites List Tab Content -->
+                <div id="soffite-list-content" class="tab-content-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h1 style="margin: 0;">Soffites List</h1>
+                        <button id="addSoffitesButton" class="button primary" style="background: #6f42c1;">
+                            <i class="fas fa-grip-lines-vertical"></i> Add Soffites
+                        </button>
+                    </div>
+                    <div class="selection-summary" id="soffiteSelectionSummary" style="margin-bottom: 20px;">
+                        <i class="fas fa-grip-lines-vertical"></i> 0 soffites added
+                    </div>
+                    <div id="soffiteList" class="equipment-list">
+                        <!-- Soffites will be displayed here -->
+                    </div>
+
+                    <!-- Soffite Form (hidden by default) -->
+                    <div id="soffiteForm" class="equipment-form" style="display: none; margin-top: 20px;">
+                        <form id="soffiteFormElement">
+                            <h3 id="soffiteFormTitle">Add Soffite</h3>
+                            
+                            <div class="form-group">
+                                <label for="soffiteName">Soffite Name <span style="color: red;">*</span></label>
+                                <input type="text" id="soffiteName" placeholder="Enter soffite name" required>
+                            </div>
+
+                            <!-- Image Upload Section -->
+                            <div class="image-upload-section">
+                                <h4 style="margin: 0 0 10px 0; font-size: 14px;">Soffite Images</h4>
+                                <div class="upload-controls">
+                                    <label class="camera-btn">
+                                        <i class="fas fa-camera"></i> Take Photo / Upload
+                                        <input type="file" id="soffiteImageInput" accept="image/*" capture="environment" multiple style="display: none;">
+                                    </label>
+                                    <div class="drop-zone" id="soffiteDropZone">
+                                        <i class="fas fa-cloud-upload-alt"></i> Drag & drop images here
+                                    </div>
+                                </div>
+                                <div id="soffiteImagePreviewContainer" class="image-preview-container"></div>
+                            </div>
+
+                            <div class="form-buttons" style="margin-top: 20px;">
+                                <button type="submit" class="button primary">
+                                    <i class="fas fa-save"></i> Save Soffite
+                                </button>
+                                <button type="button" id="cancelSoffite" class="button secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
@@ -477,9 +604,9 @@
                             <table class="storey-table" id="storeyTable">
                                 <thead>
                                     <tr>
-                                        <th>Étage</th>
+                                        <th>Ã‰tage</th>
                                         <th>H (m)</th>
-                                        <th>A (m²)</th>
+                                        <th>A (mÂ²)</th>
                                         <th>ULS (psf)</th>
                                         <th>SLS (psf)</th>
                                         <th></th>
@@ -519,7 +646,7 @@
                         </div>
                         
                         <div class="field-row">
-                            <label>Ancrage des lisses à l'acier:</label>
+                            <label>Ancrage des lisses Ã  l'acier:</label>
                             <input type="text" id="steelAnchor" class="text-input" placeholder="Enter steel anchor">
                         </div>
                 
@@ -629,7 +756,7 @@
                         </select>
                         <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                             <input type="checkbox" id="wallDosADos" name="wallDosADos" style="margin: 0;">
-                            <span>dos-à-dos</span>
+                            <span>dos-Ã -dos</span>
                         </label>
                     </div>
                 </div>
@@ -749,16 +876,16 @@
                     +
                 </button>
             </div>
-            <!-- 5. Montant Métallique with dos-à-dos checkbox -->
+            <!-- 5. Montant Métallique with dos-Ã -dos checkbox -->
             <div class="form-group">
                 <label for="montantMetallique">Montant Métallique:</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <select id="montantMetallique" name="montantMetallique" required style="flex: 1;">
-                        <option value="">Select montant métallique...</option>
+                        <option value="">Select Montant Métallique...</option>
                     </select>
                     <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                         <input type="checkbox" id="dosADos" name="dosADos" style="margin: 0;">
-                        <span>dos-à-dos</span>
+                        <span>dos-Ã -dos</span>
                     </label>
                 </div>
             </div>
@@ -829,7 +956,7 @@
                 <h4 style="margin: 0; font-size: 14px; color: #666;">Set 2</h4>
                 <button type="button" id="removeSet2Btn" onclick="toggleSet2(false)" 
                         style="background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;">
-                    ×
+                    Ã—
                 </button>
             </div>
 
@@ -838,11 +965,11 @@
                 <label for="montantMetallique2">Montant Métallique 2:</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <select id="montantMetallique2" name="montantMetallique2">
-                        <option value="">Select montant métallique...</option>
+                        <option value="">Select Montant Métallique...</option>
                     </select>
                     <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                         <input type="checkbox" id="dosADos2" name="dosADos2" style="margin: 0;">
-                        <span>dos-à-dos</span>
+                        <span>dos-Ã -dos</span>
                     </label>
                 </div>
             </div>
@@ -1279,7 +1406,7 @@
                     <div class="form-group">
                         <label for="parapetMontantMetallique">Montant Métallique:</label>
                         <select id="parapetMontantMetallique" name="parapetMontantMetallique" required>
-                            <option value="">Select montant métallique...</option>
+                            <option value="">Select Montant Métallique...</option>
                             <!-- Options populated by JavaScript -->
                         </select>
                     </div>
@@ -1324,7 +1451,7 @@
                 <h4 style="margin: 0; font-size: 14px; color: #666;">Set 2</h4>
                 <button type="button" id="removeParapetSet2Btn" onclick="toggleParapetSet2(false)" 
                         style="background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;">
-                    ×
+                    Ã—
                 </button>
             </div>
 
@@ -1332,7 +1459,7 @@
                     <div class="form-group">
                         <label for="parapetMontantMetallique2">Montant Métallique 2:</label>
                         <select id="parapetMontantMetallique2" name="parapetMontantMetallique2">
-                            <option value="">Select montant métallique...</option>
+                            <option value="">Select Montant Métallique...</option>
                             <!-- Options populated by JavaScript -->
                         </select>
                     </div>
@@ -1414,77 +1541,77 @@
     <script>
     // Colombian data mapping from CSV
     const colombageData = {
-        "162S125-33": { lisseSuperieur: "162ST250-33 TROUÉE", lisseInferieure: "162T125-33" },
-        "162S162-33": { lisseSuperieur: "162ST250-33 TROUÉE", lisseInferieure: "162T125-33" },
-        "162S125-43": { lisseSuperieur: "162ST250-43 TROUÉE", lisseInferieure: "162T125-43" },
-        "250S125-33": { lisseSuperieur: "250ST250-33 TROUÉE", lisseInferieure: "250T125-33" },
-        "250S162-33": { lisseSuperieur: "250ST250-33 TROUÉE", lisseInferieure: "250T125-33" },
-        "250S200-33": { lisseSuperieur: "250ST250-33 TROUÉE", lisseInferieure: "250T125-33" },
-        "250S125-43": { lisseSuperieur: "250ST250-43 TROUÉE", lisseInferieure: "250T125-43" },
-        "250S162-43": { lisseSuperieur: "250ST250-43 TROUÉE", lisseInferieure: "250T125-43" },
-        "250S200-43": { lisseSuperieur: "250ST250-43 TROUÉE", lisseInferieure: "250T125-43" },
-        "250S125-54": { lisseSuperieur: "250ST250-54 TROUÉE", lisseInferieure: "250T125-54" },
-        "250S162-54": { lisseSuperieur: "250ST250-54 TROUÉE", lisseInferieure: "250T125-54" },
-        "250S200-54": { lisseSuperieur: "250ST250-54 TROUÉE", lisseInferieure: "250T125-54" },
-        "250S162-68": { lisseSuperieur: "250ST250-68 TROUÉE", lisseInferieure: "250T125-68" },
-        "250S200-68": { lisseSuperieur: "250ST250-68 TROUÉE", lisseInferieure: "250T125-68" },
-        "250S162-97": { lisseSuperieur: "250ST250-97 TROUÉE", lisseInferieure: "250T125-97" },
-        "250S200-97": { lisseSuperieur: "250ST250-97 TROUÉE", lisseInferieure: "250T125-97" },
-        "362S125-33": { lisseSuperieur: "362ST250-33 TROUÉE", lisseInferieure: "362T125-33" },
-        "362S162-33": { lisseSuperieur: "362ST250-33 TROUÉE", lisseInferieure: "362T125-33" },
-        "362S200-33": { lisseSuperieur: "362ST250-33 TROUÉE", lisseInferieure: "362T125-33" },
-        "362S125-43": { lisseSuperieur: "362ST250-43 TROUÉE", lisseInferieure: "362T125-43" },
-        "362S162-43": { lisseSuperieur: "362ST250-43 TROUÉE", lisseInferieure: "362T125-43" },
-        "362S200-43": { lisseSuperieur: "362ST250-43 TROUÉE", lisseInferieure: "362T125-43" },
-        "362S125-54": { lisseSuperieur: "362ST250-54 TROUÉE", lisseInferieure: "362T125-54" },
-        "362S162-54": { lisseSuperieur: "362ST250-54 TROUÉE", lisseInferieure: "362T125-54" },
-        "362S200-54": { lisseSuperieur: "362ST250-54 TROUÉE", lisseInferieure: "362T125-54" },
-        "362S162-68": { lisseSuperieur: "362ST250-68 TROUÉE", lisseInferieure: "362T125-68" },
-        "362S200-68": { lisseSuperieur: "362ST250-68 TROUÉE", lisseInferieure: "362T125-68" },
-        "362S162-97": { lisseSuperieur: "362ST250-97 TROUÉE", lisseInferieure: "362T125-97" },
-        "362S200-97": { lisseSuperieur: "362ST250-97 TROUÉE", lisseInferieure: "362T125-97" },
-        "212CH-18": { lisseSuperieur: "212CHT250-18 TROUÉE", lisseInferieure: "212CHT125-18" },
-        "212CH-34": { lisseSuperieur: "212CHT250-34 TROUÉE", lisseInferieure: "212CHT125-34" },
-        "250CH-18": { lisseSuperieur: "250CHT250-18 TROUÉE", lisseInferieure: "250CHT125-18" },
-        "250CH-34": { lisseSuperieur: "250CHT250-34 TROUÉE", lisseInferieure: "250CHT125-34" },
-        "300CH-18": { lisseSuperieur: "300CHT250-18 TROUÉE", lisseInferieure: "300CHT125-18" },
-        "300CH-34": { lisseSuperieur: "300CHT250-34 TROUÉE", lisseInferieure: "300CHT125-34" },
-        "350CH-18": { lisseSuperieur: "350CHT250-18 TROUÉE", lisseInferieure: "350CHT125-18" },
-        "350CH-34": { lisseSuperieur: "350CHT250-34 TROUÉE", lisseInferieure: "350CHT125-34" },
-        "400CH-18": { lisseSuperieur: "400CHT250-18 TROUÉE", lisseInferieure: "400CHT125-18" },
-        "400CH-34": { lisseSuperieur: "400CHT250-34 TROUÉE", lisseInferieure: "400CHT125-34" },
-        "600S125-33": { lisseSuperieur: "600ST250-33 TROUÉE", lisseInferieure: "600T125-33" },
-        "600S162-33": { lisseSuperieur: "600ST250-33 TROUÉE", lisseInferieure: "600T125-33" },
-        "600S200-33": { lisseSuperieur: "600ST250-33 TROUÉE", lisseInferieure: "600T125-33" },
-        "600S125-43": { lisseSuperieur: "600ST250-43 TROUÉE", lisseInferieure: "600T125-43" },
-        "600S162-43": { lisseSuperieur: "600ST250-43 TROUÉE", lisseInferieure: "600T125-43" },
-        "600S200-43": { lisseSuperieur: "600ST250-43 TROUÉE", lisseInferieure: "600T125-43" },
-        "600S125-54": { lisseSuperieur: "600ST250-54 TROUÉE", lisseInferieure: "600T125-54" },
-        "600S162-54": { lisseSuperieur: "600ST250-54 TROUÉE", lisseInferieure: "600T125-54" },
-        "600S200-54": { lisseSuperieur: "600ST250-54 TROUÉE", lisseInferieure: "600T125-54" },
-        "600S162-68": { lisseSuperieur: "600ST250-68 TROUÉE", lisseInferieure: "600T125-68" },
-        "600S200-68": { lisseSuperieur: "600ST250-68 TROUÉE", lisseInferieure: "600T125-68" },
-        "600S162-97": { lisseSuperieur: "600ST250-97 TROUÉE", lisseInferieure: "600T125-97" },
-        "600S200-97": { lisseSuperieur: "600ST250-97 TROUÉE", lisseInferieure: "600T125-97" },
-        "800S125-33": { lisseSuperieur: "800ST250-33 TROUÉE", lisseInferieure: "800T125-33" },
-        "800S162-33": { lisseSuperieur: "800ST250-33 TROUÉE", lisseInferieure: "800T125-33" },
-        "800S200-33": { lisseSuperieur: "800ST250-33 TROUÉE", lisseInferieure: "800T125-33" },
-        "800S125-43": { lisseSuperieur: "800ST250-43 TROUÉE", lisseInferieure: "800T125-43" },
-        "800S162-43": { lisseSuperieur: "800ST250-43 TROUÉE", lisseInferieure: "800T125-43" },
-        "800S200-43": { lisseSuperieur: "800ST250-43 TROUÉE", lisseInferieure: "800T125-43" },
-        "800S125-54": { lisseSuperieur: "800ST250-54 TROUÉE", lisseInferieure: "800T125-54" },
-        "800S162-54": { lisseSuperieur: "800ST250-54 TROUÉE", lisseInferieure: "800T125-54" },
-        "800S200-54": { lisseSuperieur: "800ST250-54 TROUÉE", lisseInferieure: "800T125-54" },
-        "800S162-68": { lisseSuperieur: "800ST250-68 TROUÉE", lisseInferieure: "800T125-68" },
-        "800S200-68": { lisseSuperieur: "800ST250-68 TROUÉE", lisseInferieure: "800T125-68" },
-        "800S162-97": { lisseSuperieur: "800ST250-97 TROUÉE", lisseInferieure: "800T125-97" },
-        "800S200-97": { lisseSuperieur: "800ST250-97 TROUÉE", lisseInferieure: "800T125-97" },
-        "1000S125-33": { lisseSuperieur: "1000ST250-33 TROUÉE", lisseInferieure: "1000T125-33" },
-        "1000S162-33": { lisseSuperieur: "1000ST250-33 TROUÉE", lisseInferieure: "1000T125-33" },
-        "1000S200-33": { lisseSuperieur: "1000ST250-33 TROUÉE", lisseInferieure: "1000T125-33" },
-        "1000S125-43": { lisseSuperieur: "1000ST250-43 TROUÉE", lisseInferieure: "1000T125-43" },
-        "1000S162-43": { lisseSuperieur: "1000ST250-43 TROUÉE", lisseInferieure: "1000T125-43" },
-        "1000S200-43": { lisseSuperieur: "1000ST250-43 TROUÉE", lisseInferieure: "1000T125-43" }
+        "162S125-33": { lisseSuperieur: "162ST250-33 TROUÃ‰E", lisseInferieure: "162T125-33" },
+        "162S162-33": { lisseSuperieur: "162ST250-33 TROUÃ‰E", lisseInferieure: "162T125-33" },
+        "162S125-43": { lisseSuperieur: "162ST250-43 TROUÃ‰E", lisseInferieure: "162T125-43" },
+        "250S125-33": { lisseSuperieur: "250ST250-33 TROUÃ‰E", lisseInferieure: "250T125-33" },
+        "250S162-33": { lisseSuperieur: "250ST250-33 TROUÃ‰E", lisseInferieure: "250T125-33" },
+        "250S200-33": { lisseSuperieur: "250ST250-33 TROUÃ‰E", lisseInferieure: "250T125-33" },
+        "250S125-43": { lisseSuperieur: "250ST250-43 TROUÃ‰E", lisseInferieure: "250T125-43" },
+        "250S162-43": { lisseSuperieur: "250ST250-43 TROUÃ‰E", lisseInferieure: "250T125-43" },
+        "250S200-43": { lisseSuperieur: "250ST250-43 TROUÃ‰E", lisseInferieure: "250T125-43" },
+        "250S125-54": { lisseSuperieur: "250ST250-54 TROUÃ‰E", lisseInferieure: "250T125-54" },
+        "250S162-54": { lisseSuperieur: "250ST250-54 TROUÃ‰E", lisseInferieure: "250T125-54" },
+        "250S200-54": { lisseSuperieur: "250ST250-54 TROUÃ‰E", lisseInferieure: "250T125-54" },
+        "250S162-68": { lisseSuperieur: "250ST250-68 TROUÃ‰E", lisseInferieure: "250T125-68" },
+        "250S200-68": { lisseSuperieur: "250ST250-68 TROUÃ‰E", lisseInferieure: "250T125-68" },
+        "250S162-97": { lisseSuperieur: "250ST250-97 TROUÃ‰E", lisseInferieure: "250T125-97" },
+        "250S200-97": { lisseSuperieur: "250ST250-97 TROUÃ‰E", lisseInferieure: "250T125-97" },
+        "362S125-33": { lisseSuperieur: "362ST250-33 TROUÃ‰E", lisseInferieure: "362T125-33" },
+        "362S162-33": { lisseSuperieur: "362ST250-33 TROUÃ‰E", lisseInferieure: "362T125-33" },
+        "362S200-33": { lisseSuperieur: "362ST250-33 TROUÃ‰E", lisseInferieure: "362T125-33" },
+        "362S125-43": { lisseSuperieur: "362ST250-43 TROUÃ‰E", lisseInferieure: "362T125-43" },
+        "362S162-43": { lisseSuperieur: "362ST250-43 TROUÃ‰E", lisseInferieure: "362T125-43" },
+        "362S200-43": { lisseSuperieur: "362ST250-43 TROUÃ‰E", lisseInferieure: "362T125-43" },
+        "362S125-54": { lisseSuperieur: "362ST250-54 TROUÃ‰E", lisseInferieure: "362T125-54" },
+        "362S162-54": { lisseSuperieur: "362ST250-54 TROUÃ‰E", lisseInferieure: "362T125-54" },
+        "362S200-54": { lisseSuperieur: "362ST250-54 TROUÃ‰E", lisseInferieure: "362T125-54" },
+        "362S162-68": { lisseSuperieur: "362ST250-68 TROUÃ‰E", lisseInferieure: "362T125-68" },
+        "362S200-68": { lisseSuperieur: "362ST250-68 TROUÃ‰E", lisseInferieure: "362T125-68" },
+        "362S162-97": { lisseSuperieur: "362ST250-97 TROUÃ‰E", lisseInferieure: "362T125-97" },
+        "362S200-97": { lisseSuperieur: "362ST250-97 TROUÃ‰E", lisseInferieure: "362T125-97" },
+        "212CH-18": { lisseSuperieur: "212CHT250-18 TROUÃ‰E", lisseInferieure: "212CHT125-18" },
+        "212CH-34": { lisseSuperieur: "212CHT250-34 TROUÃ‰E", lisseInferieure: "212CHT125-34" },
+        "250CH-18": { lisseSuperieur: "250CHT250-18 TROUÃ‰E", lisseInferieure: "250CHT125-18" },
+        "250CH-34": { lisseSuperieur: "250CHT250-34 TROUÃ‰E", lisseInferieure: "250CHT125-34" },
+        "300CH-18": { lisseSuperieur: "300CHT250-18 TROUÃ‰E", lisseInferieure: "300CHT125-18" },
+        "300CH-34": { lisseSuperieur: "300CHT250-34 TROUÃ‰E", lisseInferieure: "300CHT125-34" },
+        "350CH-18": { lisseSuperieur: "350CHT250-18 TROUÃ‰E", lisseInferieure: "350CHT125-18" },
+        "350CH-34": { lisseSuperieur: "350CHT250-34 TROUÃ‰E", lisseInferieure: "350CHT125-34" },
+        "400CH-18": { lisseSuperieur: "400CHT250-18 TROUÃ‰E", lisseInferieure: "400CHT125-18" },
+        "400CH-34": { lisseSuperieur: "400CHT250-34 TROUÃ‰E", lisseInferieure: "400CHT125-34" },
+        "600S125-33": { lisseSuperieur: "600ST250-33 TROUÃ‰E", lisseInferieure: "600T125-33" },
+        "600S162-33": { lisseSuperieur: "600ST250-33 TROUÃ‰E", lisseInferieure: "600T125-33" },
+        "600S200-33": { lisseSuperieur: "600ST250-33 TROUÃ‰E", lisseInferieure: "600T125-33" },
+        "600S125-43": { lisseSuperieur: "600ST250-43 TROUÃ‰E", lisseInferieure: "600T125-43" },
+        "600S162-43": { lisseSuperieur: "600ST250-43 TROUÃ‰E", lisseInferieure: "600T125-43" },
+        "600S200-43": { lisseSuperieur: "600ST250-43 TROUÃ‰E", lisseInferieure: "600T125-43" },
+        "600S125-54": { lisseSuperieur: "600ST250-54 TROUÃ‰E", lisseInferieure: "600T125-54" },
+        "600S162-54": { lisseSuperieur: "600ST250-54 TROUÃ‰E", lisseInferieure: "600T125-54" },
+        "600S200-54": { lisseSuperieur: "600ST250-54 TROUÃ‰E", lisseInferieure: "600T125-54" },
+        "600S162-68": { lisseSuperieur: "600ST250-68 TROUÃ‰E", lisseInferieure: "600T125-68" },
+        "600S200-68": { lisseSuperieur: "600ST250-68 TROUÃ‰E", lisseInferieure: "600T125-68" },
+        "600S162-97": { lisseSuperieur: "600ST250-97 TROUÃ‰E", lisseInferieure: "600T125-97" },
+        "600S200-97": { lisseSuperieur: "600ST250-97 TROUÃ‰E", lisseInferieure: "600T125-97" },
+        "800S125-33": { lisseSuperieur: "800ST250-33 TROUÃ‰E", lisseInferieure: "800T125-33" },
+        "800S162-33": { lisseSuperieur: "800ST250-33 TROUÃ‰E", lisseInferieure: "800T125-33" },
+        "800S200-33": { lisseSuperieur: "800ST250-33 TROUÃ‰E", lisseInferieure: "800T125-33" },
+        "800S125-43": { lisseSuperieur: "800ST250-43 TROUÃ‰E", lisseInferieure: "800T125-43" },
+        "800S162-43": { lisseSuperieur: "800ST250-43 TROUÃ‰E", lisseInferieure: "800T125-43" },
+        "800S200-43": { lisseSuperieur: "800ST250-43 TROUÃ‰E", lisseInferieure: "800T125-43" },
+        "800S125-54": { lisseSuperieur: "800ST250-54 TROUÃ‰E", lisseInferieure: "800T125-54" },
+        "800S162-54": { lisseSuperieur: "800ST250-54 TROUÃ‰E", lisseInferieure: "800T125-54" },
+        "800S200-54": { lisseSuperieur: "800ST250-54 TROUÃ‰E", lisseInferieure: "800T125-54" },
+        "800S162-68": { lisseSuperieur: "800ST250-68 TROUÃ‰E", lisseInferieure: "800T125-68" },
+        "800S200-68": { lisseSuperieur: "800ST250-68 TROUÃ‰E", lisseInferieure: "800T125-68" },
+        "800S162-97": { lisseSuperieur: "800ST250-97 TROUÃ‰E", lisseInferieure: "800T125-97" },
+        "800S200-97": { lisseSuperieur: "800ST250-97 TROUÃ‰E", lisseInferieure: "800T125-97" },
+        "1000S125-33": { lisseSuperieur: "1000ST250-33 TROUÃ‰E", lisseInferieure: "1000T125-33" },
+        "1000S162-33": { lisseSuperieur: "1000ST250-33 TROUÃ‰E", lisseInferieure: "1000T125-33" },
+        "1000S200-33": { lisseSuperieur: "1000ST250-33 TROUÃ‰E", lisseInferieure: "1000T125-33" },
+        "1000S125-43": { lisseSuperieur: "1000ST250-43 TROUÃ‰E", lisseInferieure: "1000T125-43" },
+        "1000S162-43": { lisseSuperieur: "1000ST250-43 TROUÃ‰E", lisseInferieure: "1000T125-43" },
+        "1000S200-43": { lisseSuperieur: "1000ST250-43 TROUÃ‰E", lisseInferieure: "1000T125-43" }
     };
 
     // Initialize form functionality
@@ -1551,7 +1678,7 @@ function initializeMontantDropdown() {
     if (!montantSelect) return;
 
     // Clear and populate Set 1
-    montantSelect.innerHTML = '<option value="">Select montant métallique...</option>';
+    montantSelect.innerHTML = '<option value="">Select Montant Métallique...</option>';
     
     const sortedKeys = Object.keys(colombageData).sort();
     sortedKeys.forEach(montant => {
@@ -1563,7 +1690,7 @@ function initializeMontantDropdown() {
 
     // Populate Set 2
     if (montantSelect2) {
-        montantSelect2.innerHTML = '<option value="">Select montant métallique...</option>';
+        montantSelect2.innerHTML = '<option value="">Select Montant Métallique...</option>';
         sortedKeys.forEach(montant => {
             const option = document.createElement('option');
             option.value = montant;
@@ -1574,7 +1701,7 @@ function initializeMontantDropdown() {
 
     // Populate Parapet Montant Dropdown
     if (parapetMontantSelect) {
-        parapetMontantSelect.innerHTML = '<option value="">Select montant métallique...</option>';
+        parapetMontantSelect.innerHTML = '<option value="">Select Montant Métallique...</option>';
         sortedKeys.forEach(montant => {
             const option = document.createElement('option');
             option.value = montant;
@@ -1587,7 +1714,7 @@ function initializeMontantDropdown() {
     // Populate Parapet Montant Set 2 Dropdown
     const parapetMontantSelect2 = document.getElementById('parapetMontantMetallique2');
     if (parapetMontantSelect2) {
-        parapetMontantSelect2.innerHTML = '<option value="">Select montant métallique...</option>';
+        parapetMontantSelect2.innerHTML = '<option value="">Select Montant Métallique...</option>';
         sortedKeys.forEach(montant => {
             const option = document.createElement('option');
             option.value = montant;
@@ -1596,7 +1723,7 @@ function initializeMontantDropdown() {
         });
     }
 
-    console.log(`Populated ${sortedKeys.length} montant métallique options for walls and parapets`);
+    console.log(`Populated ${sortedKeys.length} Montant Métallique options for walls and parapets`);
 }
 
     // Setup change handler for montant selection
@@ -1716,17 +1843,17 @@ function setupMontantChangeHandler() {
         }
 
         if (!montantMetallique) {
-            alert('Please select montant métallique.');
+            alert('Please select Montant Métallique.');
             return null;
         }
 
         if (!lisseSuperieure) {
-            alert('Please enter lisse supérieure.');
+            alert('Please enter lisse Supérieure.');
             return null;
         }
 
         if (!lisseInferieure) {
-            alert('Please enter lisse inférieure.');
+            alert('Please enter lisse Inférieure.');
             return null;
         }
 

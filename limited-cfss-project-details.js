@@ -57,7 +57,7 @@ function showThumbnailPlaceholder(optionId, message = 'IMG') {
 }
 
 window.addEventListener('load', async function() {
-    console.log('Ã°Å¸â€œâ€ž Limited CFSS Project Details page loaded');
+    console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Å¾ Limited CFSS Project Details page loaded');
     await initializeProjectDetails();
 });
 
@@ -112,10 +112,10 @@ async function initializeProjectDetails() {
         // Initialize options
         initializeOptionsSystem();
 
-        console.log('Ã¢Å“â€¦ Limited CFSS Project Details initialized');
+        console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Limited CFSS Project Details initialized');
 
     } catch (error) {
-        console.error('Ã¢ÂÅ’ Error initializing:', error);
+        console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Error initializing:', error);
         document.getElementById('loadingProject').style.display = 'none';
         alert('Error loading project: ' + error.message);
     }
@@ -170,7 +170,7 @@ async function loadProject(projectId) {
         document.getElementById('projectContainer').style.display = 'block';
 
     } catch (error) {
-        console.error('Ã¢ÂÅ’ Error loading project:', error);
+        console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Error loading project:', error);
         document.getElementById('loadingProject').style.display = 'none';
         alert('Error loading project: ' + error.message);
         window.location.href = 'limited-cfss-dashboard.html';
@@ -539,7 +539,7 @@ function initializeTabSystem() {
 
 // Initialize options for the current project
 function initializeOptionsSystem() {
-    console.log('ðŸ”§ Initializing LIMITED CFSS options system...');
+    console.log('Ã°Å¸â€Â§ Initializing LIMITED CFSS options system...');
 
     // Load any saved options from the project if present
     if (currentProject && Array.isArray(currentProject.selectedCFSSOptions)) {
@@ -557,7 +557,7 @@ function initializeOptionsSystem() {
         saveOptionsBtn.addEventListener('click', async () => {
             try {
                 await saveLimitedCFSSOptions();
-                console.log('âœ… Limited CFSS options saved via Save Options button');
+                console.log('Ã¢Å“â€¦ Limited CFSS options saved via Save Options button');
             } catch (error) {
                 console.error('Error saving limited CFSS options via button:', error);
                 alert('Error saving options. Please try again.');
@@ -565,7 +565,7 @@ function initializeOptionsSystem() {
         });
     }
 
-    console.log('âœ… Limited options system initialized');
+    console.log('Ã¢Å“â€¦ Limited options system initialized');
 }
 
 // Define option categories and their corresponding option IDs
@@ -645,7 +645,7 @@ function populateOptionsCategories() {
         });
     });
 
-    console.log('Ã¢Å“â€¦ Limited option categories populated');
+    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Limited option categories populated');
 }
 
 // Create a single option card with thumbnail (same structure as regular CFSS)
@@ -734,7 +734,7 @@ async function saveLimitedCFSSOptions() {
         return;
     }
 
-    console.log('Ã°Å¸â€™Â¾ Saving LIMITED CFSS options:', selectedCFSSOptions);
+    console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ Saving LIMITED CFSS options:', selectedCFSSOptions);
 
     const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
         method: 'PUT',
@@ -756,7 +756,7 @@ async function preloadOptionImages() {
     console.log('Preloading CFSS option images (limited)...');
 
     const allOptions = [
-        // Lisse trouÃƒÂ©e options
+        // Lisse trouÃƒÆ’Ã‚Â©e options
         'fixe-beton-lisse-trouee',
         'fixe-structure-dacier-lisse-trouee',
         'fixe-tabiler-metallique-lisse-trouee',
@@ -801,7 +801,7 @@ async function preloadOptionImages() {
         await loadOptionThumbnail(optionName);
     }
 
-    console.log('Ã¢Å“â€¦ CFSS option images preloaded (limited)');
+    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ CFSS option images preloaded (limited)');
 }
 
 // Thumbnail loader (same as regular)
@@ -882,10 +882,10 @@ function populateLimitedOptionCategories() {
         });
     });
 
-    console.log('Ã¢Å“â€¦ Limited option categories populated');
+    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Limited option categories populated');
 }
 
-// Create one option card (with image) Ã¢â‚¬â€œ similar to full CFSS
+// Create one option card (with image) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“ similar to full CFSS
 function createLimitedOptionElement(option) {
     const isSelected = currentProject.options && currentProject.options.includes(option.id);
 
@@ -1593,7 +1593,7 @@ function displayWindowList() {
         const title = win.windowName || win.name || win.type || `Window ${index + 1}`;
         const largeurDisplay = formatDimension(win, 'largeur');
         const hauteurDisplay = formatDimension(win, 'hauteur');
-        const dims = `${largeurDisplay} × ${hauteurDisplay}`;
+        const dims = `${largeurDisplay} Ã— ${hauteurDisplay}`;
         
         windowCard.innerHTML = `
             <div class="equipment-header" onclick="toggleWindowDetails('${win.id}')">
@@ -2325,9 +2325,9 @@ async function saveProject() {
             throw new Error(`HTTP ${response.status}`);
         }
 
-        console.log('Ã¢Å“â€¦ Project saved');
+        console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Project saved');
     } catch (error) {
-        console.error('Ã¢ÂÅ’ Error saving project:', error);
+        console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Error saving project:', error);
         alert('Error saving project: ' + error.message);
     }
 }
@@ -2609,7 +2609,7 @@ function addImagePreview(imageData) {
     preview.dataset.imageKey = imageData.key;
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">×</button>
+        <button type="button" class="image-remove" title="Remove image">Ã—</button>
     `;
     
     container.appendChild(preview);
@@ -2816,7 +2816,7 @@ function addParapetImagePreview(imageData) {
     preview.dataset.imageKey = imageData.key;
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">×</button>
+        <button type="button" class="image-remove" title="Remove image">Ã—</button>
     `;
     
     container.appendChild(preview);
@@ -3050,7 +3050,7 @@ function addEditParapetImagePreview(parapetId, imageData) {
     preview.dataset.imageKey = imageData.key;
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename || 'Image'}">
-        <button type="button" class="image-remove" title="Remove image">×</button>
+        <button type="button" class="image-remove" title="Remove image">Ã—</button>
     `;
     
     container.appendChild(preview);
@@ -3151,7 +3151,7 @@ window.openImageModal = function(imageKey, filename) {
                 style="max-width: 100%; max-height: 100%; border-radius: 8px;"
                 alt="${filename}">
             <button style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer;"
-                    onclick="this.closest('.image-modal').remove()">×</button>
+                    onclick="this.closest('.image-modal').remove()">Ã—</button>
         </div>
     `;
     
@@ -3478,7 +3478,7 @@ function addEditImagePreview(wallId, imageData) {
     preview.dataset.imageKey = imageData.key;
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename || 'Image'}">
-        <button type="button" class="image-remove" title="Remove image">×</button>
+        <button type="button" class="image-remove" title="Remove image">Ã—</button>
     `;
     
     container.appendChild(preview);
@@ -3954,3 +3954,275 @@ async function updateProject(projectId, updates) {
 
     return await response.json();
 }
+
+// ============================================
+// SUBMIT TO ADMIN - CONVERT TO REGULAR PROJECT
+// ============================================
+
+// Colombage to Montant prefix mapping
+const colombageToMontantPrefix = {
+    '1-5/8': '162',
+    '2-1/2': '250',
+    '2 1/2': '250',
+    '3-5/8': '362',
+    '4': '400',
+    '6': '600',
+    '8': '800',
+    '10': '1000'
+};
+
+// Convert limited wall to regular wall format
+function convertWallToRegular(limitedWall) {
+    const montantPrefix1 = colombageToMontantPrefix[limitedWall.colombageSet1] || 'N/A';
+    const montantPrefix2 = limitedWall.colombageSet2 ? colombageToMontantPrefix[limitedWall.colombageSet2] || 'N/A' : null;
+    
+    const regularWall = {
+        equipment: limitedWall.name || limitedWall.equipment || 'Unnamed Wall',
+        floor: limitedWall.floor || 'N/A',
+        hauteurMax: limitedWall.hauteurMax || '0',
+        hauteurMaxUnit: limitedWall.hauteurMaxUnit || 'ft',
+        hauteurMaxMinor: limitedWall.hauteurMaxMinor || '0',
+        hauteurMaxMinorUnit: limitedWall.hauteurMaxMinorUnit || 'in',
+        deflexionMax: limitedWall.deflexionSet1 || 'N/A',
+        montantMetallique: montantPrefix1,
+        dosADos: false,
+        lisseSuperieure: 'N/A',
+        lisseInferieure: 'N/A',
+        entremise: 'N/A',
+        espacement: 'N/A',
+        note: limitedWall.note || '',
+        images: limitedWall.images || [],
+        dateAdded: limitedWall.dateAdded || new Date().toISOString(),
+        addedBy: limitedWall.addedBy || 'limited-user'
+    };
+    
+    // Add Set 2 data if it exists
+    if (limitedWall.colombageSet2 || limitedWall.deflexionSet2) {
+        regularWall.montantMetallique2 = montantPrefix2 || 'N/A';
+        regularWall.deflexionMax2 = limitedWall.deflexionSet2 || 'N/A';
+        regularWall.dosADos2 = false;
+        regularWall.lisseSuperieure2 = 'N/A';
+        regularWall.lisseInferieure2 = 'N/A';
+        regularWall.entremise2 = 'N/A';
+        regularWall.espacement2 = 'N/A';
+    }
+    
+    return regularWall;
+}
+
+// Convert limited parapet to regular format
+function convertParapetToRegular(limitedParapet) {
+    return {
+        ...limitedParapet,
+        // Add any missing fields with N/A
+        type: limitedParapet.type || 'N/A',
+        note: limitedParapet.note || ''
+    };
+}
+
+// Convert limited window to regular format
+function convertWindowToRegular(limitedWindow) {
+    return {
+        ...limitedWindow,
+        // Ensure all fields exist
+        type: limitedWindow.type || 'N/A',
+        colombageSize: limitedWindow.colombageSize || 'N/A',
+        floor: limitedWindow.floor || 'N/A'
+    };
+}
+
+// Convert entire limited project to regular project format
+function convertProjectToRegular(limitedProject) {
+    const regularProject = {
+        // Basic info - same
+        name: limitedProject.name,
+        companyName: limitedProject.companyName || 'N/A',
+        clientName: limitedProject.clientName || 'N/A',
+        description: limitedProject.description || '',
+        addressLine1: limitedProject.addressLine1 || 'N/A',
+        addressLine2: limitedProject.addressLine2 || '',
+        city: limitedProject.city || 'N/A',
+        province: limitedProject.province || 'N/A',
+        country: limitedProject.country || 'N/A',
+        status: limitedProject.status || 'Planning',
+        
+        // Project settings
+        deflectionMax: limitedProject.deflectionMax || 'N/A',
+        thicknessMin: limitedProject.thicknessMin || 'N/A',
+        floors: limitedProject.floors || [],
+        
+        // Convert equipment (walls)
+        equipment: (limitedProject.equipment || []).map(convertWallToRegular),
+        
+        // Convert parapets
+        parapets: (limitedProject.parapets || []).map(convertParapetToRegular),
+        
+        // Convert windows
+        windows: (limitedProject.windows || []).map(convertWindowToRegular),
+        
+        // Copy soffites as-is
+        soffites: limitedProject.soffites || [],
+        
+        // Copy files as-is
+        files: limitedProject.files || [],
+        
+        // Copy options
+        selectedCFSSOptions: limitedProject.selectedCFSSOptions || [],
+        options: limitedProject.options || [],
+        
+        // Metadata
+        isLimited: true,
+        linkedLimitedProjectId: limitedProject.id,
+        createdBy: limitedProject.createdBy,
+        createdAt: new Date().toISOString(),
+        convertedAt: new Date().toISOString(),
+        convertedFrom: limitedProject.id
+    };
+    
+    return regularProject;
+}
+
+// Main submit to admin function
+async function submitToAdmin() {
+    if (!currentProject) {
+        alert('No project loaded');
+        return;
+    }
+    
+    const btn = document.getElementById('submitToAdminBtn');
+    const btnText = document.getElementById('submitBtnText');
+    
+    try {
+        // Disable button and show loading
+        btn.disabled = true;
+        btnText.textContent = 'Submitting...';
+        btn.style.opacity = '0.7';
+        
+        // Check if already submitted
+        if (currentProject.linkedRegularProjectId) {
+            // Update existing regular project
+            console.log('Updating existing linked regular project:', currentProject.linkedRegularProjectId);
+            
+            const regularProjectData = convertProjectToRegular(currentProject);
+            regularProjectData.id = currentProject.linkedRegularProjectId;
+            regularProjectData.updatedAt = new Date().toISOString();
+            
+            const updateResponse = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    ...authHelper.getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(regularProjectData)
+            });
+            
+            if (!updateResponse.ok) {
+                throw new Error('Failed to update regular project');
+            }
+            
+            // Update limited project's lastSubmittedAt
+            await updateProject(currentProject.id, {
+                lastSubmittedAt: new Date().toISOString()
+            });
+            
+            currentProject.lastSubmittedAt = new Date().toISOString();
+            
+            alert('Project updated successfully! Admin can now see your changes.');
+            
+        } else {
+            // Create new regular project
+            console.log('Creating new regular project from limited project');
+            
+            const regularProjectData = convertProjectToRegular(currentProject);
+            
+            const createResponse = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    ...authHelper.getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(regularProjectData)
+            });
+            
+            if (!createResponse.ok) {
+                throw new Error('Failed to create regular project');
+            }
+            
+            const newProject = await createResponse.json();
+            const newProjectId = newProject.id || newProject.projectId;
+            
+            console.log('Created regular project with ID:', newProjectId);
+            
+            // Update limited project with link to regular project
+            await updateProject(currentProject.id, {
+                linkedRegularProjectId: newProjectId,
+                firstSubmittedAt: new Date().toISOString(),
+                lastSubmittedAt: new Date().toISOString()
+            });
+            
+            currentProject.linkedRegularProjectId = newProjectId;
+            currentProject.firstSubmittedAt = new Date().toISOString();
+            currentProject.lastSubmittedAt = new Date().toISOString();
+            
+            alert('Project submitted successfully! Admin can now review your project.');
+        }
+        
+        // Update UI to show submitted status
+        updateSubmitStatusUI();
+        
+    } catch (error) {
+        console.error('Error submitting to admin:', error);
+        alert('Error submitting project: ' + error.message);
+    } finally {
+        // Re-enable button
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        updateSubmitButtonText();
+    }
+}
+
+// Update the submit button text based on state
+function updateSubmitButtonText() {
+    const btnText = document.getElementById('submitBtnText');
+    if (btnText) {
+        if (currentProject && currentProject.linkedRegularProjectId) {
+            btnText.textContent = 'Update Submission';
+        } else {
+            btnText.textContent = 'Submit';
+        }
+    }
+}
+
+// Update the submit status UI
+function updateSubmitStatusUI() {
+    const statusText = document.getElementById('submitStatusText');
+    const submittedInfo = document.getElementById('submittedInfo');
+    const submittedDate = document.getElementById('submittedDate');
+    
+    if (currentProject && currentProject.linkedRegularProjectId) {
+        if (statusText) {
+            statusText.textContent = 'Project has been submitted. You can update your submission anytime.';
+        }
+        if (submittedInfo && submittedDate) {
+            const lastSubmitted = currentProject.lastSubmittedAt ? 
+                new Date(currentProject.lastSubmittedAt).toLocaleString() : 
+                'Unknown';
+            submittedDate.textContent = `Last submitted: ${lastSubmitted}`;
+            submittedInfo.style.display = 'block';
+        }
+        updateSubmitButtonText();
+    }
+}
+
+// Call this when project loads to set initial UI state
+function initializeSubmitUI() {
+    updateSubmitStatusUI();
+    updateSubmitButtonText();
+}
+
+// Add to displayProjectInfo to initialize submit UI
+const originalDisplayProjectInfo = displayProjectInfo;
+displayProjectInfo = function() {
+    originalDisplayProjectInfo();
+    initializeSubmitUI();
+};
