@@ -436,7 +436,15 @@ async function handleCFSSProjectFilter(e) {
         
         const allProjects = await response.json();
         let projects = allProjects.filter(p => !p.domain);
-        if (authHelper.isAdmin()) { projects = projects.filter(p => p.isLimitedProject !== true && !p.linkedRegularProjectId); }
+
+        // Visibility rules:
+        // - Admin: show only admin copies (submitted duplicates)
+        // - Non-admin: hide limited originals and hide admin copies
+        if (authHelper.isAdmin()) {
+            projects = projects.filter(p => p.isAdminCopy === true || !!p.linkedLimitedProjectId);
+        } else {
+            projects = projects.filter(p => p.isLimitedProject !== true && p.isAdminCopy !== true && !p.linkedLimitedProjectId);
+        }
         
         const filteredProjects = projects.filter(project => {
             const matchesSearch = searchTerm === '' || 
@@ -472,7 +480,15 @@ async function handleCFSSProjectSearch() {
         
         const allProjects = await response.json();
         let projects = allProjects.filter(p => !p.domain);
-        if (authHelper.isAdmin()) { projects = projects.filter(p => p.isLimitedProject !== true && !p.linkedRegularProjectId); }
+
+        // Visibility rules:
+        // - Admin: show only admin copies (submitted duplicates)
+        // - Non-admin: hide limited originals and hide admin copies
+        if (authHelper.isAdmin()) {
+            projects = projects.filter(p => p.isAdminCopy === true || !!p.linkedLimitedProjectId);
+        } else {
+            projects = projects.filter(p => p.isLimitedProject !== true && p.isAdminCopy !== true && !p.linkedLimitedProjectId);
+        }
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
