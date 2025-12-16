@@ -8416,7 +8416,7 @@ function showSignaturePopup() {
         modal.innerHTML = `
             <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">
-                    ðŸ–Šï¸ Sign Document
+                    📝 Sign Document
                 </h3>
                 <p style="margin: 0 0 25px 0; color: #666; font-size: 15px; line-height: 1.5;">
                     Do you want to sign and flatten this document?
