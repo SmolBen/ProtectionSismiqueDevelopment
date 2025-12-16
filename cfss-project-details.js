@@ -1949,7 +1949,7 @@ function renderParapetList() {
                                         padding: 0;
                                     "
                                 >
-                                    Ã—
+                                    ×
                                 </button>
                             </div>
                             
@@ -2313,7 +2313,7 @@ function displayParapetEditImages(parapetId) {
             <button type="button" class="edit-image-remove" 
                     title="Remove image"
                     style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                Ã—
+                ×
             </button>
         `;
         
@@ -2570,7 +2570,7 @@ function duplicateParapet(id) {
                 preview.className = 'image-preview';
                 preview.innerHTML = `
                     <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-                    <button type="button" class="image-remove" title="Remove image">Ã—</button>
+                    <button type="button" class="image-remove" title="Remove image">×</button>
                 `;
                 previewContainer.appendChild(preview);
                 
@@ -5195,7 +5195,7 @@ function generateEditForm(wall, originalIndex) {
                                     <h4 style="margin: 0; font-size: 13px; color: #666;">Set 2</h4>
                                     <button type="button" id="editRemoveSet2Btn${originalIndex}" onclick="toggleEditSet2(${originalIndex}, false, event)" 
                                             style="background: #dc3545; color: white; border: none; width: 20px; height: 20px; border-radius: 3px; cursor: pointer; font-size: 14px; line-height: 1; padding: 0;">
-                                        Ã—
+                                        ×
                                     </button>
                                 </div>
 
@@ -5455,7 +5455,7 @@ if (window.currentWallImages.length > 0) {
             preview.className = 'image-preview';
             preview.innerHTML = `
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-                <button type="button" class="image-remove" title="Remove image">Ã—</button>
+                <button type="button" class="image-remove" title="Remove image">×</button>
             `;
             previewContainer.appendChild(preview);
             
@@ -7257,7 +7257,7 @@ function addImagePreview(imageData) {
     preview.className = 'image-preview';
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">Ã—</button>
+        <button type="button" class="image-remove" title="Remove image">×</button>
     `;
     
     container.appendChild(preview);
@@ -7671,7 +7671,7 @@ function openImageModal(imageKey, filename) {
                 style="max-width: 100%; max-height: 100%; border-radius: 8px;"
                 alt="${filename}">
             <button style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer;"
-                    onclick="this.closest('.modal').remove()">Ã—</button>
+                    onclick="this.closest('.modal').remove()">×</button>
         </div>
     `;
     
@@ -7948,7 +7948,7 @@ function addParapetImagePreview(imageData) {
     preview.className = 'image-preview';
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">Ã—</button>
+        <button type="button" class="image-remove" title="Remove image">×</button>
     `;
     
     container.appendChild(preview);
@@ -8722,7 +8722,7 @@ function addEditImagePreview(imageData, wallIndex) {
         <button type="button" class="edit-image-remove" 
                 title="Remove image"
                 style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-            Ã—
+            ×
         </button>
     `;
     
@@ -9017,7 +9017,7 @@ function renderWindowList() {
     const title = win.windowName || win.name || win.type || `Window ${idx + 1}`;
     const largeurDisplay = formatWindowDimension(win.largeurMax, win.largeurMaxMinor, win.largeurMaxUnit);
     const hauteurDisplay = formatWindowDimension(win.hauteurMax, win.hauteurMaxMinor, win.hauteurMaxUnit);
-    const dims = `${largeurDisplay} Ã— ${hauteurDisplay}`;
+    const dims = `${largeurDisplay} × ${hauteurDisplay}`;
 
     return `
     <div class="equipment-card" id="windowCard${id}">
@@ -10753,7 +10753,7 @@ function renderReviewWindows() {
     
     const rows = windows.map((window, index) => {
         const type = window.type || 'Unknown Type';
-        const size = `${window.largeurMax || 0}${window.largeurMaxUnit === 'm' ? 'mm' : (window.largeurMaxUnit || 'mm')} Ã— ${window.hauteurMax || 0}${window.hauteurMaxUnit === 'm' ? 'mm' : (window.hauteurMaxUnit || 'mm')}`;
+        const size = `${window.largeurMax || 0}${window.largeurMaxUnit === 'm' ? 'mm' : (window.largeurMaxUnit || 'mm')} × ${window.hauteurMax || 0}${window.hauteurMaxUnit === 'm' ? 'mm' : (window.hauteurMaxUnit || 'mm')}`;
         
         // Get composition lists
         const jambageCompositions = window.jambage?.compositions || [];
