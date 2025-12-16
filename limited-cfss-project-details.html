@@ -244,29 +244,54 @@
                 </div>
 
                 <!-- Submit to Admin Section -->
-                <div class="submit-admin-section" style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="color: white;">
-                            <h4 style="margin: 0 0 5px 0; font-size: 16px; font-weight: 600;">
-                                <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
-                                Submit Project to Admin
-                            </h4>
-                            <p id="submitStatusText" style="margin: 0; font-size: 13px; opacity: 0.9;">
-                                Send this project for admin review and processing.
-                            </p>
-                        </div>
-                        <button id="submitToAdminBtn" onclick="submitToAdmin()" style="background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                            <i class="fas fa-paper-plane"></i>
-                            <span id="submitBtnText">Submit</span>
-                        </button>
-                    </div>
-                    <div id="submittedInfo" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
-                        <p style="margin: 0; color: white; font-size: 12px; opacity: 0.9;">
-                            <i class="fas fa-check-circle" style="margin-right: 6px;"></i>
-                            <span id="submittedDate"></span>
-                        </p>
-                    </div>
-                </div>
+<div class="submit-admin-section" style="
+    margin-top: 25px;
+    padding: 20px;
+    background: linear-gradient(135deg, #eef4ff 0%, #e6efff 100%);
+    border: 1px solid #d6e3ff;
+    border-radius: 8px;
+">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="color: #1f2937;">
+            <h4 style="margin: 0 0 5px 0; font-size: 16px; font-weight: 600;">
+                <i class="fas fa-paper-plane" style="margin-right: 8px; color: #2563eb;"></i>
+                Submit Project to Admin
+            </h4>
+            <p id="submitStatusText" style="margin: 0; font-size: 13px; color: #4b5563;">
+                Send this project for admin review and processing.
+            </p>
+        </div>
+        <button id="submitToAdminBtn" onclick="submitToAdmin()" style="
+            background: #ffffff;
+            color: #2563eb;
+            border: 1px solid #c7dbff;
+            padding: 10px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, border-color 0.2s;
+        ">
+            <i class="fas fa-paper-plane"></i>
+            <span id="submitBtnText">Submit</span>
+        </button>
+    </div>
+
+    <div id="submittedInfo" style="
+        display: none;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #d6e3ff;
+    ">
+        <p style="margin: 0; color: #2563eb; font-size: 12px;">
+            <i class="fas fa-check-circle" style="margin-right: 6px;"></i>
+            <span id="submittedDate"></span>
+        </p>
+    </div>
+</div>
 
             </div>
             <div class="right-section">
