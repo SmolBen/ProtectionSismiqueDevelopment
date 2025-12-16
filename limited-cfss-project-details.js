@@ -82,9 +82,11 @@ async function initializeProjectDetails() {
             return;
         }
 
-        // Verify user is limited OR admin (admins can view limited projects)
-        if (!authHelper.isLimited() && !authHelper.isAdmin()) {
+        // Limited-only page: admins should work on the admin copy in the regular CFSS UI
+        if (!authHelper.isLimited()) {
             const projectId = new URLSearchParams(window.location.search).get('id');
+            // If someone lands here without being limited, send them to the regular CFSS details page
+            // (admins should open the submitted admin copy from the CFSS dashboard)
             window.location.href = `cfss-project-details.html?id=${projectId}`;
             return;
         }
@@ -1593,7 +1595,7 @@ function displayWindowList() {
         const title = win.windowName || win.name || win.type || `Window ${index + 1}`;
         const largeurDisplay = formatDimension(win, 'largeur');
         const hauteurDisplay = formatDimension(win, 'hauteur');
-        const dims = `${largeurDisplay} Ã— ${hauteurDisplay}`;
+        const dims = `${largeurDisplay} × ${hauteurDisplay}`;
         
         windowCard.innerHTML = `
             <div class="equipment-header" onclick="toggleWindowDetails('${win.id}')">
@@ -2609,7 +2611,7 @@ function addImagePreview(imageData) {
     preview.dataset.imageKey = imageData.key;
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">Ã—</button>
+        <button type="button" class="image-remove" title="Remove image">×</button>
     `;
     
     container.appendChild(preview);
@@ -2816,7 +2818,7 @@ function addParapetImagePreview(imageData) {
     preview.dataset.imageKey = imageData.key;
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
-        <button type="button" class="image-remove" title="Remove image">Ã—</button>
+        <button type="button" class="image-remove" title="Remove image">×</button>
     `;
     
     container.appendChild(preview);
@@ -3050,7 +3052,7 @@ function addEditParapetImagePreview(parapetId, imageData) {
     preview.dataset.imageKey = imageData.key;
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename || 'Image'}">
-        <button type="button" class="image-remove" title="Remove image">Ã—</button>
+        <button type="button" class="image-remove" title="Remove image">×</button>
     `;
     
     container.appendChild(preview);
@@ -3151,7 +3153,7 @@ window.openImageModal = function(imageKey, filename) {
                 style="max-width: 100%; max-height: 100%; border-radius: 8px;"
                 alt="${filename}">
             <button style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer;"
-                    onclick="this.closest('.image-modal').remove()">Ã—</button>
+                    onclick="this.closest('.image-modal').remove()">×</button>
         </div>
     `;
     
@@ -3478,7 +3480,7 @@ function addEditImagePreview(wallId, imageData) {
     preview.dataset.imageKey = imageData.key;
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename || 'Image'}">
-        <button type="button" class="image-remove" title="Remove image">Ã—</button>
+        <button type="button" class="image-remove" title="Remove image">×</button>
     `;
     
     container.appendChild(preview);
@@ -4071,7 +4073,7 @@ function convertProjectToRegular(limitedProject) {
         options: limitedProject.options || [],
         
         // Metadata
-        isLimited: true,
+        isAdminCopy: true,
         linkedLimitedProjectId: limitedProject.id,
         createdBy: limitedProject.createdBy,
         createdAt: new Date().toISOString(),
