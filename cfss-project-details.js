@@ -793,7 +793,7 @@ async function saveProjectDetails() {
             return;
         }
         
-        console.log('ðŸ’¾ Saving updated project details:', updatedData);
+        console.log('💾 Saving updated project details:', updatedData);
         
         // Show loading state
         const saveBtn = document.querySelector('.save-btn');
@@ -1368,7 +1368,7 @@ function getWallDisplayOrder() {
 
 // Add this function to save the wall display order
 async function saveWallDisplayOrder(newOrder) {
-    console.log('ðŸ’¾ Saving wall display order...', newOrder);
+    console.log('💾 Saving wall display order...', newOrder);
     
     try {
         // Update current revision with new display order
@@ -4147,7 +4147,7 @@ async function updateCurrentRevision(callback) {
 
 async function saveRevisionsToDatabase() {
     try {
-        console.log('ðŸ’¾ Saving revisions to database...', {
+        console.log('💾 Saving revisions to database...', {
             totalRevisions: projectRevisions.length,
             currentRevisionId: currentRevisionId,
             projectId: currentProjectId,
@@ -4362,7 +4362,7 @@ async function reloadProjectData() {
 // Function to force save current state
 async function forceSaveCurrentState() {
     try {
-        console.log('ðŸ’¾ Force saving current state...');
+        console.log('💾 Force saving current state...');
         
         // Save both revisions and equipment
         const revisionSaveResult = await saveRevisionsToDatabase();
@@ -4387,7 +4387,7 @@ async function handleSaveEquipmentWithRevisions(e) {
         return;
     }
     
-    console.log('ðŸ’¾ Save button clicked for CFSS wall with revisions!');
+    console.log('💾 Save button clicked for CFSS wall with revisions!');
     
     try {
         const wallData = getWallFormData();
@@ -8466,7 +8466,7 @@ function showGoogleDrivePopup() {
         modal.innerHTML = `
             <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">
-                    ðŸ’¾ Save to Google Drive
+                    💾 Save to Google Drive
                 </h3>
                 <p style="margin: 0 0 25px 0; color: #666; font-size: 15px; line-height: 1.5;">
                     Do you want to save this document to Google Drive?
@@ -10133,7 +10133,7 @@ async function saveCFSSOptions() {
         return;
     }
 
-    console.log('ðŸ’¾ Saving CFSS options to database:', selectedCFSSOptions);
+    console.log('💾 Saving CFSS options to database:', selectedCFSSOptions);
 
     try {
         const saveButton = document.getElementById('saveOptionsBtn');
