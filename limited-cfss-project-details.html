@@ -243,37 +243,43 @@
                     </div>
                 </div>
 
-                <!-- Submit to Admin Section -->
+<!-- Submit to Admin Section -->
 <div class="submit-admin-section" style="
     margin-top: 25px;
-    padding: 20px;
-    background: linear-gradient(135deg, #eef4ff 0%, #e6efff 100%);
-    border: 1px solid #d6e3ff;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e6e9ef;
     border-radius: 8px;
 ">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="color: #1f2937;">
-            <h4 style="margin: 0 0 5px 0; font-size: 16px; font-weight: 600;">
-                <i class="fas fa-paper-plane" style="margin-right: 8px; color: #2563eb;"></i>
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+        <div style="
+            flex: 1;
+            padding-left: 12px;
+            border-left: 4px solid #0d6efd;
+        ">
+            <h4 style="margin: 0 0 6px 0; font-size: 15px; font-weight: 700; color: #111827;">
+                <i class="fas fa-paper-plane" style="margin-right: 8px; color: #0d6efd;"></i>
                 Submit Project to Admin
             </h4>
-            <p id="submitStatusText" style="margin: 0; font-size: 13px; color: #4b5563;">
+            <p id="submitStatusText" style="margin: 0; font-size: 13px; color: #6b7280;">
                 Send this project for admin review and processing.
             </p>
         </div>
+
         <button id="submitToAdminBtn" onclick="submitToAdmin()" style="
-            background: #ffffff;
-            color: #2563eb;
-            border: 1px solid #c7dbff;
-            padding: 10px 22px;
+            background: #0d6efd;
+            color: #ffffff;
+            border: 1px solid #0d6efd;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 8px;
             transition: background 0.2s, border-color 0.2s;
+            white-space: nowrap;
         ">
             <i class="fas fa-paper-plane"></i>
             <span id="submitBtnText">Submit</span>
@@ -282,12 +288,12 @@
 
     <div id="submittedInfo" style="
         display: none;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #d6e3ff;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #eef1f6;
     ">
-        <p style="margin: 0; color: #2563eb; font-size: 12px;">
-            <i class="fas fa-check-circle" style="margin-right: 6px;"></i>
+        <p style="margin: 0; color: #111827; font-size: 12px;">
+            <i class="fas fa-check-circle" style="margin-right: 6px; color: #16a34a;"></i>
             <span id="submittedDate"></span>
         </p>
     </div>
