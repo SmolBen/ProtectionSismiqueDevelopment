@@ -8892,10 +8892,10 @@ function getTrackOptionsForStud(studDesignation) {
   return colombageData[studDesignation];
 }
 
-// Extract base designation from deflection track (remove TROUÃ‰E suffix)
+// Extract base designation from deflection track (remove TROUÉE suffix)
 function getBaseDeflectionTrackDesignation(trackString) {
-  // Handle formats like "362ST250-33 TROUÃ‰E" -> "362ST250-33"
-  return trackString.replace(/ TROUÃ‰E$/i, '').replace(/TROUÃ‰E$/i, '').trim();
+  // Handle formats like "362ST250-33 TROUÉE" -> "362ST250-33"
+  return trackString.replace(/ TROUÉE$/i, '').replace(/TROUÉE$/i, '').trim();
 }
 
 
