@@ -1164,20 +1164,23 @@ async function handleParapetSubmit(e) {
     e.preventDefault();
 
     const parapetData = {
-        id: editingParapetId || Date.now().toString(),
-        name: document.getElementById('parapetName').value.trim(),
-        type: document.getElementById('parapetType').value,
-        floor: document.getElementById('parapetFloor').value.trim(),
-        hauteurMax: document.getElementById('parapetHauteurMax').value,
-        hauteurMaxMinor: document.getElementById('parapetHauteurMaxMinor').value,
-        hauteurMaxUnit: document.getElementById('parapetHauteurMaxUnit').value,
-        colombageSet1: document.getElementById('parapetColombageSet1').value,
-        colombageSet2: document.getElementById('parapetColombageSet2').value,
-        note: document.getElementById('parapetNote').value.trim(),
-        images: [...(window.currentParapetImages || [])]
+    id: editingParapetId || Date.now().toString(),
+
+    // Regular schema keys (match CFSS project-details expectations)
+    parapetName: document.getElementById('parapetName').value.trim(),
+    parapetType: document.getElementById('parapetType').value,
+
+    floor: document.getElementById('parapetFloor').value.trim(),
+    hauteurMax: document.getElementById('parapetHauteurMax').value,
+    hauteurMaxMinor: document.getElementById('parapetHauteurMaxMinor').value,
+    hauteurMaxUnit: document.getElementById('parapetHauteurMaxUnit').value,
+    colombageSet1: document.getElementById('parapetColombageSet1').value,
+    colombageSet2: document.getElementById('parapetColombageSet2').value,
+    note: document.getElementById('parapetNote').value.trim(),
+    images: [...(window.currentParapetImages || [])]
     };
 
-    if (!parapetData.name) {
+    if (!parapetData.parapetName) {
         alert('Please enter a parapet name');
         return;
     }
@@ -1243,7 +1246,7 @@ function displayParapetList() {
                 <div class="equipment-details-container" id="parapetView${parapet.id}">
                     <div class="equipment-info-section">
                         <p><strong>Parapet Name:</strong> ${title}</p>
-                        <p><strong>Type:</strong> ${parapet.type || 'N/A'}</p>
+                        <p><strong>Type:</strong> ${(parapet.parapetType || parapet.type) || 'N/A'}</p>
                         <p><strong>Floor:</strong> ${parapet.floor || 'N/A'}</p>
                         <p><strong>Height:</strong> ${formatHeight(parapet)}</p>
                         <p><strong>Colombage Set 1:</strong> ${parapet.colombageSet1 || 'N/A'}</p>
@@ -1275,13 +1278,13 @@ function generateParapetEditForm(parapet) {
                 <div>
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label><strong>Parapet Name:</strong></label>
-                        <input type="text" id="editParapetName${parapet.id}" value="${parapet.name || ''}" required 
+                        <input type="text" id="editParapetName${parapet.id}" value="${(parapet.parapetName || parapet.name) || ''}" required 
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label><strong>Type:</strong></label>
-                        <input type="text" id="editParapetType${parapet.id}" value="${parapet.type || ''}" 
+                        <input type="text" id="editParapetType${parapet.id}" value="${(parapet.parapetType || parapet.type) || ''}" 
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     
@@ -1426,8 +1429,11 @@ window.saveParapetEdit = async function(parapetId, event) {
     
     currentProject.parapets[index] = {
         ...parapet,
-        name: document.getElementById(`editParapetName${parapetId}`).value.trim(),
-        type: document.getElementById(`editParapetType${parapetId}`).value,
+
+        // Regular schema keys
+        parapetName: document.getElementById(`editParapetName${parapetId}`).value.trim(),
+        parapetType: document.getElementById(`editParapetType${parapetId}`).value,
+
         floor: document.getElementById(`editParapetFloor${parapetId}`).value.trim(),
         hauteurMax: document.getElementById(`editParapetHauteurMax${parapetId}`).value,
         hauteurMaxMinor: document.getElementById(`editParapetHauteurMaxMinor${parapetId}`).value,
@@ -1467,10 +1473,11 @@ window.duplicateParapet = async function(id) {
     const parapet = currentProject.parapets.find(p => p.id === id);
     if (!parapet) return;
 
+    const baseName = parapet.parapetName || parapet.name || 'Parapet';
     const newParapet = {
         ...parapet,
         id: Date.now().toString(),
-        name: `${parapet.name} (Copy)`
+        parapetName: `${baseName} (Copy)`
     };
     currentProject.parapets.push(newParapet);
     await saveProject();
@@ -4012,12 +4019,14 @@ function convertWallToRegular(limitedWall) {
     return regularWall;
 }
 
-// Convert limited parapet to regular format
 function convertParapetToRegular(limitedParapet) {
     return {
         ...limitedParapet,
-        // Add any missing fields with N/A
-        type: limitedParapet.type || 'N/A',
+
+        // Match regular schema for same fields
+        parapetName: (limitedParapet.parapetName || limitedParapet.name) || '',
+        parapetType: (limitedParapet.parapetType || limitedParapet.type) || '',
+
         note: limitedParapet.note || ''
     };
 }
