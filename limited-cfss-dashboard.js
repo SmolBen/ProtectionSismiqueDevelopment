@@ -113,7 +113,7 @@ async function loadCFSSDashboardStats() {
         const allProjects = await response.json();
         // Filter for CFSS projects (projects without domain field) that belong to this user
         const currentUser = authHelper.getCurrentUser();
-        const projects = allProjects.filter(p => !p.domain && p.createdBy === currentUser.email);
+        const projects = allProjects.filter(p => !p.domain && p.createdBy === currentUser.email && p.isLimited !== true);
         console.log('📊 CFSS Projects loaded for stats:', projects.length);
 
         updateCFSSStats(projects);
@@ -174,7 +174,7 @@ async function fetchCFSSProjects() {
         const allProjects = await response.json();
         // Filter for CFSS projects that belong to this user
         const currentUser = authHelper.getCurrentUser();
-        const projects = allProjects.filter(p => !p.domain && p.createdBy === currentUser.email);
+        const projects = allProjects.filter(p => !p.domain && p.createdBy === currentUser.email && p.isLimited !== true);
 
         // Sort by newest first
         projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -315,7 +315,7 @@ async function handleCFSSProjectFilter(e) {
         
         const allProjects = await response.json();
         const currentUser = authHelper.getCurrentUser();
-        const projects = allProjects.filter(p => !p.domain && p.createdBy === currentUser.email);
+        const projects = allProjects.filter(p => !p.domain && p.createdBy === currentUser.email && p.isLimited !== true);
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
@@ -352,7 +352,7 @@ async function handleCFSSProjectSearch() {
         
         const allProjects = await response.json();
         const currentUser = authHelper.getCurrentUser();
-        const projects = allProjects.filter(p => !p.domain && p.createdBy === currentUser.email);
+        const projects = allProjects.filter(p => !p.domain && p.createdBy === currentUser.email && p.isLimited !== true);
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {

@@ -54,11 +54,10 @@ async function initializeCFSSDashboard() {
         authHelper.updateUserInterface();
         authHelper.showAdminElements();
         
-        // Load CFSS projects and stats
-        await Promise.all([
-            fetchCFSSProjects(),
-            loadCFSSDashboardStats()
-        ]);
+        // Load CFSS projects and stats (sequential to avoid DynamoDB throttling)
+        await loadCFSSDashboardStats();
+        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+        await fetchCFSSProjects();
 
         // Setup event listeners
         setupCFSSEventListeners();
@@ -134,7 +133,8 @@ async function loadCFSSDashboardStats() {
 
         const allProjects = await response.json();
         // Filter for CFSS projects (projects without domain field)
-        const projects = allProjects.filter(p => !p.domain);
+        let projects = allProjects.filter(p => !p.domain);
+        if (authHelper.isAdmin()) { projects = projects.filter(p => p.isLimitedProject !== true && !p.linkedRegularProjectId); }
         console.log('📊 CFSS Projects loaded for stats:', projects.length);
 
         updateCFSSStats(projects);
@@ -240,8 +240,15 @@ async function fetchCFSSProjects() {
         console.log('📦 All projects received:', allProjects.length);
         
         // Filter for CFSS projects (projects without domain field)
-        const projects = allProjects.filter(p => !p.domain);
-        console.log('🏗️ CFSS projects found:', projects.length);
+        let projects = allProjects.filter(p => !p.domain);
+        console.log('🗂️ CFSS projects found:', projects.length);
+        
+        // For admins: exclude pure limited projects (ones created by limited users that havent been converted)
+        if (authHelper.isAdmin()) {
+            const beforeFilter = projects.length;
+            projects = projects.filter(p => p.isLimitedProject !== true && !p.linkedRegularProjectId);
+            console.log("Admin view - filtered out", beforeFilter - projects.length, "limited user projects, showing:", projects.length);
+        }
 
         // Sort by newest first
         projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -428,9 +435,9 @@ async function handleCFSSProjectFilter(e) {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const allProjects = await response.json();
-        const projects = allProjects.filter(p => !p.domain); // Filter for CFSS projects
+        let projects = allProjects.filter(p => !p.domain);
+        if (authHelper.isAdmin()) { projects = projects.filter(p => p.isLimitedProject !== true && !p.linkedRegularProjectId); }
         
-        // Apply both search and filter
         const filteredProjects = projects.filter(project => {
             const matchesSearch = searchTerm === '' || 
                 project.name.toLowerCase().includes(searchTerm);
@@ -464,7 +471,8 @@ async function handleCFSSProjectSearch() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const allProjects = await response.json();
-        const projects = allProjects.filter(p => !p.domain); // Filter for CFSS projects
+        let projects = allProjects.filter(p => !p.domain);
+        if (authHelper.isAdmin()) { projects = projects.filter(p => p.isLimitedProject !== true && !p.linkedRegularProjectId); }
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
