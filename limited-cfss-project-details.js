@@ -57,7 +57,7 @@ function showThumbnailPlaceholder(optionId, message = 'IMG') {
 }
 
 window.addEventListener('load', async function() {
-    console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Å¾ Limited CFSS Project Details page loaded');
+    console.log('Limited CFSS Project Details page loaded');
     await initializeProjectDetails();
 });
 
@@ -114,10 +114,10 @@ async function initializeProjectDetails() {
         // Initialize options
         initializeOptionsSystem();
 
-        console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Limited CFSS Project Details initialized');
+        console.log('Limited CFSS Project Details initialized');
 
     } catch (error) {
-        console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Error initializing:', error);
+        console.error('Error initializing:', error);
         document.getElementById('loadingProject').style.display = 'none';
         alert('Error loading project: ' + error.message);
     }
@@ -172,7 +172,7 @@ async function loadProject(projectId) {
         document.getElementById('projectContainer').style.display = 'block';
 
     } catch (error) {
-        console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Error loading project:', error);
+        console.error('Error loading project:', error);
         document.getElementById('loadingProject').style.display = 'none';
         alert('Error loading project: ' + error.message);
         window.location.href = 'limited-cfss-dashboard.html';
@@ -541,7 +541,7 @@ function initializeTabSystem() {
 
 // Initialize options for the current project
 function initializeOptionsSystem() {
-    console.log('Ã°Å¸â€Â§ Initializing LIMITED CFSS options system...');
+    console.log('Initializing LIMITED CFSS options system...');
 
     // Load any saved options from the project if present
     if (currentProject && Array.isArray(currentProject.selectedCFSSOptions)) {
@@ -559,7 +559,7 @@ function initializeOptionsSystem() {
         saveOptionsBtn.addEventListener('click', async () => {
             try {
                 await saveLimitedCFSSOptions();
-                console.log('Ã¢Å“â€¦ Limited CFSS options saved via Save Options button');
+                console.log('Limited CFSS options saved via Save Options button');
             } catch (error) {
                 console.error('Error saving limited CFSS options via button:', error);
                 alert('Error saving options. Please try again.');
@@ -567,7 +567,7 @@ function initializeOptionsSystem() {
         });
     }
 
-    console.log('Ã¢Å“â€¦ Limited options system initialized');
+    console.log('Limited options system initialized');
 }
 
 // Define option categories and their corresponding option IDs
@@ -647,7 +647,7 @@ function populateOptionsCategories() {
         });
     });
 
-    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Limited option categories populated');
+    console.log('Limited option categories populated');
 }
 
 // Create a single option card with thumbnail (same structure as regular CFSS)
@@ -736,7 +736,7 @@ async function saveLimitedCFSSOptions() {
         return;
     }
 
-    console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ Saving LIMITED CFSS options:', selectedCFSSOptions);
+    console.log('Saving LIMITED CFSS options:', selectedCFSSOptions);
 
     const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
         method: 'PUT',
@@ -803,7 +803,7 @@ async function preloadOptionImages() {
         await loadOptionThumbnail(optionName);
     }
 
-    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ CFSS option images preloaded (limited)');
+    console.log('CFSS option images preloaded (limited)');
 }
 
 // Thumbnail loader (same as regular)
@@ -884,7 +884,7 @@ function populateLimitedOptionCategories() {
         });
     });
 
-    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Limited option categories populated');
+    console.log('Limited option categories populated');
 }
 
 // Create one option card (with image) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“ similar to full CFSS
@@ -2334,9 +2334,9 @@ async function saveProject() {
             throw new Error(`HTTP ${response.status}`);
         }
 
-        console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Project saved');
+        console.log('Project saved');
     } catch (error) {
-        console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Error saving project:', error);
+        console.error('Error saving project:', error);
         alert('Error saving project: ' + error.message);
     }
 }

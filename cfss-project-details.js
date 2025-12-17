@@ -4985,7 +4985,7 @@ function generateWallDetailsContent(wall, originalIndex) {
                     <p><strong>Hauteur Max:</strong> ${formatHauteurDisplay(wall)}</p>
                     
                     ${hasSet2 ? '<p style="margin-top: 15px; font-weight: bold; color: #666;">Set 1:</p>' : ''}
-                    <p><strong>Montant Métallique:</strong> ${wall.montantMetallique || 'N/A'}${wall.dosADos ? ' dos-Ã -dos' : ''}</p>
+                    <p><strong>Montant Métallique:</strong> ${wall.montantMetallique || 'N/A'}${wall.dosADos ? ' dos-à-dos' : ''}</p>
                     <p><strong>Déflexion Max:</strong> ${wall.deflexionMax || 'N/A'}</p>
                     <p><strong>Espacement:</strong> ${wall.espacement || 'N/A'}</p>
                     <p><strong>Lisse Supérieure:</strong> ${wall.lisseSuperieure || 'N/A'}</p>
@@ -4994,7 +4994,7 @@ function generateWallDetailsContent(wall, originalIndex) {
                     
                     ${hasSet2 ? `
                         <p style="margin-top: 15px; font-weight: bold; color: #666;">Set 2:</p>
-                        <p><strong>Montant Métallique 2:</strong> ${wall.montantMetallique2 || 'N/A'}${wall.dosADos2 ? ' dos-Ã -dos' : ''}</p>
+                        <p><strong>Montant Métallique 2:</strong> ${wall.montantMetallique2 || 'N/A'}${wall.dosADos2 ? ' dos-à-dos' : ''}</p>
                         <p><strong>Déflexion Max 2:</strong> ${wall.deflexionMax2 || 'N/A'}</p>
                         <p><strong>Espacement 2:</strong> ${wall.espacement2 || 'N/A'}</p>
                         <p><strong>Lisse Supérieure 2:</strong> ${wall.lisseSuperieure2 || 'N/A'}</p>
@@ -5108,7 +5108,7 @@ function generateEditForm(wall, originalIndex) {
                                         </select>
                                         <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                                             <input type="checkbox" id="editDosADos${originalIndex}" ${wall.dosADos ? 'checked' : ''} style="margin: 0;">
-                                            <span>dos-Ã -dos</span>
+                                            <span>dos-à-dos</span>
                                         </label>
                                     </div>
                                 </div>
@@ -5209,7 +5209,7 @@ function generateEditForm(wall, originalIndex) {
                                         </select>
                                         <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                                             <input type="checkbox" id="editDosADos2_${originalIndex}" ${wall.dosADos2 ? 'checked' : ''} style="margin: 0;">
-                                            <span>dos-Ã -dos</span>
+                                            <span>dos-à-dos</span>
                                         </label>
                                     </div>
                                 </div>
@@ -6396,8 +6396,8 @@ function setDefaultCFSSValues() {
         maxDeflection: 'L/360',
         maxSpacing: '48" c./c. (1200mm c./c)',
         framingAssembly: 'Vis Auto-perçante #8-1/2"',
-        concreteAnchor: 'clous Ã  fixation directe (fixateur pistoscellé) Hilti X-P 20 ou équivalent approuvé Ã  12" c./c.',
-        steelAnchor: 'clous Ã  fixation directe (fixateur pistoscellé) Hilti X-P 14 ou équivalent approuvé Ã  12" c./c.'
+        concreteAnchor: 'clous à fixation directe (fixateur pistoscellé) Hilti X-P 20 ou équivalent approuvé à 12" c./c.',
+        steelAnchor: 'clous à fixation directe (fixateur pistoscellé) Hilti X-P 14 ou équivalent approuvé à 12" c./c.'
     };
     
     // Apply defaults to form fields
