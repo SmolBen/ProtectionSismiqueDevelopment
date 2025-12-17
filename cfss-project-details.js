@@ -6395,7 +6395,7 @@ function setDefaultCFSSValues() {
     const defaults = {
         maxDeflection: 'L/360',
         maxSpacing: '48" c./c. (1200mm c./c)',
-        framingAssembly: 'Vis Auto-perÃ§ante #8-1/2"',
+        framingAssembly: 'Vis Auto-perçante #8-1/2"',
         concreteAnchor: 'clous Ã  fixation directe (fixateur pistoscellé) Hilti X-P 20 ou équivalent approuvé Ã  12" c./c.',
         steelAnchor: 'clous Ã  fixation directe (fixateur pistoscellé) Hilti X-P 14 ou équivalent approuvé Ã  12" c./c.'
     };
