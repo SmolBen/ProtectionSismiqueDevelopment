@@ -3681,8 +3681,15 @@ function showRevisionSelectionModal() {
                     <div style="font-weight: 500; color: #333; margin-bottom: 4px;">
                         Revision ${revision.number}${latestBadge}
                     </div>
-                    <div style="font-size: 13px; color: #666; margin-bottom: 4px;">
-                        ${description}
+                    <div class="revision-description-row" data-revision-id="${revision.id}" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span class="revision-description-text" style="font-size: 13px; color: #666;">${description}</span>
+                        <button type="button" class="edit-description-btn" onclick="event.preventDefault(); event.stopPropagation(); startEditRevisionDescription('${revision.id}', this)" 
+                            style="background: none; border: none; color: #999; cursor: pointer; padding: 2px 4px; border-radius: 3px; display: flex; align-items: center; transition: all 0.15s;"
+                            onmouseover="this.style.backgroundColor='#e9ecef'; this.style.color='#495057';"
+                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#999';"
+                            title="Edit description">
+                            <i class="fas fa-pencil-alt" style="font-size: 11px;"></i>
+                        </button>
                     </div>
                     <div style="font-size: 12px; color: #888;">
                         ${createdDate} • ${wallCount} wall${wallCount !== 1 ? 's' : ''} • by ${revision.createdBy}
@@ -3785,6 +3792,85 @@ function showRevisionSelectionModal() {
 
     // Store modal reference
     window.currentRevisionSelectionModal = modal;
+}
+
+// Start editing revision description in modal
+function startEditRevisionDescription(revisionId, buttonElement) {
+    const row = buttonElement.closest('.revision-description-row');
+    const textSpan = row.querySelector('.revision-description-text');
+    const currentDescription = textSpan.textContent === '(no description)' ? '' : textSpan.textContent;
+    
+    // Replace the row content with edit mode
+    row.innerHTML = `
+        <input type="text" class="edit-description-input" value="${currentDescription}" 
+            style="flex: 1; padding: 6px 10px; border: 2px solid #28a745; border-radius: 4px; font-size: 13px; outline: none;"
+            onclick="event.stopPropagation();"
+            onkeydown="if(event.key === 'Enter') { event.preventDefault(); saveRevisionDescription('${revisionId}', this); } else if(event.key === 'Escape') { cancelEditRevisionDescription('${revisionId}', '${currentDescription.replace(/'/g, "\\'")}', this); }">
+        <button type="button" onclick="event.preventDefault(); event.stopPropagation(); saveRevisionDescription('${revisionId}', this.previousElementSibling)"
+            style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500;">
+            Save
+        </button>
+        <button type="button" onclick="event.preventDefault(); event.stopPropagation(); cancelEditRevisionDescription('${revisionId}', '${currentDescription.replace(/'/g, "\\'")}', this)"
+            style="background: #e9ecef; color: #495057; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500;">
+            Cancel
+        </button>
+    `;
+    
+    // Focus the input
+    const input = row.querySelector('.edit-description-input');
+    input.focus();
+    input.select();
+}
+
+// Save revised description
+async function saveRevisionDescription(revisionId, inputElement) {
+    const newDescription = inputElement.value.trim();
+    const row = inputElement.closest('.revision-description-row');
+    
+    // Update the revision in memory
+    const revision = projectRevisions.find(rev => rev.id === revisionId);
+    if (revision) {
+        revision.description = newDescription;
+        
+        // Save to database
+        try {
+            await saveRevisionsToDatabase();
+            console.log('✓ Revision description updated:', newDescription);
+        } catch (error) {
+            console.error('Error saving revision description:', error);
+            alert('Error saving description: ' + error.message);
+        }
+    }
+    
+    // Restore display mode
+    const displayDescription = newDescription || '(no description)';
+    row.innerHTML = `
+        <span class="revision-description-text" style="font-size: 13px; color: #666;">${displayDescription}</span>
+        <button type="button" class="edit-description-btn" onclick="event.preventDefault(); event.stopPropagation(); startEditRevisionDescription('${revisionId}', this)" 
+            style="background: none; border: none; color: #999; cursor: pointer; padding: 2px 4px; border-radius: 3px; display: flex; align-items: center; transition: all 0.15s;"
+            onmouseover="this.style.backgroundColor='#e9ecef'; this.style.color='#495057';"
+            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#999';"
+            title="Edit description">
+            <i class="fas fa-pencil-alt" style="font-size: 11px;"></i>
+        </button>
+    `;
+}
+
+// Cancel editing revision description
+function cancelEditRevisionDescription(revisionId, originalDescription, buttonElement) {
+    const row = buttonElement.closest('.revision-description-row');
+    const displayDescription = originalDescription || '(no description)';
+    
+    row.innerHTML = `
+        <span class="revision-description-text" style="font-size: 13px; color: #666;">${displayDescription}</span>
+        <button type="button" class="edit-description-btn" onclick="event.preventDefault(); event.stopPropagation(); startEditRevisionDescription('${revisionId}', this)" 
+            style="background: none; border: none; color: #999; cursor: pointer; padding: 2px 4px; border-radius: 3px; display: flex; align-items: center; transition: all 0.15s;"
+            onmouseover="this.style.backgroundColor='#e9ecef'; this.style.color='#495057';"
+            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#999';"
+            title="Edit description">
+            <i class="fas fa-pencil-alt" style="font-size: 11px;"></i>
+        </button>
+    `;
 }
 
 // UPDATED: Proceed directly to report generation using tab-selected options
