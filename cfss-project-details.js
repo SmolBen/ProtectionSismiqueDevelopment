@@ -9118,7 +9118,7 @@ function renderWindowList() {
         <div class="equipment-header" onclick="toggleWindowDetails(${id})">
           <div class="equipment-info-compact">
             <h4>${title}</h4>
-            <div class="equipment-meta-compact"><span>${dims}</span></div>
+            <div class="equipment-meta-compact">${win.floor ? `<span>Floor: ${win.floor}</span><span style="margin: 0 6px; color: #aaa;">•</span>` : ''}<span>Dimensions: ${dims}</span></div>
           </div>
           <div class="equipment-actions-compact">
             <button class="details-btn" onclick="event.stopPropagation(); toggleWindowDetails(${id})">Details</button>

@@ -1609,7 +1609,7 @@ function displayWindowList() {
                 <div class="equipment-info-compact">
                     <h4>${title}</h4>
                     <div class="equipment-meta-compact">
-                        <span>${dims}</span>
+                        ${win.floor ? `<span>Floor: ${win.floor}</span><span style="margin: 0 6px; color: #aaa;">•</span>` : ''}<span>Dimensions: ${dims}</span>
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
