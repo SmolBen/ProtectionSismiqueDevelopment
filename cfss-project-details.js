@@ -5190,7 +5190,7 @@ function generateEditForm(wall, originalIndex) {
                                         <select id="editMontantMetallique${originalIndex}" required 
                                                 style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                                             <option value="">Select montant métallique...</option>
-                                            ${generateMontantOptions(wall.montantMetallique)}
+                                            ${generateMontantOptions(wall.montantMetallique, wall.montantFilter || null)}
                                         </select>
                                         <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                                             <input type="checkbox" id="editDosADos${originalIndex}" ${wall.dosADos ? 'checked' : ''} style="margin: 0;">
@@ -5291,7 +5291,7 @@ function generateEditForm(wall, originalIndex) {
                                         <select id="editMontantMetallique2_${originalIndex}" 
                                                 style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                                             <option value="">Select montant métallique...</option>
-                                            ${generateMontantOptions(wall.montantMetallique2 || '')}
+                                            ${generateMontantOptions(wall.montantMetallique2 || '', wall.montantFilter2 || null)}
                                         </select>
                                         <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0;">
                                             <input type="checkbox" id="editDosADos2_${originalIndex}" ${wall.dosADos2 ? 'checked' : ''} style="margin: 0;">
@@ -5418,12 +5418,18 @@ function generateEditForm(wall, originalIndex) {
 }
 
 // Helper function to generate montant options with current selection
-function generateMontantOptions(currentSelection) {
+function generateMontantOptions(currentSelection, filterPrefix = null) {
     if (typeof window.colombageData === 'undefined') {
         return '<option value="">Loading options...</option>';
     }
     
-    const sortedKeys = Object.keys(window.colombageData).sort();
+    let sortedKeys = Object.keys(window.colombageData).sort();
+    
+    // If filterPrefix is provided, only show options that start with that prefix
+    if (filterPrefix) {
+        sortedKeys = sortedKeys.filter(montant => montant.startsWith(filterPrefix));
+    }
+    
     let optionsHtml = '';
     
     sortedKeys.forEach(montant => {

@@ -3994,6 +3994,7 @@ function convertWallToRegular(limitedWall) {
         hauteurMaxMinorUnit: limitedWall.hauteurMaxMinorUnit || 'in',
         deflexionMax: limitedWall.deflexionSet1 || 'N/A',
         montantMetallique: montantPrefix1,
+        montantFilter: montantPrefix1 !== 'N/A' ? montantPrefix1 : null,
         dosADos: false,
         lisseSuperieure: 'N/A',
         lisseInferieure: 'N/A',
@@ -4008,6 +4009,7 @@ function convertWallToRegular(limitedWall) {
     // Add Set 2 data if it exists
     if (limitedWall.colombageSet2 || limitedWall.deflexionSet2) {
         regularWall.montantMetallique2 = montantPrefix2 || 'N/A';
+        regularWall.montantFilter2 = montantPrefix2 && montantPrefix2 !== 'N/A' ? montantPrefix2 : null;
         regularWall.deflexionMax2 = limitedWall.deflexionSet2 || 'N/A';
         regularWall.dosADos2 = false;
         regularWall.lisseSuperieure2 = 'N/A';
