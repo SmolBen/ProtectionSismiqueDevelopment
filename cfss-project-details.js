@@ -1754,10 +1754,10 @@ function renderParapetList() {
                         <h4>${parapet.parapetName}</h4>
                         <div class="equipment-meta-compact">
                             <span>Height: ${heightDisplay}</span>
-                            <span class="meta-separator">•</span>
-                            <span>Montant: ${parapet.montantMetallique}</span>
-                            <span class="meta-separator">•</span>
-                            <span>Espacement: ${parapet.espacement}</span>
+                            ${parapet.montantMetallique ? `<span class="meta-separator">•</span><span>Montant: ${parapet.montantMetallique}</span>` : ''}
+                            ${parapet.espacement ? `<span class="meta-separator">•</span><span>Espacement: ${parapet.espacement}</span>` : ''}
+                            ${parapet.montantMetallique2 ? `<span class="meta-separator">•</span><span>Montant 2: ${parapet.montantMetallique2}</span>` : ''}
+                            ${parapet.montantMetallique2 && parapet.espacement2 ? `<span class="meta-separator">•</span><span>Espacement 2: ${parapet.espacement2}</span>` : ''}
                         </div>
                     </div>
                     <div class="equipment-actions-compact">
@@ -2124,7 +2124,7 @@ function editParapet(id) {
     console.log(`Entering edit mode for parapet ID: ${id}`);
     
     // Find the parapet
-    const parapet = projectParapets.find(p => p.id === id);
+    const parapet = projectParapets.find(p => String(p.id) === String(id));
     if (!parapet) {
         console.error('Parapet not found');
         return;
@@ -2628,7 +2628,7 @@ function duplicateParapet(id) {
 
 // Delete parapet
 async function deleteParapet(id) {
-    const parapet = projectParapets.find(p => p.id === id);
+    const parapet = projectParapets.find(p => String(p.id) === String(id));
     if (!parapet) return;
     
     if (confirm(`Are you sure you want to delete parapet "${parapet.parapetName}"?`)) {
