@@ -421,8 +421,6 @@ async function deleteCFSSProject(id) {
             loadCFSSDashboardStats()
         ]);
         
-        alert('CFSS Project deleted successfully!');
-        
     } catch (error) {
         console.error('Error deleting CFSS project:', error);
         alert('Error deleting CFSS project: ' + error.message);
