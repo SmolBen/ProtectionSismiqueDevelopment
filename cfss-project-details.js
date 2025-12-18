@@ -6674,7 +6674,7 @@ function displayCFSSData(cfssData) {
                             <tr style="background: #17a2b8; color: white;">
                                 <th style="padding: 8px; text-align: left;">Étage</th>
                                 <th style="padding: 8px; text-align: center;">H (m)</th>
-                                <th style="padding: 8px; text-align: center;">A (mÂ²)</th>
+                                <th style="padding: 8px; text-align: center;">A (m²)</th>
                                 <th style="padding: 8px; text-align: center;">ULS (psf)</th>
                                 <th style="padding: 8px; text-align: center;">SLS (psf)</th>
                             </tr>
