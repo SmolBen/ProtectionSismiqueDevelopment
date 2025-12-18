@@ -4022,15 +4022,57 @@ function convertWallToRegular(limitedWall) {
 }
 
 function convertParapetToRegular(limitedParapet) {
-    return {
-        ...limitedParapet,
-
-        // Match regular schema for same fields
+    const montantPrefix1 = colombageToMontantPrefix[limitedParapet.colombageSet1] || null;
+    const montantPrefix2 = limitedParapet.colombageSet2 ? colombageToMontantPrefix[limitedParapet.colombageSet2] || null : null;
+    
+    // Parse combined unit into separate major/minor units
+    const combinedUnit = limitedParapet.hauteurMaxUnit || 'ft-in';
+    let majorUnit, minorUnit;
+    if (combinedUnit === 'ft-in') {
+        majorUnit = 'ft';
+        minorUnit = 'in';
+    } else if (combinedUnit === 'm-mm' || combinedUnit === 'mm') {
+        majorUnit = 'm';
+        minorUnit = 'mm';
+    } else {
+        majorUnit = combinedUnit;
+        minorUnit = '';
+    }
+    
+    const regularParapet = {
+        id: limitedParapet.id,
         parapetName: (limitedParapet.parapetName || limitedParapet.name) || '',
         parapetType: (limitedParapet.parapetType || limitedParapet.type) || '',
-
-        note: limitedParapet.note || ''
+        floor: limitedParapet.floor || '',
+        hauteurMax: limitedParapet.hauteurMax || '',
+        hauteurMaxMinor: limitedParapet.hauteurMaxMinor || '',
+        hauteurMaxUnit: majorUnit,
+        hauteurMaxMinorUnit: minorUnit,
+        
+        // Set 1 - Initialize with placeholder values for admin to fill in
+        montantMetallique: montantPrefix1 || '',
+        montantFilter: montantPrefix1 && montantPrefix1 !== 'N/A' ? montantPrefix1 : null,
+        espacement: '',
+        lisseSuperieure: '',
+        lisseInferieure: '',
+        entremise: '',
+        
+        note: limitedParapet.note || '',
+        images: limitedParapet.images || [],
+        dateAdded: limitedParapet.dateAdded || new Date().toISOString()
     };
+    
+    // Add Set 2 data if colombageSet2 exists
+    if (limitedParapet.colombageSet2 && limitedParapet.colombageSet2 !== '' && limitedParapet.colombageSet2 !== 'N/A') {
+        regularParapet.montantMetallique2 = montantPrefix2 || '';
+        regularParapet.montantFilter2 = montantPrefix2 && montantPrefix2 !== 'N/A' ? montantPrefix2 : null;
+        regularParapet.espacement2 = '';
+        regularParapet.lisseSuperieure2 = '';
+        regularParapet.lisseInferieure2 = '';
+        regularParapet.entremise2 = '';
+    }
+    
+    return regularParapet;
 }
 
 // Convert limited window to regular format

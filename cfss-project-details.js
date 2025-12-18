@@ -1749,7 +1749,7 @@ function renderParapetList() {
         <div class="equipment-card" id="parapetCard${parapet.id}">
             <!-- View Mode -->
             <div id="parapetView${parapet.id}">
-                <div class="equipment-header" onclick="toggleParapetDetails(${parapet.id})">
+                <div class="equipment-header" onclick="toggleParapetDetails('${parapet.id}')">
                     <div class="equipment-info-compact">
                         <h4>${parapet.parapetName}</h4>
                         <div class="equipment-meta-compact">
@@ -1761,11 +1761,11 @@ function renderParapetList() {
                         </div>
                     </div>
                     <div class="equipment-actions-compact">
-                        <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails(${parapet.id})">Details</button>
-                        <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateParapet(${parapet.id})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                        <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">Details</button>
+                        <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateParapet('${parapet.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                             <i class="fas fa-copy"></i> Duplicate
                         </button>
-                        <button class="delete-btn" onclick="event.stopPropagation(); deleteParapet(${parapet.id})">Delete</button>
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteParapet('${parapet.id}')">Delete</button>
                     </div>
                 </div>
 
@@ -1794,7 +1794,7 @@ function renderParapetList() {
                             ${renderParapetImages(parapet, index)}
                         </div>
                     </div>
-                    <button class="button primary" onclick="editParapet(${parapet.id})" style="margin-top: 15px;">
+                    <button class="button primary" onclick="editParapet('${parapet.id}')" style="margin-top: 15px;">
                         <i class="fas fa-edit"></i> Edit
                     </button>
                 </div>
@@ -1802,7 +1802,7 @@ function renderParapetList() {
 
             <!-- Edit Mode -->
             <div id="parapetEdit${parapet.id}" class="equipment-edit" style="display: none;">
-                <form onsubmit="saveParapetEdit(${parapet.id}, event); return false;">
+                <form onsubmit="saveParapetEdit('${parapet.id}', event); return false;">
                     <div class="form-row">
     <div class="form-group">
         <label>Parapet Name</label>
@@ -2041,7 +2041,7 @@ function renderParapetList() {
 
     setTimeout(() => {
     projectParapets.forEach(parapet => {
-        populateParapetEditMontant(parapet.id, parapet.montantMetallique, parapet.montantMetallique2);
+        populateParapetEditMontant(parapet.id, parapet.montantMetallique, parapet.montantMetallique2, parapet.montantFilter || null, parapet.montantFilter2 || null);
         setupParapetEditAutoFill(parapet.id);
     });
 }, 100);
@@ -2426,16 +2426,21 @@ async function saveParapetEdit(id, event) {
 }
 
 // Helper function to populate montant dropdown in edit mode
-function populateParapetEditMontant(parapetId, selectedValue, selectedValue2 = '') {
+function populateParapetEditMontant(parapetId, selectedValue, selectedValue2 = '', filterPrefix1 = null, filterPrefix2 = null) {
     const montantSelect = document.getElementById(`editParapetMontantMetallique${parapetId}`);
     const montantSelect2 = document.getElementById(`editParapetMontantMetallique2${parapetId}`);
     if (!montantSelect || typeof colombageData === 'undefined') return;
     
     const sortedKeys = Object.keys(colombageData).sort();
     
+    // Filter Set 1 options if filterPrefix1 is provided
+    const filteredKeys1 = filterPrefix1 
+        ? sortedKeys.filter(montant => montant.startsWith(filterPrefix1))
+        : sortedKeys;
+    
     // Populate Set 1
     montantSelect.innerHTML = '<option value="">Select montant métallique...</option>';
-    sortedKeys.forEach(montant => {
+    filteredKeys1.forEach(montant => {
         const option = document.createElement('option');
         option.value = montant;
         option.textContent = montant;
@@ -2447,8 +2452,13 @@ function populateParapetEditMontant(parapetId, selectedValue, selectedValue2 = '
     
     // Populate Set 2
     if (montantSelect2) {
+        // Filter Set 2 options if filterPrefix2 is provided
+        const filteredKeys2 = filterPrefix2 
+            ? sortedKeys.filter(montant => montant.startsWith(filterPrefix2))
+            : sortedKeys;
+        
         montantSelect2.innerHTML = '<option value="">Select montant métallique...</option>';
-        sortedKeys.forEach(montant => {
+        filteredKeys2.forEach(montant => {
             const option = document.createElement('option');
             option.value = montant;
             option.textContent = montant;
