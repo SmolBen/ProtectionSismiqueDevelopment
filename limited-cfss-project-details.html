@@ -890,41 +890,67 @@
                                         required>
                                 </div>
 
-                                                                <!-- Soffite images: image area stacked under label -->
+                                                                <!-- Soffite images: side-by-side layout -->
                                 <div class="form-group">
                                     <label>Soffite images:</label>
-                                    <small style="display:block; font-size:12px; color:#666;">
+                                    <small style="display:block; font-size:12px; color:#666; margin-bottom: 8px;">
                                         Max 2 images. Drag &amp; drop, browse, or paste (Ctrl+V).
                                     </small>
 
-                                    <!-- Stacked image upload section, sized like CFSS wall/parapet -->
-                                    <div class="image-upload-section soffite-image-upload" style="max-width: 200px;">
-                                        <div class="upload-controls">
-                                            <button
-                                                type="button"
-                                                class="camera-btn"
-                                                id="soffiteCameraBtn"
-                                                title="Upload Image">
-                                                <i class="fas fa-camera"></i>
-                                                Browse
-                                            </button>
+                                    <div style="display: flex; gap: 20px; align-items: flex-start;">
+                                        <!-- Left: Image upload section -->
+                                        <div class="image-upload-section soffite-image-upload" style="max-width: 200px; flex-shrink: 0;">
+                                            <div class="upload-controls">
+                                                <button
+                                                    type="button"
+                                                    class="camera-btn"
+                                                    id="soffiteCameraBtn"
+                                                    title="Upload Image">
+                                                    <i class="fas fa-camera"></i>
+                                                    Browse
+                                                </button>
+                                            </div>
+
+                                            <input
+                                                class="drop-zone"
+                                                id="soffiteDropZone"
+                                                placeholder="Drop or paste image here (Ctrl+V)"
+                                                readonly
+                                                tabindex="0">
+
+                                            <div class="image-preview-container" id="soffiteImagePreviewContainer"></div>
+
+                                            <input
+                                                type="file"
+                                                id="soffiteImageFileInput"
+                                                accept="image/*"
+                                                style="display: none;"
+                                                multiple>
                                         </div>
 
-                                        <input
-                                            class="drop-zone"
-                                            id="soffiteDropZone"
-                                            placeholder="Drop or paste image here (Ctrl+V)"
-                                            readonly
-                                            tabindex="0">
-
-                                        <div class="image-preview-container" id="soffiteImagePreviewContainer"></div>
-
-                                        <input
-                                            type="file"
-                                            id="soffiteImageFileInput"
-                                            accept="image/*"
-                                            style="display: none;"
-                                            multiple>
+                                        <!-- Right: Image descriptions -->
+                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                                            <div>
+                                                <label for="soffiteImage1Desc" style="font-size: 13px;">Image description:</label>
+                                                <input
+                                                    type="text"
+                                                    id="soffiteImage1Desc"
+                                                    name="soffiteImage1Desc"
+                                                    placeholder="Description for image 1..."
+                                                    maxlength="50"
+                                                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                            </div>
+                                            <div id="soffiteImage2DescContainer" style="display: none;">
+                                                <label for="soffiteImage2Desc" style="font-size: 13px;">Image 2 description:</label>
+                                                <input
+                                                    type="text"
+                                                    id="soffiteImage2Desc"
+                                                    name="soffiteImage2Desc"
+                                                    placeholder="Description for image 2..."
+                                                    maxlength="50"
+                                                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

@@ -353,6 +353,7 @@ function setupEventListeners() {
 
                 // Reset image state
                 clearSoffiteImages();
+                updateSoffiteImageLayout();
             }
         });
     }
@@ -1552,10 +1553,18 @@ async function handleSoffiteSubmit(e) {
         if (!proceed) return;
     }
 
+    // Get image descriptions
+    const image1DescInput = document.getElementById('soffiteImage1Desc');
+    const image2DescInput = document.getElementById('soffiteImage2Desc');
+    const image1Description = image1DescInput ? image1DescInput.value.trim() : '';
+    const image2Description = image2DescInput ? image2DescInput.value.trim() : '';
+
     const soffiteData = {
         id: editingSoffiteId || Date.now().toString(),
         name,
-        images
+        images,
+        image1Description,
+        image2Description
     };
 
     currentProject.soffites = currentProject.soffites || [];
@@ -1694,31 +1703,310 @@ function displaySoffiteList() {
                 </div>
             </div>
             <div class="equipment-details" id="soffiteDetails${soffite.id}">
-                <div class="equipment-details-container">
+                <!-- View Mode -->
+                <div class="equipment-details-container" id="soffiteView${soffite.id}">
                     <div class="equipment-info-section">
                         <p><strong>Soffite Name:</strong> ${name}</p>
                         <p><strong>Images:</strong> ${imageCount}</p>
                         ${imageCount > 0 ? `
                             <div class="soffite-images-preview" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                                ${images.map(img => `
-                                    <div style="width: 80px; height: 60px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
-                                        <img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/${img.key}" 
-                                             alt="${img.filename || 'Soffite image'}"
-                                             style="width: 100%; height: 100%; object-fit: cover;"
-                                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2760%27%3E%3Crect width=%2780%27 height=%2760%27 fill=%27%23f0f0f0%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27 font-size=%2710%27%3ENo Image%3C/text%3E%3C/svg%3E'">
+                                ${images.map((img, imgIndex) => `
+                                    <div style="text-align: center;">
+                                        <div style="width: 80px; height: 60px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
+                                            <img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/${img.key}" 
+                                                 alt="${img.filename || 'Soffite image'}"
+                                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2760%27%3E%3Crect width=%2780%27 height=%2760%27 fill=%27%23f0f0f0%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27 font-size=%2710%27%3ENo Image%3C/text%3E%3C/svg%3E'">
+                                        </div>
+                                        <div style="font-size: 11px; color: #666; margin-top: 4px; max-width: 80px; word-wrap: break-word;">
+                                            ${imgIndex === 0 ? (soffite.image1Description || '') : (soffite.image2Description || '')}
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
                         ` : ''}
                     </div>
+                    <button class="button primary" onclick="showSoffiteEditForm('${soffite.id}')" style="margin-top: 15px;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
                 </div>
-                <button class="button primary" onclick="editSoffite('${soffite.id}')" style="margin-top: 15px;">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
+                
+                <!-- Edit Mode -->
+                ${generateSoffiteEditForm(soffite)}
             </div>
         `;
         container.appendChild(soffiteCard);
     });
+}
+
+// Track current editing soffite images
+let editingSoffiteImages = {};
+
+function generateSoffiteEditForm(soffite) {
+    const images = Array.isArray(soffite.images) ? soffite.images : [];
+    return `
+        <form id="soffiteEditForm${soffite.id}" style="display: none; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px;" onsubmit="saveSoffiteEdit('${soffite.id}', event)">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label><strong>Soffite Name:</strong></label>
+                <input type="text" id="editSoffiteName${soffite.id}" value="${soffite.name || ''}" required 
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <!-- Left: Image Upload Section -->
+                <div style="flex-shrink: 0;">
+                    <label><strong>Images:</strong></label>
+                    <small style="display: block; font-size: 12px; color: #666; margin-bottom: 8px;">Max 2 images</small>
+                    <div class="edit-image-upload-section" id="editSoffiteImageSection${soffite.id}">
+                        <div class="upload-controls">
+                            <button type="button" class="camera-btn" id="editSoffiteCameraBtn${soffite.id}" title="Upload Images">
+                                <i class="fas fa-camera"></i> Browse
+                            </button>
+                            <input class="drop-zone" id="editSoffiteDropZone${soffite.id}" placeholder="Drop or paste images" readonly tabindex="0" style="width: 150px;">
+                        </div>
+                        <div class="image-preview-container" id="editSoffiteImagePreviewContainer${soffite.id}"></div>
+                    </div>
+                    <input type="file" id="editSoffiteImageFileInput${soffite.id}" multiple accept="image/*" style="display: none;">
+                </div>
+                
+                <!-- Right: Image Descriptions -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                    <div>
+                        <label style="font-size: 13px;"><strong>Image description:</strong></label>
+                        <input type="text" id="editSoffiteImage1Desc${soffite.id}" value="${soffite.image1Description || ''}" 
+                               placeholder="Description for image 1..." maxlength="50"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div id="editSoffiteImage2DescContainer${soffite.id}" style="display: ${images.length >= 2 ? 'block' : 'none'};">
+                        <label style="font-size: 13px;"><strong>Image 2 description:</strong></label>
+                        <input type="text" id="editSoffiteImage2Desc${soffite.id}" value="${soffite.image2Description || ''}" 
+                               placeholder="Description for image 2..." maxlength="50"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button type="button" onclick="cancelSoffiteEdit('${soffite.id}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    `;
+}
+
+window.showSoffiteEditForm = function(soffiteId) {
+    const viewSection = document.getElementById(`soffiteView${soffiteId}`);
+    const editForm = document.getElementById(`soffiteEditForm${soffiteId}`);
+    
+    if (viewSection) viewSection.style.display = 'none';
+    if (editForm) {
+        editForm.style.display = 'block';
+        
+        // Load existing images for this soffite
+        const soffite = currentProject.soffites.find(s => s.id === soffiteId);
+        if (soffite && soffite.images) {
+            editingSoffiteImages[soffiteId] = [...soffite.images];
+            const container = document.getElementById(`editSoffiteImagePreviewContainer${soffiteId}`);
+            if (container) {
+                container.innerHTML = '';
+                soffite.images.forEach(imageData => {
+                    addEditSoffiteImagePreview(soffiteId, imageData);
+                });
+            }
+        } else {
+            editingSoffiteImages[soffiteId] = [];
+        }
+        
+        updateEditSoffiteImage2DescVisibility(soffiteId);
+        setupEditSoffiteImageUploadHandlers(soffiteId);
+    }
+};
+
+window.cancelSoffiteEdit = function(soffiteId) {
+    const viewSection = document.getElementById(`soffiteView${soffiteId}`);
+    const editForm = document.getElementById(`soffiteEditForm${soffiteId}`);
+    
+    if (viewSection) viewSection.style.display = 'block';
+    if (editForm) editForm.style.display = 'none';
+    
+    delete editingSoffiteImages[soffiteId];
+};
+
+window.saveSoffiteEdit = async function(soffiteId, event) {
+    event.preventDefault();
+    
+    const soffiteIndex = currentProject.soffites.findIndex(s => s.id === soffiteId);
+    if (soffiteIndex === -1) return;
+    
+    const name = document.getElementById(`editSoffiteName${soffiteId}`).value.trim();
+    const image1Description = document.getElementById(`editSoffiteImage1Desc${soffiteId}`).value.trim();
+    const image2Description = document.getElementById(`editSoffiteImage2Desc${soffiteId}`).value.trim();
+    
+    if (!name) {
+        alert('Please enter a soffite name.');
+        return;
+    }
+    
+    currentProject.soffites[soffiteIndex] = {
+        ...currentProject.soffites[soffiteIndex],
+        name,
+        images: editingSoffiteImages[soffiteId] || [],
+        image1Description,
+        image2Description
+    };
+    
+    await saveProject();
+    delete editingSoffiteImages[soffiteId];
+    displaySoffiteList();
+};
+
+function updateEditSoffiteImage2DescVisibility(soffiteId) {
+    const container = document.getElementById(`editSoffiteImage2DescContainer${soffiteId}`);
+    const count = editingSoffiteImages[soffiteId]?.length || 0;
+    if (container) {
+        container.style.display = count >= 2 ? 'block' : 'none';
+    }
+}
+
+function addEditSoffiteImagePreview(soffiteId, imageData) {
+    const container = document.getElementById(`editSoffiteImagePreviewContainer${soffiteId}`);
+    if (!container) return;
+    
+    const preview = document.createElement('div');
+    preview.className = 'image-preview';
+    preview.dataset.key = imageData.key;
+    preview.innerHTML = `
+        <img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/${imageData.key}" 
+             alt="${imageData.filename || 'Image'}"
+             style="width: 100%; height: 100%; object-fit: cover;">
+        <button type="button" class="image-remove" title="Remove image">&times;</button>
+    `;
+    container.appendChild(preview);
+    
+    preview.querySelector('.image-remove').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        removeEditSoffiteImage(soffiteId, imageData.key);
+    });
+}
+
+function removeEditSoffiteImage(soffiteId, imageKey) {
+    if (!editingSoffiteImages[soffiteId]) return;
+    
+    editingSoffiteImages[soffiteId] = editingSoffiteImages[soffiteId].filter(img => img.key !== imageKey);
+    
+    const container = document.getElementById(`editSoffiteImagePreviewContainer${soffiteId}`);
+    if (container) {
+        const preview = container.querySelector(`[data-key="${imageKey}"]`);
+        if (preview) preview.remove();
+    }
+    
+    updateEditSoffiteImage2DescVisibility(soffiteId);
+    updateEditSoffiteDropZoneState(soffiteId);
+}
+
+function updateEditSoffiteDropZoneState(soffiteId) {
+    const dropZone = document.getElementById(`editSoffiteDropZone${soffiteId}`);
+    const count = editingSoffiteImages[soffiteId]?.length || 0;
+    if (dropZone) {
+        if (count >= 2) {
+            dropZone.placeholder = 'Max images reached';
+            dropZone.style.opacity = '0.5';
+        } else {
+            dropZone.placeholder = 'Drop or paste images';
+            dropZone.style.opacity = '1';
+        }
+    }
+}
+
+function setupEditSoffiteImageUploadHandlers(soffiteId) {
+    const cameraBtn = document.getElementById(`editSoffiteCameraBtn${soffiteId}`);
+    const dropZone = document.getElementById(`editSoffiteDropZone${soffiteId}`);
+    const fileInput = document.getElementById(`editSoffiteImageFileInput${soffiteId}`);
+    
+    if (!cameraBtn || !dropZone || !fileInput) return;
+    
+    cameraBtn.onclick = (e) => {
+        e.preventDefault();
+        fileInput.click();
+    };
+    
+    fileInput.onchange = (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) processEditSoffiteFiles(soffiteId, files);
+        fileInput.value = '';
+    };
+    
+    dropZone.onpaste = (e) => {
+        const items = e.clipboardData ? e.clipboardData.items : [];
+        const files = [];
+        for (let item of items) {
+            if (item.type && item.type.indexOf('image') !== -1) {
+                const file = item.getAsFile();
+                if (file) files.push(file);
+            }
+        }
+        if (files.length > 0) {
+            e.preventDefault();
+            processEditSoffiteFiles(soffiteId, files);
+        }
+    };
+    
+    dropZone.ondragover = (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    };
+    
+    dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+    
+    dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files || []);
+        if (files.length > 0) processEditSoffiteFiles(soffiteId, files);
+    };
+    
+    updateEditSoffiteDropZoneState(soffiteId);
+}
+
+async function processEditSoffiteFiles(soffiteId, files) {
+    const validFiles = files.filter(f => f.type && f.type.startsWith('image/'));
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+    
+    if (!editingSoffiteImages[soffiteId]) editingSoffiteImages[soffiteId] = [];
+    
+    const currentCount = editingSoffiteImages[soffiteId].length;
+    const remainingSlots = 2 - currentCount;
+    
+    if (remainingSlots <= 0) {
+        alert('Maximum 2 images allowed. Remove an image first.');
+        return;
+    }
+    
+    const filesToUpload = validFiles.slice(0, remainingSlots);
+    const dropZone = document.getElementById(`editSoffiteDropZone${soffiteId}`);
+    if (dropZone) dropZone.placeholder = 'Uploading...';
+    
+    for (const file of filesToUpload) {
+        try {
+            const imageData = await uploadImageToS3(file);
+            editingSoffiteImages[soffiteId].push(imageData);
+            addEditSoffiteImagePreview(soffiteId, imageData);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+    
+    updateEditSoffiteImage2DescVisibility(soffiteId);
+    updateEditSoffiteDropZoneState(soffiteId);
 }
 
 function formatDimension(item, prefix) {
@@ -2003,6 +2291,12 @@ window.editSoffite = function(id) {
     editingSoffiteId = id;
     document.getElementById('soffiteName').value = soffite.name || '';
     
+    // Load image descriptions
+    const image1DescInput = document.getElementById('soffiteImage1Desc');
+    const image2DescInput = document.getElementById('soffiteImage2Desc');
+    if (image1DescInput) image1DescInput.value = soffite.image1Description || '';
+    if (image2DescInput) image2DescInput.value = soffite.image2Description || '';
+    
     // Load existing images into preview
     window.currentSoffiteImages = [...(soffite.images || [])];
     const container = document.getElementById('soffiteImagePreviewContainer');
@@ -2027,6 +2321,7 @@ window.editSoffite = function(id) {
             });
         });
     }
+    updateSoffiteImageLayout();
     updateSoffiteDropZoneState();
 
     showForm('soffiteForm');
@@ -2097,6 +2392,12 @@ function updateSoffiteImageLayout() {
         container.classList.add('one-image');
     } else if (count === 2) {
         container.classList.add('two-images');
+    }
+
+    // Show/hide Image 2 description based on image count
+    const image2DescContainer = document.getElementById('soffiteImage2DescContainer');
+    if (image2DescContainer) {
+        image2DescContainer.style.display = count >= 2 ? 'block' : 'none';
     }
 }
 
