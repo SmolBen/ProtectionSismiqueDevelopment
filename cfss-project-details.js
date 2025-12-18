@@ -6613,10 +6613,10 @@ function displayCFSSData(cfssData) {
                         Paramètres de calcul du vent
                     </h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
-                        <div style="font-size: 12px;"><strong>q50:</strong> ${cfssData.windParams.q50} kPa</div>
-                        <div style="font-size: 12px;"><strong>Facteur d'importance:</strong> ${cfssData.windParams.importanceFactor}</div>
-                        <div style="font-size: 12px;"><strong>Type de terrain:</strong> ${cfssData.windParams.terrainType}</div>
-                        <div style="font-size: 12px;"><strong>Catégorie:</strong> ${cfssData.windParams.category}</div>
+                        <div style="font-size: 12px;"><strong>q50:</strong> ${cfssData.windParams.q50 ?? 'N/A'} kPa</div>
+                        <div style="font-size: 12px;"><strong>Facteur d'importance:</strong> ${cfssData.windParams.importanceFactor ?? 'N/A'}</div>
+                        <div style="font-size: 12px;"><strong>Type de terrain:</strong> ${cfssData.windParams.terrainType ?? 'N/A'}</div>
+                        <div style="font-size: 12px;"><strong>Catégorie:</strong> ${cfssData.windParams.category ?? 'N/A'}</div>
                     </div>
                 </div>
             `;
