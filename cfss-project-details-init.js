@@ -74,6 +74,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                     project.country
                 ].filter(Boolean).join(', ');
                 document.getElementById("projectAddress").textContent = projectAddress;
+                // Show Deflection Max only if it exists
+                if (project.deflectionMax && project.deflectionMax !== 'N/A') {
+                    document.getElementById("projectDeflectionMax").textContent = project.deflectionMax;
+                } else {
+                    document.getElementById("projectDeflectionMax").parentElement.style.display = 'none';
+                }
+
+                // Show Thickness Min only if it exists
+                if (project.thicknessMin && project.thicknessMin !== 'N/A') {
+                    document.getElementById("projectThicknessMin").textContent = project.thicknessMin;
+                } else {
+                    document.getElementById("projectThicknessMin").parentElement.style.display = 'none';
+                }
 
                 // Initialize edit button
                 initializeProjectDetailsEditButton();
