@@ -4044,6 +4044,16 @@ function convertWindowToRegular(limitedWindow) {
 
 // Convert entire limited project to regular project format
 function convertProjectToRegular(limitedProject) {
+    // Convert floors array to cfssWindData.storeys format
+    const floors = limitedProject.floors || [];
+    const storeys = floors.map(floor => ({
+        label: floor.name || 'RDC',
+        height: parseFloat(floor.height) || 0,
+        area: 0,
+        uls: 0,
+        sls: 0
+    }));
+    
     const regularProject = {
         // Basic info - same
         name: limitedProject.name,
@@ -4080,6 +4090,16 @@ function convertProjectToRegular(limitedProject) {
         // Copy options
         selectedCFSSOptions: limitedProject.selectedCFSSOptions || [],
         options: limitedProject.options || [],
+        
+        // CFSS Wind Data with converted storeys
+        cfssWindData: storeys.length > 0 ? {
+            storeys: storeys,
+            floorGroups: [],
+            windParams: {},
+            specifications: {},
+            dateAdded: new Date().toISOString(),
+            addedBy: limitedProject.createdBy || 'limited-user'
+        } : null,
         
         // Metadata
         isAdminCopy: true,
@@ -4131,6 +4151,22 @@ async function submitToAdmin() {
                 throw new Error('Failed to update regular project');
             }
             
+            // Save CFSS wind data separately if it exists
+            if (regularProjectData.cfssWindData) {
+                const cfssResponse = await fetch(`${apiUrl}/${currentProject.linkedRegularProjectId}/cfss-data`, {
+                    method: 'PUT',
+                    headers: {
+                        ...authHelper.getAuthHeaders(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cfssWindData: regularProjectData.cfssWindData })
+                });
+                
+                if (!cfssResponse.ok) {
+                    console.warn('Failed to save CFSS data, but project was updated');
+                }
+            }
+            
             // Update limited project's lastSubmittedAt
             await updateProject(currentProject.id, {
                 lastSubmittedAt: new Date().toISOString()
@@ -4163,6 +4199,22 @@ async function submitToAdmin() {
             const newProjectId = newProject.id || newProject.projectId;
             
             console.log('Created regular project with ID:', newProjectId);
+            
+            // Save CFSS wind data separately if it exists
+            if (regularProjectData.cfssWindData) {
+                const cfssResponse = await fetch(`${apiUrl}/${newProjectId}/cfss-data`, {
+                    method: 'PUT',
+                    headers: {
+                        ...authHelper.getAuthHeaders(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cfssWindData: regularProjectData.cfssWindData })
+                });
+                
+                if (!cfssResponse.ok) {
+                    console.warn('Failed to save CFSS data, but project was created');
+                }
+            }
             
             // Update limited project with link to regular project
             await updateProject(currentProject.id, {
