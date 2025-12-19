@@ -1425,6 +1425,586 @@ function loadCustomPagesFromProject(project) {
     updateCustomPagesSummary();
 }
 
+// ==============================================
+// SOFFITES CUSTOM PAGE FUNCTIONALITY
+// ==============================================
+
+let soffitesCustomPage = null;
+let isEditingSoffitesPage = false;
+let soffitesPageElementCounter = 0;
+let selectedSoffitesCanvasElement = null;
+let isSoffitesDropping = false;
+
+// Initialize Soffites Page system
+function initializeSoffitesPage() {
+    console.log('[INIT] Initializing Soffites Page system...');
+    
+    const createButton = document.getElementById('createSoffitesPageButton');
+    if (createButton) {
+        createButton.addEventListener('click', () => showSoffitesPageBuilder());
+    }
+    
+    setupSoffitesPagePalette();
+    updateSoffitesPageButton();
+    
+    console.log('[SUCCESS] Soffites Page initialized');
+}
+
+// Update button text based on whether soffites page exists
+function updateSoffitesPageButton() {
+    const button = document.getElementById('createSoffitesPageButton');
+    if (!button) return;
+    
+    if (soffitesCustomPage && soffitesCustomPage.elements && soffitesCustomPage.elements.length > 0) {
+        button.innerHTML = '<i class="fas fa-edit"></i> Edit Soffites Page';
+    } else {
+        button.innerHTML = '<i class="fas fa-file-alt"></i> Create Soffites Page';
+    }
+}
+
+// Setup palette drag events for soffites
+function setupSoffitesPagePalette() {
+    document.querySelectorAll('.soffites-palette-item').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('soffitesElementType', item.dataset.type);
+            e.dataTransfer.effectAllowed = 'copy';
+        });
+    });
+}
+
+// Set blank CFSS background for soffites canvas
+async function setSoffitesBlankCFSSBackground() {
+    try {
+        const key = 'report/blank-cfss-page.png';
+        const signResp = await fetch(
+            `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/templates/sign?key=${encodeURIComponent(key)}`,
+            { headers: getAuthHeaders() }
+        );
+        if (!signResp.ok) throw new Error(`Signer failed: HTTP ${signResp.status}`);
+        const { url } = await signResp.json();
+
+        const canvasEl = document.getElementById('soffitesPageCanvas');
+        if (!canvasEl) return;
+
+        const img = await new Promise((resolve, reject) => {
+            const i = new Image();
+            i.onload = () => resolve(i);
+            i.onerror = () => reject(new Error('PNG failed to load'));
+            i.src = url;
+        });
+
+        canvasEl.style.backgroundImage = `url("${url}")`;
+        canvasEl.style.backgroundRepeat = 'no-repeat';
+        canvasEl.style.backgroundPosition = 'left top';
+        canvasEl.style.backgroundSize = 'contain';
+        canvasEl.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+        canvasEl.style.width = '100%';
+        canvasEl.style.maxWidth = `${img.naturalWidth}px`;
+        canvasEl.style.height = 'auto';
+        canvasEl.style.margin = '0';
+        canvasEl.style.boxShadow = 'none';
+        canvasEl.style.borderRadius = '0';
+        canvasEl.style.backgroundColor = 'transparent';
+
+        console.log('[SOFFITES CANVAS] Canvas fitted to template');
+    } catch (e) {
+        console.warn('Could not set soffites blank CFSS background:', e);
+    }
+}
+
+// Show soffites page builder
+function showSoffitesPageBuilder() {
+    const builder = document.getElementById('soffitesPageBuilder');
+    const list = document.getElementById('soffiteList');
+    const summary = document.getElementById('soffiteSelectionSummary');
+    
+    if (list) list.style.display = 'none';
+    if (summary) summary.style.display = 'none';
+    builder.style.display = 'block';
+    
+    setSoffitesBlankCFSSBackground();
+    
+    if (soffitesCustomPage && soffitesCustomPage.elements && soffitesCustomPage.elements.length > 0) {
+        // Editing existing page
+        isEditingSoffitesPage = true;
+        document.getElementById('soffitesPageTitle').value = soffitesCustomPage.title || '';
+        loadSoffitesPageElements(soffitesCustomPage.elements);
+    } else {
+        // Creating new page
+        isEditingSoffitesPage = false;
+        soffitesCustomPage = {
+            id: 'soffites-page',
+            title: '',
+            elements: [],
+            createdAt: new Date().toISOString()
+        };
+        document.getElementById('soffitesPageTitle').value = '';
+        clearSoffitesPageCanvas();
+    }
+    
+    setupSoffitesCanvasEvents();
+}
+
+// Setup canvas events for soffites page
+function setupSoffitesCanvasEvents() {
+    const canvas = document.getElementById('soffitesPageCanvas');
+    if (!canvas) return;
+    
+    // Remove existing listeners by cloning
+    const newCanvas = canvas.cloneNode(true);
+    canvas.parentNode.replaceChild(newCanvas, canvas);
+    
+    newCanvas.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        newCanvas.classList.add('drag-over');
+    });
+    
+    newCanvas.addEventListener('dragleave', (e) => {
+        if (e.target === newCanvas) {
+            newCanvas.classList.remove('drag-over');
+        }
+    });
+    
+    newCanvas.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        newCanvas.classList.remove('drag-over');
+        
+        if (isSoffitesDropping) return;
+        isSoffitesDropping = true;
+        
+        const type = e.dataTransfer.getData('soffitesElementType');
+        if (type) {
+            const canvasRect = newCanvas.getBoundingClientRect();
+            const x = e.clientX - canvasRect.left;
+            const y = e.clientY - canvasRect.top;
+            createSoffitesCanvasElement(type, x, y);
+        }
+        
+        setTimeout(() => { isSoffitesDropping = false; }, 100);
+    });
+    
+    newCanvas.addEventListener('click', (e) => {
+        if (e.target === newCanvas) {
+            deselectAllSoffitesCanvasElements();
+        }
+    });
+}
+
+// Create canvas element for soffites page
+function createSoffitesCanvasElement(type, x, y) {
+    soffitesPageElementCounter++;
+    const canvas = document.getElementById('soffitesPageCanvas');
+    const element = document.createElement('div');
+    element.className = 'canvas-element';
+    element.dataset.id = soffitesPageElementCounter;
+    element.dataset.type = type;
+    
+    let width = 300;
+    let height = 60;
+    
+    if (type === 'image') {
+        width = 400;
+        height = 300;
+    } else if (type === 'heading') {
+        height = 72;
+    }
+    
+    element.style.left = x + 'px';
+    element.style.top = y + 'px';
+    element.style.width = width + 'px';
+    element.style.height = height + 'px';
+    
+    const controls = `
+        <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
+        <div class="element-controls">
+            <button class="control-btn" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">Edit</button>
+            <button class="control-btn delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">Delete</button>
+        </div>
+        <div class="resize-handles">
+            <div class="resize-handle corner top-left"></div>
+            <div class="resize-handle corner top-right"></div>
+            <div class="resize-handle corner bottom-left"></div>
+            <div class="resize-handle corner bottom-right"></div>
+            <div class="resize-handle edge top"></div>
+            <div class="resize-handle edge bottom"></div>
+            <div class="resize-handle edge left"></div>
+            <div class="resize-handle edge right"></div>
+        </div>
+    `;
+
+    if (type === 'heading') {
+        element.innerHTML = controls + '<div class="canvas-heading-element" contenteditable="true" data-default="true">New Heading</div>';
+        const headingEl = element.querySelector('.canvas-heading-element');
+        headingEl.style.fontSize = '24px';
+        headingEl.addEventListener('focus', function clearDefaultOnce() {
+            if (this.getAttribute('data-default') === 'true') {
+                this.textContent = '';
+                this.removeAttribute('data-default');
+            }
+            headingEl.removeEventListener('focus', clearDefaultOnce);
+        });
+    } else if (type === 'text') {
+        element.innerHTML = controls + '<div class="canvas-text-element" contenteditable="true" data-default="true">Click to edit text.</div>';
+        const textEl = element.querySelector('.canvas-text-element');
+        textEl.addEventListener('focus', function clearDefaultOnce() {
+            if (this.getAttribute('data-default') === 'true') {
+                this.textContent = '';
+                this.removeAttribute('data-default');
+            }
+            textEl.removeEventListener('focus', clearDefaultOnce);
+        });
+    } else if (type === 'image') {
+        const uploadId = 'soffitesCanvasImageUpload_' + soffitesPageElementCounter;
+        element.innerHTML = controls + `
+            <div class="canvas-image-element">
+                <div class="canvas-image-upload-container">
+                    <div class="upload-controls" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}" 
+                                style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="fas fa-camera"></i> Browse
+                        </button>
+                        <input class="canvas-drop-zone" id="dropZone_${uploadId}" 
+                            placeholder="Drop or paste here (Ctrl+V)" readonly tabindex="0"
+                            style="flex: 1; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
+                    </div>
+                    <input type="file" id="fileInput_${uploadId}" accept="image/*" style="display: none;">
+                </div>
+            </div>
+        `;
+        setTimeout(() => {
+            const imageElement = element.querySelector('.canvas-image-element');
+            if (imageElement) {
+                setupCanvasImageUploadHandlers(imageElement, uploadId);
+            }
+        }, 0);
+    }
+    
+    element.addEventListener('click', (e) => {
+        if (!e.target.closest('.element-controls') && !e.target.closest('.drag-handle')) {
+            selectSoffitesCanvasElement(element);
+        }
+    });
+    
+    setupCanvasElementDragging(element);
+    setupCanvasElementResizing(element);
+    
+    canvas.appendChild(element);
+    selectSoffitesCanvasElement(element);
+}
+
+function selectSoffitesCanvasElement(element) {
+    deselectAllSoffitesCanvasElements();
+    element.classList.add('selected');
+    selectedSoffitesCanvasElement = element;
+    showSoffitesElementProperties(element);
+}
+
+function deselectAllSoffitesCanvasElements() {
+    document.querySelectorAll('#soffitesPageCanvas .canvas-element').forEach(el => {
+        el.classList.remove('selected');
+    });
+    selectedSoffitesCanvasElement = null;
+    clearSoffitesElementProperties();
+}
+
+function showSoffitesElementProperties(element) {
+    const props = document.getElementById('soffitesPageProperties');
+    if (!props) return;
+    
+    const type = element.dataset.type;
+    const id = element.dataset.id;
+    
+    let html = `<div class="property-group">
+        <label>Position</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" value="${parseInt(element.style.left)}" 
+                   onchange="updateSoffitesElementPositionX(${id}, this.value)" 
+                   style="width: 70px; padding: 5px;">
+            <input type="number" value="${parseInt(element.style.top)}" 
+                   onchange="updateSoffitesElementPositionY(${id}, this.value)" 
+                   style="width: 70px; padding: 5px;">
+        </div>
+    </div>
+    <div class="property-group">
+        <label>Size</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" value="${element.offsetWidth}" 
+                   onchange="updateSoffitesElementWidth(${id}, this.value)" 
+                   style="width: 70px; padding: 5px;">
+            <input type="number" value="${element.offsetHeight}" 
+                   onchange="updateSoffitesElementHeight(${id}, this.value)" 
+                   style="width: 70px; padding: 5px;">
+        </div>
+    </div>`;
+    
+    if (type === 'heading' || type === 'text') {
+        const contentEl = element.querySelector('[contenteditable]');
+        const fontSize = parseInt(contentEl?.style.fontSize) || (type === 'heading' ? 24 : 16);
+        html += `<div class="property-group">
+            <label>Font Size</label>
+            <input type="number" value="${fontSize}" 
+                   onchange="updateSoffitesElementFontSize(${id}, this.value)" 
+                   style="width: 70px; padding: 5px;">
+        </div>`;
+    }
+    
+    props.innerHTML = html;
+}
+
+function clearSoffitesElementProperties() {
+    const props = document.getElementById('soffitesPageProperties');
+    if (props) {
+        props.innerHTML = '<p style="color: #6c757d; font-size: 13px; text-align: center; padding: 20px 10px;">Select an element to edit its properties</p>';
+    }
+}
+
+window.updateSoffitesElementPositionX = function(id, value) {
+    const el = document.querySelector(`#soffitesPageCanvas .canvas-element[data-id="${id}"]`);
+    if (el) el.style.left = value + 'px';
+};
+
+window.updateSoffitesElementPositionY = function(id, value) {
+    const el = document.querySelector(`#soffitesPageCanvas .canvas-element[data-id="${id}"]`);
+    if (el) el.style.top = value + 'px';
+};
+
+window.updateSoffitesElementWidth = function(id, value) {
+    const el = document.querySelector(`#soffitesPageCanvas .canvas-element[data-id="${id}"]`);
+    if (el) el.style.width = value + 'px';
+};
+
+window.updateSoffitesElementHeight = function(id, value) {
+    const el = document.querySelector(`#soffitesPageCanvas .canvas-element[data-id="${id}"]`);
+    if (el) el.style.height = value + 'px';
+};
+
+window.updateSoffitesElementFontSize = function(id, value) {
+    const el = document.querySelector(`#soffitesPageCanvas .canvas-element[data-id="${id}"]`);
+    if (el) {
+        const contentEl = el.querySelector('[contenteditable]');
+        if (contentEl) contentEl.style.fontSize = value + 'px';
+    }
+};
+
+window.editSoffitesCanvasElement = function(id) {
+    const el = document.querySelector(`#soffitesPageCanvas .canvas-element[data-id="${id}"]`);
+    if (el) selectSoffitesCanvasElement(el);
+};
+
+window.deleteSoffitesCanvasElement = function(id) {
+    const el = document.querySelector(`#soffitesPageCanvas .canvas-element[data-id="${id}"]`);
+    if (el) {
+        el.remove();
+        deselectAllSoffitesCanvasElements();
+    }
+};
+
+function clearSoffitesPageCanvas() {
+    const canvas = document.getElementById('soffitesPageCanvas');
+    if (canvas) {
+        canvas.querySelectorAll('.canvas-element').forEach(el => el.remove());
+    }
+}
+
+function loadSoffitesPageElements(elements) {
+    clearSoffitesPageCanvas();
+    const canvas = document.getElementById('soffitesPageCanvas');
+    if (!canvas || !elements) return;
+    
+    elements.forEach(elData => {
+        soffitesPageElementCounter++;
+        const element = document.createElement('div');
+        element.className = 'canvas-element';
+        element.dataset.id = soffitesPageElementCounter;
+        element.dataset.type = elData.type;
+        
+        element.style.left = elData.position.x + 'px';
+        element.style.top = elData.position.y + 'px';
+        element.style.width = elData.size.width + 'px';
+        element.style.height = elData.size.height + 'px';
+        
+        const controls = `
+            <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
+            <div class="element-controls">
+                <button class="control-btn" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">Edit</button>
+                <button class="control-btn delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">Delete</button>
+            </div>
+            <div class="resize-handles">
+                <div class="resize-handle corner top-left"></div>
+                <div class="resize-handle corner top-right"></div>
+                <div class="resize-handle corner bottom-left"></div>
+                <div class="resize-handle corner bottom-right"></div>
+            </div>
+        `;
+        
+        if (elData.type === 'heading' || elData.type === 'text') {
+            const className = elData.type === 'heading' ? 'canvas-heading-element' : 'canvas-text-element';
+            element.innerHTML = controls + `<div class="${className}" contenteditable="true">${elData.content || ''}</div>`;
+            const contentEl = element.querySelector('[contenteditable]');
+            if (contentEl) {
+                contentEl.style.fontSize = elData.fontSize || (elData.type === 'heading' ? '24px' : '16px');
+                contentEl.style.textAlign = elData.textAlign || 'left';
+                if (elData.fontFamily) contentEl.style.fontFamily = elData.fontFamily;
+                if (elData.color) contentEl.style.color = elData.color;
+                if (elData.fontWeight) contentEl.style.fontWeight = elData.fontWeight;
+                if (elData.fontStyle) contentEl.style.fontStyle = elData.fontStyle;
+                if (elData.textDecoration) contentEl.style.textDecoration = elData.textDecoration;
+            }
+        } else if (elData.type === 'image' && elData.imageKey) {
+            element.innerHTML = controls + `
+                <div class="canvas-image-element">
+                    <img data-s3-key="${elData.imageKey}" src="${elData.imageUrl || ''}" alt="Custom page image">
+                </div>
+            `;
+        }
+        
+        element.addEventListener('click', (e) => {
+            if (!e.target.closest('.element-controls') && !e.target.closest('.drag-handle')) {
+                selectSoffitesCanvasElement(element);
+            }
+        });
+        
+        setupCanvasElementDragging(element);
+        setupCanvasElementResizing(element);
+        
+        canvas.appendChild(element);
+    });
+}
+
+// Save soffites page
+async function saveSoffitesPage() {
+    const title = document.getElementById('soffitesPageTitle').value.trim();
+    if (!title) { alert('Please enter a page title'); return; }
+
+    const canvas = document.getElementById('soffitesPageCanvas');
+    
+    const elements = [];
+    canvas.querySelectorAll('.canvas-element').forEach(el => {
+        const elementData = {
+            id: el.dataset.id,
+            type: el.dataset.type,
+            position: {
+                x: parseInt(el.style.left),
+                y: parseInt(el.style.top)
+            },
+            size: {
+                width: el.offsetWidth,
+                height: el.offsetHeight
+            }
+        };
+
+        if (el.dataset.type === 'heading' || el.dataset.type === 'text') {
+            const contentEl = el.querySelector('[contenteditable]');
+            elementData.content = contentEl.innerHTML;
+            const defaultFontSize = el.dataset.type === 'heading' ? '24px' : '16px';
+            elementData.fontSize = contentEl.style.fontSize || defaultFontSize;
+            elementData.textAlign = contentEl.style.textAlign || 'left';
+            elementData.fontFamily = contentEl.style.fontFamily || 'Arial, sans-serif';
+            elementData.color = contentEl.style.color || '#000000';
+            elementData.fontWeight = contentEl.style.fontWeight || 'normal';
+            elementData.fontStyle = contentEl.style.fontStyle || 'normal';
+            elementData.textDecoration = contentEl.style.textDecoration || 'none';
+        } else if (el.dataset.type === 'image') {
+            const img = el.querySelector('img');
+            if (img) {
+                elementData.imageKey = img.dataset.s3Key || null;
+                elementData.imageUrl = img.src || null;
+            }
+        }
+
+        elements.push(elementData);
+    });
+
+    soffitesCustomPage = {
+        id: 'soffites-page',
+        title: title,
+        elements: elements,
+        canvasWidth: canvas.clientWidth,
+        canvasHeight: canvas.clientHeight,
+        lastModified: new Date().toISOString()
+    };
+
+    try {
+        await saveSoffitesPageToDatabase();
+        cancelSoffitesPageEdit();
+        updateSoffitesPageButton();
+        alert('Soffites page saved successfully!');
+    } catch (error) {
+        console.error('Error saving soffites page:', error);
+        alert('Error saving soffites page: ' + error.message);
+    }
+}
+
+// Save soffites page to database
+async function saveSoffitesPageToDatabase() {
+    if (!currentProjectId) {
+        console.error('No project ID found');
+        return;
+    }
+    
+    try {
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                id: currentProjectId,
+                soffitesCustomPage: soffitesCustomPage
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        if (window.projectData) {
+            window.projectData.soffitesCustomPage = soffitesCustomPage;
+        }
+
+        console.log('[SUCCESS] Soffites page saved to database');
+    } catch (error) {
+        console.error('[ERROR] Error saving soffites page:', error);
+        throw error;
+    }
+}
+
+// Cancel soffites page edit
+function cancelSoffitesPageEdit() {
+    const builder = document.getElementById('soffitesPageBuilder');
+    const list = document.getElementById('soffiteList');
+    const summary = document.getElementById('soffiteSelectionSummary');
+    
+    builder.style.display = 'none';
+    if (list) list.style.display = 'block';
+    if (summary) summary.style.display = 'block';
+    
+    clearSoffitesPageCanvas();
+}
+
+// Load soffites page from project
+function loadSoffitesPageFromProject(project) {
+    console.log('[LOAD] Loading soffites page from project...');
+    
+    if (project && project.soffitesCustomPage && typeof project.soffitesCustomPage === 'object') {
+        soffitesCustomPage = project.soffitesCustomPage;
+        console.log('[SUCCESS] Loaded soffites page');
+    } else {
+        soffitesCustomPage = null;
+        console.log('[INFO] No soffites page found in project');
+    }
+    
+    updateSoffitesPageButton();
+}
+
+// Make soffites page functions globally available
+window.saveSoffitesPage = saveSoffitesPage;
+window.cancelSoffitesPageEdit = cancelSoffitesPageEdit;
+window.initializeSoffitesPage = initializeSoffitesPage;
+window.loadSoffitesPageFromProject = loadSoffitesPageFromProject;
+window.showSoffitesPageBuilder = showSoffitesPageBuilder;
+
 // Make functions globally available
 window.showCustomPageBuilder = showCustomPageBuilder;
 window.saveCustomPage = saveCustomPage;

@@ -1715,7 +1715,8 @@ function displaySoffiteList() {
                                         <div style="width: 80px; height: 60px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
                                             <img src="https://protection-sismique-equipment-images.s3.us-east-1.amazonaws.com/${img.key}" 
                                                  alt="${img.filename || 'Soffite image'}"
-                                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                                 style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                                                 onclick="openImageModal('${img.key}', '${img.filename || 'Soffite image'}')"
                                                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2760%27%3E%3Crect width=%2780%27 height=%2760%27 fill=%27%23f0f0f0%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27 font-size=%2710%27%3ENo Image%3C/text%3E%3C/svg%3E'">
                                         </div>
                                         <div style="font-size: 11px; color: #666; margin-top: 4px; max-width: 80px; word-wrap: break-word;">

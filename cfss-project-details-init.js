@@ -295,7 +295,7 @@ async function initializeWallData(project, projectId) {
 }
 
 function initializeCustomPagesWithData(project) {
-    console.log('ðŸŽ¨ Initializing Custom Pages with project data...');
+    console.log('🎨 Initializing Custom Pages with project data...');
     
     // Initialize the UI
     initializeCustomPages();
@@ -304,7 +304,11 @@ function initializeCustomPagesWithData(project) {
     loadCustomPagesFromProject(project);
     updateCustomPagesSummary();
     
-    console.log('âœ… Custom pages initialization complete');
+    // Initialize and load soffites page
+    initializeSoffitesPage();
+    loadSoffitesPageFromProject(project);
+    
+    console.log('✅ Custom pages initialization complete');
 }
 
 // FIXED: Report generation uses ONLY revision system
