@@ -6716,10 +6716,10 @@ function displayCFSSData(cfssData) {
     let floorLabel = storey.label;
     let arrowHtml = '';
     if (isFirstInGroup) {
-        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">â–¼</span>';
+        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">▼</span>';
     }
     if (isLastInGroup) {
-        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">â–²</span>';
+        arrowHtml = ' <span class="group-arrow" data-floor-index="' + index + '" style="color: #17a2b8; font-weight: bold; margin-left: 8px; cursor: pointer; font-size: 14px;">▲</span>';
     }
     
     html += `
@@ -10489,7 +10489,7 @@ function renderReviewWalls() {
                             <span>${montantInfo}</span>
                         </div>
                     </div>
-                    <span class="expand-icon">â–¼</span>
+                    <span class="expand-icon">▼</span>
                 </div>
                 <div class="accordion-details">
                     ${hasSet2 ? `
@@ -10734,7 +10734,7 @@ function renderReviewParapets() {
                             <span><i class="fas fa-arrows-alt-v"></i> ${heightDisplay}</span>
                         </div>
                     </div>
-                    <span class="expand-icon">â–¼</span>
+                    <span class="expand-icon">▼</span>
                 </div>
                 <div class="accordion-details">
                     <div class="detail-grid">
@@ -10877,7 +10877,7 @@ function renderReviewWindows() {
                             <span><i class="fas fa-expand"></i> ${size}</span>
                         </div>
                     </div>
-                    <span class="expand-icon">â–¼</span>
+                    <span class="expand-icon">▼</span>
                 </div>
                 <div class="accordion-details">
                     <div class="detail-grid">
