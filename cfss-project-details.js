@@ -5341,6 +5341,7 @@ function generateEditForm(wall, originalIndex) {
                                 </div>
 
                                 <div class="form-group">
+                                    <label for="editEspacement2_${originalIndex}"><strong>Espacement 2:</strong></label>
                                     <select id="editEspacement2_${originalIndex}" 
                                             style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                                         <option value="">Select espacement...</option>
@@ -5660,6 +5661,17 @@ function toggleEditSet2(wallIndex, show, event) {
     if (show) {
         set2Container.style.display = 'block';
         addBtn.style.display = 'none';
+        
+        // Set default values for Set 2
+        const deflexion2 = document.getElementById(`editDeflexionMax2_${wallIndex}`);
+        const espacement2 = document.getElementById(`editEspacement2_${wallIndex}`);
+        const entremise2Part1 = document.getElementById(`editEntremise2Part1_${wallIndex}`);
+        const entremise2Part2 = document.getElementById(`editEntremise2Part2_${wallIndex}`);
+        
+        if (deflexion2 && !deflexion2.value) deflexion2.value = 'L/360';
+        if (espacement2 && !espacement2.value) espacement2.value = '16"c/c';
+        if (entremise2Part1 && !entremise2Part1.value) entremise2Part1.value = '150U50-43';
+        if (entremise2Part2 && !entremise2Part2.value) entremise2Part2.value = '48"c/c';
     } else {
         set2Container.style.display = 'none';
         addBtn.style.display = 'inline-block';
