@@ -5147,8 +5147,18 @@ function generateEditForm(wall, originalIndex) {
                     <!-- Floor -->
                     <div class="form-group">
                         <label for="editFloor${originalIndex}"><strong>Floor:</strong></label>
-                        <input type="text" id="editFloor${originalIndex}" value="${wall.floor || ''}" 
-                               required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <input type="text" id="editFloor${originalIndex}" value="${wall.floor || ''}" 
+                                   required style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <div style="display: flex; gap: 15px; font-size: 13px; color: #666;">
+                                <span style="padding: 4px 8px; background: #e7f5e9; border-radius: 4px; min-width: 80px;">
+                                    <strong style="color: #28a745;">ULS:</strong> <span id="editFloorULSDisplay${originalIndex}">--</span>
+                                </span>
+                                <span style="padding: 4px 8px; background: #d1ecf1; border-radius: 4px; min-width: 80px;">
+                                    <strong style="color: #17a2b8;">SLS:</strong> <span id="editFloorSLSDisplay${originalIndex}">--</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Hauteur Max with Units -->
@@ -5762,6 +5772,9 @@ function editEquipment(index) {
         // Initialize minor field visibility based on current unit selection
         toggleEditMinorField(index, 'hauteur');
         
+        // Setup floor ULS/SLS display for edit form
+        setupEditFloorULSSLSListener(index);
+        
         console.log(`Edit mode setup complete for wall ${index}`);
     }, 100);
 }
@@ -6281,6 +6294,22 @@ function setupFloorInputListener() {
     
     // Also update on form show
     floorInput.addEventListener('focus', function() {
+        updateFloorULSSLS(floorInput.value, ulsDisplay, slsDisplay);
+    });
+}
+
+// Setup floor input listener for ULS/SLS display in edit form
+function setupEditFloorULSSLSListener(wallIndex) {
+    const floorInput = document.getElementById(`editFloor${wallIndex}`);
+    const ulsDisplay = document.getElementById(`editFloorULSDisplay${wallIndex}`);
+    const slsDisplay = document.getElementById(`editFloorSLSDisplay${wallIndex}`);
+    
+    if (!floorInput || !ulsDisplay || !slsDisplay) return;
+    
+    // Update immediately with current value
+    updateFloorULSSLS(floorInput.value, ulsDisplay, slsDisplay);
+    
+    floorInput.addEventListener('input', function() {
         updateFloorULSSLS(floorInput.value, ulsDisplay, slsDisplay);
     });
 }
