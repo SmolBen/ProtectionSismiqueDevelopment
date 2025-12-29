@@ -182,6 +182,17 @@ function setupCanvasEvents() {
             deselectAllCanvasElements();
         }
     });
+    
+    // Keyboard delete for selected element
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === 'Delete' || e.key === 'Backspace') && selectedCanvasElement) {
+            // Don't delete if user is editing text
+            if (document.activeElement.closest('[contenteditable]')) return;
+            e.preventDefault();
+            const id = selectedCanvasElement.dataset.id;
+            deleteCanvasElement(id);
+        }
+    });
 }
 
 // Create canvas element
@@ -307,13 +318,16 @@ if (type === 'heading') {
 
 // Setup element dragging
 function setupCanvasElementDragging(element) {
+    console.log('[DRAG SETUP] Setting up dragging for element:', element.dataset.id, element.dataset.type);
     let isDragging = false;
     let startX, startY, initialLeft, initialTop;
     
     function startDrag(e) {
+        console.log('[DRAG] startDrag called, target:', e.target.className);
         if (e.target.closest('.element-controls') || 
             e.target.closest('.resize-handle') ||
             e.target.closest('[contenteditable]')) {
+            console.log('[DRAG] Ignoring drag - clicked on controls/resize/editable');
             return;
         }
         
@@ -324,6 +338,8 @@ function setupCanvasElementDragging(element) {
         startY = e.clientY;
         initialLeft = element.offsetLeft;
         initialTop = element.offsetTop;
+        
+        console.log('[DRAG] Drag started - startX:', startX, 'startY:', startY, 'initialLeft:', initialLeft, 'initialTop:', initialTop);
         
         e.preventDefault();
     }
@@ -337,16 +353,21 @@ function setupCanvasElementDragging(element) {
         let newLeft = initialLeft + deltaX;
         let newTop = initialTop + deltaY;
         
-        const canvas = document.getElementById('customPageCanvas');
-        newLeft = Math.max(0, Math.min(newLeft, canvas.offsetWidth - element.offsetWidth));
-        newTop = Math.max(0, Math.min(newTop, canvas.offsetHeight - element.offsetHeight));
+        const canvas = element.closest('.custom-page-canvas');
+        console.log('[DRAG] onDrag - canvas found:', !!canvas, canvas?.id);
+        if (canvas) {
+            newLeft = Math.max(0, Math.min(newLeft, canvas.offsetWidth - element.offsetWidth));
+            newTop = Math.max(0, Math.min(newTop, canvas.offsetHeight - element.offsetHeight));
+        }
         
         element.style.left = newLeft + 'px';
         element.style.top = newTop + 'px';
+        console.log('[DRAG] Moving to:', newLeft, newTop);
     }
     
     function stopDrag() {
         if (isDragging) {
+            console.log('[DRAG] Drag stopped');
             isDragging = false;
             element.classList.remove('dragging');
         }
@@ -355,6 +376,7 @@ function setupCanvasElementDragging(element) {
     element.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', onDrag);
     document.addEventListener('mouseup', stopDrag);
+    console.log('[DRAG SETUP] Event listeners attached for element:', element.dataset.id);
 }
 
 // Setup element resizing
@@ -1514,6 +1536,7 @@ async function setSoffitesBlankCFSSBackground() {
 
 // Show soffites page builder
 function showSoffitesPageBuilder() {
+    console.log('[SOFFITES BUILDER] Showing soffites page builder...');
     const builder = document.getElementById('soffitesPageBuilder');
     const list = document.getElementById('soffiteList');
     const summary = document.getElementById('soffiteSelectionSummary');
@@ -1524,13 +1547,19 @@ function showSoffitesPageBuilder() {
     
     setSoffitesBlankCFSSBackground();
     
+    // IMPORTANT: Setup canvas events FIRST before loading any elements
+    // Otherwise cloning the canvas will strip event listeners from elements
+    setupSoffitesCanvasEvents();
+    
     if (soffitesCustomPage && soffitesCustomPage.elements && soffitesCustomPage.elements.length > 0) {
         // Editing existing page
+        console.log('[SOFFITES BUILDER] Editing existing page with', soffitesCustomPage.elements.length, 'elements');
         isEditingSoffitesPage = true;
         document.getElementById('soffitesPageTitle').value = soffitesCustomPage.title || '';
         loadSoffitesPageElements(soffitesCustomPage.elements);
     } else {
         // Creating new page
+        console.log('[SOFFITES BUILDER] Creating new page');
         isEditingSoffitesPage = false;
         soffitesCustomPage = {
             id: 'soffites-page',
@@ -1541,18 +1570,22 @@ function showSoffitesPageBuilder() {
         document.getElementById('soffitesPageTitle').value = '';
         clearSoffitesPageCanvas();
     }
-    
-    setupSoffitesCanvasEvents();
 }
 
 // Setup canvas events for soffites page
 function setupSoffitesCanvasEvents() {
+    console.log('[SOFFITES CANVAS] Setting up canvas events...');
     const canvas = document.getElementById('soffitesPageCanvas');
-    if (!canvas) return;
+    if (!canvas) {
+        console.error('[SOFFITES CANVAS] Canvas not found!');
+        return;
+    }
     
     // Remove existing listeners by cloning
+    console.log('[SOFFITES CANVAS] Cloning canvas to remove old listeners. Current children:', canvas.children.length);
     const newCanvas = canvas.cloneNode(true);
     canvas.parentNode.replaceChild(newCanvas, canvas);
+    console.log('[SOFFITES CANVAS] Canvas replaced. New canvas children:', newCanvas.children.length);
     
     newCanvas.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -1590,12 +1623,25 @@ function setupSoffitesCanvasEvents() {
             deselectAllSoffitesCanvasElements();
         }
     });
+    
+    // Keyboard delete for selected element
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === 'Delete' || e.key === 'Backspace') && selectedSoffitesCanvasElement) {
+            // Don't delete if user is editing text
+            if (document.activeElement.closest('[contenteditable]')) return;
+            e.preventDefault();
+            const id = selectedSoffitesCanvasElement.dataset.id;
+            deleteSoffitesCanvasElement(id);
+        }
+    });
 }
 
 // Create canvas element for soffites page
 function createSoffitesCanvasElement(type, x, y) {
+    console.log('[SOFFITES CREATE] Creating element type:', type, 'at x:', x, 'y:', y);
     soffitesPageElementCounter++;
     const canvas = document.getElementById('soffitesPageCanvas');
+    console.log('[SOFFITES CREATE] Canvas found:', !!canvas, 'canvas id:', canvas?.id);
     const element = document.createElement('div');
     element.className = 'canvas-element';
     element.dataset.id = soffitesPageElementCounter;
@@ -1687,10 +1733,12 @@ function createSoffitesCanvasElement(type, x, y) {
         }
     });
     
+    console.log('[SOFFITES CREATE] Setting up dragging for element', element.dataset.id);
     setupCanvasElementDragging(element);
     setupCanvasElementResizing(element);
     
     canvas.appendChild(element);
+    console.log('[SOFFITES CREATE] Element', element.dataset.id, 'created and appended');
     selectSoffitesCanvasElement(element);
 }
 
@@ -1809,9 +1857,14 @@ function clearSoffitesPageCanvas() {
 }
 
 function loadSoffitesPageElements(elements) {
+    console.log('[SOFFITES LOAD] Loading', elements?.length || 0, 'elements');
     clearSoffitesPageCanvas();
     const canvas = document.getElementById('soffitesPageCanvas');
-    if (!canvas || !elements) return;
+    if (!canvas || !elements) {
+        console.error('[SOFFITES LOAD] Canvas not found or no elements!', !!canvas, !!elements);
+        return;
+    }
+    console.log('[SOFFITES LOAD] Canvas found:', canvas.id);
     
     elements.forEach(elData => {
         soffitesPageElementCounter++;
@@ -1866,11 +1919,14 @@ function loadSoffitesPageElements(elements) {
             }
         });
         
+        console.log('[SOFFITES LOAD] Setting up dragging for element', element.dataset.id);
         setupCanvasElementDragging(element);
         setupCanvasElementResizing(element);
         
         canvas.appendChild(element);
+        console.log('[SOFFITES LOAD] Element', element.dataset.id, 'appended to canvas');
     });
+    console.log('[SOFFITES LOAD] All elements loaded');
 }
 
 // Save soffites page
