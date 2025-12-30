@@ -1448,39 +1448,118 @@ function loadCustomPagesFromProject(project) {
 }
 
 // ==============================================
-// SOFFITES CUSTOM PAGE FUNCTIONALITY
+// SOFFITES CUSTOM PAGES FUNCTIONALITY (Multiple Pages)
 // ==============================================
 
-let soffitesCustomPage = null;
+let soffitesCustomPages = [];
+let currentSoffitesPage = null;
 let isEditingSoffitesPage = false;
 let soffitesPageElementCounter = 0;
 let selectedSoffitesCanvasElement = null;
 let isSoffitesDropping = false;
+let soffitesResizeTimeout;
 
 // Initialize Soffites Page system
 function initializeSoffitesPage() {
-    console.log('[INIT] Initializing Soffites Page system...');
-    
-    const createButton = document.getElementById('createSoffitesPageButton');
-    if (createButton) {
-        createButton.addEventListener('click', () => showSoffitesPageBuilder());
-    }
-    
+    console.log('[INIT] Initializing Soffites Pages system...');
     setupSoffitesPagePalette();
-    updateSoffitesPageButton();
-    
-    console.log('[SUCCESS] Soffites Page initialized');
+    console.log('[SUCCESS] Soffites Pages initialized');
 }
 
-// Update button text based on whether soffites page exists
-function updateSoffitesPageButton() {
-    const button = document.getElementById('createSoffitesPageButton');
-    if (!button) return;
+// Toggle between Soffites List and Soffites Pages views
+function toggleSoffitesView() {
+    const listView = document.getElementById('soffitesListView');
+    const pagesView = document.getElementById('soffitesPagesView');
     
-    if (soffitesCustomPage && soffitesCustomPage.elements && soffitesCustomPage.elements.length > 0) {
-        button.innerHTML = '<i class="fas fa-edit"></i> Edit Soffites Page';
+    if (listView.style.display === 'none') {
+        // Show Soffites List
+        listView.style.display = 'block';
+        pagesView.style.display = 'none';
     } else {
-        button.innerHTML = '<i class="fas fa-file-alt"></i> Create Soffites Page';
+        // Show Soffites Pages
+        listView.style.display = 'none';
+        pagesView.style.display = 'block';
+        renderSoffitesPagesList();
+    }
+}
+
+// Render soffites pages list
+function renderSoffitesPagesList() {
+    const container = document.getElementById('soffitesPagesList');
+    if (!container) return;
+    
+    if (!soffitesCustomPages || soffitesCustomPages.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #6c757d;">
+                <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                <p>No soffites pages yet. Click "Add Soffites Page" to create one.</p>
+            </div>
+        `;
+        updateSoffitesPagesSummary();
+        return;
+    }
+    
+    container.innerHTML = soffitesCustomPages.map(page => `
+        <div class="custom-page-card" data-page-id="${page.id}">
+            <div>
+                <h3>${page.title || 'Untitled Page'}</h3>
+                <p>${page.elements?.length || 0} element${page.elements?.length !== 1 ? 's' : ''} • Last modified: ${page.lastModified ? new Date(page.lastModified).toLocaleDateString() : 'N/A'}</p>
+            </div>
+            <div class="custom-page-actions">
+                <button class="button primary" onclick="editSoffitesPage('${page.id}')">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="button secondary" onclick="deleteSoffitesPage('${page.id}')" style="background: #6c757d;">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    `).join('');
+    
+    updateSoffitesPagesSummary();
+}
+
+// Update soffites pages summary
+function updateSoffitesPagesSummary() {
+    const el = document.getElementById('soffitesPagesSelectionSummary');
+    if (!el) return;
+    
+    const count = soffitesCustomPages?.length || 0;
+    el.innerHTML = `<i class="fas fa-file-alt"></i> ${count} soffites page${count !== 1 ? 's' : ''} added`;
+}
+
+// Edit existing soffites page
+function editSoffitesPage(pageId) {
+    const page = soffitesCustomPages.find(p => p.id === pageId || p.id === parseInt(pageId));
+    if (!page) {
+        console.error('[ERROR] Soffites page not found:', pageId);
+        return;
+    }
+    
+    currentSoffitesPage = page;
+    isEditingSoffitesPage = true;
+    showSoffitesPageBuilder(page);
+}
+
+// Delete soffites page
+async function deleteSoffitesPage(pageId) {
+    if (!confirm('Are you sure you want to delete this soffites page?')) return;
+    
+    const index = soffitesCustomPages.findIndex(p => p.id === pageId || p.id === parseInt(pageId));
+    if (index === -1) {
+        console.error('[ERROR] Soffites page not found:', pageId);
+        return;
+    }
+    
+    soffitesCustomPages.splice(index, 1);
+    
+    try {
+        await saveSoffitesPagesToDatabase();
+        renderSoffitesPagesList();
+        console.log('[SUCCESS] Soffites page deleted');
+    } catch (error) {
+        console.error('[ERROR] Failed to delete soffites page:', error);
+        alert('Error deleting soffites page: ' + error.message);
     }
 }
 
@@ -1535,34 +1614,36 @@ async function setSoffitesBlankCFSSBackground() {
 }
 
 // Show soffites page builder
-function showSoffitesPageBuilder() {
+function showSoffitesPageBuilder(pageToEdit = null) {
     console.log('[SOFFITES BUILDER] Showing soffites page builder...');
     const builder = document.getElementById('soffitesPageBuilder');
-    const list = document.getElementById('soffiteList');
-    const summary = document.getElementById('soffiteSelectionSummary');
+    const listView = document.getElementById('soffitesListView');
+    const pagesView = document.getElementById('soffitesPagesView');
     
-    if (list) list.style.display = 'none';
-    if (summary) summary.style.display = 'none';
+    if (listView) listView.style.display = 'none';
+    if (pagesView) pagesView.style.display = 'none';
     builder.style.display = 'block';
     
     setSoffitesBlankCFSSBackground();
     
     // IMPORTANT: Setup canvas events FIRST before loading any elements
-    // Otherwise cloning the canvas will strip event listeners from elements
     setupSoffitesCanvasEvents();
     
-    if (soffitesCustomPage && soffitesCustomPage.elements && soffitesCustomPage.elements.length > 0) {
+    if (pageToEdit) {
         // Editing existing page
-        console.log('[SOFFITES BUILDER] Editing existing page with', soffitesCustomPage.elements.length, 'elements');
+        console.log('[SOFFITES BUILDER] Editing existing page with', pageToEdit.elements?.length || 0, 'elements');
         isEditingSoffitesPage = true;
-        document.getElementById('soffitesPageTitle').value = soffitesCustomPage.title || '';
-        loadSoffitesPageElements(soffitesCustomPage.elements);
+        currentSoffitesPage = pageToEdit;
+        document.getElementById('soffitesPageTitle').value = pageToEdit.title || '';
+        if (pageToEdit.elements && pageToEdit.elements.length > 0) {
+            loadSoffitesPageElements(pageToEdit.elements);
+        }
     } else {
         // Creating new page
         console.log('[SOFFITES BUILDER] Creating new page');
         isEditingSoffitesPage = false;
-        soffitesCustomPage = {
-            id: 'soffites-page',
+        currentSoffitesPage = {
+            id: Date.now(),
             title: '',
             elements: [],
             createdAt: new Date().toISOString()
@@ -1570,6 +1651,8 @@ function showSoffitesPageBuilder() {
         document.getElementById('soffitesPageTitle').value = '';
         clearSoffitesPageCanvas();
     }
+    
+    setupSoffitesCanvasResizeHandler();
 }
 
 // Setup canvas events for soffites page
@@ -1582,10 +1665,8 @@ function setupSoffitesCanvasEvents() {
     }
     
     // Remove existing listeners by cloning
-    console.log('[SOFFITES CANVAS] Cloning canvas to remove old listeners. Current children:', canvas.children.length);
     const newCanvas = canvas.cloneNode(true);
     canvas.parentNode.replaceChild(newCanvas, canvas);
-    console.log('[SOFFITES CANVAS] Canvas replaced. New canvas children:', newCanvas.children.length);
     
     newCanvas.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -1638,10 +1719,8 @@ function setupSoffitesCanvasEvents() {
 
 // Create canvas element for soffites page
 function createSoffitesCanvasElement(type, x, y) {
-    console.log('[SOFFITES CREATE] Creating element type:', type, 'at x:', x, 'y:', y);
     soffitesPageElementCounter++;
     const canvas = document.getElementById('soffitesPageCanvas');
-    console.log('[SOFFITES CREATE] Canvas found:', !!canvas, 'canvas id:', canvas?.id);
     const element = document.createElement('div');
     element.className = 'canvas-element';
     element.dataset.id = soffitesPageElementCounter;
@@ -1733,12 +1812,10 @@ function createSoffitesCanvasElement(type, x, y) {
         }
     });
     
-    console.log('[SOFFITES CREATE] Setting up dragging for element', element.dataset.id);
     setupCanvasElementDragging(element);
     setupCanvasElementResizing(element);
     
     canvas.appendChild(element);
-    console.log('[SOFFITES CREATE] Element', element.dataset.id, 'created and appended');
     selectSoffitesCanvasElement(element);
 }
 
@@ -1856,27 +1933,53 @@ function clearSoffitesPageCanvas() {
     }
 }
 
-function loadSoffitesPageElements(elements) {
-    console.log('[SOFFITES LOAD] Loading', elements?.length || 0, 'elements');
+// Setup canvas resize handler for soffites
+function setupSoffitesCanvasResizeHandler() {
+    window.addEventListener('resize', () => {
+        clearTimeout(soffitesResizeTimeout);
+        soffitesResizeTimeout = setTimeout(() => {
+            const canvas = document.getElementById('soffitesPageCanvas');
+            if (!canvas || !currentSoffitesPage || !currentSoffitesPage.elements) return;
+            
+            // Reload elements with new scaling
+            loadSoffitesPageElements(currentSoffitesPage.elements);
+        }, 250);
+    });
+}
+
+async function loadSoffitesPageElements(elements) {
     clearSoffitesPageCanvas();
     const canvas = document.getElementById('soffitesPageCanvas');
-    if (!canvas || !elements) {
-        console.error('[SOFFITES LOAD] Canvas not found or no elements!', !!canvas, !!elements);
-        return;
-    }
-    console.log('[SOFFITES LOAD] Canvas found:', canvas.id);
+    if (!canvas || !elements) return;
     
-    elements.forEach(elData => {
+    // Calculate scale factors based on saved canvas size vs current size
+    const savedWidth = currentSoffitesPage?.canvasWidth || canvas.clientWidth;
+    const savedHeight = currentSoffitesPage?.canvasHeight || canvas.clientHeight;
+    const currentWidth = canvas.clientWidth;
+    const currentHeight = canvas.clientHeight;
+    
+    // Use uniform scaling to preserve aspect ratios
+    const scaleX = currentWidth / savedWidth;
+    const scaleY = currentHeight / savedHeight;
+    const uniformScale = Math.min(scaleX, scaleY);
+    
+    for (const elData of elements) {
         soffitesPageElementCounter++;
         const element = document.createElement('div');
         element.className = 'canvas-element';
         element.dataset.id = soffitesPageElementCounter;
         element.dataset.type = elData.type;
         
-        element.style.left = elData.position.x + 'px';
-        element.style.top = elData.position.y + 'px';
-        element.style.width = elData.size.width + 'px';
-        element.style.height = elData.size.height + 'px';
+        // Apply uniform scaling to position and size to preserve aspect ratios
+        const scaledX = Math.round(elData.position.x * uniformScale);
+        const scaledY = Math.round(elData.position.y * uniformScale);
+        const scaledWidth = Math.round(elData.size.width * uniformScale);
+        const scaledHeight = Math.round(elData.size.height * uniformScale);
+        
+        element.style.left = scaledX + 'px';
+        element.style.top = scaledY + 'px';
+        element.style.width = scaledWidth + 'px';
+        element.style.height = scaledHeight + 'px';
         
         const controls = `
             <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
@@ -1897,7 +2000,10 @@ function loadSoffitesPageElements(elements) {
             element.innerHTML = controls + `<div class="${className}" contenteditable="true">${elData.content || ''}</div>`;
             const contentEl = element.querySelector('[contenteditable]');
             if (contentEl) {
-                contentEl.style.fontSize = elData.fontSize || (elData.type === 'heading' ? '24px' : '16px');
+                // Scale font size
+                const originalFontSize = parseFloat(elData.fontSize) || (elData.type === 'heading' ? 24 : 16);
+                const scaledFontSize = Math.round(originalFontSize * uniformScale);
+                contentEl.style.fontSize = scaledFontSize + 'px';
                 contentEl.style.textAlign = elData.textAlign || 'left';
                 if (elData.fontFamily) contentEl.style.fontFamily = elData.fontFamily;
                 if (elData.color) contentEl.style.color = elData.color;
@@ -1906,9 +2012,16 @@ function loadSoffitesPageElements(elements) {
                 if (elData.textDecoration) contentEl.style.textDecoration = elData.textDecoration;
             }
         } else if (elData.type === 'image' && elData.imageKey) {
+            const key = elData.imageKey;
+            let src = elData.imageUrl || '';
+            
+            // Re-sign the image URL
+            const fresh = await signImageForPreview(key).catch(() => null);
+            if (fresh) src = fresh;
+            
             element.innerHTML = controls + `
                 <div class="canvas-image-element">
-                    <img data-s3-key="${elData.imageKey}" src="${elData.imageUrl || ''}" alt="Custom page image">
+                    <img data-s3-key="${key}" src="${src}" alt="Custom page image">
                 </div>
             `;
         }
@@ -1919,14 +2032,11 @@ function loadSoffitesPageElements(elements) {
             }
         });
         
-        console.log('[SOFFITES LOAD] Setting up dragging for element', element.dataset.id);
         setupCanvasElementDragging(element);
         setupCanvasElementResizing(element);
         
         canvas.appendChild(element);
-        console.log('[SOFFITES LOAD] Element', element.dataset.id, 'appended to canvas');
-    });
-    console.log('[SOFFITES LOAD] All elements loaded');
+    }
 }
 
 // Save soffites page
@@ -1973,19 +2083,27 @@ async function saveSoffitesPage() {
         elements.push(elementData);
     });
 
-    soffitesCustomPage = {
-        id: 'soffites-page',
-        title: title,
-        elements: elements,
-        canvasWidth: canvas.clientWidth,
-        canvasHeight: canvas.clientHeight,
-        lastModified: new Date().toISOString()
-    };
+    // Update or create page
+    currentSoffitesPage.title = title;
+    currentSoffitesPage.elements = elements;
+    currentSoffitesPage.canvasWidth = canvas.clientWidth;
+    currentSoffitesPage.canvasHeight = canvas.clientHeight;
+    currentSoffitesPage.lastModified = new Date().toISOString();
+
+    if (isEditingSoffitesPage) {
+        // Update existing page in array
+        const index = soffitesCustomPages.findIndex(p => p.id === currentSoffitesPage.id);
+        if (index !== -1) {
+            soffitesCustomPages[index] = currentSoffitesPage;
+        }
+    } else {
+        // Add new page to array
+        soffitesCustomPages.push(currentSoffitesPage);
+    }
 
     try {
-        await saveSoffitesPageToDatabase();
+        await saveSoffitesPagesToDatabase();
         cancelSoffitesPageEdit();
-        updateSoffitesPageButton();
         alert('Soffites page saved successfully!');
     } catch (error) {
         console.error('Error saving soffites page:', error);
@@ -1993,8 +2111,8 @@ async function saveSoffitesPage() {
     }
 }
 
-// Save soffites page to database
-async function saveSoffitesPageToDatabase() {
+// Save soffites pages to database
+async function saveSoffitesPagesToDatabase() {
     if (!currentProjectId) {
         console.error('No project ID found');
         return;
@@ -2006,7 +2124,7 @@ async function saveSoffitesPageToDatabase() {
             headers: getAuthHeaders(),
             body: JSON.stringify({
                 id: currentProjectId,
-                soffitesCustomPage: soffitesCustomPage
+                soffitesCustomPages: soffitesCustomPages
             })
         });
 
@@ -2016,12 +2134,12 @@ async function saveSoffitesPageToDatabase() {
         }
 
         if (window.projectData) {
-            window.projectData.soffitesCustomPage = soffitesCustomPage;
+            window.projectData.soffitesCustomPages = soffitesCustomPages;
         }
 
-        console.log('[SUCCESS] Soffites page saved to database');
+        console.log('[SUCCESS] Soffites pages saved to database');
     } catch (error) {
-        console.error('[ERROR] Error saving soffites page:', error);
+        console.error('[ERROR] Error saving soffites pages:', error);
         throw error;
     }
 }
@@ -2029,29 +2147,36 @@ async function saveSoffitesPageToDatabase() {
 // Cancel soffites page edit
 function cancelSoffitesPageEdit() {
     const builder = document.getElementById('soffitesPageBuilder');
-    const list = document.getElementById('soffiteList');
-    const summary = document.getElementById('soffiteSelectionSummary');
+    const pagesView = document.getElementById('soffitesPagesView');
     
     builder.style.display = 'none';
-    if (list) list.style.display = 'block';
-    if (summary) summary.style.display = 'block';
+    if (pagesView) pagesView.style.display = 'block';
     
     clearSoffitesPageCanvas();
+    currentSoffitesPage = null;
+    isEditingSoffitesPage = false;
+    
+    renderSoffitesPagesList();
 }
 
-// Load soffites page from project
+// Load soffites pages from project
 function loadSoffitesPageFromProject(project) {
-    console.log('[LOAD] Loading soffites page from project...');
+    console.log('[LOAD] Loading soffites pages from project...');
     
-    if (project && project.soffitesCustomPage && typeof project.soffitesCustomPage === 'object') {
-        soffitesCustomPage = project.soffitesCustomPage;
-        console.log('[SUCCESS] Loaded soffites page');
+    // Support both old single page format and new multi-page format
+    if (project && project.soffitesCustomPages && Array.isArray(project.soffitesCustomPages)) {
+        soffitesCustomPages = project.soffitesCustomPages;
+        console.log('[SUCCESS] Loaded', soffitesCustomPages.length, 'soffites pages');
+    } else if (project && project.soffitesCustomPage && typeof project.soffitesCustomPage === 'object') {
+        // Migrate old single page to array format
+        soffitesCustomPages = [project.soffitesCustomPage];
+        console.log('[SUCCESS] Migrated single soffites page to array format');
     } else {
-        soffitesCustomPage = null;
-        console.log('[INFO] No soffites page found in project');
+        soffitesCustomPages = [];
+        console.log('[INFO] No soffites pages found in project');
     }
     
-    updateSoffitesPageButton();
+    updateSoffitesPagesSummary();
 }
 
 // Make soffites page functions globally available
@@ -2060,6 +2185,9 @@ window.cancelSoffitesPageEdit = cancelSoffitesPageEdit;
 window.initializeSoffitesPage = initializeSoffitesPage;
 window.loadSoffitesPageFromProject = loadSoffitesPageFromProject;
 window.showSoffitesPageBuilder = showSoffitesPageBuilder;
+window.toggleSoffitesView = toggleSoffitesView;
+window.editSoffitesPage = editSoffitesPage;
+window.deleteSoffitesPage = deleteSoffitesPage;
 
 // Make functions globally available
 window.showCustomPageBuilder = showCustomPageBuilder;
