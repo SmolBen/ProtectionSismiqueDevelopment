@@ -1334,7 +1334,7 @@ window.editWindow = function(windowId) {
     return;
   }
 
-  const window = projectWindows.find(w => w.id === windowId);
+  const window = projectWindows.find(w => w.id == windowId);
   if (!window) {
     console.error('Window not found:', windowId);
     return;
@@ -9613,7 +9613,7 @@ function editWindow(windowId) {
         return;
     }
 
-    const window = projectWindows.find(w => w.id === windowId);
+    const window = projectWindows.find(w => w.id == windowId);
     if (!window) {
         console.error('Window not found:', windowId);
         return;
@@ -9657,7 +9657,7 @@ async function saveWindowEdit(windowId, event) {
 
     try {
         // Find the window to update
-        const windowIndex = projectWindows.findIndex(w => w.id === windowId);
+        const windowIndex = projectWindows.findIndex(w => w.id == windowId);
         if (windowIndex === -1) {
             throw new Error('Window not found');
         }
@@ -9770,7 +9770,7 @@ function duplicateWindow(id) {
     console.log(`Duplicating window with id: ${id}`);
     
     // Find the window to duplicate
-    const windowToDuplicate = projectWindows.find(w => w.id === id);
+    const windowToDuplicate = projectWindows.find(w => w.id == id);
     
     if (!windowToDuplicate) {
         alert('Window not found.');
