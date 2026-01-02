@@ -3325,7 +3325,11 @@ window.downloadProjectFile = async function(fileId) {
             headers: getAuthHeaders()
         });
         
-        if (!response.ok) throw new Error('Failed to get download URL');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Download URL error:', { status: response.status, error: errorData, fileKey: file.key, projectId: currentProjectId });
+            throw new Error(errorData.error || 'Failed to get download URL');
+        }
         
         const { url } = await response.json();
         window.open(url, '_blank');
