@@ -5274,13 +5274,16 @@ function generateEditForm(wall, originalIndex) {
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label for="editThermoclipSpacingV${originalIndex}" style="font-size: 12px;">Vert. (in):</label>
-                                <input type="number" id="editThermoclipSpacingV${originalIndex}" value="${wall.thermoclipSpacingV || ''}" 
-                                       step="0.1" min="0" placeholder="0" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                                <input type="text" id="editThermoclipSpacingV${originalIndex}" value="${wall.thermoclipSpacingV || ''}" 
+                                    list="editSpacingOptions${originalIndex}" placeholder="Select or type..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                                <datalist id="editSpacingOptions${originalIndex}">
+                                    <option value="12"><option value="16"><option value="24"><option value="32"><option value="48">
+                                </datalist>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label for="editThermoclipSpacingH${originalIndex}" style="font-size: 12px;">Horiz. (in):</label>
-                                <input type="number" id="editThermoclipSpacingH${originalIndex}" value="${wall.thermoclipSpacingH || ''}" 
-                                       step="0.1" min="0" placeholder="0" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                                <input type="text" id="editThermoclipSpacingH${originalIndex}" value="${wall.thermoclipSpacingH || ''}" 
+                                    list="editSpacingOptions${originalIndex}" placeholder="Select or type..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
                             </div>
                         </div>
                     </div>
