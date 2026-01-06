@@ -85,6 +85,52 @@ function toggleMinorField(fieldPrefix) {
 }
 
 /**
+ * Toggle visibility of thermoclip detail fields based on thermoclip selection
+ */
+function toggleThermoclipFields() {
+    const thermoclipSelect = document.getElementById('thermoclip');
+    const thermoclipDetails = document.getElementById('thermoclipDetails');
+    
+    if (!thermoclipSelect || !thermoclipDetails) return;
+    
+    if (thermoclipSelect.value === 'Yes') {
+        thermoclipDetails.style.display = 'block';
+    } else {
+        thermoclipDetails.style.display = 'none';
+        // Clear the fields when hidden
+        const modelField = document.getElementById('thermoclipModel');
+        const spacingVField = document.getElementById('thermoclipSpacingV');
+        const spacingHField = document.getElementById('thermoclipSpacingH');
+        if (modelField) modelField.value = '';
+        if (spacingVField) spacingVField.value = '';
+        if (spacingHField) spacingHField.value = '';
+    }
+}
+
+/**
+ * Toggle visibility of thermoclip detail fields in edit form
+ */
+function toggleEditThermoclipFields(index) {
+    const thermoclipSelect = document.getElementById(`editThermoclip${index}`);
+    const thermoclipDetails = document.getElementById(`editThermoclipDetails${index}`);
+    
+    if (!thermoclipSelect || !thermoclipDetails) return;
+    
+    if (thermoclipSelect.value === 'Yes') {
+        thermoclipDetails.style.display = 'block';
+    } else {
+        thermoclipDetails.style.display = 'none';
+        // Clear the fields when hidden
+        const modelField = document.getElementById(`editThermoclipModel${index}`);
+        const spacingVField = document.getElementById(`editThermoclipSpacingV${index}`);
+        const spacingHField = document.getElementById(`editThermoclipSpacingH${index}`);
+        if (modelField) modelField.value = '';
+        if (spacingVField) spacingVField.value = '';
+        if (spacingHField) spacingHField.value = '';
+    }
+}
+
+/**
  * Toggle visibility of minor field in edit forms
  */
 function toggleEditMinorField(index, fieldType) {
@@ -4595,6 +4641,15 @@ async function saveEquipmentEditWithRevisions(index, event) {
 
         const note = document.getElementById(`editNote${index}`).value.trim();
         
+        // Get Cladding/Thermoclip values
+        const claddingType = document.getElementById(`editCladdingType${index}`)?.value || '';
+        const claddingWeightSupport = document.getElementById(`editCladdingWeightSupport${index}`)?.value || '';
+        const claddingWeight = document.getElementById(`editCladdingWeight${index}`)?.value || '';
+        const thermoclip = document.getElementById(`editThermoclip${index}`)?.value || '';
+        const thermoclipModel = document.getElementById(`editThermoclipModel${index}`)?.value || '';
+        const thermoclipSpacingV = document.getElementById(`editThermoclipSpacingV${index}`)?.value || '';
+        const thermoclipSpacingH = document.getElementById(`editThermoclipSpacingH${index}`)?.value || '';
+        
         // Get Set 2 values (if visible)
         const set2Visible = document.getElementById(`editSet2_${index}`).style.display !== 'none';
         const montantMetallique2 = set2Visible ? document.getElementById(`editMontantMetallique2_${index}`).value.trim() : '';
@@ -4707,6 +4762,14 @@ async function saveEquipmentEditWithRevisions(index, event) {
             lisseInferieure: lisseInferieure,
             entremise: entremise,
             note: note,
+            // Cladding/Thermoclip fields
+            claddingType: claddingType,
+            claddingWeightSupport: claddingWeightSupport,
+            claddingWeight: claddingWeight,
+            thermoclip: thermoclip,
+            thermoclipModel: thermoclipModel,
+            thermoclipSpacingV: thermoclipSpacingV,
+            thermoclipSpacingH: thermoclipSpacingH,
             lastModified: new Date().toISOString(),
             modifiedBy: window.currentUser?.email || 'unknown'
         };
@@ -5088,6 +5151,16 @@ function generateWallDetailsContent(wall, originalIndex) {
                 <div class="equipment-info-section">
                     <p><strong>Wall Name:</strong> ${wall.equipment}</p>
                     <p><strong>Floor:</strong> ${wall.floor || 'N/A'}</p>
+                    
+                    <!-- Cladding Info -->
+                    ${wall.claddingType ? `<p><strong>Cladding Type:</strong> ${wall.claddingType}</p>` : ''}
+                    ${wall.claddingWeightSupport ? `<p><strong>Weight Support by Stud:</strong> ${wall.claddingWeightSupport}</p>` : ''}
+                    ${wall.claddingWeight ? `<p><strong>Cladding Weight:</strong> ${wall.claddingWeight} psf</p>` : ''}
+                    ${wall.thermoclip ? `<p><strong>Thermoclip:</strong> ${wall.thermoclip}</p>` : ''}
+                    ${wall.thermoclip === 'Yes' && wall.thermoclipModel ? `<p><strong>Thermoclip Model:</strong> ${wall.thermoclipModel}</p>` : ''}
+                    ${wall.thermoclip === 'Yes' && wall.thermoclipSpacingV ? `<p><strong>Thermoclip Spacing V:</strong> ${wall.thermoclipSpacingV} in</p>` : ''}
+                    ${wall.thermoclip === 'Yes' && wall.thermoclipSpacingH ? `<p><strong>Thermoclip Spacing H:</strong> ${wall.thermoclipSpacingH} in</p>` : ''}
+                    
                     <p><strong>Hauteur Max:</strong> ${formatHauteurDisplay(wall)}</p>
                     
                     ${hasSet2 ? '<p style="margin-top: 15px; font-weight: bold; color: #666;">Set 1:</p>' : ''}
@@ -5146,6 +5219,70 @@ function generateEditForm(wall, originalIndex) {
                         <label for="editEquipment${originalIndex}"><strong>Wall Name:</strong></label>
                         <input type="text" id="editEquipment${originalIndex}" value="${wall.equipment || ''}" 
                                required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- Cladding Fields - Two Column Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="editCladdingType${originalIndex}" style="font-size: 13px;"><strong>Cladding Type:</strong></label>
+                            <select id="editCladdingType${originalIndex}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <option value="">Select...</option>
+                                <option value="Metal" ${wall.claddingType === 'Metal' ? 'selected' : ''}>Metal</option>
+                                <option value="Brick" ${wall.claddingType === 'Brick' ? 'selected' : ''}>Brick</option>
+                                <option value="Stone" ${wall.claddingType === 'Stone' ? 'selected' : ''}>Stone</option>
+                                <option value="Steel" ${wall.claddingType === 'Steel' ? 'selected' : ''}>Steel</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="editCladdingWeightSupport${originalIndex}" style="font-size: 13px;"><strong>Weight Support:</strong></label>
+                            <select id="editCladdingWeightSupport${originalIndex}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <option value="">Select...</option>
+                                <option value="Yes" ${wall.claddingWeightSupport === 'Yes' ? 'selected' : ''}>Yes</option>
+                                <option value="No" ${wall.claddingWeightSupport === 'No' ? 'selected' : ''}>No</option>
+                                <option value="N/A" ${wall.claddingWeightSupport === 'N/A' ? 'selected' : ''}>N/A</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="editCladdingWeight${originalIndex}" style="font-size: 13px;"><strong>Cladding Weight (psf):</strong></label>
+                            <input type="number" id="editCladdingWeight${originalIndex}" value="${wall.claddingWeight || ''}" 
+                                   step="0.1" min="0" placeholder="Enter weight..."
+                                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="editThermoclip${originalIndex}" style="font-size: 13px;"><strong>Thermoclip:</strong></label>
+                            <select id="editThermoclip${originalIndex}" onchange="toggleEditThermoclipFields(${originalIndex})" 
+                                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <option value="">Select...</option>
+                                <option value="Yes" ${wall.thermoclip === 'Yes' ? 'selected' : ''}>Yes</option>
+                                <option value="No" ${wall.thermoclip === 'No' ? 'selected' : ''}>No</option>
+                                <option value="N/A" ${wall.thermoclip === 'N/A' ? 'selected' : ''}>N/A</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Thermoclip Details (conditionally shown) -->
+                    <div id="editThermoclipDetails${originalIndex}" style="display: ${wall.thermoclip === 'Yes' ? 'block' : 'none'}; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #92400e;">Thermoclip Details</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="editThermoclipModel${originalIndex}" style="font-size: 12px;">Model:</label>
+                                <input type="text" id="editThermoclipModel${originalIndex}" value="${wall.thermoclipModel || ''}" 
+                                       placeholder="Model..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="editThermoclipSpacingV${originalIndex}" style="font-size: 12px;">Vert. (in):</label>
+                                <input type="number" id="editThermoclipSpacingV${originalIndex}" value="${wall.thermoclipSpacingV || ''}" 
+                                       step="0.1" min="0" placeholder="0" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="editThermoclipSpacingH${originalIndex}" style="font-size: 12px;">Horiz. (in):</label>
+                                <input type="number" id="editThermoclipSpacingH${originalIndex}" value="${wall.thermoclipSpacingH || ''}" 
+                                       step="0.1" min="0" placeholder="0" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Floor -->
@@ -7202,49 +7339,50 @@ function initializeImageUpload() {
         window.currentWallImages = [];
     }
     
-    // Find the equipment-form-section (the container that holds form-fields)
-    const equipmentFormSection = document.querySelector('.equipment-form-section');
+    // Find the form element
+    const equipmentForm = document.getElementById('equipmentFormElement');
     
-    if (equipmentFormSection) {
+    if (equipmentForm) {
         // Check if image upload section already exists
-        let imageSection = equipmentFormSection.querySelector('.image-upload-section');
+        let imageSection = equipmentForm.querySelector('.image-upload-section');
         
         if (!imageSection) {
-            // Create image upload section with new compact design
+            // Create image upload section - full width at bottom of form
             imageSection = document.createElement('div');
             imageSection.className = 'image-upload-section';
             imageSection.innerHTML = `
-            <div class="upload-controls">
-                <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
-                    <i class="fas fa-camera"></i>
-                    Browse
-                </button>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #333;">Images:</label>
+                <div class="upload-controls">
+                    <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
+                        <i class="fas fa-camera"></i>
+                        Browse
+                    </button>
+                    
+                    <input 
+                        class="drop-zone" 
+                        id="dropZone" 
+                        placeholder="Drop or paste images here (Ctrl+V)"
+                        readonly
+                        tabindex="0">
+                </div>
                 
-                <input 
-                    class="drop-zone" 
-                    id="dropZone" 
-                    placeholder="Drop or paste images here (Ctrl+V)"
-                    readonly
-                    tabindex="0">
-            </div>
+                <div class="image-preview-container" id="imagePreviewContainer"></div>
+            `;
             
-            <div class="image-preview-container" id="imagePreviewContainer"></div>
-        `;
-            
-            // Add the image upload section to the equipment-form-section
-            // Insert it before the hidden file input
-            const fileInput = equipmentFormSection.querySelector('#imageFileInput');
-            if (fileInput) {
-                equipmentFormSection.insertBefore(imageSection, fileInput);
+            // Find the buttons div and insert image section before it
+            const buttonsDiv = equipmentForm.querySelector('div[style*="display: flex"][style*="gap: 15px"][style*="margin-top: 20px"]');
+            if (buttonsDiv) {
+                equipmentForm.insertBefore(imageSection, buttonsDiv);
             } else {
-                equipmentFormSection.appendChild(imageSection);
+                // Fallback: append to form
+                equipmentForm.appendChild(imageSection);
             }
         }
         
         setupImageUploadHandlers();
         console.log('Image upload initialized, current count:', window.currentWallImages.length);
     } else {
-        console.error('Equipment form section not found');
+        console.error('Equipment form not found');
     }
 }
 
@@ -7408,6 +7546,7 @@ function addImagePreview(imageData) {
     
     const preview = document.createElement('div');
     preview.className = 'image-preview';
+    preview.setAttribute('data-image-key', imageData.key);
     preview.innerHTML = `
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
         <button type="button" class="image-remove" title="Remove image">×</button>
@@ -7455,15 +7594,14 @@ function removeImage(imageKey) {
     }
     window.currentWallImages = window.currentWallImages.filter(img => img.key !== imageKey);
     
-    // Remove preview element
+    // Remove preview element using data attribute
     const container = document.getElementById('imagePreviewContainer');
-    const previews = container.querySelectorAll('.image-preview');
-    previews.forEach(preview => {
-        const removeBtn = preview.querySelector('.image-remove');
-        if (removeBtn && removeBtn.getAttribute('onclick')?.includes(imageKey)) {
+    if (container) {
+        const preview = container.querySelector(`.image-preview[data-image-key="${imageKey}"]`);
+        if (preview) {
             preview.remove();
         }
-    });
+    }
     
     // Update layout and drop zone state
     updateImagePreviewLayout();
@@ -7692,6 +7830,15 @@ function getWallFormDataWithImages() {
         entremise: entremise,
         espacement: espacement,
         note: note,
+        // Cladding fields
+        claddingType: document.getElementById('claddingType')?.value || '',
+        claddingWeightSupport: document.getElementById('claddingWeightSupport')?.value || '',
+        claddingWeight: document.getElementById('claddingWeight')?.value || '',
+        // Thermoclip fields
+        thermoclip: document.getElementById('thermoclip')?.value || '',
+        thermoclipModel: document.getElementById('thermoclipModel')?.value || '',
+        thermoclipSpacingV: document.getElementById('thermoclipSpacingV')?.value || '',
+        thermoclipSpacingH: document.getElementById('thermoclipSpacingH')?.value || '',
         images: [...(window.currentWallImages || [])],
         dateAdded: new Date().toISOString(),
         addedBy: window.currentUser?.email || 'unknown'
@@ -7728,6 +7875,12 @@ function clearWallFormWithImages() {
     
     // Hide Set 2 and clear its values
     toggleSet2(false);
+    
+    // Hide Thermoclip details section
+    const thermoclipDetails = document.getElementById('thermoclipDetails');
+    if (thermoclipDetails) {
+        thermoclipDetails.style.display = 'none';
+    }
     
     console.log('Wall form and images cleared, image count:', window.currentWallImages.length);
 }
@@ -11224,6 +11377,8 @@ function handleWindowTypeChange(selectEl, section) {
 window.logout = logout;
 window.deleteEquipment = deleteEquipment;
 window.toggleEquipmentDetails = toggleEquipmentDetails;
+window.toggleThermoclipFields = toggleThermoclipFields;
+window.toggleEditThermoclipFields = toggleEditThermoclipFields;
 window.editEquipment = editEquipment;
 window.saveEquipmentEdit = saveEquipmentEdit;
 window.cancelEquipmentEdit = cancelEquipmentEdit;

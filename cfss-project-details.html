@@ -847,12 +847,70 @@
                             <h2>New Wall</h2>
                             <form id="equipmentFormElement">
                                 <!-- 1. Wall Name -->
-                                <div class="form-group">
-                                    <label for="equipment">Wall Name:</label>
-                                    <input type="text" id="equipment" name="equipment" placeholder="Enter wall name..." required>
-                                </div>
+                            <div class="form-group">
+                                <label for="equipment">Wall Name:</label>
+                                <input type="text" id="equipment" name="equipment" placeholder="Enter wall name..." required>
+                            </div>
 
-                                <!-- 2. Floor -->
+                            <!-- Cladding Fields - Two Column Grid -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="claddingType">Cladding Type:</label>
+                                    <select id="claddingType" name="claddingType" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px;">
+                                        <option value="">Select cladding type...</option>
+                                        <option value="Metal">Metal</option>
+                                        <option value="Brick">Brick</option>
+                                        <option value="Stone">Stone</option>
+                                        <option value="Steel">Steel</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="claddingWeightSupport">Weight Support by Stud:</label>
+                                    <select id="claddingWeightSupport" name="claddingWeightSupport" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px;">
+                                        <option value="">Select...</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                        <option value="N/A">N/A</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="claddingWeight">Cladding Weight (psf):</label>
+                                    <input type="number" id="claddingWeight" name="claddingWeight" placeholder="Enter weight..." step="0.1" min="0" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="thermoclip">Thermoclip:</label>
+                                    <select id="thermoclip" name="thermoclip" onchange="toggleThermoclipFields()" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px;">
+                                        <option value="">Select...</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                        <option value="N/A">N/A</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Thermoclip Details (conditionally shown) -->
+                            <div id="thermoclipDetails" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #92400e;">Thermoclip Details</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="thermoclipModel" style="font-size: 13px;">Model:</label>
+                                        <input type="text" id="thermoclipModel" name="thermoclipModel" placeholder="Enter model..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="thermoclipSpacingV" style="font-size: 13px;">Spacing Vertical (in):</label>
+                                        <input type="number" id="thermoclipSpacingV" name="thermoclipSpacingV" placeholder="0" step="0.1" min="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="thermoclipSpacingH" style="font-size: 13px;">Spacing Horizontal (in):</label>
+                                        <input type="number" id="thermoclipSpacingH" name="thermoclipSpacingH" placeholder="0" step="0.1" min="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Floor -->
                                 <div class="form-group">
                                     <label for="floor">Floor:</label>
                                     <div style="display: flex; gap: 15px; align-items: center;">
