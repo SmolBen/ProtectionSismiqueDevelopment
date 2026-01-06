@@ -12164,3 +12164,78 @@ function populateCFSSForm(cfssData) {
         addStoreyRow();
     }
 }
+
+// Generate Wall Data Sheet Excel
+function generateWallDataSheet() {
+    // Get current revision's walls
+    const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
+    
+    if (!currentRevision || !currentRevision.walls || currentRevision.walls.length === 0) {
+        alert('No walls found in the current revision.');
+        return;
+    }
+    
+    const walls = currentRevision.walls;
+    
+    // Extract stud type from montant metallique (e.g., "250S125-33" -> "250")
+    function extractStudType(montant) {
+        if (!montant) return null;
+        const match = montant.match(/^(\d+)/);
+        return match ? match[1] : null;
+    }
+    
+    // Get combined stud type from both montant metalliques
+    function getStudType(wall) {
+        const stud1 = extractStudType(wall.montantMetallique);
+        const stud2 = extractStudType(wall.montantMetallique2);
+        
+        if (stud1 && stud2) {
+            return `${stud1} - ${stud2}`;
+        } else if (stud1) {
+            return stud1;
+        } else if (stud2) {
+            return stud2;
+        }
+        return 'N/A';
+    }
+    
+    // Prepare data rows
+    const data = walls.map(wall => ({
+        'Wall name': wall.equipment || wall.name || 'N/A',
+        'Stud type': getStudType(wall),
+        'Cladding Type': wall.claddingType || 'N/A',
+        'Cladding weight support by metal stud': wall.claddingWeightSupport || 'N/A',
+        'Weight of cladding (psf)': wall.claddingWeight || 'N/A',
+        'Thermoclip': wall.thermoclip || 'N/A',
+        'Thermoclip model': wall.thermoclipModel || 'N/A',
+        'Thermoclip spacing vertical (inches)': wall.thermoclipSpacingV || 'N/A',
+        'Thermoclip spacing horizontal (inches)': wall.thermoclipSpacingH || 'N/A'
+    }));
+    
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 20 }, // Wall name
+        { wch: 15 }, // Stud type (increased for "250 - 1000" format)
+        { wch: 15 }, // Cladding Type
+        { wch: 35 }, // Cladding weight support by metal stud
+        { wch: 22 }, // Weight of cladding (psf)
+        { wch: 12 }, // Thermoclip
+        { wch: 18 }, // Thermoclip model
+        { wch: 32 }, // Thermoclip spacing vertical
+        { wch: 34 }  // Thermoclip spacing horizontal
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    
+    // Generate filename with project name and date
+    const projectName = projectData?.name || 'Project';
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `${projectName}_Wall_Info_${date}.xlsx`;
+    
+    // Download the file
+    XLSX.writeFile(wb, filename);
+}

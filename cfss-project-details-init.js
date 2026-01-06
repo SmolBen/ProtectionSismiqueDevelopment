@@ -164,6 +164,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 
                 initializeCustomPages();
                 setupCFSSReportButtonWithRevisionModal();
+                setupWallDataSheetButton();
                 updateCustomPagesSummary();
 
                 setupSendReportToClientsButton();
@@ -419,9 +420,24 @@ function setupCFSSReportButtonWithRevisionModal() {
             });
         });
         
-        console.log(`âœ… CFSS Report buttons setup completed (${generateButtons.length} buttons)`);
+        console.log(`✅ CFSS Report buttons setup completed (${generateButtons.length} buttons)`);
     } else {
-        console.warn('âš ï¸ CFSS Report buttons not found');
+        console.warn('⚠️ CFSS Report buttons not found');
+    }
+}
+
+function setupWallDataSheetButton() {
+    const wallDataSheetButtons = document.querySelectorAll('#generateWallDataSheetButton');
+    if (wallDataSheetButtons.length > 0) {
+        wallDataSheetButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                generateWallDataSheet();
+            });
+        });
+        console.log(`✅ Wall Data Sheet buttons setup completed (${wallDataSheetButtons.length} buttons)`);
+    } else {
+        console.warn('⚠️ Wall Data Sheet buttons not found');
     }
 }
 
