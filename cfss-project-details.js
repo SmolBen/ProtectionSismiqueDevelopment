@@ -5240,6 +5240,7 @@ function generateEditForm(wall, originalIndex) {
                                 <option value="Yes" ${wall.claddingWeightSupport === 'Yes' ? 'selected' : ''}>Yes</option>
                                 <option value="No" ${wall.claddingWeightSupport === 'No' ? 'selected' : ''}>No</option>
                                 <option value="N/A" ${wall.claddingWeightSupport === 'N/A' ? 'selected' : ''}>N/A</option>
+                                <option value="Unknown" ${wall.claddingWeightSupport === 'Unknown' ? 'selected' : ''}>Unknown</option>
                             </select>
                         </div>
                     </div>
@@ -5259,6 +5260,7 @@ function generateEditForm(wall, originalIndex) {
                                 <option value="Yes" ${wall.thermoclip === 'Yes' ? 'selected' : ''}>Yes</option>
                                 <option value="No" ${wall.thermoclip === 'No' ? 'selected' : ''}>No</option>
                                 <option value="N/A" ${wall.thermoclip === 'N/A' ? 'selected' : ''}>N/A</option>
+                                <option value="Unknown" ${wall.thermoclip === 'Unknown' ? 'selected' : ''}>Unknown</option>
                             </select>
                         </div>
                     </div>
@@ -12153,7 +12155,8 @@ function populateCFSSForm(cfssData) {
 }
 
 // Generate Wall Data Sheet Excel
-function generateWallDataSheet() {
+// Generate Wall Data Sheet Excel
+async function generateWallDataSheet() {
     // Get current revision's walls
     const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
     
@@ -12186,37 +12189,59 @@ function generateWallDataSheet() {
         return 'N/A';
     }
     
-    // Prepare data rows
-    const data = walls.map(wall => ({
-        'Wall name': wall.equipment || wall.name || 'N/A',
-        'Stud type': getStudType(wall),
-        'Cladding Type': wall.claddingType || 'N/A',
-        'Cladding weight support by metal stud': wall.claddingWeightSupport || 'N/A',
-        'Weight of cladding (psf)': wall.claddingWeight || 'N/A',
-        'Thermoclip': wall.thermoclip || 'N/A',
-        'Thermoclip model': wall.thermoclipModel || 'N/A',
-        'Thermoclip spacing vertical (inches)': wall.thermoclipSpacingV || 'N/A',
-        'Thermoclip spacing horizontal (inches)': wall.thermoclipSpacingH || 'N/A'
-    }));
+    // Create workbook and worksheet using ExcelJS
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
     
-    // Create workbook and worksheet
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
-    
-    // Set column widths
-    ws['!cols'] = [
-        { wch: 20 }, // Wall name
-        { wch: 15 }, // Stud type (increased for "250 - 1000" format)
-        { wch: 15 }, // Cladding Type
-        { wch: 35 }, // Cladding weight support by metal stud
-        { wch: 22 }, // Weight of cladding (psf)
-        { wch: 12 }, // Thermoclip
-        { wch: 18 }, // Thermoclip model
-        { wch: 32 }, // Thermoclip spacing vertical
-        { wch: 34 }  // Thermoclip spacing horizontal
+    // Define columns
+    worksheet.columns = [
+        { header: 'Wall name', key: 'wallName', width: 20 },
+        { header: 'Stud type', key: 'studType', width: 15 },
+        { header: 'Cladding Type', key: 'claddingType', width: 15 },
+        { header: 'Cladding weight support by metal stud', key: 'weightSupport', width: 35 },
+        { header: 'Weight of cladding (psf)', key: 'claddingWeight', width: 22 },
+        { header: 'Thermoclip', key: 'thermoclip', width: 12 },
+        { header: 'Thermoclip model', key: 'thermoclipModel', width: 18 },
+        { header: 'Thermoclip spacing vertical (inches)', key: 'thermoclipSpacingV', width: 32 },
+        { header: 'Thermoclip spacing horizontal (inches)', key: 'thermoclipSpacingH', width: 34 }
     ];
     
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    // Add data rows
+    walls.forEach(wall => {
+        const row = worksheet.addRow({
+            wallName: wall.equipment || wall.name || 'N/A',
+            studType: getStudType(wall),
+            claddingType: wall.claddingType || 'N/A',
+            weightSupport: wall.claddingWeightSupport || 'N/A',
+            claddingWeight: wall.claddingWeight || 'N/A',
+            thermoclip: wall.thermoclip || 'N/A',
+            thermoclipModel: wall.thermoclipModel || 'N/A',
+            thermoclipSpacingV: wall.thermoclipSpacingV || 'N/A',
+            thermoclipSpacingH: wall.thermoclipSpacingH || 'N/A'
+        });
+        
+        // Apply red background to "Unknown" cells
+        const weightSupportCell = row.getCell('weightSupport');
+        const thermoclipCell = row.getCell('thermoclip');
+        
+        if (weightSupportCell.value === 'Unknown') {
+            weightSupportCell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFFF0000' }
+            };
+            weightSupportCell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        }
+        
+        if (thermoclipCell.value === 'Unknown') {
+            thermoclipCell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFFF0000' }
+            };
+            thermoclipCell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        }
+    });
     
     // Generate filename with project name and date
     const projectName = projectData?.name || 'Project';
@@ -12224,5 +12249,12 @@ function generateWallDataSheet() {
     const filename = `${projectName}_Wall_Info_${date}.xlsx`;
     
     // Download the file
-    XLSX.writeFile(wb, filename);
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
 }
