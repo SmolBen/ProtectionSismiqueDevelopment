@@ -6500,25 +6500,8 @@ function updateFloorULSSLS(floorValue, ulsDisplay, slsDisplay) {
     // If exact match found, use it
     if (matchedIndices.length > 0) {
         const firstFloor = cfssData.storeys[matchedIndices[0]];
-        
-        // Check if this floor is in a group
-        const floorGroups = cfssData.floorGroups || [];
-        let groupInfo = null;
-        
-        for (const group of floorGroups) {
-            if (matchedIndices[0] >= group.firstIndex && matchedIndices[0] <= group.lastIndex) {
-                groupInfo = group;
-                break;
-            }
-        }
-        
-        if (groupInfo) {
-            ulsDisplay.textContent = groupInfo.uls.toFixed(1);
-            slsDisplay.textContent = groupInfo.sls.toFixed(1);
-        } else {
-            ulsDisplay.textContent = firstFloor.uls.toFixed(1);
-            slsDisplay.textContent = firstFloor.sls.toFixed(1);
-        }
+        ulsDisplay.textContent = firstFloor.uls.toFixed(1);
+        slsDisplay.textContent = firstFloor.sls.toFixed(1);
         return;
     }
     
@@ -6558,15 +6541,16 @@ function updateFloorULSSLS(floorValue, ulsDisplay, slsDisplay) {
                     }
                 }
                 
-                // If in a group, use group's values, otherwise use the first matched floor's values
-                if (groupInfo) {
-                    ulsDisplay.textContent = groupInfo.uls.toFixed(1);
-                    slsDisplay.textContent = groupInfo.sls.toFixed(1);
-                } else {
-                    const firstFloor = cfssData.storeys[matchedIndices[0]];
-                    ulsDisplay.textContent = firstFloor.uls.toFixed(1);
-                    slsDisplay.textContent = firstFloor.sls.toFixed(1);
+                // Find the maximum ULS and SLS across all floors in the range
+                let maxUls = -Infinity;
+                let maxSls = -Infinity;
+                for (const idx of matchedIndices) {
+                    const floor = cfssData.storeys[idx];
+                    if (floor.uls > maxUls) maxUls = floor.uls;
+                    if (floor.sls > maxSls) maxSls = floor.sls;
                 }
+                ulsDisplay.textContent = maxUls.toFixed(1);
+                slsDisplay.textContent = maxSls.toFixed(1);
                 return;
             }
         }
