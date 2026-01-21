@@ -56,6 +56,9 @@ let currentUser = null;
 let isAdmin = false;
 let projectData = null;
 
+// Track current form tab (with-calc or without-calc)
+let currentFormTab = 'with-calc';
+
 // Equipment options based on domain
 const equipmentOptions = {
     'ventilation': ['Ventilateur', 'Aérotherme', 'Caisson de ventilation', 'Condenseur', 'Diffuseur', 'Duct terminal unit', 'Échangeur', 'Extracteur d\'air de toit', 'Hotte', 'Plénum de ventilation', 'Serpentin', 'Silencieux', 'Unité de ventilation', 'Unknown', 'Pipe'],
@@ -4383,6 +4386,121 @@ function setupNewCalculationButton() {
     }
 }
 
+// Function to switch between form tabs
+function switchFormTab(tabId) {
+    currentFormTab = tabId;
+    
+    // Update tab button states
+    document.querySelectorAll('.form-tab').forEach(tab => tab.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    
+    // Get form field groups
+    const withCalcOnlyFields = [
+        'dimensionGroup',
+        'hxGroup', 
+        'numberOfAnchorsGroup',
+        'anchorTypeGroup',
+        'anchorDiameterGroup',
+        'slabThicknessGroup',
+        'fcGroup',
+        'mountingTypeGroup',
+        'isolatorWidthGroup',
+        'restraintHeightGroup',
+        'edgeDistancesGroup',
+        'edgeDistanceBGroup',
+        'numberOfIsolatorsGroup'
+    ];
+    
+    // Pipe-specific fields (also calculation-only)
+    const pipeCalcFields = [
+        'pipingFieldsGroup',
+        'pipeDiameterGroup',
+        'supportTypeGroup',
+        'structureTypeGroup'
+    ];
+    
+    const isPipe = document.getElementById('equipment').value === 'Pipe';
+    
+    if (tabId === 'without-calc') {
+        // Hide calculation-specific fields
+        withCalcOnlyFields.forEach(fieldId => {
+            const el = document.getElementById(fieldId);
+            if (el) el.style.display = 'none';
+        });
+        
+        // Also hide pipe calculation fields
+        pipeCalcFields.forEach(fieldId => {
+            const el = document.getElementById(fieldId);
+            if (el) el.style.display = 'none';
+        });
+        
+        // Hide pipe type group for without-calc
+        const pipeTypeGroup = document.getElementById('pipeTypeGroup');
+        if (pipeTypeGroup) pipeTypeGroup.style.display = 'none';
+        
+        // Show weight group always for without-calc
+        const weightGroup = document.getElementById('weightGroup');
+        if (weightGroup) weightGroup.style.display = 'block';
+        
+        // Hide Calculate button, keep only Save
+        const calculateBtn = document.getElementById('calculateEquipment');
+        if (calculateBtn) calculateBtn.style.display = 'none';
+        
+        // Update calculation results placeholder
+        const calcPlaceholder = document.getElementById('calculationPlaceholder');
+        if (calcPlaceholder) {
+            calcPlaceholder.querySelector('div').innerHTML = `
+                <i class="fas fa-info-circle" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+                No calculations for this equipment type
+            `;
+        }
+        
+        // Hide calculation results if shown
+        const calcResults = document.getElementById('calculationResults');
+        if (calcResults) calcResults.style.display = 'none';
+        const calcPlaceholderEl = document.getElementById('calculationPlaceholder');
+        if (calcPlaceholderEl) calcPlaceholderEl.style.display = 'block';
+        
+    } else {
+        // Restore calculation fields based on equipment type
+        const equipment = document.getElementById('equipment').value;
+        if (equipment === 'Pipe') {
+            handleEquipmentChange(); // This handles pipe-specific visibility
+        } else {
+            // Show traditional equipment fields
+            withCalcOnlyFields.forEach(fieldId => {
+                const el = document.getElementById(fieldId);
+                if (el) {
+                    // Only show if not conditionally hidden by other logic
+                    if (['dimensionGroup', 'hxGroup', 'numberOfAnchorsGroup', 
+                         'anchorTypeGroup', 'anchorDiameterGroup', 'weightGroup'].includes(fieldId)) {
+                        el.style.display = 'block';
+                    }
+                }
+            });
+            
+            // Re-trigger visibility logic
+            toggleMountingTypeField();
+        }
+        
+        // Show Calculate button
+        const calculateBtn = document.getElementById('calculateEquipment');
+        if (calculateBtn) calculateBtn.style.display = 'block';
+        
+        // Reset calculation results placeholder
+        const calcPlaceholder = document.getElementById('calculationPlaceholder');
+        if (calcPlaceholder) {
+            calcPlaceholder.querySelector('div').innerHTML = `
+                <i class="fas fa-calculator" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+                Click "Calculate" to see detailed analysis and calculations
+            `;
+        }
+    }
+}
+
+// Make switchFormTab globally available
+window.switchFormTab = switchFormTab;
+
 // Toggle function for project details
 function toggleProjectDetails() {
     const detailedInfo = document.getElementById('detailedInfo');
@@ -4616,55 +4734,75 @@ function getEquipmentFormData() {
             return null;
         }
 
-        if (!height || !width || !length) {
-            alert('Please enter valid dimensions for height, width, and length.');
-            return null;
+        // Only validate calculation-specific fields if "With Calculation" tab is active
+        if (currentFormTab === 'with-calc') {
+            if (!height || !width || !length) {
+                alert('Please enter valid dimensions for height, width, and length.');
+                return null;
+            }
+
+            if (!hx || parseFloat(hx) > parseFloat(hn)) {
+                alert('Please enter valid heights. Equipment height above base must be less than or equal to building height.');
+                return null;
+            }
+
+            if (!numberOfAnchors || parseInt(numberOfAnchors) <= 0) {
+                alert('Please enter a valid number of anchors greater than 0.');
+                return null;
+            }
+
+            if (!anchorType) {
+                alert('Please select an anchor type.');
+                return null;
+            }
+
+            if (!anchorDiameter) {
+                alert('Please select an anchor diameter.');
+                return null;
+            }
         }
 
-        if (!hx || parseFloat(hx) > parseFloat(hn)) {
-            alert('Please enter valid heights. Equipment height above base must be less than or equal to building height.');
-            return null;
+        // Build equipment data based on form tab
+        if (currentFormTab === 'without-calc') {
+            // Without Calculation - minimal fields only
+            equipmentData = {
+                ...equipmentData,
+                nbcCategory: nbcCategory,
+                weight: parseFloat(weight),
+                weightUnit: weightUnit,
+                model: model || null,
+                tag: tag || null,
+                isPipe: false,
+                hasCalculation: false
+            };
+        } else {
+            // With Calculation - full fields
+            equipmentData = {
+                ...equipmentData,
+                nbcCategory: nbcCategory,
+                weight: parseFloat(weight),
+                weightUnit: weightUnit,
+                height: parseFloat(height),
+                width: parseFloat(width),
+                length: parseFloat(length),
+                numberOfAnchors: parseInt(numberOfAnchors),
+                anchorType: anchorType,
+                anchorDiameter: anchorDiameter,
+                slabThickness: parseFloat(slabThickness) || null,
+                fc: parseInt(fc) || null,
+                mountingType: mountingType,
+                isolatorWidth: parseFloat(isolatorWidth) || null,
+                restraintHeight: parseFloat(restraintHeight) || null,
+                edgeDistanceA: parseFloat(edgeDistanceA) || null,
+                edgeDistanceB: parseFloat(edgeDistanceB) || null,
+                numberOfIsolators: parseInt(numberOfIsolators) || null,
+                hx: parseFloat(hx),
+                model: model || null,
+                tag: tag || null,
+                isPipe: false,
+                hasCalculation: true
+            };
         }
-
-        if (!numberOfAnchors || parseInt(numberOfAnchors) <= 0) {
-            alert('Please enter a valid number of anchors greater than 0.');
-            return null;
-        }
-
-        if (!anchorType) {
-            alert('Please select an anchor type.');
-            return null;
-        }
-
-        if (!anchorDiameter) {
-            alert('Please select an anchor diameter.');
-            return null;
-        }
-
-        equipmentData = {
-            ...equipmentData,
-            nbcCategory: nbcCategory,
-            weight: parseFloat(weight),
-            weightUnit: weightUnit,
-            height: parseFloat(height),
-            width: parseFloat(width),
-            length: parseFloat(length),
-            numberOfAnchors: parseInt(numberOfAnchors),
-            anchorType: anchorType,
-            anchorDiameter: anchorDiameter,
-            slabThickness: parseFloat(slabThickness) || null,
-            fc: parseInt(fc) || null,
-            mountingType: mountingType,
-            isolatorWidth: parseFloat(isolatorWidth) || null,
-            restraintHeight: parseFloat(restraintHeight) || null,
-            edgeDistanceA: parseFloat(edgeDistanceA) || null,
-            edgeDistanceB: parseFloat(edgeDistanceB) || null,
-            numberOfIsolators: parseInt(numberOfIsolators) || null,
-            hx: parseFloat(hx),
-            model: model || null,
-            tag: tag || null,
-            isPipe: false
-        };
     }
 
     return equipmentData;
@@ -4733,6 +4871,10 @@ function clearEquipmentForm() {
     const form = document.getElementById('equipmentFormElement');
     if (form) {
         form.reset();
+        
+        // Reset to "With Calculation" tab
+        currentFormTab = 'with-calc';
+        switchFormTab('with-calc');
         
         // Reset specific fields to defaults
         document.getElementById('model').value = '';

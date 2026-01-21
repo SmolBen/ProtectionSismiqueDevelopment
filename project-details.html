@@ -110,6 +110,17 @@
                     <!-- Section 1: Equipment Form -->
                     <div class="equipment-form-section">
                         <h2>New Equipment</h2>
+                        
+                        <!-- Tab Navigation -->
+                        <div class="form-tabs">
+                            <button type="button" class="form-tab active" id="tab-with-calc" onclick="switchFormTab('with-calc')">
+                                <i class="fas fa-calculator"></i> With Calculation
+                            </button>
+                            <button type="button" class="form-tab" id="tab-without-calc" onclick="switchFormTab('without-calc')">
+                                <i class="fas fa-edit"></i> Without Calculation
+                            </button>
+                        </div>
+                        
                         <form id="equipmentFormElement">
                             <!-- 1. Equipment Selection -->
                             <div class="form-group">
