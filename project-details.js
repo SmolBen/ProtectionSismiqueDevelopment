@@ -3411,24 +3411,24 @@ return `
                             
                             <!-- Image Upload Section for Without Calculation equipment -->
                             ${equipment.hasCalculation === false ? `
-                            <div class="edit-image-upload-section" id="editImageUploadSection${index}" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-                                <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #333;">Equipment Image:</label>
-                                <div class="upload-controls">
-                                    <button type="button" class="camera-btn" onclick="triggerEditFormImageUpload(${index})" style="background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                            <div class="edit-image-section" id="editImageUploadSection${index}">
+                                <div class="edit-image-header">
+                                    <h4>Equipment Image</h4>
+                                    <button type="button" class="camera-btn" onclick="triggerEditFormImageUpload(${index})">
                                         <i class="fas fa-camera"></i>
-                                        ${(equipment.images && equipment.images.length > 0) ? 'Change Image' : 'Browse'}
+                                        ${(equipment.images && equipment.images.length > 0) ? 'Change Image' : 'Add Image'}
                                     </button>
-                                    
-                                    <input 
-                                        class="drop-zone" 
-                                        id="editFormDropZone${index}" 
-                                        placeholder="Drop or paste image here (Ctrl+V)"
-                                        readonly
-                                        tabindex="0"
-                                        style="height: 60px; border: 2px dashed #ccc; border-radius: 4px; background: white; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; color: #666; cursor: pointer; margin-top: 10px;">
                                 </div>
-                                
-                                <div class="image-preview-container" id="editFormImagePreviewContainer${index}" style="margin-top: 10px;"></div>
+
+                                <div id="editFormDropZone${index}" class="edit-drop-zone" tabindex="0">
+                                    <div class="drop-zone-message" id="editFormDropZoneMessage${index}">
+                                        <i class="fas fa-image"></i>
+                                        <p class="drop-zone-primary">Drop image here or paste from clipboard</p>
+                                        <small class="drop-zone-secondary">Or click the button above to select a file</small>
+                                    </div>
+                                    <div class="edit-image-preview-container" id="editFormImagePreviewContainer${index}"></div>
+                                </div>
+
                                 <input type="file" id="editFormImageFileInput${index}" accept="image/*" style="display: none;" onchange="handleEditFormFileSelect(event, ${index})">
                             </div>
                             ` : ''}
@@ -3956,34 +3956,38 @@ function populateEditInstallMethodOptions(index, domain, equipment) {
 function populateEditAnchorDiameters(index, equipment) {
     const anchorType = equipment.anchorType;
     const anchorDiameterSelect = document.getElementById(`editAnchorDiameter${index}`);
-    
+
+    if (!anchorDiameterSelect) {
+        return; // Field not rendered for this equipment type
+    }
+
     if (!anchorType) {
         anchorDiameterSelect.innerHTML = '<option value="">Select anchor type first...</option>';
         return;
     }
-    
+
     // Clear existing options
     anchorDiameterSelect.innerHTML = '<option value="">Select diameter...</option>';
-    
+
     let diameters = [];
-    
+
     if (anchorType === 'expansion') {
         diameters = ['1/4', '3/8', '1/2', '5/8', '3/4', '1'];
     } else if (anchorType === 'screw') {
         diameters = ['1/4', '3/8', '1/2', '5/8', '3/4'];
     }
-    
+
     // Add diameter options
     diameters.forEach(diameter => {
         const option = document.createElement('option');
         option.value = diameter;
         option.textContent = diameter + '"';
-        
+
         // Select the current equipment's diameter
         if (diameter === equipment.anchorDiameter) {
             option.selected = true;
         }
-        
+
         anchorDiameterSelect.appendChild(option);
     });
 }
@@ -4114,7 +4118,7 @@ function cancelEquipmentEdit(index) {
 // Function to save equipment edit
 async function saveEquipmentEdit(index, event) {
     event.preventDefault();
-    
+
     if (!canModifyProject()) {
         alert('You do not have permission to edit equipment in this project.');
         return;
@@ -4123,17 +4127,36 @@ async function saveEquipmentEdit(index, event) {
     try {
         const currentEquipment = projectEquipment[index];
         const isPipe = currentEquipment.isPipe;
-        
+
+        const getValue = (id, fallback = '') => {
+            const el = document.getElementById(id);
+            return el ? el.value : fallback;
+        };
+
+        const getFloat = (id, fallback = 0) => {
+            const el = document.getElementById(id);
+            if (!el) return fallback;
+            const parsed = parseFloat(el.value);
+            return Number.isNaN(parsed) ? fallback : parsed;
+        };
+
+        const getInt = (id, fallback = 0) => {
+            const el = document.getElementById(id);
+            if (!el) return fallback;
+            const parsed = parseInt(el.value, 10);
+            return Number.isNaN(parsed) ? fallback : parsed;
+        };
+
         // Get updated values from form - common fields
         const updatedEquipment = {
             ...currentEquipment, // Keep existing properties
-            model: document.getElementById(`editModel${index}`).value || null,
-            tag: document.getElementById(`editTag${index}`).value || null,
-            level: parseInt(document.getElementById(`editLevel${index}`).value) || 1,
-            totalLevels: parseInt(document.getElementById(`editTotalLevels${index}`).value) || 1,
-            installMethod: document.getElementById(`editInstallMethod${index}`).value,
-            hn: parseFloat(document.getElementById(`editHn${index}`).value) || 1,
-            nbcCategory: document.getElementById(`editNbcCategory${index}`).value,
+            model: getValue(`editModel${index}`) || null,
+            tag: getValue(`editTag${index}`) || null,
+            level: getInt(`editLevel${index}`, 1) || 1,
+            totalLevels: getInt(`editTotalLevels${index}`, 1) || 1,
+            installMethod: getValue(`editInstallMethod${index}`) || currentEquipment.installMethod,
+            hn: getFloat(`editHn${index}`, 1) || 1,
+            nbcCategory: getValue(`editNbcCategory${index}`) || currentEquipment.nbcCategory,
             lastModified: new Date().toISOString(),
             modifiedBy: currentUser?.email || 'unknown'
         };
@@ -4141,13 +4164,13 @@ async function saveEquipmentEdit(index, event) {
         // Add domain-specific fields
         if (isPipe) {
             // Pipe specific fields
-            const pipeType = document.getElementById(`editPipeType${index}`).value;
+            const pipeType = getValue(`editPipeType${index}`);
             updatedEquipment.pipeType = pipeType;
             updatedEquipment.equipment = pipeType; // Update equipment name to match pipe type
-            updatedEquipment.pipeWeightPerFoot = parseFloat(document.getElementById(`editPipeWeightPerFoot${index}`).value) || 0;
-            updatedEquipment.pipeDiameter = document.getElementById(`editPipeDiameter${index}`).value;
-            updatedEquipment.supportType = document.getElementById(`editSupportType${index}`).value;
-            updatedEquipment.structureType = document.getElementById(`editStructureType${index}`).value;
+            updatedEquipment.pipeWeightPerFoot = getFloat(`editPipeWeightPerFoot${index}`, 0);
+            updatedEquipment.pipeDiameter = getValue(`editPipeDiameter${index}`) || currentEquipment.pipeDiameter;
+            updatedEquipment.supportType = getValue(`editSupportType${index}`) || currentEquipment.supportType;
+            updatedEquipment.structureType = getValue(`editStructureType${index}`) || currentEquipment.structureType;
             
             // Validation for pipes
             if (!pipeType) {
@@ -4166,24 +4189,24 @@ async function saveEquipmentEdit(index, event) {
             }
         } else {
             // Traditional equipment fields
-            updatedEquipment.weight = parseFloat(document.getElementById(`editWeight${index}`).value) || 0;
-            updatedEquipment.weightUnit = document.getElementById(`editWeightUnit${index}`).value;
-            updatedEquipment.height = parseFloat(document.getElementById(`editHeight${index}`).value) || 0;
-            updatedEquipment.width = parseFloat(document.getElementById(`editWidth${index}`).value) || 0;
-            updatedEquipment.length = parseFloat(document.getElementById(`editLength${index}`).value) || 0;
-            updatedEquipment.numberOfAnchors = parseInt(document.getElementById(`editNumberOfAnchors${index}`).value) || 4;
-            updatedEquipment.anchorType = document.getElementById(`editAnchorType${index}`).value;
-            updatedEquipment.anchorDiameter = document.getElementById(`editAnchorDiameter${index}`).value;
-            updatedEquipment.slabThickness = parseFloat(document.getElementById(`editSlabThickness${index}`).value) || null;
-            updatedEquipment.fc = parseInt(document.getElementById(`editFc${index}`).value) || null;
-            updatedEquipment.mountingType = document.getElementById(`editMountingType${index}`).value;
-            updatedEquipment.hx = parseFloat(document.getElementById(`editHx${index}`).value) || 0;
+            updatedEquipment.weight = getFloat(`editWeight${index}`, 0);
+            updatedEquipment.weightUnit = getValue(`editWeightUnit${index}`) || currentEquipment.weightUnit;
+            updatedEquipment.height = getFloat(`editHeight${index}`, 0);
+            updatedEquipment.width = getFloat(`editWidth${index}`, 0);
+            updatedEquipment.length = getFloat(`editLength${index}`, 0);
+            updatedEquipment.numberOfAnchors = getInt(`editNumberOfAnchors${index}`, 4) || 4;
+            updatedEquipment.anchorType = getValue(`editAnchorType${index}`) || currentEquipment.anchorType;
+            updatedEquipment.anchorDiameter = getValue(`editAnchorDiameter${index}`) || currentEquipment.anchorDiameter;
+            updatedEquipment.slabThickness = getFloat(`editSlabThickness${index}`, null);
+            updatedEquipment.fc = getInt(`editFc${index}`, null);
+            updatedEquipment.mountingType = getValue(`editMountingType${index}`) || currentEquipment.mountingType;
+            updatedEquipment.hx = getFloat(`editHx${index}`, 0);
             // Add ASHRAE fields
-            updatedEquipment.isolatorWidth = parseFloat(document.getElementById(`editIsolatorWidth${index}`).value) || null;
-            updatedEquipment.restraintHeight = parseFloat(document.getElementById(`editRestraintHeight${index}`).value) || null;
-            updatedEquipment.edgeDistanceA = parseFloat(document.getElementById(`editEdgeDistanceA${index}`).value) || null;
-            updatedEquipment.edgeDistanceB = parseFloat(document.getElementById(`editEdgeDistanceB${index}`).value) || null;
-            updatedEquipment.numberOfIsolators = parseInt(document.getElementById(`editNumberOfIsolators${index}`).value) || null;
+            updatedEquipment.isolatorWidth = getFloat(`editIsolatorWidth${index}`, null);
+            updatedEquipment.restraintHeight = getFloat(`editRestraintHeight${index}`, null);
+            updatedEquipment.edgeDistanceA = getFloat(`editEdgeDistanceA${index}`, null);
+            updatedEquipment.edgeDistanceB = getFloat(`editEdgeDistanceB${index}`, null);
+            updatedEquipment.numberOfIsolators = getInt(`editNumberOfIsolators${index}`, null);
             
             // Validation for traditional equipment
             if (!updatedEquipment.weight || updatedEquipment.weight <= 0) {
@@ -4864,27 +4887,24 @@ function triggerEditFormImageUpload(index) {
 function initializeEditFormImageUpload(index) {
     editingEquipmentIndex = index;
     currentEditFormImages = [];
-    
-    const equipment = projectEquipment[index];
-    
-    // If equipment has existing image, show it
-    if (equipment.images && equipment.images.length > 0) {
-        // We'll show existing images in the preview
-        updateEditFormImagePreview(index, equipment.images);
-    }
-    
-    const dropZone = document.getElementById(`editFormDropZone${index}`);
-    
+
+    let dropZone = document.getElementById(`editFormDropZone${index}`);
+
     if (dropZone) {
         // Remove existing listeners by cloning
         const newDropZone = dropZone.cloneNode(true);
         dropZone.parentNode.replaceChild(newDropZone, dropZone);
-        
-        newDropZone.addEventListener('paste', (e) => handleEditFormPaste(e, index));
-        newDropZone.addEventListener('dragover', handleFormDragOver);
-        newDropZone.addEventListener('dragleave', handleFormDragLeave);
-        newDropZone.addEventListener('drop', (e) => handleEditFormDrop(e, index));
+        dropZone = newDropZone;
+
+        dropZone.addEventListener('paste', (e) => handleEditFormPaste(e, index));
+        dropZone.addEventListener('dragover', handleFormDragOver);
+        dropZone.addEventListener('dragleave', handleFormDragLeave);
+        dropZone.addEventListener('drop', (e) => handleEditFormDrop(e, index));
     }
+
+    const equipment = projectEquipment[index];
+    const existingImages = (equipment && equipment.images) ? equipment.images : [];
+    updateEditFormImagePreview(index, existingImages);
 }
 
 function handleEditFormFileSelect(event, index) {
@@ -4939,13 +4959,7 @@ async function processEditFormFiles(files, index) {
         }];
         
         updateEditFormImagePreview(index);
-        
-        const dropZone = document.getElementById(`editFormDropZone${index}`);
-        if (dropZone) {
-            dropZone.placeholder = 'Image selected - click Save to upload';
-            dropZone.classList.add('max-reached');
-        }
-        
+
     } catch (error) {
         console.error('Error processing file:', error);
         alert('Error processing image file.');
@@ -4956,53 +4970,90 @@ async function processEditFormFiles(files, index) {
     if (fileInput) fileInput.value = '';
 }
 
+function setEditFormDropZoneMessage(index, primaryText, secondaryText) {
+    const message = document.getElementById(`editFormDropZoneMessage${index}`);
+    if (!message) return;
+
+    const primaryEl = message.querySelector('.drop-zone-primary');
+    const secondaryEl = message.querySelector('.drop-zone-secondary');
+
+    const defaultPrimary = 'Drop image here or paste from clipboard';
+    const defaultSecondary = 'Or click the button above to select a file';
+
+    if (primaryEl) {
+        primaryEl.textContent = primaryText || defaultPrimary;
+    }
+
+    if (secondaryEl) {
+        secondaryEl.textContent = secondaryText || defaultSecondary;
+    }
+}
+
 async function updateEditFormImagePreview(index, existingImages = null) {
     const container = document.getElementById(`editFormImagePreviewContainer${index}`);
     if (!container) return;
-    
+
+    const dropZone = document.getElementById(`editFormDropZone${index}`);
+    if (dropZone) {
+        dropZone.classList.remove('max-reached', 'has-current-image', 'has-new-image');
+    }
+
     container.innerHTML = '';
-    
+
+    if (!existingImages) {
+        const equipment = projectEquipment[index];
+        existingImages = (equipment && equipment.images) ? equipment.images : [];
+    }
+
     // Show new image if selected
     if (currentEditFormImages.length > 0 && currentEditFormImages[0].isNew) {
         const img = currentEditFormImages[0];
         const preview = document.createElement('div');
-        preview.className = 'image-preview';
-        preview.style.cssText = 'position: relative; width: 100px; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #28a745;';
+        preview.className = 'image-preview new-image';
         preview.innerHTML = `
-            <img src="${img.data}" alt="New image" style="width: 100%; height: 100%; object-fit: cover;">
-            <button type="button" onclick="removeEditFormImage(${index})" style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer;">×</button>
-            <span style="position: absolute; bottom: 2px; left: 2px; background: #28a745; color: white; font-size: 9px; padding: 1px 4px; border-radius: 2px;">NEW</span>
+            <img src="${img.data}" alt="New image">
+            <button type="button" class="image-remove" onclick="removeEditFormImage(${index})" title="Remove">×</button>
+            <span class="image-badge success">NEW</span>
         `;
         container.appendChild(preview);
-    } 
+
+        if (dropZone) {
+            dropZone.classList.add('max-reached', 'has-new-image');
+        }
+        setEditFormDropZoneMessage(index, 'Image ready to upload', 'Click Save to upload or select a different image.');
+        return;
+    }
+
     // Show existing image if no new image selected
-    else if (existingImages && existingImages.length > 0) {
+    if (existingImages && existingImages.length > 0) {
         const img = existingImages[0];
         try {
             const signedUrl = await getSignedImageUrl(currentProjectId, img.key);
             const preview = document.createElement('div');
-            preview.className = 'image-preview';
-            preview.style.cssText = 'position: relative; width: 100px; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;';
+            preview.className = 'image-preview existing-image';
             preview.innerHTML = `
-                <img src="${signedUrl}" alt="Current image" style="width: 100%; height: 100%; object-fit: cover;">
-                <span style="position: absolute; bottom: 2px; left: 2px; background: #6c757d; color: white; font-size: 9px; padding: 1px 4px; border-radius: 2px;">CURRENT</span>
+                <img src="${signedUrl}" alt="Current image">
+                <span class="image-badge muted">CURRENT</span>
             `;
             container.appendChild(preview);
+
+            if (dropZone) {
+                dropZone.classList.add('has-current-image');
+            }
+            setEditFormDropZoneMessage(index, 'Current image shown below', 'Add a new image to replace it.');
         } catch (error) {
             console.error('Error loading existing image:', error);
+            setEditFormDropZoneMessage(index);
         }
+        return;
     }
+
+    setEditFormDropZoneMessage(index);
 }
 
 function removeEditFormImage(index) {
     currentEditFormImages = [];
     updateEditFormImagePreview(index, projectEquipment[index]?.images);
-    
-    const dropZone = document.getElementById(`editFormDropZone${index}`);
-    if (dropZone) {
-        dropZone.placeholder = 'Drop or paste image here (Ctrl+V)';
-        dropZone.classList.remove('max-reached');
-    }
 }
 
 // Make functions globally available
