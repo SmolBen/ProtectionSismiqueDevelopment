@@ -347,6 +347,27 @@
                                 <input type="number" id="hn" name="hn" step="0.01" required>
                             </div>
                             
+                            <!-- Image Upload Section (only for Without Calculation tab) -->
+                            <div class="form-image-upload-section" id="formImageUploadSection" style="display: none;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #333;">Images:</label>
+                                <div class="upload-controls">
+                                    <button type="button" class="camera-btn" id="formCameraBtn" title="Upload Images">
+                                        <i class="fas fa-camera"></i>
+                                        Browse
+                                    </button>
+                                    
+                                    <input 
+                                        class="drop-zone" 
+                                        id="formDropZone" 
+                                        placeholder="Drop or paste images here (Ctrl+V)"
+                                        readonly
+                                        tabindex="0">
+                                </div>
+                                
+                                <div class="image-preview-container" id="formImagePreviewContainer"></div>
+                                <input type="file" id="formImageFileInput" multiple accept="image/*" style="display: none;">
+                            </div>
+
                             <!-- Calculate and Save Buttons -->
                             <div style="display: flex; gap: 15px; margin-top: 20px;">
                                 <button type="button" id="calculateEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">

@@ -59,6 +59,13 @@ let projectData = null;
 // Track current form tab (with-calc or without-calc)
 let currentFormTab = 'with-calc';
 
+// Track images being uploaded in the form
+let currentFormImages = [];
+
+// Track images being uploaded in edit form
+let currentEditFormImages = [];
+let editingEquipmentIndex = null;
+
 // Equipment options based on domain
 const equipmentOptions = {
     'ventilation': ['Ventilateur', 'Aérotherme', 'Caisson de ventilation', 'Condenseur', 'Diffuseur', 'Duct terminal unit', 'Échangeur', 'Extracteur d\'air de toit', 'Hotte', 'Plénum de ventilation', 'Serpentin', 'Silencieux', 'Unité de ventilation', 'Unknown', 'Pipe'],
@@ -2234,6 +2241,11 @@ function handleEquipmentChange() {
     const domain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
     const isPipe = equipment === 'Pipe';
     
+    // If on "Without Calculation" tab, don't show calculation-specific fields
+    if (currentFormTab === 'without-calc') {
+        return;
+    }
+    
     // Show/hide pipe type field
     const pipeTypeGroup = document.getElementById('pipeTypeGroup');
     if (pipeTypeGroup) {
@@ -2326,6 +2338,11 @@ function handleEquipmentChange() {
 
 // Function to show/hide form sections based on equipment type
 function showHideFormSections(isPipe) {
+    // If on "Without Calculation" tab, keep all calculation fields hidden
+    if (currentFormTab === 'without-calc') {
+        return;
+    }
+    
     // Traditional equipment form groups (hide for pipes)
     const traditionalFormGroups = [
         { element: document.getElementById('weightGroup'), required: ['weight'] },
@@ -2414,6 +2431,11 @@ function showHideFormSections(isPipe) {
 
 // Function to show/hide mounting type field based on install method
 function toggleMountingTypeField() {
+    // If on "Without Calculation" tab, don't show any mounting fields
+    if (currentFormTab === 'without-calc') {
+        return;
+    }
+    
     const installMethod = document.getElementById('installMethod')?.value;
     const equipment = document.getElementById('equipment')?.value;
     const isPipe = equipment === 'Pipe';
@@ -2964,7 +2986,7 @@ equipmentCard.innerHTML = `
     <div class="equipment-details" id="equipmentDetails${index}">
         <div id="equipmentView${index}">
 <!-- === Equipment Images Grid - Horizontal at top === -->
-${(() => {
+${!isAdmin ? (() => {
 const images = normalizeEquipmentImages(equipment);
 return `
     <div class="equip-images">
@@ -2992,7 +3014,7 @@ return `
     `}
     </div>
 `;
-})()}
+})() : ''}
 
 <div class="equipment-details-container">
     <div class="equipment-info-section">
@@ -3280,6 +3302,7 @@ return `
                                             </select>
                                         </div>
                                     </div>
+                                    ${equipment.hasCalculation !== false ? `
                                     <div>
                                         <label><strong>Dimensions (H×W×L inches):</strong></label>
                                         <div style="display: flex; gap: 3px;">
@@ -3358,6 +3381,7 @@ return `
                                         <label><strong>Number of Isolators (N):</strong></label>
                                         <input type="number" id="editNumberOfIsolators${index}" value="${equipment.numberOfIsolators || ''}" style="width: 100%; padding: 5px;">
                                     </div>
+                                ` : ''}
                                 `}
                                 
                                 <!-- Common fields for both types -->
@@ -3384,6 +3408,30 @@ return `
                                     <input type="number" id="editHn${index}" value="${equipment.hn || ''}" step="0.01" style="width: 100%; padding: 5px;">
                                 </div>
                             </div>
+                            
+                            <!-- Image Upload Section for Without Calculation equipment -->
+                            ${equipment.hasCalculation === false ? `
+                            <div class="edit-image-upload-section" id="editImageUploadSection${index}" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #333;">Equipment Image:</label>
+                                <div class="upload-controls">
+                                    <button type="button" class="camera-btn" onclick="triggerEditFormImageUpload(${index})" style="background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                                        <i class="fas fa-camera"></i>
+                                        ${(equipment.images && equipment.images.length > 0) ? 'Change Image' : 'Browse'}
+                                    </button>
+                                    
+                                    <input 
+                                        class="drop-zone" 
+                                        id="editFormDropZone${index}" 
+                                        placeholder="Drop or paste image here (Ctrl+V)"
+                                        readonly
+                                        tabindex="0"
+                                        style="height: 60px; border: 2px dashed #ccc; border-radius: 4px; background: white; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; color: #666; cursor: pointer; margin-top: 10px;">
+                                </div>
+                                
+                                <div class="image-preview-container" id="editFormImagePreviewContainer${index}" style="margin-top: 10px;"></div>
+                                <input type="file" id="editFormImageFileInput${index}" accept="image/*" style="display: none;" onchange="handleEditFormFileSelect(event, ${index})">
+                            </div>
+                            ` : ''}
                             
                             <div style="display: flex; gap: 10px; margin-top: 15px;">
                                 <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
@@ -3970,6 +4018,12 @@ function editEquipment(index) {
     document.getElementById(`equipmentView${index}`).style.display = 'none';
     document.getElementById(`equipmentEdit${index}`).style.display = 'block';
     
+    // Initialize edit form image upload for without-calc equipment
+    const equipment = projectEquipment[index];
+    if (equipment.hasCalculation === false) {
+        setTimeout(() => initializeEditFormImageUpload(index), 100);
+    }
+    
     // Ensure details are expanded
     const detailsDiv = document.getElementById(`equipmentDetails${index}`);
     const detailsButton = detailsDiv.closest('.equipment-card').querySelector('.details-btn');
@@ -4049,9 +4103,12 @@ try {
 
 // Function to cancel equipment edit
 function cancelEquipmentEdit(index) {
-    // Show view mode and hide edit mode
     document.getElementById(`equipmentView${index}`).style.display = 'block';
     document.getElementById(`equipmentEdit${index}`).style.display = 'none';
+    
+    // Clear edit form images
+    currentEditFormImages = [];
+    editingEquipmentIndex = null;
 }
 
 // Function to save equipment edit
@@ -4134,14 +4191,17 @@ async function saveEquipmentEdit(index, event) {
                 return;
             }
             
-            if (!updatedEquipment.height || !updatedEquipment.width || !updatedEquipment.length) {
-                alert('Please enter valid dimensions for height, width, and length.');
-                return;
-            }
-            
-            if (!updatedEquipment.hx || updatedEquipment.hx > updatedEquipment.hn) {
-                alert('Please enter valid heights. Equipment height above base must be less than or equal to building height.');
-                return;
+            // Only validate calculation-specific fields if hasCalculation is not false
+            if (currentEquipment.hasCalculation !== false) {
+                if (!updatedEquipment.height || !updatedEquipment.width || !updatedEquipment.length) {
+                    alert('Please enter valid dimensions for height, width, and length.');
+                    return;
+                }
+                
+                if (!updatedEquipment.hx || updatedEquipment.hx > updatedEquipment.hn) {
+                    alert('Please enter valid heights. Equipment height above base must be less than or equal to building height.');
+                    return;
+                }
             }
         }
 
@@ -4162,6 +4222,69 @@ async function saveEquipmentEdit(index, event) {
         }
 
         console.log('🔄 Updating equipment:', updatedEquipment);
+        
+        // Handle image upload for without-calc equipment
+        if (updatedEquipment.hasCalculation === false && currentEditFormImages.length > 0 && currentEditFormImages[0].isNew) {
+            try {
+                const formImage = currentEditFormImages[0];
+                
+                // Convert base64 to blob
+                const response = await fetch(formImage.data);
+                const blob = await response.blob();
+                const file = new File([blob], formImage.name, { type: formImage.type });
+                
+                // Get presigned URL from backend
+                const res = await fetch(
+                    `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            ...getAuthHeaders(),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            contentType: file.type || 'application/octet-stream'
+                        })
+                    }
+                );
+                
+                if (!res.ok) {
+                    throw new Error('Failed to get upload URL');
+                }
+                
+                const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
+                
+                // Upload to S3
+                const putRes = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                    body: file
+                });
+                
+                if (!putRes.ok) {
+                    throw new Error('Image upload to S3 failed');
+                }
+                
+                // Replace existing images with new one
+                updatedEquipment.images = [{
+                    key,
+                    url: publicUrlHint || null,
+                    signedUrl: viewUrlSigned || null,
+                    uploadedAt: Date.now()
+                }];
+                
+                console.log('Image uploaded to S3 successfully:', key);
+                
+            } catch (imgError) {
+                console.error('Error uploading edit form image:', imgError);
+                alert('Warning: Image upload failed, but other changes will still be saved.');
+            }
+        }
+        
+        // Clear edit form images
+        currentEditFormImages = [];
+        editingEquipmentIndex = null;
 
         // Update the equipment in the array
         projectEquipment[index] = updatedEquipment;
@@ -4296,6 +4419,68 @@ async function handleSaveEquipment(e) {
         }
 
         console.log('Equipment data to save:', equipmentData);
+        
+        // Initialize images array
+        equipmentData.images = [];
+
+        // Upload form image to S3 if exists (for without-calc tab)
+        if (currentFormTab === 'without-calc' && currentFormImages.length > 0) {
+            const formImage = currentFormImages[0];
+            
+            try {
+                // Convert base64 to blob
+                const response = await fetch(formImage.data);
+                const blob = await response.blob();
+                const file = new File([blob], formImage.name, { type: formImage.type });
+                
+                // Get presigned URL from backend
+                const res = await fetch(
+                    `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            ...getAuthHeaders(),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            contentType: file.type || 'application/octet-stream'
+                        })
+                    }
+                );
+                
+                if (!res.ok) {
+                    throw new Error('Failed to get upload URL');
+                }
+                
+                const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
+                
+                // Upload to S3
+                const putRes = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                    body: file
+                });
+                
+                if (!putRes.ok) {
+                    throw new Error('Image upload to S3 failed');
+                }
+                
+                // Add image to equipment data
+                equipmentData.images.push({
+                    key,
+                    url: publicUrlHint || null,
+                    signedUrl: viewUrlSigned || null,
+                    uploadedAt: Date.now()
+                });
+                
+                console.log('Image uploaded to S3 successfully:', key);
+                
+            } catch (imgError) {
+                console.error('Error uploading form image:', imgError);
+                alert('Warning: Image upload failed, but equipment will still be saved.');
+            }
+        }
 
         // Add to project equipment array
         projectEquipment.push(equipmentData);
@@ -4375,6 +4560,9 @@ function setupNewCalculationButton() {
             } else {
                 equipmentForm.classList.add('show');
                 newCalcButton.textContent = 'Hide Form';
+                
+                // Initialize image upload handlers
+                initializeFormImageUpload();
                 
                 // SCROLL TO THE FORM WHEN SHOWING IT
                 equipmentForm.scrollIntoView({ 
@@ -4496,10 +4684,331 @@ function switchFormTab(tabId) {
             `;
         }
     }
+    
+    // Show/hide image upload section based on tab
+    const imageUploadSection = document.getElementById('formImageUploadSection');
+    if (imageUploadSection) {
+        imageUploadSection.style.display = tabId === 'without-calc' ? 'block' : 'none';
+    }
 }
 
 // Make switchFormTab globally available
 window.switchFormTab = switchFormTab;
+
+// ========== Form Image Upload Functions ==========
+function initializeFormImageUpload() {
+    currentFormImages = [];
+    
+    const cameraBtn = document.getElementById('formCameraBtn');
+    const fileInput = document.getElementById('formImageFileInput');
+    const dropZone = document.getElementById('formDropZone');
+    
+    if (cameraBtn && fileInput) {
+        cameraBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFormFileSelect);
+    }
+    
+    if (dropZone) {
+        dropZone.addEventListener('paste', handleFormPaste);
+        dropZone.addEventListener('dragover', handleFormDragOver);
+        dropZone.addEventListener('dragleave', handleFormDragLeave);
+        dropZone.addEventListener('drop', handleFormDrop);
+    }
+    
+    updateFormImagePreview();
+}
+
+function handleFormFileSelect(event) {
+    const files = Array.from(event.target.files);
+    processFormFiles(files);
+}
+
+function handleFormPaste(event) {
+    const items = event.clipboardData.items;
+    const files = [];
+    
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+        }
+    }
+    
+    if (files.length > 0) {
+        event.preventDefault();
+        processFormFiles(files);
+    }
+}
+
+function handleFormDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('dragover');
+}
+
+function handleFormDragLeave(event) {
+    event.currentTarget.classList.remove('dragover');
+}
+
+function handleFormDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+    
+    const files = Array.from(event.dataTransfer.files);
+    processFormFiles(files);
+}
+
+async function processFormFiles(files) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+    
+if (currentFormImages.length >= 1) {
+        alert('Maximum 1 image allowed. Please remove the existing image to add a new one.');
+        return;
+    }
+    
+    if (validFiles.length > 1) {
+        alert('Only 1 image allowed per equipment. Only the first image will be used.');
+        validFiles.length = 1; // Keep only first file
+    }
+    
+    const dropZone = document.getElementById('formDropZone');
+    if (dropZone) {
+        dropZone.placeholder = `Processing ${validFiles.length} image(s)...`;
+    }
+    
+    for (const file of validFiles) {
+        try {
+            const base64 = await fileToBase64(file);
+            currentFormImages.push({
+                name: file.name,
+                type: file.type,
+                data: base64,
+                timestamp: Date.now()
+            });
+        } catch (error) {
+            console.error('Error processing file:', error);
+        }
+    }
+    
+    updateFormImagePreview();
+    
+    if (dropZone) {
+        dropZone.placeholder = currentFormImages.length >= 1 
+            ? 'Maximum 1 image reached' 
+            : 'Drop or paste images here (Ctrl+V)';
+        dropZone.classList.toggle('max-reached', currentFormImages.length >= 1);
+    }
+    
+    // Clear file input
+    const fileInput = document.getElementById('formImageFileInput');
+    if (fileInput) fileInput.value = '';
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function updateFormImagePreview() {
+    const container = document.getElementById('formImagePreviewContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    container.className = 'image-preview-container';
+    
+    if (currentFormImages.length === 1) {
+        container.classList.add('one-image');
+    } else if (currentFormImages.length === 2) {
+        container.classList.add('two-images');
+    }
+    
+    currentFormImages.forEach((img, index) => {
+        const preview = document.createElement('div');
+        preview.className = 'image-preview';
+        preview.innerHTML = `
+            <img src="${img.data}" alt="Preview ${index + 1}">
+            <button type="button" class="image-remove" onclick="removeFormImage(${index})" title="Remove">×</button>
+        `;
+        container.appendChild(preview);
+    });
+}
+
+function removeFormImage(index) {
+    currentFormImages.splice(index, 1);
+    updateFormImagePreview();
+    
+    const dropZone = document.getElementById('formDropZone');
+    if (dropZone) {
+        dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+        dropZone.classList.remove('max-reached');
+    }
+}
+
+// Make functions globally available
+window.removeFormImage = removeFormImage;
+
+// ========== Edit Form Image Upload Functions ==========
+function triggerEditFormImageUpload(index) {
+    const fileInput = document.getElementById(`editFormImageFileInput${index}`);
+    if (fileInput) fileInput.click();
+}
+
+function initializeEditFormImageUpload(index) {
+    editingEquipmentIndex = index;
+    currentEditFormImages = [];
+    
+    const equipment = projectEquipment[index];
+    
+    // If equipment has existing image, show it
+    if (equipment.images && equipment.images.length > 0) {
+        // We'll show existing images in the preview
+        updateEditFormImagePreview(index, equipment.images);
+    }
+    
+    const dropZone = document.getElementById(`editFormDropZone${index}`);
+    
+    if (dropZone) {
+        // Remove existing listeners by cloning
+        const newDropZone = dropZone.cloneNode(true);
+        dropZone.parentNode.replaceChild(newDropZone, dropZone);
+        
+        newDropZone.addEventListener('paste', (e) => handleEditFormPaste(e, index));
+        newDropZone.addEventListener('dragover', handleFormDragOver);
+        newDropZone.addEventListener('dragleave', handleFormDragLeave);
+        newDropZone.addEventListener('drop', (e) => handleEditFormDrop(e, index));
+    }
+}
+
+function handleEditFormFileSelect(event, index) {
+    const files = Array.from(event.target.files);
+    processEditFormFiles(files, index);
+}
+
+function handleEditFormPaste(event, index) {
+    const items = event.clipboardData.items;
+    const files = [];
+    
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+        }
+    }
+    
+    if (files.length > 0) {
+        event.preventDefault();
+        processEditFormFiles(files, index);
+    }
+}
+
+function handleEditFormDrop(event, index) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+    
+    const files = Array.from(event.dataTransfer.files);
+    processEditFormFiles(files, index);
+}
+
+async function processEditFormFiles(files, index) {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length === 0) {
+        alert('Please select a valid image file.');
+        return;
+    }
+    
+    // Only allow 1 image
+    const file = validFiles[0];
+    
+    try {
+        const base64 = await fileToBase64(file);
+        currentEditFormImages = [{
+            name: file.name,
+            type: file.type,
+            data: base64,
+            timestamp: Date.now(),
+            isNew: true
+        }];
+        
+        updateEditFormImagePreview(index);
+        
+        const dropZone = document.getElementById(`editFormDropZone${index}`);
+        if (dropZone) {
+            dropZone.placeholder = 'Image selected - click Save to upload';
+            dropZone.classList.add('max-reached');
+        }
+        
+    } catch (error) {
+        console.error('Error processing file:', error);
+        alert('Error processing image file.');
+    }
+    
+    // Clear file input
+    const fileInput = document.getElementById(`editFormImageFileInput${index}`);
+    if (fileInput) fileInput.value = '';
+}
+
+async function updateEditFormImagePreview(index, existingImages = null) {
+    const container = document.getElementById(`editFormImagePreviewContainer${index}`);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Show new image if selected
+    if (currentEditFormImages.length > 0 && currentEditFormImages[0].isNew) {
+        const img = currentEditFormImages[0];
+        const preview = document.createElement('div');
+        preview.className = 'image-preview';
+        preview.style.cssText = 'position: relative; width: 100px; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #28a745;';
+        preview.innerHTML = `
+            <img src="${img.data}" alt="New image" style="width: 100%; height: 100%; object-fit: cover;">
+            <button type="button" onclick="removeEditFormImage(${index})" style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer;">×</button>
+            <span style="position: absolute; bottom: 2px; left: 2px; background: #28a745; color: white; font-size: 9px; padding: 1px 4px; border-radius: 2px;">NEW</span>
+        `;
+        container.appendChild(preview);
+    } 
+    // Show existing image if no new image selected
+    else if (existingImages && existingImages.length > 0) {
+        const img = existingImages[0];
+        try {
+            const signedUrl = await getSignedImageUrl(currentProjectId, img.key);
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.style.cssText = 'position: relative; width: 100px; height: 80px; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;';
+            preview.innerHTML = `
+                <img src="${signedUrl}" alt="Current image" style="width: 100%; height: 100%; object-fit: cover;">
+                <span style="position: absolute; bottom: 2px; left: 2px; background: #6c757d; color: white; font-size: 9px; padding: 1px 4px; border-radius: 2px;">CURRENT</span>
+            `;
+            container.appendChild(preview);
+        } catch (error) {
+            console.error('Error loading existing image:', error);
+        }
+    }
+}
+
+function removeEditFormImage(index) {
+    currentEditFormImages = [];
+    updateEditFormImagePreview(index, projectEquipment[index]?.images);
+    
+    const dropZone = document.getElementById(`editFormDropZone${index}`);
+    if (dropZone) {
+        dropZone.placeholder = 'Drop or paste image here (Ctrl+V)';
+        dropZone.classList.remove('max-reached');
+    }
+}
+
+// Make functions globally available
+window.triggerEditFormImageUpload = triggerEditFormImageUpload;
+window.handleEditFormFileSelect = handleEditFormFileSelect;
+window.removeEditFormImage = removeEditFormImage;
 
 // Toggle function for project details
 function toggleProjectDetails() {
@@ -4875,6 +5384,15 @@ function clearEquipmentForm() {
         // Reset to "With Calculation" tab
         currentFormTab = 'with-calc';
         switchFormTab('with-calc');
+        
+        // Clear form images
+        currentFormImages = [];
+        updateFormImagePreview();
+        const dropZone = document.getElementById('formDropZone');
+        if (dropZone) {
+            dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+            dropZone.classList.remove('max-reached');
+        }
         
         // Reset specific fields to defaults
         document.getElementById('model').value = '';

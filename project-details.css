@@ -842,3 +842,129 @@
 .form-tab i {
     margin-right: 8px;
 }
+
+/* ========== Form Image Upload Section ========== */
+.form-image-upload-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.form-image-upload-section .upload-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.form-image-upload-section .camera-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+}
+
+.form-image-upload-section .camera-btn:hover {
+    background: #0056b3;
+}
+
+.form-image-upload-section .drop-zone {
+    height: 80px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    line-height: 1.3;
+    transition: all 0.3s ease;
+    outline: none;
+    resize: none;
+    padding: 15px;
+}
+
+.form-image-upload-section .drop-zone:hover {
+    border-color: #007bff;
+    background: #f0f8ff;
+}
+
+.form-image-upload-section .drop-zone:focus {
+    border-color: #28a745;
+    background: #f8fff8;
+    box-shadow: 0 0 3px rgba(40, 167, 69, 0.3);
+}
+
+.form-image-upload-section .drop-zone.dragover {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+.form-image-upload-section .image-preview-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    max-width: 200px;
+}
+
+.form-image-upload-section .image-preview-container.two-images {
+    grid-template-columns: 1fr 1fr;
+}
+
+.form-image-upload-section .image-preview-container.one-image {
+    grid-template-columns: 1fr;
+    max-width: 100px;
+}
+
+.form-image-upload-section .image-preview {
+    position: relative;
+    width: 100%;
+    height: 80px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.form-image-upload-section .image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.form-image-upload-section .image-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-image-upload-section .image-remove:hover {
+    background: rgba(255, 0, 0, 1);
+}
+
+.form-image-upload-section .drop-zone.max-reached {
+    background: #fff5f5 !important;
+    border-color: #ffc107 !important;
+    color: #856404;
+}
