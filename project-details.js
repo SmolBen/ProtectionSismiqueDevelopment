@@ -2989,7 +2989,7 @@ equipmentCard.innerHTML = `
     <div class="equipment-details" id="equipmentDetails${index}">
         <div id="equipmentView${index}">
 <!-- === Equipment Images Grid - Horizontal at top === -->
-${!isAdmin && equipment.hasCalculation === false ? (() => {
+${(() => {
 const images = normalizeEquipmentImages(equipment);
 return `
     <div class="equip-images">
@@ -3017,7 +3017,7 @@ return `
     `}
     </div>
 `;
-})() : ''}
+})()}
 
 <div class="equipment-details-container">
     ${equipment.hasCalculation === false ? `
@@ -4136,10 +4136,6 @@ function convertToSeismicCalculation(index) {
         return;
     }
 
-    if (!confirm('This will convert this equipment to a seismic calculation equipment and any uploaded images to this equipment will be removed. Continue?')) {
-        return;
-    }
-
     // Mark this equipment as being converted (used by the edit form to show seismic fields)
     equipment._convertingToSeismic = true;
 
@@ -4383,9 +4379,9 @@ async function saveEquipmentEdit(index, event) {
             delete updatedEquipment._convertingToSeismic;
             // Set hasCalculation to true (or remove the false flag)
             delete updatedEquipment.hasCalculation;
-            // Remove all images
-            updatedEquipment.images = [];
-            console.log('🔄 Converting equipment to seismic calculation, removing images');
+            // Keep existing images
+            updatedEquipment.images = currentEquipment.images || [];
+            console.log('🔄 Converting equipment to seismic calculation, keeping images');
         }
 
         console.log('🔄 Updating equipment:', updatedEquipment);
