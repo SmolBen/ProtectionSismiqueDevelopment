@@ -3441,7 +3441,7 @@ return `
                                 </div>
                             
                             <!-- Image Upload Section for Without Calculation equipment -->
-                            ${equipment.hasCalculation === false ? `
+                            ${equipment.hasCalculation === false && !equipment._convertingToSeismic ? `
                             <div class="edit-image-section" id="editImageUploadSection${index}">
                                 <div class="edit-image-header">
                                     <h4>Equipment Image</h4>
