@@ -234,11 +234,12 @@ async function getGeocode(address) {
         try {
             const { lat, lng } = await getGeocode(fullAddress);
 
+            const numberOfFloorsValue = formData.get('numberOfFloors');
             const newProject = {
                 name: formData.get('name'),
-                description: formData.get('description'),
+                description: formData.get('description') || '',
                 type: formData.get('type'),
-                domain: formData.get('domain'), 
+                domain: authHelper.getCurrentUser().domain,
                 status: 'Planning',
                 addressLine1: formData.get('address1'),
                 addressLine2: formData.get('address2'),
@@ -247,7 +248,8 @@ async function getGeocode(address) {
                 country: formData.get('country'),
                 latitude: lat,
                 longitude: lng,
-                riskCategory
+                riskCategory,
+                numberOfFloors: numberOfFloorsValue ? parseInt(numberOfFloorsValue, 10) : null
             };
 
             console.log('🚀 Creating project:', newProject);

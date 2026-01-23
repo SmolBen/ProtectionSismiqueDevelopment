@@ -33,33 +33,23 @@
                     <input type="text" id="name" name="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="description">Description:</label>
-                    <textarea id="description" name="description" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="type">Type:</label>
-                    <select id="type" name="type" required>
-                        <option value="condo">Condo</option>
-                        <option value="commercial">Commercial</option>
-                        <option value="residential">Residential</option>
-                        <option value="industrial">Industrial</option>
-                        <option value="hospital">Hospital</option>
-                        <option value="fire-station">Fire-station</option>
-                        <option value="government">Government</option>
-                        <option value="school">School</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="domain">Domain:</label>
-                    <select id="domain" name="domain" required>
-                        <option value="plumbing">Plumbing</option>
-                        <option value="electricity">Electricity</option>
-                        <option value="ventilation">Ventilation</option>
-                        <option value="sprinkler">Sprinkler</option>
-                        <option value="interior system">Interior System</option>
-                    </select>
-                </div>
+            <label for="description">Description (optional):</label>
+            <textarea id="description" name="description"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="type">Type:</label>
+            <select id="type" name="type" required>
+                <option value="condo">Condo</option>
+                <option value="commercial">Commercial</option>
+                <option value="residential">Residential</option>
+                <option value="industrial">Industrial</option>
+                <option value="hospital">Hospital</option>
+                <option value="fire-station">Fire-station</option>
+                <option value="government">Government</option>
+                <option value="school">School</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
                 
                 <!-- Address fields -->
                 <div class="form-group">
@@ -81,6 +71,10 @@
                 <div class="form-group">
                     <label for="country">Country:</label>
                     <input type="text" id="country" name="country" value="Canada" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="numberOfFloors">Number of Floors (optional):</label>
+                    <input type="number" id="numberOfFloors" name="numberOfFloors">
                 </div>
                 <button type="submit" class="button primary">Create Project</button>
             </form>
