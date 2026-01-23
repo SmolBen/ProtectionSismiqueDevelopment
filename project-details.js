@@ -4527,7 +4527,7 @@ async function handleSaveEquipment(e) {
         const newCalcButton = document.getElementById('newCalculationButton');
         equipmentForm.classList.remove('show');
         if (newCalcButton) {
-            newCalcButton.textContent = 'New Calculation';
+            newCalcButton.textContent = 'Add Equipment';
         }
         
         // Automatically expand new equipment details
@@ -4579,7 +4579,7 @@ function setupNewCalculationButton() {
             
             if (equipmentForm.classList.contains('show')) {
                 equipmentForm.classList.remove('show');
-                newCalcButton.textContent = 'New Calculation';
+                newCalcButton.textContent = 'Add Equipment';
             } else {
                 equipmentForm.classList.add('show');
                 newCalcButton.textContent = 'Hide Form';
