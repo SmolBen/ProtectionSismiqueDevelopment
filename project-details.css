@@ -1133,3 +1133,163 @@
 .edit-image-section .image-badge.muted {
     background: #6c757d;
 }
+
+/* Mode Selection Buttons */
+.mode-selection {
+    margin-bottom: 20px;
+}
+
+.mode-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.mode-btn:hover {
+    border-color: #007bff;
+    background: #f8f9fa;
+}
+
+.mode-btn i {
+    font-size: 24px;
+    color: #666;
+}
+
+.mode-btn-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.mode-btn-desc {
+    font-size: 12px;
+    color: #999;
+}
+
+#btn-seismic:hover i {
+    color: #17a2b8;
+}
+
+#btn-photos:hover i {
+    color: #6c757d;
+}
+
+/* Mode Indicator */
+.mode-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #e3f2fd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.mode-indicator.photos-mode {
+    background: #f5f5f5;
+}
+
+.mode-indicator button {
+    padding: 5px 12px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.mode-indicator button:hover {
+    background: #f0f0f0;
+}
+
+/* Number of Floors Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.modal-content h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.modal-content p {
+    margin: 0 0 20px 0;
+    color: #666;
+}
+
+.modal-content .form-group {
+    margin-bottom: 20px;
+}
+
+.modal-content .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.modal-content .form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.modal-btn.cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.modal-btn.save {
+    background: #28a745;
+    color: white;
+}
+
+.modal-btn.save:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}

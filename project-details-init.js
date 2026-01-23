@@ -104,14 +104,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setupReportButton();
                 setupEquipmentFormHandler();
                 
-                // Hide form tabs for admin users (default to "with calculation")
-                if (isAdmin) {
-                    const formTabs = document.querySelector('.form-tabs');
-                    if (formTabs) {
-                        formTabs.style.display = 'none';
-                    }
-                    currentFormTab = 'with-calc';
-                }
+                // Initialize equipment mode as null (user must select)
+                currentEquipmentMode = null;
 
                 setTimeout(() => {
                     updateEquipmentImage();

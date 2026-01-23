@@ -56,8 +56,8 @@ let currentUser = null;
 let isAdmin = false;
 let projectData = null;
 
-// Track current form tab (with-calc or without-calc)
-let currentFormTab = 'with-calc';
+// Track current equipment mode (null, 'seismic', or 'photos')
+let currentEquipmentMode = null;
 
 // Track images being uploaded in the form
 let currentFormImages = [];
@@ -2241,8 +2241,8 @@ function handleEquipmentChange() {
     const domain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
     const isPipe = equipment === 'Pipe';
     
-    // If on "Without Calculation" tab, don't show calculation-specific fields
-    if (currentFormTab === 'without-calc') {
+    // If in "photos" mode, don't show calculation-specific fields
+    if (currentEquipmentMode === 'photos') {
         return;
     }
     
@@ -2338,8 +2338,8 @@ function handleEquipmentChange() {
 
 // Function to show/hide form sections based on equipment type
 function showHideFormSections(isPipe) {
-    // If on "Without Calculation" tab, keep all calculation fields hidden
-    if (currentFormTab === 'without-calc') {
+    // If in "photos" mode, keep all calculation fields hidden
+    if (currentEquipmentMode === 'photos') {
         return;
     }
     
@@ -2431,8 +2431,8 @@ function showHideFormSections(isPipe) {
 
 // Function to show/hide mounting type field based on install method
 function toggleMountingTypeField() {
-    // If on "Without Calculation" tab, don't show any mounting fields
-    if (currentFormTab === 'without-calc') {
+    // If in "photos" mode, don't show any mounting fields
+    if (currentEquipmentMode === 'photos') {
         return;
     }
     
@@ -2946,16 +2946,19 @@ equipmentCard.innerHTML = `
             <div class="equipment-meta-compact">
                 ${equipment.model ? `<span>Model: ${equipment.model}</span><span class="meta-separator">•</span>` : ''}
                 ${equipment.tag ? `<span>Tag: ${equipment.tag}</span><span class="meta-separator">•</span>` : ''}
-                ${equipment.isPipe ? `
+                ${equipment.level ? `<span>Level: ${equipment.level}</span>` : ''}
+                ${equipment.hasCalculation !== false ? (equipment.isPipe ? `
+                    <span class="meta-separator">•</span>
                     <span>Pipe: ${equipment.pipeDiameter || 'N/A'}</span>
                     <span class="meta-separator">•</span>
                     <span>Weight: ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</span>
                 ` : `
+                    <span class="meta-separator">•</span>
                     <span>${equipment.anchorType ? getAnchorTypeText(equipment.anchorType) : 'N/A'}</span>
                     <span class="meta-separator">•</span>
                     <span>${equipment.numberOfAnchors || 'N/A'} anchors</span>
                     ${equipment.anchorDiameter ? `<span class="meta-separator">•</span><span>⌀ ${equipment.anchorDiameter}"</span>` : ''}
-                `}
+                `) : ''}
             </div>
         </div>
         <div class="equipment-actions-compact">
@@ -2986,7 +2989,7 @@ equipmentCard.innerHTML = `
     <div class="equipment-details" id="equipmentDetails${index}">
         <div id="equipmentView${index}">
 <!-- === Equipment Images Grid - Horizontal at top === -->
-${!isAdmin ? (() => {
+${!isAdmin && equipment.hasCalculation === false ? (() => {
 const images = normalizeEquipmentImages(equipment);
 return `
     <div class="equip-images">
@@ -3017,7 +3020,29 @@ return `
 })() : ''}
 
 <div class="equipment-details-container">
-    <div class="equipment-info-section">
+    ${equipment.hasCalculation === false ? `
+        <!-- Photos-only equipment - simplified view -->
+        <div class="equipment-info-section" style="width: 100%;">
+            <p><strong>Equipment:</strong> ${equipment.equipment}</p>
+            ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
+            ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
+            ${equipment.level ? `<p><strong>Level:</strong> ${equipment.level}</p>` : ''}
+            ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
+            
+            ${canModifyProject() ? `
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button class="edit-btn" onclick="editEquipment(${index})" style="background: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-edit"></i> Edit Equipment
+                    </button>
+                    <button class="convert-btn" onclick="convertToSeismicCalculation(${index})" style="background: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-calculator"></i> Add Seismic Calculation
+                    </button>
+                </div>
+            ` : ''}
+        </div>
+    ` : `
+        <!-- Full seismic calculation equipment -->
+        <div class="equipment-info-section">
                         ${equipment.isPipe ? `
                             <!-- Pipe specific fields -->
                             ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
@@ -3148,15 +3173,21 @@ return `
                             const suspendedBracing = calculateSuspendedEquipmentBracing(equipment, currentProject);
                             const aircraftCable = suspendedBracing.shoppingList.aircraftCableDetails;
                             return `
-                                <div class="suspended-bracing-values" style="background: #f0f8ff; padding: 8px; border-radius: 4px; margin-top: 8px; border-left: 4px solid #6f42c1;">
-                                    <p><strong>Suspended Equipment Bracing (ASHRAE Ch. 10):</strong></p>
+                                <div class="suspended-bracing-values" style="background: #fef3c7; padding: 8px; border-radius: 4px; margin-top: 8px; border-left: 4px solid #f59e0b;">
+                                    <p><strong>Suspended Equipment Bracing:</strong></p>
                                     <p style="font-size: 12px; margin: 4px 0;">
-                                        <strong>Hanger Rod:</strong> <span class="calculation-value suspended-hanger-value" title="Click to see hanger rod specifications">${suspendedBracing.specifications.hangerRod.diameter}" dia. (${suspendedBracing.specifications.hangerRod.maxUnbracedLength}" max unbraced)</span> | 
-                                        <strong>Aircraft Cable:</strong> <span class="calculation-value suspended-brace-value" title="Click to see complete bracing specifications">⌀ ${aircraftCable.diameter}" (${aircraftCable.breakingStrength} lbs)${aircraftCable.insufficient ? ' ⚠️' : ''}</span>
+                                        <strong>Cable Required:</strong> <span class="calculation-value cable-value" title="Click to see cable calculation details">${suspendedBracing.cableRequired ? 'Yes' : 'No'}</span> | 
+                                        <strong>Seismic Load:</strong> ${suspendedBracing.seismicLoad} lbs
                                     </p>
-                                    <p style="font-size: 11px; margin: 2px 0; color: #6f42c1;">
-                                        <strong>Seismic Level:</strong> ${suspendedBracing.seismicLevel} | <strong>Weight:</strong> ${suspendedBracing.weightLbs} lbs
-                                    </p>
+                                    ${suspendedBracing.cableRequired && aircraftCable ? `
+                                        <p style="font-size: 12px; margin: 4px 0;">
+                                            <strong>Cable Size:</strong> ${aircraftCable.cableSize}" | 
+                                            <strong>Tensile Strength:</strong> ${aircraftCable.tensileStrength} lbs
+                                        </p>
+                                        <p style="font-size: 11px; margin: 4px 0; color: #666;">
+                                            Turnbuckle: ${aircraftCable.turnbuckle} | Thimble: ${aircraftCable.thimble} | Clips: ${aircraftCable.clips}
+                                        </p>
+                                    ` : ''}
                                 </div>
                             `;
                         }
@@ -3181,6 +3212,8 @@ return `
                         </div>
                     </div>
                 </div>
+    `}
+            </div>
             </div>
         </div>
                     
@@ -3262,6 +3295,11 @@ return `
                                         <input type="text" id="editTag${index}" value="${equipment.tag || ''}" style="width: 100%; padding: 5px;">
                                     </div>
                                     <div>
+                                        <label><strong>Level:</strong></label>
+                                        <input type="number" id="editLevel${index}" value="${equipment.level || ''}" style="width: 100%; padding: 5px;">
+                                    </div>
+                                    ${(equipment.hasCalculation !== false || equipment._convertingToSeismic) ? `
+                                    <div>
                                         <label><strong>NBC Category:</strong></label>
                                         <select id="editNbcCategory${index}" style="width: 100%; padding: 5px;">
                                             <option value="1" ${equipment.nbcCategory === '1' ? 'selected' : ''}>1 - All exterior and interior walls except those in Category 2 or 3</option>
@@ -3293,16 +3331,28 @@ return `
                                         </select>
                                     </div>
                                     <div>
+                                        <label><strong>Install Method:</strong></label>
+                                        <select id="editInstallMethod${index}" style="width: 100%; padding: 5px;" onchange="toggleEditSlabCeilingFields(${index})">
+                                            <option value="" ${!equipment.installMethod ? 'selected' : ''}>Select installation method...</option>
+                                            <option value="1" ${equipment.installMethod === '1' ? 'selected' : ''}>Fixed to Slab</option>
+                                            <option value="2" ${equipment.installMethod === '2' ? 'selected' : ''}>Fixed to Wall</option>
+                                            <option value="3" ${equipment.installMethod === '3' ? 'selected' : ''}>Fixed to Structure</option>
+                                            <option value="4" ${equipment.installMethod === '4' ? 'selected' : ''}>Fixed to Ceiling</option>
+                                            <option value="5" ${equipment.installMethod === '5' ? 'selected' : ''}>Fixed to Roof</option>
+                                            <option value="6" ${equipment.installMethod === '6' ? 'selected' : ''}>Fixed to Interior Wall</option>
+                                            <option value="7" ${equipment.installMethod === '7' ? 'selected' : ''}>Fixed to Wooden Sleeper</option>
+                                        </select>
+                                    </div>
+                                    <div>
                                         <label><strong>Weight:</strong></label>
                                         <div style="display: flex; gap: 5px;">
                                             <input type="number" id="editWeight${index}" value="${equipment.weight || ''}" step="0.01" style="flex: 1; padding: 5px;">
                                             <select id="editWeightUnit${index}" style="padding: 5px;">
-                                                <option value="kg" ${equipment.weightUnit === 'kg' ? 'selected' : ''}>kg</option>
                                                 <option value="lbs" ${equipment.weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                                                <option value="kg" ${equipment.weightUnit === 'kg' ? 'selected' : ''}>kg</option>
                                             </select>
                                         </div>
                                     </div>
-                                    ${equipment.hasCalculation !== false ? `
                                     <div>
                                         <label><strong>Dimensions (H×W×L inches):</strong></label>
                                         <div style="display: flex; gap: 3px;">
@@ -3310,6 +3360,10 @@ return `
                                             <input type="number" id="editWidth${index}" value="${equipment.width || ''}" placeholder="W" style="flex: 1; padding: 5px;">
                                             <input type="number" id="editLength${index}" value="${equipment.length || ''}" placeholder="L" style="flex: 1; padding: 5px;">
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label><strong>Height Above Base (hx) meters:</strong></label>
+                                        <input type="number" id="editHx${index}" value="${equipment.hx || ''}" step="0.01" style="width: 100%; padding: 5px;">
                                     </div>
                                     <div>
                                         <label><strong>Number of Anchors:</strong></label>
@@ -3324,29 +3378,25 @@ return `
                                         </select>
                                     </div>
                                     <div>
-                                        <label><strong>Anchor Diameter (inches):</strong></label>
+                                        <label><strong>Anchor Diameter:</strong></label>
                                         <select id="editAnchorDiameter${index}" style="width: 100%; padding: 5px;">
-                                            <option value="">Select diameter...</option>
+                                            <option value="">Select anchor type first...</option>
                                         </select>
                                     </div>
-                                    <div id="editSlabThicknessGroup${index}" style="display: ${equipment.slabThickness ? 'block' : 'none'};">
+                                    <div id="editSlabThicknessGroup${index}" style="display: ${equipment.installMethod === '1' || equipment.installMethod === '4' ? 'block' : 'none'};">
                                         <label><strong>Slab Thickness (inches):</strong></label>
-                                        <input type="number" id="editSlabThickness${index}" value="${equipment.slabThickness || 4}" step="0.25" style="width: 100%; padding: 5px;">
+                                        <input type="number" id="editSlabThickness${index}" value="${equipment.slabThickness || '4'}" step="0.25" style="width: 100%; padding: 5px;">
                                     </div>
-                                    <div id="editFcGroup${index}" style="display: ${equipment.fc ? 'block' : 'none'};">
-                                        <label><strong>f'c (psi):</strong></label>
-                                        <select id="editFc${index}" style="width: 100%; padding: 5px;">
-                                            <option value="2500" ${equipment.fc === 2500 ? 'selected' : ''}>2500 psi</option>
-                                            <option value="3000" ${equipment.fc === 3000 ? 'selected' : ''}>3000 psi</option>
-                                            <option value="4000" ${equipment.fc === 4000 ? 'selected' : ''}>4000 psi</option>
-                                            <option value="6000" ${equipment.fc === 6000 ? 'selected' : ''}>6000 psi</option>
-                                        </select>
+                                    <div id="editFcGroup${index}" style="display: ${equipment.installMethod === '1' || equipment.installMethod === '4' ? 'block' : 'none'};">
+                                        <label><strong>Concrete Strength f'c (psi):</strong></label>
+                                        <input type="number" id="editFc${index}" value="${equipment.fc || '2500'}" style="width: 100%; padding: 5px;">
                                     </div>
                                     <div>
                                         <label><strong>Mounting Type:</strong></label>
                                         <select id="editMountingType${index}" style="width: 100%; padding: 5px;" onchange="updateEditMountingTypeFields(${index})">
-                                            <option value="no-isolators" ${equipment.mountingType === 'no-isolators' ? 'selected' : ''}>1. No isolators</option>
-                                            <option value="type-3-1" ${equipment.mountingType === 'type-3-1' ? 'selected' : ''}>2. Restrained with Type 3-1 vibration isolators</option>
+                                            <option value="no-isolators" ${equipment.mountingType === 'no-isolators' || !equipment.mountingType ? 'selected' : ''}>No isolators (rigidly mounted)</option>
+                                            <option value="type-3-1" ${equipment.mountingType === 'type-3-1' ? 'selected' : ''}>1. Restrained with Type 3-1 vibration isolators</option>
+                                            <option value="type-3-1-snubber" ${equipment.mountingType === 'type-3-1-snubber' ? 'selected' : ''}>2. Restrained with Type 3-1 vibration isolators + snubbers</option>
                                             <option value="type-3-2" ${equipment.mountingType === 'type-3-2' ? 'selected' : ''}>3. Restrained with Type 3-2 vibration isolators</option>
                                             <option value="type-3-5a" ${equipment.mountingType === 'type-3-5a' ? 'selected' : ''}>4. Restrained with Type 3-5A vibration isolators</option>
                                             <option value="type-3-5b" ${equipment.mountingType === 'type-3-5b' ? 'selected' : ''}>5. Restrained with Type 3-5B vibration isolators</option>
@@ -3356,11 +3406,7 @@ return `
                                             <option value="type-3-11" ${equipment.mountingType === 'type-3-11' ? 'selected' : ''}>9. Restrained with Type 3-11 seismic snubbers</option>
                                         </select>
                                     </div>
-                                    <div>
-                                        <label><strong>Height Above Base (hx) meters:</strong></label>
-                                        <input type="number" id="editHx${index}" value="${equipment.hx || ''}" step="0.01" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <!-- ASHRAE fields for traditional equipment - shown conditionally -->
+                                    <!-- ASHRAE fields - shown conditionally based on mounting type -->
                                     <div id="editIsolatorWidthGroup${index}" style="display: none;">
                                         <label><strong>Isolator Width (B) inches:</strong></label>
                                         <input type="number" id="editIsolatorWidth${index}" value="${equipment.isolatorWidth || ''}" step="0.01" style="width: 100%; padding: 5px;">
@@ -3381,33 +3427,18 @@ return `
                                         <label><strong>Number of Isolators (N):</strong></label>
                                         <input type="number" id="editNumberOfIsolators${index}" value="${equipment.numberOfIsolators || ''}" style="width: 100%; padding: 5px;">
                                     </div>
-                                ` : ''}
+                                    <div>
+                                        <label><strong>Total Levels:</strong></label>
+                                        <input type="number" id="editTotalLevels${index}" value="${equipment.totalLevels || projectData?.numberOfFloors || ''}" style="width: 100%; padding: 5px;">
+                                    </div>
+                                    <div>
+                                        <label><strong>Building Height (hn) meters:</strong></label>
+                                        <input type="number" id="editHn${index}" value="${equipment.hn || ''}" step="0.01" style="width: 100%; padding: 5px;">
+                                    </div>
+                                    ` : ''}
                                 `}
                                 
-                                <!-- Common fields for both types -->
-                                <div>
-                                    <label><strong>Level:</strong></label>
-                                    <input type="number" id="editLevel${index}" value="${equipment.level || ''}" style="width: 100%; padding: 5px;">
                                 </div>
-                                <div>
-                                    <label><strong>Total Levels:</strong></label>
-                                    <input type="number" id="editTotalLevels${index}" value="${equipment.totalLevels || ''}" style="width: 100%; padding: 5px;">
-                                </div>
-                                <div>
-                                    <label><strong>Install Method:</strong></label>
-                                    <select id="editInstallMethod${index}" style="width: 100%; padding: 5px;">
-                                        <option value="1" ${equipment.installMethod === '1' ? 'selected' : ''}>Fixed to Slab</option>
-                                        <option value="2" ${equipment.installMethod === '2' ? 'selected' : ''}>Fixed to Wall</option>
-                                        <option value="3" ${equipment.installMethod === '3' ? 'selected' : ''}>Fixed to Structure</option>
-                                        <option value="4" ${equipment.installMethod === '4' ? 'selected' : ''}>Fixed to Ceiling</option>
-                                        <option value="5" ${equipment.installMethod === '5' ? 'selected' : ''}>Fixed to Roof</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label><strong>Building Height (hn) meters:</strong></label>
-                                    <input type="number" id="editHn${index}" value="${equipment.hn || ''}" step="0.01" style="width: 100%; padding: 5px;">
-                                </div>
-                            </div>
                             
                             <!-- Image Upload Section for Without Calculation equipment -->
                             ${equipment.hasCalculation === false ? `
@@ -3470,7 +3501,14 @@ return `
                     return;
                 }
 
-                    if (e.target.closest('.equipment-details')) {
+                // Don't toggle if clicking inside equipment details or edit form
+                if (e.target.closest('.equipment-details') ||
+                    e.target.closest('[id^="equipmentEdit"]') ||
+                    e.target.closest('form') ||
+                    e.target.closest('input') ||
+                    e.target.closest('select') ||
+                    e.target.closest('button') ||
+                    e.target.closest('label')) {
                     return;
                 }
 
@@ -3901,6 +3939,26 @@ function updateEditMountingTypeFields(index) {
     }
 }
 
+// Toggle slab thickness and f'c fields in edit form based on install method
+function toggleEditSlabCeilingFields(index) {
+    const installMethod = document.getElementById(`editInstallMethod${index}`)?.value;
+    const slabGroup = document.getElementById(`editSlabThicknessGroup${index}`);
+    const fcGroup = document.getElementById(`editFcGroup${index}`);
+    
+    // Show slab thickness and f'c only for Fixed to Slab (1) or Fixed to Ceiling (4)
+    const showSlabFields = installMethod === '1' || installMethod === '4';
+    
+    if (slabGroup) {
+        slabGroup.style.display = showSlabFields ? 'block' : 'none';
+    }
+    if (fcGroup) {
+        fcGroup.style.display = showSlabFields ? 'block' : 'none';
+    }
+}
+
+// Make it globally available
+window.toggleEditSlabCeilingFields = toggleEditSlabCeilingFields;
+
 function populateEditInstallMethodOptions(index, domain, equipment) {
     const editInstallMethodSelect = document.getElementById(`editInstallMethod${index}`);
     if (!editInstallMethodSelect) return;
@@ -3908,8 +3966,8 @@ function populateEditInstallMethodOptions(index, domain, equipment) {
     // Store current selection
     const currentValue = editInstallMethodSelect.value;
     
-    // Clear existing options
-    editInstallMethodSelect.innerHTML = '';
+    // Clear existing options and add placeholder
+    editInstallMethodSelect.innerHTML = '<option value="">Select installation method...</option>';
     
     // All available install methods
     const allInstallMethods = {
@@ -4054,13 +4112,79 @@ equipment.images = images;
         // For traditional equipment, set up conditional field visibility
         if (!equipment.isPipe) {
             populateEditAnchorDiameters(index, equipment);
-            updateEditMountingTypeFields(index); // Initialize ASHRAE field visibility
+            updateEditMountingTypeFields(index);
+            toggleEditSlabCeilingFields(index);
+            populateEditInstallMethodOptions(index, domain, equipment.equipmentType || equipment.equipment);
             
             // NEW: Initialize install method filtering for edit form
             populateEditInstallMethodOptions(index, domain, equipment.equipmentType || equipment.equipment);
         }
     }, 100);
 }
+
+// Function to convert photos-only equipment to seismic calculation equipment
+function convertToSeismicCalculation(index) {
+    if (!canModifyProject()) {
+        alert('You do not have permission to modify equipment in this project.');
+        return;
+    }
+
+    const equipment = projectEquipment[index];
+    
+    if (equipment.hasCalculation !== false) {
+        alert('This equipment already has seismic calculations.');
+        return;
+    }
+
+    if (!confirm('This will convert this equipment to a seismic calculation equipment and any uploaded images to this equipment will be removed. Continue?')) {
+        return;
+    }
+
+    // Mark this equipment as being converted (used by the edit form to show seismic fields)
+    equipment._convertingToSeismic = true;
+
+    // Hide view mode and show edit mode
+    document.getElementById(`equipmentView${index}`).style.display = 'none';
+    document.getElementById(`equipmentEdit${index}`).style.display = 'block';
+
+    // Ensure details are expanded
+    const detailsDiv = document.getElementById(`equipmentDetails${index}`);
+    const detailsButton = detailsDiv.closest('.equipment-card').querySelector('.details-btn');
+    
+    if (!detailsDiv.classList.contains('show')) {
+        detailsDiv.classList.add('show');
+        if (detailsButton) {
+            detailsButton.textContent = 'Hide Details';
+        }
+    }
+
+    // Re-render just this equipment card to show seismic edit form
+    renderEquipmentList();
+    
+    // After re-render, expand details and show edit mode again
+    setTimeout(() => {
+        const newDetailsDiv = document.getElementById(`equipmentDetails${index}`);
+        const newEditDiv = document.getElementById(`equipmentEdit${index}`);
+        const newViewDiv = document.getElementById(`equipmentView${index}`);
+        
+        if (newDetailsDiv) newDetailsDiv.classList.add('show');
+        if (newEditDiv) newEditDiv.style.display = 'block';
+        if (newViewDiv) newViewDiv.style.display = 'none';
+        
+        // Update details button text
+        const newDetailsButton = newDetailsDiv?.closest('.equipment-card')?.querySelector('.details-btn');
+        if (newDetailsButton) newDetailsButton.textContent = 'Hide Details';
+
+        // Initialize edit form fields
+        const domain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
+        populateEditAnchorDiameters(index, equipment);
+        updateEditMountingTypeFields(index);
+        populateEditInstallMethodOptions(index, domain, equipment.equipmentType || equipment.equipment);
+    }, 100);
+}
+
+// Make it globally available
+window.convertToSeismicCalculation = convertToSeismicCalculation;
 
 // Delete (server-side delete + update equipment)
 async function confirmDeleteImage(evt, equipmentIndex, imageKey) {
@@ -4113,6 +4237,14 @@ function cancelEquipmentEdit(index) {
     // Clear edit form images
     currentEditFormImages = [];
     editingEquipmentIndex = null;
+    
+    // Clear conversion flag if set
+    const equipment = projectEquipment[index];
+    if (equipment && equipment._convertingToSeismic) {
+        delete equipment._convertingToSeismic;
+        // Re-render to restore normal view
+        renderEquipmentList();
+    }
 }
 
 // Function to save equipment edit
@@ -4208,14 +4340,13 @@ async function saveEquipmentEdit(index, event) {
             updatedEquipment.edgeDistanceB = getFloat(`editEdgeDistanceB${index}`, null);
             updatedEquipment.numberOfIsolators = getInt(`editNumberOfIsolators${index}`, null);
             
-            // Validation for traditional equipment
-            if (!updatedEquipment.weight || updatedEquipment.weight <= 0) {
-                alert('Please enter a valid weight greater than 0.');
-                return;
-            }
-            
-            // Only validate calculation-specific fields if hasCalculation is not false
-            if (currentEquipment.hasCalculation !== false) {
+            // Validation for traditional equipment - only if hasCalculation or converting
+            if (currentEquipment.hasCalculation !== false || currentEquipment._convertingToSeismic) {
+                if (!updatedEquipment.weight || updatedEquipment.weight <= 0) {
+                    alert('Please enter a valid weight greater than 0.');
+                    return;
+                }
+                
                 if (!updatedEquipment.height || !updatedEquipment.width || !updatedEquipment.length) {
                     alert('Please enter valid dimensions for height, width, and length.');
                     return;
@@ -4228,80 +4359,105 @@ async function saveEquipmentEdit(index, event) {
             }
         }
 
-        // Common validation
-        if (updatedEquipment.level > updatedEquipment.totalLevels) {
-            alert('Equipment level cannot be greater than total levels.');
-            return;
-        }
-        
-        if (!updatedEquipment.hn || updatedEquipment.hn <= 0) {
-            alert('Please enter a valid building height greater than 0.');
-            return;
+        // Common validation - only for calculation equipment or converting
+        if (currentEquipment.hasCalculation !== false || currentEquipment._convertingToSeismic) {
+            if (updatedEquipment.level > updatedEquipment.totalLevels) {
+                alert('Equipment level cannot be greater than total levels.');
+                return;
+            }
+            
+            if (!updatedEquipment.hn || updatedEquipment.hn <= 0) {
+                alert('Please enter a valid building height greater than 0.');
+                return;
+            }
+
+            if (!updatedEquipment.nbcCategory) {
+                alert('Please select an NBC category.');
+                return;
+            }
         }
 
-        if (!updatedEquipment.nbcCategory) {
-            alert('Please select an NBC category.');
-            return;
+        // Handle conversion from photos-only to seismic calculation
+        if (currentEquipment._convertingToSeismic) {
+            // Remove the conversion flag
+            delete updatedEquipment._convertingToSeismic;
+            // Set hasCalculation to true (or remove the false flag)
+            delete updatedEquipment.hasCalculation;
+            // Remove all images
+            updatedEquipment.images = [];
+            console.log('🔄 Converting equipment to seismic calculation, removing images');
         }
 
         console.log('🔄 Updating equipment:', updatedEquipment);
         
         // Handle image upload for without-calc equipment
-        if (updatedEquipment.hasCalculation === false && currentEditFormImages.length > 0 && currentEditFormImages[0].isNew) {
-            try {
-                const formImage = currentEditFormImages[0];
-                
-                // Convert base64 to blob
-                const response = await fetch(formImage.data);
-                const blob = await response.blob();
-                const file = new File([blob], formImage.name, { type: formImage.type });
-                
-                // Get presigned URL from backend
-                const res = await fetch(
-                    `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            ...getAuthHeaders(),
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            filename: file.name,
-                            contentType: file.type || 'application/octet-stream'
-                        })
+        if (updatedEquipment.hasCalculation === false && currentEditFormImages.length > 0) {
+            // Keep existing images that weren't removed
+            const existingImages = currentEditFormImages.filter(img => !img.isNew).map(img => ({
+                key: img.key,
+                url: img.url || null,
+                signedUrl: img.signedUrl || null,
+                uploadedAt: img.uploadedAt || Date.now()
+            }));
+            
+            updatedEquipment.images = existingImages;
+            
+            // Upload new images
+            const newImages = currentEditFormImages.filter(img => img.isNew);
+            for (const formImage of newImages) {
+                try {
+                    // Convert base64 to blob
+                    const response = await fetch(formImage.data);
+                    const blob = await response.blob();
+                    const file = new File([blob], formImage.name, { type: formImage.type });
+                    
+                    // Get presigned URL from backend
+                    const res = await fetch(
+                        `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                ...getAuthHeaders(),
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                filename: file.name,
+                                contentType: file.type || 'application/octet-stream'
+                            })
+                        }
+                    );
+                    
+                    if (!res.ok) {
+                        throw new Error('Failed to get upload URL');
                     }
-                );
-                
-                if (!res.ok) {
-                    throw new Error('Failed to get upload URL');
+                    
+                    const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
+                    
+                    // Upload to S3
+                    const putRes = await fetch(uploadUrl, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                        body: file
+                    });
+                    
+                    if (!putRes.ok) {
+                        throw new Error('Image upload to S3 failed');
+                    }
+                    
+                    // Add image to equipment data
+                    updatedEquipment.images.push({
+                        key,
+                        url: publicUrlHint || null,
+                        signedUrl: viewUrlSigned || null,
+                        uploadedAt: Date.now()
+                    });
+                    
+                    console.log('Image uploaded to S3 successfully:', key);
+                    
+                } catch (imgError) {
+                    console.error('Error uploading edit form image:', imgError);
+                    alert('Warning: One image upload failed, but other changes will still be saved.');
                 }
-                
-                const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
-                
-                // Upload to S3
-                const putRes = await fetch(uploadUrl, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
-                    body: file
-                });
-                
-                if (!putRes.ok) {
-                    throw new Error('Image upload to S3 failed');
-                }
-                
-                // Replace existing images with new one
-                updatedEquipment.images = [{
-                    key,
-                    url: publicUrlHint || null,
-                    signedUrl: viewUrlSigned || null,
-                    uploadedAt: Date.now()
-                }];
-                
-                console.log('Image uploaded to S3 successfully:', key);
-                
-            } catch (imgError) {
-                console.error('Error uploading edit form image:', imgError);
-                alert('Warning: Image upload failed, but other changes will still be saved.');
             }
         }
         
@@ -4446,62 +4602,62 @@ async function handleSaveEquipment(e) {
         // Initialize images array
         equipmentData.images = [];
 
-        // Upload form image to S3 if exists (for without-calc tab)
-        if (currentFormTab === 'without-calc' && currentFormImages.length > 0) {
-            const formImage = currentFormImages[0];
-            
-            try {
-                // Convert base64 to blob
-                const response = await fetch(formImage.data);
-                const blob = await response.blob();
-                const file = new File([blob], formImage.name, { type: formImage.type });
-                
-                // Get presigned URL from backend
-                const res = await fetch(
-                    `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            ...getAuthHeaders(),
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            filename: file.name,
-                            contentType: file.type || 'application/octet-stream'
-                        })
+        // Upload form images to S3 if exists (for photos mode)
+        if (currentEquipmentMode === 'photos' && currentFormImages.length > 0) {
+            for (const formImage of currentFormImages) {
+                try {
+                    // Convert base64 to blob
+                    const response = await fetch(formImage.data);
+                    const blob = await response.blob();
+                    const file = new File([blob], formImage.name, { type: formImage.type });
+                    
+                    // Get presigned URL from backend
+                    const res = await fetch(
+                        `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                ...getAuthHeaders(),
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                filename: file.name,
+                                contentType: file.type || 'application/octet-stream'
+                            })
+                        }
+                    );
+                    
+                    if (!res.ok) {
+                        throw new Error('Failed to get upload URL');
                     }
-                );
-                
-                if (!res.ok) {
-                    throw new Error('Failed to get upload URL');
+                    
+                    const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
+                    
+                    // Upload to S3
+                    const putRes = await fetch(uploadUrl, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                        body: file
+                    });
+                    
+                    if (!putRes.ok) {
+                        throw new Error('Image upload to S3 failed');
+                    }
+                    
+                    // Add image to equipment data
+                    equipmentData.images.push({
+                        key,
+                        url: publicUrlHint || null,
+                        signedUrl: viewUrlSigned || null,
+                        uploadedAt: Date.now()
+                    });
+                    
+                    console.log('Image uploaded to S3 successfully:', key);
+                    
+                } catch (imgError) {
+                    console.error('Error uploading form image:', imgError);
+                    alert('Warning: One image upload failed, but equipment will still be saved.');
                 }
-                
-                const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
-                
-                // Upload to S3
-                const putRes = await fetch(uploadUrl, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
-                    body: file
-                });
-                
-                if (!putRes.ok) {
-                    throw new Error('Image upload to S3 failed');
-                }
-                
-                // Add image to equipment data
-                equipmentData.images.push({
-                    key,
-                    url: publicUrlHint || null,
-                    signedUrl: viewUrlSigned || null,
-                    uploadedAt: Date.now()
-                });
-                
-                console.log('Image uploaded to S3 successfully:', key);
-                
-            } catch (imgError) {
-                console.error('Error uploading form image:', imgError);
-                alert('Warning: Image upload failed, but equipment will still be saved.');
             }
         }
 
@@ -4587,6 +4743,11 @@ function setupNewCalculationButton() {
                 // Initialize image upload handlers
                 initializeFormImageUpload();
                 
+                // If admin, auto-select seismic mode (skip mode selection)
+                if (isAdmin) {
+                    selectEquipmentMode('seismic');
+                }
+                
                 // SCROLL TO THE FORM WHEN SHOWING IT
                 equipmentForm.scrollIntoView({ 
                     behavior: 'smooth', 
@@ -4597,68 +4758,71 @@ function setupNewCalculationButton() {
     }
 }
 
-// Function to switch between form tabs
-function switchFormTab(tabId) {
-    currentFormTab = tabId;
+// Function to select equipment mode
+function selectEquipmentMode(mode) {
+    // If selecting seismic, check if project has numberOfFloors
+    if (mode === 'seismic') {
+        const project = window.projectData || projectData;
+        if (!project.numberOfFloors) {
+            showFloorsModal();
+            return;
+        }
+    }
     
-    // Update tab button states
-    document.querySelectorAll('.form-tab').forEach(tab => tab.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
+    applyEquipmentMode(mode);
+}
+
+// Apply the selected mode
+function applyEquipmentMode(mode) {
+    currentEquipmentMode = mode;
     
-    // Get form field groups
-    const withCalcOnlyFields = [
-        'dimensionGroup',
-        'hxGroup', 
-        'numberOfAnchorsGroup',
-        'anchorTypeGroup',
-        'anchorDiameterGroup',
-        'slabThicknessGroup',
-        'fcGroup',
-        'mountingTypeGroup',
-        'isolatorWidthGroup',
-        'restraintHeightGroup',
-        'edgeDistancesGroup',
-        'edgeDistanceBGroup',
-        'numberOfIsolatorsGroup'
-    ];
+    const modeSelection = document.getElementById('modeSelection');
+    const modeIndicator = document.getElementById('modeIndicator');
+    const modeIndicatorText = document.getElementById('modeIndicatorText');
+    const seismicFieldsContainer = document.getElementById('seismicFieldsContainer');
+    const formImageUploadSection = document.getElementById('formImageUploadSection');
+    const calculateBtn = document.getElementById('calculateEquipment');
+    const calcPlaceholder = document.getElementById('calculationPlaceholder');
     
-    // Pipe-specific fields (also calculation-only)
-    const pipeCalcFields = [
-        'pipingFieldsGroup',
-        'pipeDiameterGroup',
-        'supportTypeGroup',
-        'structureTypeGroup'
-    ];
+        // Hide mode selection, show indicator (but not for admins)
+    modeSelection.style.display = 'none';
+    modeIndicator.style.display = isAdmin ? 'none' : 'flex';
     
-    const isPipe = document.getElementById('equipment').value === 'Pipe';
-    
-    if (tabId === 'without-calc') {
-        // Hide calculation-specific fields
-        withCalcOnlyFields.forEach(fieldId => {
-            const el = document.getElementById(fieldId);
-            if (el) el.style.display = 'none';
-        });
+    if (mode === 'seismic') {
+        modeIndicatorText.innerHTML = '<i class="fas fa-calculator"></i> <strong>Seismic Calculation</strong>';
+        modeIndicator.classList.remove('photos-mode');
         
-        // Also hide pipe calculation fields
-        pipeCalcFields.forEach(fieldId => {
-            const el = document.getElementById(fieldId);
-            if (el) el.style.display = 'none';
-        });
+        // Show seismic fields
+        seismicFieldsContainer.style.display = 'block';
+        formImageUploadSection.style.display = 'none';
+        calculateBtn.style.display = 'block';
         
-        // Hide pipe type group for without-calc
-        const pipeTypeGroup = document.getElementById('pipeTypeGroup');
-        if (pipeTypeGroup) pipeTypeGroup.style.display = 'none';
+        // Apply visibility rules based on equipment type
+        handleEquipmentChange();
+        toggleSlabCeilingFields();
+        toggleMountingTypeField();
         
-        // Show weight group always for without-calc
-        const weightGroup = document.getElementById('weightGroup');
-        if (weightGroup) weightGroup.style.display = 'block';
+        // Reset calculation results placeholder
+        if (calcPlaceholder) {
+            calcPlaceholder.querySelector('div').innerHTML = `
+                <i class="fas fa-calculator" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+                Click "Calculate" to see detailed analysis and calculations
+            `;
+        }
         
-        // Hide Calculate button, keep only Save
-        const calculateBtn = document.getElementById('calculateEquipment');
-        if (calculateBtn) calculateBtn.style.display = 'none';
+    } else if (mode === 'photos') {
+        modeIndicatorText.innerHTML = '<i class="fas fa-camera"></i> <strong>Add Photos for Certification</strong>';
+        modeIndicator.classList.add('photos-mode');
+        
+        // Hide seismic fields, show image upload
+        seismicFieldsContainer.style.display = 'none';
+        formImageUploadSection.style.display = 'block';
+        calculateBtn.style.display = 'none';
+        
+        // Initialize image upload
+        initializeFormImageUpload();
         
         // Update calculation results placeholder
-        const calcPlaceholder = document.getElementById('calculationPlaceholder');
         if (calcPlaceholder) {
             calcPlaceholder.querySelector('div').innerHTML = `
                 <i class="fas fa-info-circle" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
@@ -4671,52 +4835,80 @@ function switchFormTab(tabId) {
         if (calcResults) calcResults.style.display = 'none';
         const calcPlaceholderEl = document.getElementById('calculationPlaceholder');
         if (calcPlaceholderEl) calcPlaceholderEl.style.display = 'block';
-        
-    } else {
-        // Restore calculation fields based on equipment type
-        const equipment = document.getElementById('equipment').value;
-        if (equipment === 'Pipe') {
-            handleEquipmentChange(); // This handles pipe-specific visibility
-        } else {
-            // Show traditional equipment fields
-            withCalcOnlyFields.forEach(fieldId => {
-                const el = document.getElementById(fieldId);
-                if (el) {
-                    // Only show if not conditionally hidden by other logic
-                    if (['dimensionGroup', 'hxGroup', 'numberOfAnchorsGroup', 
-                         'anchorTypeGroup', 'anchorDiameterGroup', 'weightGroup'].includes(fieldId)) {
-                        el.style.display = 'block';
-                    }
-                }
-            });
-            
-            // Re-trigger visibility logic
-            toggleMountingTypeField();
-        }
-        
-        // Show Calculate button
-        const calculateBtn = document.getElementById('calculateEquipment');
-        if (calculateBtn) calculateBtn.style.display = 'block';
-        
-        // Reset calculation results placeholder
-        const calcPlaceholder = document.getElementById('calculationPlaceholder');
-        if (calcPlaceholder) {
-            calcPlaceholder.querySelector('div').innerHTML = `
-                <i class="fas fa-calculator" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
-                Click "Calculate" to see detailed analysis and calculations
-            `;
-        }
-    }
-    
-    // Show/hide image upload section based on tab
-    const imageUploadSection = document.getElementById('formImageUploadSection');
-    if (imageUploadSection) {
-        imageUploadSection.style.display = tabId === 'without-calc' ? 'block' : 'none';
     }
 }
 
-// Make switchFormTab globally available
-window.switchFormTab = switchFormTab;
+// Switch between modes
+function switchEquipmentMode() {
+    const newMode = currentEquipmentMode === 'seismic' ? 'photos' : 'seismic';
+    selectEquipmentMode(newMode);
+}
+
+// Show number of floors modal
+function showFloorsModal() {
+    document.getElementById('floorsModal').style.display = 'flex';
+    document.getElementById('modalNumberOfFloors').focus();
+}
+
+// Hide number of floors modal
+function hideFloorsModal() {
+    document.getElementById('floorsModal').style.display = 'none';
+    document.getElementById('modalNumberOfFloors').value = '';
+}
+
+// Save floors and continue to seismic mode
+async function saveFloorsAndContinue() {
+    const floorsInput = document.getElementById('modalNumberOfFloors');
+    const floors = parseInt(floorsInput.value);
+    
+    if (!floors || floors < 1) {
+        alert('Please enter a valid number of floors.');
+        return;
+    }
+    
+    try {
+        // Save to project
+        const project = window.projectData || projectData;
+        project.numberOfFloors = floors;
+        
+        // Update on server
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeaders()
+            },
+            body: JSON.stringify({
+                id: project.id,
+                numberOfFloors: floors
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save number of floors');
+        }
+        
+        // Update display
+        const floorsDisplay = document.getElementById('projectFloors');
+        if (floorsDisplay) {
+            floorsDisplay.textContent = floors;
+        }
+        
+        hideFloorsModal();
+        applyEquipmentMode('seismic');
+        
+    } catch (error) {
+        console.error('Error saving number of floors:', error);
+        alert('Error saving number of floors: ' + error.message);
+    }
+}
+
+// Make functions globally available
+window.selectEquipmentMode = selectEquipmentMode;
+window.switchEquipmentMode = switchEquipmentMode;
+window.showFloorsModal = showFloorsModal;
+window.hideFloorsModal = hideFloorsModal;
+window.saveFloorsAndContinue = saveFloorsAndContinue;
 
 // ========== Form Image Upload Functions ==========
 function initializeFormImageUpload() {
@@ -4788,14 +4980,18 @@ async function processFormFiles(files) {
         return;
     }
     
-if (currentFormImages.length >= 1) {
-        alert('Maximum 1 image allowed. Please remove the existing image to add a new one.');
+const MAX_IMAGES = 10;
+    
+    if (currentFormImages.length >= MAX_IMAGES) {
+        alert(`Maximum ${MAX_IMAGES} images allowed. Please remove an existing image to add a new one.`);
         return;
     }
     
-    if (validFiles.length > 1) {
-        alert('Only 1 image allowed per equipment. Only the first image will be used.');
-        validFiles.length = 1; // Keep only first file
+    // Limit to remaining slots
+    const remainingSlots = MAX_IMAGES - currentFormImages.length;
+    if (validFiles.length > remainingSlots) {
+        alert(`Only ${remainingSlots} more image(s) can be added. Only the first ${remainingSlots} will be used.`);
+        validFiles.length = remainingSlots;
     }
     
     const dropZone = document.getElementById('formDropZone');
@@ -4820,10 +5016,10 @@ if (currentFormImages.length >= 1) {
     updateFormImagePreview();
     
     if (dropZone) {
-        dropZone.placeholder = currentFormImages.length >= 1 
-            ? 'Maximum 1 image reached' 
-            : 'Drop or paste images here (Ctrl+V)';
-        dropZone.classList.toggle('max-reached', currentFormImages.length >= 1);
+        dropZone.placeholder = currentFormImages.length >= 10 
+            ? 'Maximum 10 images reached' 
+            : `Drop or paste images here (${currentFormImages.length}/10)`;
+        dropZone.classList.toggle('max-reached', currentFormImages.length >= 10);
     }
     
     // Clear file input
@@ -4886,7 +5082,17 @@ function triggerEditFormImageUpload(index) {
 
 function initializeEditFormImageUpload(index) {
     editingEquipmentIndex = index;
-    currentEditFormImages = [];
+    
+    // Load existing images into currentEditFormImages
+    const equipment = projectEquipment[index];
+    const existingImages = (equipment && equipment.images) ? equipment.images : [];
+    currentEditFormImages = existingImages.map(img => ({
+        key: img.key,
+        url: img.url,
+        signedUrl: img.signedUrl,
+        uploadedAt: img.uploadedAt,
+        isNew: false
+    }));
 
     let dropZone = document.getElementById(`editFormDropZone${index}`);
 
@@ -4902,9 +5108,7 @@ function initializeEditFormImageUpload(index) {
         dropZone.addEventListener('drop', (e) => handleEditFormDrop(e, index));
     }
 
-    const equipment = projectEquipment[index];
-    const existingImages = (equipment && equipment.images) ? equipment.images : [];
-    updateEditFormImagePreview(index, existingImages);
+    updateEditFormImagePreview(index);
 }
 
 function handleEditFormFileSelect(event, index) {
@@ -4945,25 +5149,36 @@ async function processEditFormFiles(files, index) {
         return;
     }
     
-    // Only allow 1 image
-    const file = validFiles[0];
+    const MAX_IMAGES = 10;
     
-    try {
-        const base64 = await fileToBase64(file);
-        currentEditFormImages = [{
-            name: file.name,
-            type: file.type,
-            data: base64,
-            timestamp: Date.now(),
-            isNew: true
-        }];
-        
-        updateEditFormImagePreview(index);
-
-    } catch (error) {
-        console.error('Error processing file:', error);
-        alert('Error processing image file.');
+    if (currentEditFormImages.length >= MAX_IMAGES) {
+        alert(`Maximum ${MAX_IMAGES} images allowed. Please remove an existing image to add a new one.`);
+        return;
     }
+    
+    const remainingSlots = MAX_IMAGES - currentEditFormImages.length;
+    let filesToProcess = validFiles;
+    if (validFiles.length > remainingSlots) {
+        alert(`Only ${remainingSlots} more image(s) can be added.`);
+        filesToProcess = validFiles.slice(0, remainingSlots);
+    }
+    
+    for (const file of filesToProcess) {
+        try {
+            const base64 = await fileToBase64(file);
+            currentEditFormImages.push({
+                name: file.name,
+                type: file.type,
+                data: base64,
+                timestamp: Date.now(),
+                isNew: true
+            });
+        } catch (error) {
+            console.error('Error processing file:', error);
+        }
+    }
+    
+    updateEditFormImagePreview(index);
     
     // Clear file input
     const fileInput = document.getElementById(`editFormImageFileInput${index}`);
@@ -4989,7 +5204,7 @@ function setEditFormDropZoneMessage(index, primaryText, secondaryText) {
     }
 }
 
-async function updateEditFormImagePreview(index, existingImages = null) {
+async function updateEditFormImagePreview(index) {
     const container = document.getElementById(`editFormImagePreviewContainer${index}`);
     if (!container) return;
 
@@ -4999,61 +5214,64 @@ async function updateEditFormImagePreview(index, existingImages = null) {
     }
 
     container.innerHTML = '';
+    
+    const MAX_IMAGES = 10;
+    const totalImages = currentEditFormImages.length;
 
-    if (!existingImages) {
-        const equipment = projectEquipment[index];
-        existingImages = (equipment && equipment.images) ? equipment.images : [];
-    }
-
-    // Show new image if selected
-    if (currentEditFormImages.length > 0 && currentEditFormImages[0].isNew) {
-        const img = currentEditFormImages[0];
-        const preview = document.createElement('div');
-        preview.className = 'image-preview new-image';
-        preview.innerHTML = `
-            <img src="${img.data}" alt="New image">
-            <button type="button" class="image-remove" onclick="removeEditFormImage(${index})" title="Remove">×</button>
-            <span class="image-badge success">NEW</span>
-        `;
-        container.appendChild(preview);
-
-        if (dropZone) {
-            dropZone.classList.add('max-reached', 'has-new-image');
-        }
-        setEditFormDropZoneMessage(index, 'Image ready to upload', 'Click Save to upload or select a different image.');
+    if (totalImages === 0) {
+        setEditFormDropZoneMessage(index);
         return;
     }
 
-    // Show existing image if no new image selected
-    if (existingImages && existingImages.length > 0) {
-        const img = existingImages[0];
-        try {
-            const signedUrl = await getSignedImageUrl(currentProjectId, img.key);
-            const preview = document.createElement('div');
-            preview.className = 'image-preview existing-image';
+    // Show all images (existing and new)
+    for (let i = 0; i < currentEditFormImages.length; i++) {
+        const img = currentEditFormImages[i];
+        const preview = document.createElement('div');
+        preview.className = 'image-preview';
+        
+        if (img.isNew) {
+            // New image - use base64 data
+            preview.classList.add('new-image');
             preview.innerHTML = `
-                <img src="${signedUrl}" alt="Current image">
+                <img src="${img.data}" alt="New image ${i + 1}">
+                <button type="button" class="image-remove" onclick="removeEditFormImage(${index}, ${i})" title="Remove">×</button>
+                <span class="image-badge success">NEW</span>
+            `;
+        } else {
+            // Existing image - need to fetch signed URL
+            preview.classList.add('existing-image');
+            preview.innerHTML = `
+                <img src="" alt="Image ${i + 1}" data-key="${img.key}" data-index="${i}">
+                <button type="button" class="image-remove" onclick="removeEditFormImage(${index}, ${i})" title="Remove">×</button>
                 <span class="image-badge muted">CURRENT</span>
             `;
-            container.appendChild(preview);
-
-            if (dropZone) {
-                dropZone.classList.add('has-current-image');
-            }
-            setEditFormDropZoneMessage(index, 'Current image shown below', 'Add a new image to replace it.');
-        } catch (error) {
-            console.error('Error loading existing image:', error);
-            setEditFormDropZoneMessage(index);
+            
+            // Load signed URL async
+            getSignedImageUrl(currentProjectId, img.key).then(signedUrl => {
+                const imgEl = preview.querySelector('img');
+                if (imgEl) imgEl.src = signedUrl;
+            }).catch(err => {
+                console.error('Error loading image:', err);
+            });
         }
-        return;
+        
+        container.appendChild(preview);
     }
 
-    setEditFormDropZoneMessage(index);
+    // Update drop zone message
+    if (dropZone) {
+        if (totalImages >= MAX_IMAGES) {
+            dropZone.classList.add('max-reached');
+            setEditFormDropZoneMessage(index, `Maximum ${MAX_IMAGES} images reached`, 'Remove an image to add more.');
+        } else {
+            setEditFormDropZoneMessage(index, `${totalImages}/${MAX_IMAGES} images`, 'Drop or paste to add more images.');
+        }
+    }
 }
 
-function removeEditFormImage(index) {
-    currentEditFormImages = [];
-    updateEditFormImagePreview(index, projectEquipment[index]?.images);
+function removeEditFormImage(equipmentIndex, imageIndex) {
+    currentEditFormImages.splice(imageIndex, 1);
+    updateEditFormImagePreview(equipmentIndex);
 }
 
 // Make functions globally available
@@ -5182,7 +5400,7 @@ function getEquipmentFormData() {
     
     // Get common fields
     const level = document.getElementById('level').value;
-    const totalLevels = document.getElementById('totalLevels').value;
+    const totalLevels = projectData?.numberOfFloors || window.projectData?.numberOfFloors;
     const installMethod = document.getElementById('installMethod').value;
     const hn = document.getElementById('hn').value;
 
@@ -5198,24 +5416,27 @@ function getEquipmentFormData() {
         return null;
     }
 
-    if (!level || !totalLevels) {
-        alert('Please enter valid level information.');
-        return null;
-    }
+    // Seismic mode validation
+    if (currentEquipmentMode === 'seismic') {
+        if (!level || !totalLevels) {
+            alert('Please enter valid level information.');
+            return null;
+        }
 
-    if (parseInt(level) > parseInt(totalLevels)) {
-        alert('Equipment level cannot be greater than total levels.');
-        return null;
-    }
+        if (parseInt(level) > parseInt(totalLevels)) {
+            alert('Equipment level cannot be greater than total levels.');
+            return null;
+        }
 
-    if (!hn || parseFloat(hn) <= 0) {
-        alert('Please enter a valid building height greater than 0.');
-        return null;
-    }
+        if (!hn || parseFloat(hn) <= 0) {
+            alert('Please enter a valid building height greater than 0.');
+            return null;
+        }
 
-    if (!installMethod) {
-        alert('Please select an installation method.');
-        return null;
+        if (!installMethod) {
+            alert('Please select an installation method.');
+            return null;
+        }
     }
 
     // Base equipment data
@@ -5289,13 +5510,13 @@ function getEquipmentFormData() {
         const numberOfIsolators = document.getElementById('numberOfIsolators').value;
         const hx = document.getElementById('hx').value;
 
-        if (!weight || parseFloat(weight) <= 0) {
-            alert('Please enter a valid weight greater than 0.');
-            return null;
-        }
+        // Only validate calculation-specific fields if "seismic" mode is active
+        if (currentEquipmentMode === 'seismic') {
+            if (!weight || parseFloat(weight) <= 0) {
+                alert('Please enter a valid weight greater than 0.');
+                return null;
+            }
 
-        // Only validate calculation-specific fields if "With Calculation" tab is active
-        if (currentFormTab === 'with-calc') {
             if (!height || !width || !length) {
                 alert('Please enter valid dimensions for height, width, and length.');
                 return null;
@@ -5322,8 +5543,8 @@ function getEquipmentFormData() {
             }
         }
 
-        // Build equipment data based on form tab
-        if (currentFormTab === 'without-calc') {
+                // Build equipment data based on mode
+        if (currentEquipmentMode === 'photos') {
             // Without Calculation - minimal fields only
             equipmentData = {
                 ...equipmentData,
@@ -5432,9 +5653,21 @@ function clearEquipmentForm() {
     if (form) {
         form.reset();
         
-        // Reset to "With Calculation" tab
-        currentFormTab = 'with-calc';
-        switchFormTab('with-calc');
+        // Reset mode selection
+        currentEquipmentMode = null;
+        document.getElementById('seismicFieldsContainer').style.display = 'none';
+        document.getElementById('formImageUploadSection').style.display = 'none';
+        document.getElementById('calculateEquipment').style.display = 'block';
+        
+        // If admin, auto-select seismic mode; otherwise show mode selection
+        if (isAdmin) {
+            document.getElementById('modeSelection').style.display = 'none';
+            document.getElementById('modeIndicator').style.display = 'none';
+            selectEquipmentMode('seismic');
+        } else {
+            document.getElementById('modeSelection').style.display = 'block';
+            document.getElementById('modeIndicator').style.display = 'none';
+        }
         
         // Clear form images
         currentFormImages = [];
