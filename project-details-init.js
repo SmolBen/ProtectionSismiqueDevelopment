@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("projectType").textContent = project.type;
                 document.getElementById("projectDomain").textContent = project.domain || "N/A";
                 document.getElementById("projectStatusDropdown").value = project.status;
+                document.getElementById("projectFloors").textContent = project.numberOfFloors || "N/A";
                 document.getElementById("projectStatusDropdown").addEventListener('change', function() {
                     if (canModifyProject()) {
                         saveProjectStatus(this.value);
