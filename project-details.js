@@ -4919,15 +4919,27 @@ function initializeFormImageUpload() {
     const dropZone = document.getElementById('formDropZone');
     
     if (cameraBtn && fileInput) {
-        cameraBtn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', handleFormFileSelect);
+        // Remove existing listeners before adding new ones
+        cameraBtn.replaceWith(cameraBtn.cloneNode(true));
+        fileInput.replaceWith(fileInput.cloneNode(true));
+        
+        // Get fresh references after cloning
+        const newCameraBtn = document.getElementById('formCameraBtn');
+        const newFileInput = document.getElementById('formImageFileInput');
+        
+        newCameraBtn.addEventListener('click', () => newFileInput.click());
+        newFileInput.addEventListener('change', handleFormFileSelect);
     }
     
     if (dropZone) {
-        dropZone.addEventListener('paste', handleFormPaste);
-        dropZone.addEventListener('dragover', handleFormDragOver);
-        dropZone.addEventListener('dragleave', handleFormDragLeave);
-        dropZone.addEventListener('drop', handleFormDrop);
+        // Remove existing listeners before adding new ones
+        dropZone.replaceWith(dropZone.cloneNode(true));
+        const newDropZone = document.getElementById('formDropZone');
+        
+        newDropZone.addEventListener('paste', handleFormPaste);
+        newDropZone.addEventListener('dragover', handleFormDragOver);
+        newDropZone.addEventListener('dragleave', handleFormDragLeave);
+        newDropZone.addEventListener('drop', handleFormDrop);
     }
     
     updateFormImagePreview();
