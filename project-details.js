@@ -2980,7 +2980,7 @@ equipmentCard.innerHTML = `
                     </button>
                 ` : ''}
                 <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${index})">Delete</button>
-                <input type="file" id="fileInput${index}" accept="image/*" style="display:none" 
+                <input type="file" id="fileInput${index}" accept="image/*,.heic,.HEIC" style="display:none" 
                 onchange="handleImageSelected(event, ${index})">
             ` : ''}
         </div>
@@ -3704,10 +3704,26 @@ function triggerUploadImage(index) {
 
 // Updated handleImageSelected function to clear image requests
 async function handleImageSelected(evt, index) {
-    const file = evt.target.files && evt.target.files[0];
+    let file = evt.target.files && evt.target.files[0];
     if (!file) return;
 
     try {
+        // Convert HEIC to JPEG if needed
+        if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+            if (typeof heic2any !== 'undefined') {
+                console.log('Converting HEIC image:', file.name);
+                const convertedBlob = await heic2any({
+                    blob: file,
+                    toType: 'image/jpeg',
+                    quality: 0.9
+                });
+                file = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' });
+                console.log('HEIC conversion complete:', file.name);
+            } else {
+                console.warn('heic2any library not loaded, uploading HEIC as-is');
+            }
+        }
+
         // 1) Ask backend for a presigned PUT URL scoped to this project
         const res = await fetch(
             `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
@@ -4981,14 +4997,14 @@ function handleFormDrop(event) {
 }
 
 async function processFormFiles(files) {
-    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    let validFiles = files.filter(file => file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic'));
     
     if (validFiles.length === 0) {
         alert('Please select valid image files.');
         return;
     }
     
-const MAX_IMAGES = 10;
+    const MAX_IMAGES = 10;
     
     if (currentFormImages.length >= MAX_IMAGES) {
         alert(`Maximum ${MAX_IMAGES} images allowed. Please remove an existing image to add a new one.`);
@@ -4999,7 +5015,7 @@ const MAX_IMAGES = 10;
     const remainingSlots = MAX_IMAGES - currentFormImages.length;
     if (validFiles.length > remainingSlots) {
         alert(`Only ${remainingSlots} more image(s) can be added. Only the first ${remainingSlots} will be used.`);
-        validFiles.length = remainingSlots;
+        validFiles = validFiles.slice(0, remainingSlots);
     }
     
     const dropZone = document.getElementById('formDropZone');
@@ -5009,15 +5025,34 @@ const MAX_IMAGES = 10;
     
     for (const file of validFiles) {
         try {
-            const base64 = await fileToBase64(file);
+            let processedFile = file;
+            
+            // Convert HEIC to JPEG
+            if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+                if (typeof heic2any !== 'undefined') {
+                    console.log('Converting HEIC image:', file.name);
+                    const convertedBlob = await heic2any({
+                        blob: file,
+                        toType: 'image/jpeg',
+                        quality: 0.9
+                    });
+                    processedFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' });
+                    console.log('HEIC conversion complete:', processedFile.name);
+                } else {
+                    console.warn('heic2any library not loaded, uploading HEIC as-is');
+                }
+            }
+            
+            const base64 = await fileToBase64(processedFile);
             currentFormImages.push({
-                name: file.name,
-                type: file.type,
+                name: processedFile.name,
+                type: processedFile.type,
                 data: base64,
                 timestamp: Date.now()
             });
         } catch (error) {
             console.error('Error processing file:', error);
+            alert(`Failed to process ${file.name}. It may be corrupted or unsupported.`);
         }
     }
     
@@ -5150,7 +5185,7 @@ function handleEditFormDrop(event, index) {
 }
 
 async function processEditFormFiles(files, index) {
-    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    let validFiles = files.filter(file => file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic'));
     
     if (validFiles.length === 0) {
         alert('Please select a valid image file.');
@@ -5165,24 +5200,42 @@ async function processEditFormFiles(files, index) {
     }
     
     const remainingSlots = MAX_IMAGES - currentEditFormImages.length;
-    let filesToProcess = validFiles;
     if (validFiles.length > remainingSlots) {
         alert(`Only ${remainingSlots} more image(s) can be added.`);
-        filesToProcess = validFiles.slice(0, remainingSlots);
+        validFiles = validFiles.slice(0, remainingSlots);
     }
     
-    for (const file of filesToProcess) {
+    for (const file of validFiles) {
         try {
-            const base64 = await fileToBase64(file);
+            let processedFile = file;
+            
+            // Convert HEIC to JPEG
+            if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+                if (typeof heic2any !== 'undefined') {
+                    console.log('Converting HEIC image:', file.name);
+                    const convertedBlob = await heic2any({
+                        blob: file,
+                        toType: 'image/jpeg',
+                        quality: 0.9
+                    });
+                    processedFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' });
+                    console.log('HEIC conversion complete:', processedFile.name);
+                } else {
+                    console.warn('heic2any library not loaded, uploading HEIC as-is');
+                }
+            }
+            
+            const base64 = await fileToBase64(processedFile);
             currentEditFormImages.push({
-                name: file.name,
-                type: file.type,
+                name: processedFile.name,
+                type: processedFile.type,
                 data: base64,
                 timestamp: Date.now(),
                 isNew: true
             });
         } catch (error) {
             console.error('Error processing file:', error);
+            alert(`Failed to process ${file.name}. It may be corrupted or unsupported.`);
         }
     }
     
