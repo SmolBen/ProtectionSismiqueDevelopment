@@ -1,5 +1,16 @@
 // Project Details Page Initialization
 // Initialization code for project details page
+const formatSeismicValue = (value, precision = 2) => {
+    if (value === null || value === undefined || value === '') {
+        return 'N/A';
+    }
+    const num = Number(value);
+    if (!Number.isFinite(num)) {
+        return typeof value === 'string' && value.trim() !== '' ? value : 'N/A';
+    }
+    return Number(num.toFixed(precision)).toString();
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
     const isAuthenticated = await checkAuthentication();
     if (!isAuthenticated) {
@@ -61,18 +72,33 @@ document.addEventListener("DOMContentLoaded", async () => {
                         saveProjectStatus(this.value);
                     }
                 });
-                document.getElementById("projectLatitude").textContent = project.latitude || "N/A";
-                document.getElementById("projectLongitude").textContent = project.longitude || "N/A";
-                document.getElementById("projectMaxSa0_2").textContent = project.maxSa0_2 || "N/A";
-                document.getElementById("projectMaxSa1_0").textContent = project.maxSa1_0 || "N/A";
-                document.getElementById("projectMaxVGA").textContent = project.maxPGA || "N/A";
-                document.getElementById("projectPGAref").textContent = project.PGAref || "N/A";
-                document.getElementById("projectF10").textContent = project.F10 || "N/A";
-                document.getElementById("projectF02").textContent = project.F02 || "N/A";
-                document.getElementById("projectSMS").textContent = project.S_MS || "N/A";
-                document.getElementById("projectSDS").textContent = project.S_DS || "N/A";
-                document.getElementById("projectSM1").textContent = project.S_M1 || "N/A";
-                document.getElementById("projectSD1").textContent = project.S_D1 || "N/A";
+                const seismicFields = [
+                    { id: "projectLatitude", value: project.latitude, precision: 4 },
+                    { id: "projectLongitude", value: project.longitude, precision: 4 },
+                    { id: "projectMaxSa0_2", value: project.maxSa0_2 },
+                    { id: "projectMaxSa1_0", value: project.maxSa1_0 },
+                    { id: "projectMaxVGA", value: project.maxPGA },
+                    { id: "projectPGAref", value: project.PGAref },
+                    { id: "projectF10", value: project.F10 },
+                    { id: "projectF02", value: project.F02 },
+                    { id: "projectSMS", value: project.S_MS },
+                    { id: "projectSDS", value: project.S_DS },
+                    { id: "projectSM1", value: project.S_M1 },
+                    { id: "projectSD1", value: project.S_D1 }
+                ];
+
+                seismicFields.forEach(({ id, value, precision = 2 }) => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.textContent = formatSeismicValue(value, precision);
+                    }
+                });
+
+                const seismicHeading = document.getElementById('seismicParametersHeading');
+                if (seismicHeading) {
+                    seismicHeading.style.display = isAdmin ? '' : 'none';
+                }
+
                 document.getElementById("projectRiskSDS").textContent = project.RiskS_DS || "N/A";
                 document.getElementById("projectRiskSD1").textContent = project.RiskS_D1 || "N/A";
                 document.getElementById("projectFinalRiskCategory").textContent = project.FinalRiskCategory || "N/A";

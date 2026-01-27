@@ -587,9 +587,9 @@
 
 /* Project Owner Info (Admin Only) */
 #projectOwnerInfo {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #ddd;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }
 
 /* New Calculation Button */
