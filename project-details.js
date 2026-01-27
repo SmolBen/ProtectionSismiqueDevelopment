@@ -2980,7 +2980,7 @@ equipmentCard.innerHTML = `
                     </button>
                 ` : ''}
                 <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${index})">Delete</button>
-                <input type="file" id="fileInput${index}" accept="image/*,.heic,.HEIC" style="display:none" 
+                <input type="file" id="fileInput${index}" accept="image/*,.heic,.HEIC" multiple style="display:none" 
                 onchange="handleImageSelected(event, ${index})">
             ` : ''}
         </div>
@@ -3703,72 +3703,104 @@ function triggerUploadImage(index) {
 }
 
 // Updated handleImageSelected function to clear image requests
+// Updated handleImageSelected function to handle multiple files and clear image requests
 async function handleImageSelected(evt, index) {
-    let file = evt.target.files && evt.target.files[0];
-    if (!file) return;
+    const files = evt.target.files;
+    if (!files || files.length === 0) return;
 
-    try {
-        // Convert HEIC to JPEG if needed
-        if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
-            if (typeof heic2any !== 'undefined') {
-                console.log('Converting HEIC image:', file.name);
-                const convertedBlob = await heic2any({
-                    blob: file,
-                    toType: 'image/jpeg',
-                    quality: 0.9
-                });
-                file = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' });
-                console.log('HEIC conversion complete:', file.name);
-            } else {
-                console.warn('heic2any library not loaded, uploading HEIC as-is');
+    const equipment = projectEquipment[index];
+    const existingCount = (equipment.images && equipment.images.length) || 0;
+    const MAX_IMAGES = 10;
+    
+    // Check if already at max
+    if (existingCount >= MAX_IMAGES) {
+        alert(`This equipment already has ${MAX_IMAGES} images (maximum).`);
+        evt.target.value = '';
+        return;
+    }
+    
+    // Calculate how many we can add
+    const availableSlots = MAX_IMAGES - existingCount;
+    const filesToUpload = Array.from(files).slice(0, availableSlots);
+    
+    if (files.length > availableSlots) {
+        alert(`Only uploading ${availableSlots} image(s). Maximum ${MAX_IMAGES} images per equipment.`);
+    }
+
+    let uploadedCount = 0;
+    
+    for (let file of filesToUpload) {
+        try {
+            // Convert HEIC to JPEG if needed
+            if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+                if (typeof heic2any !== 'undefined') {
+                    console.log('Converting HEIC image:', file.name);
+                    const convertedBlob = await heic2any({
+                        blob: file,
+                        toType: 'image/jpeg',
+                        quality: 0.9
+                    });
+                    file = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' });
+                    console.log('HEIC conversion complete:', file.name);
+                } else {
+                    console.warn('heic2any library not loaded, uploading HEIC as-is');
+                }
             }
-        }
 
-        // 1) Ask backend for a presigned PUT URL scoped to this project
-        const res = await fetch(
-            `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
-            {
-                method: 'POST',
-                headers: {
-                    ...getAuthHeaders(),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    filename: file.name,
-                    contentType: file.type || 'application/octet-stream'
-                })
+            // 1) Ask backend for a presigned PUT URL scoped to this project
+            const res = await fetch(
+                `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
+                {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeaders(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        contentType: file.type || 'application/octet-stream'
+                    })
+                }
+            );
+
+            if (handleAuthError(res)) return;
+            if (!res.ok) {
+                const t = await res.text();
+                throw new Error(`Failed to get upload URL: ${res.status} - ${t}`);
             }
-        );
 
-        if (handleAuthError(res)) return;
-        if (!res.ok) {
-            const t = await res.text();
-            throw new Error(`Failed to get upload URL: ${res.status} - ${t}`);
+            const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
+
+            // 2) Upload file directly to S3 with PUT
+            const putRes = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                body: file
+            });
+            if (!putRes.ok) {
+                const t = await putRes.text();
+                throw new Error(`Upload failed: ${putRes.status} - ${t}`);
+            }
+
+            // 3) Persist image metadata on equipment (array-based)
+            const eq = projectEquipment[index] || {};
+            addImageToEquipment(eq, { key, viewUrlSigned, publicUrlHint });
+            
+            // CLEAR IMAGE REQUEST when new image is uploaded
+            if (eq.imageRequested) {
+                eq.imageRequested = false;
+            }
+            
+            projectEquipment[index] = eq;
+            uploadedCount++;
+            
+        } catch (err) {
+            console.error('Image upload error:', err);
+            alert(`Failed to upload "${file.name}": ${err.message}`);
         }
-
-        const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
-
-        // 2) Upload file directly to S3 with PUT
-        const putRes = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': file.type || 'application/octet-stream' },
-            body: file
-        });
-        if (!putRes.ok) {
-            const t = await putRes.text();
-            throw new Error(`Upload failed: ${putRes.status} - ${t}`);
-        }
-
-        // 3) Persist image metadata on equipment (array-based)
-        const eq = projectEquipment[index] || {};
-        addImageToEquipment(eq, { key, viewUrlSigned, publicUrlHint });
-        
-        // CLEAR IMAGE REQUEST when new image is uploaded
-        if (eq.imageRequested) {
-            eq.imageRequested = false;
-        }
-        
-        projectEquipment[index] = eq;
+    }
+    
+    if (uploadedCount > 0) {
         await saveEquipmentToProject();
         renderEquipmentList();
 
@@ -3780,14 +3812,11 @@ async function handleImageSelected(evt, index) {
             }
         }, 100);
 
-        alert('Image uploaded and saved to this equipment!');
-    } catch (err) {
-        console.error('Image upload error:', err);
-        alert('Image upload failed: ' + err.message);
-    } finally {
-        // reset the input so choosing the same file again still triggers change
-        evt.target.value = '';
+        alert(`${uploadedCount} image(s) uploaded successfully!`);
     }
+    
+    // reset the input so choosing the same file again still triggers change
+    evt.target.value = '';
 }
 
 // Function to get request icon and tooltip text
