@@ -4107,11 +4107,37 @@ function toggleEquipmentDetails(index) {
             detailsButton.textContent = 'Details';
         }
     } else {
+        // Collapse all other open details first
+        collapseAllEquipmentDetails(index);
+        
         detailsDiv.classList.add('show');
         if (detailsButton) {
             detailsButton.textContent = 'Hide Details';
         }
     }
+}
+
+// Function to collapse all open equipment details
+function collapseAllEquipmentDetails(exceptIndex = null) {
+    const allDetailsDivs = document.querySelectorAll('[id^="equipmentDetails"]');
+    allDetailsDivs.forEach(detailsDiv => {
+        if (detailsDiv.classList.contains('show')) {
+            // Extract the index from the id (e.g., "equipmentDetails3" -> 3)
+            const idMatch = detailsDiv.id.match(/equipmentDetails(\d+)/);
+            if (idMatch) {
+                const index = parseInt(idMatch[1], 10);
+                // Skip if this is the exception index
+                if (exceptIndex !== null && index === exceptIndex) return;
+                
+                detailsDiv.classList.remove('show');
+                const equipmentCard = detailsDiv.closest('.equipment-card');
+                const detailsButton = equipmentCard?.querySelector('.details-btn');
+                if (detailsButton) {
+                    detailsButton.textContent = 'Details';
+                }
+            }
+        }
+    });
 }
 
 // Function to edit equipment
@@ -4778,6 +4804,9 @@ function setupNewCalculationButton() {
                 equipmentForm.classList.remove('show');
                 newCalcButton.textContent = 'Add Equipment';
             } else {
+                // Collapse any open equipment details
+                collapseAllEquipmentDetails();
+                
                 equipmentForm.classList.add('show');
                 newCalcButton.textContent = 'Hide Form';
                 
