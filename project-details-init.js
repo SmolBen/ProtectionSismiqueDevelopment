@@ -46,6 +46,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("projectDomain").textContent = project.domain || "N/A";
                 document.getElementById("projectStatusDropdown").value = project.status;
                 document.getElementById("projectFloors").textContent = project.numberOfFloors || "N/A";
+                // Build full address from address components
+                const addressParts = [
+                    project.addressLine1,
+                    project.addressLine2,
+                    project.city,
+                    project.province,
+                    project.country
+                ].filter(part => part && part.trim() !== '');
+                document.getElementById("projectAddress").textContent = addressParts.length > 0 ? addressParts.join(', ') : 'N/A';
                 document.getElementById("projectStatusDropdown").addEventListener('change', function() {
                     if (canModifyProject()) {
                         saveProjectStatus(this.value);
