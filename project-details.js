@@ -2240,12 +2240,12 @@ function handleEquipmentChange() {
     const equipment = document.getElementById('equipment').value;
     const domain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
     const isPipe = equipment === 'Pipe';
-    
+
     // If in "photos" mode, don't show calculation-specific fields
     if (currentEquipmentMode === 'photos') {
         return;
     }
-    
+
     // Show/hide pipe type field
     const pipeTypeGroup = document.getElementById('pipeTypeGroup');
     if (pipeTypeGroup) {
@@ -2260,18 +2260,18 @@ function handleEquipmentChange() {
             }
         }
     }
-    
+
     // Populate NBC Category options based on equipment type
     populateNBCCategoryOptions(isPipe);
-    
+
     // Show/hide form sections based on equipment type
     showHideFormSections(isPipe);
-    
+
     // Update install method options based on equipment selection
     if (!isPipe) {
         populateInstallMethodOptions(domain, equipment);
     }
-    
+
     // Set default install method for pipes
     if (isPipe) {
         const installMethodSelect = document.getElementById('installMethod');
@@ -2280,6 +2280,10 @@ function handleEquipmentChange() {
             installMethodSelect.dispatchEvent(new Event('change')); // Trigger change event
         }
     }
+
+    // Ensure field visibility is correct after showing/hiding sections
+    toggleSlabCeilingFields();
+    toggleMountingTypeField();
 }
     
     // Handle NBC Category restrictions for pipes
@@ -3216,264 +3220,9 @@ return `
             </div>
             </div>
         </div>
+        
                     
-                    <div id="equipmentEdit${index}" style="display: none;">
-                        <form id="equipmentEditForm${index}" onsubmit="saveEquipmentEdit(${index}, event)">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                                ${equipment.isPipe ? `
-                                    <!-- Pipe Edit Fields -->
-                                    <div>
-                                        <label><strong>Pipe Type:</strong></label>
-                                        <select id="editPipeType${index}" style="width: 100%; padding: 5px;">
-                                            <option value="Steel_Pipe" ${equipment.pipeType === 'Steel_Pipe' ? 'selected' : ''}>Steel Pipe</option>
-                                            <option value="Copper_Pipe" ${equipment.pipeType === 'Copper_Pipe' ? 'selected' : ''}>Copper Pipe</option>
-                                            <option value="PVC_Pipe" ${equipment.pipeType === 'PVC_Pipe' ? 'selected' : ''}>PVC Pipe</option>
-                                            <option value="No_Hub_Pipe" ${equipment.pipeType === 'No_Hub_Pipe' ? 'selected' : ''}>No Hub Pipe</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label><strong>Model:</strong></label>
-                                        <input type="text" id="editModel${index}" value="${equipment.model || ''}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Tag:</strong></label>
-                                        <input type="text" id="editTag${index}" value="${equipment.tag || ''}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>NBC Category:</strong></label>
-                                        <select id="editNbcCategory${index}" style="width: 100%; padding: 5px;">
-                                            <option value="15" ${equipment.nbcCategory === '15' ? 'selected' : ''}>15 - Pipes, ducts (including contents)</option>
-                                            <option value="16" ${equipment.nbcCategory === '16' ? 'selected' : ''}>16 - Pipes, ducts containing toxic or explosive materials</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label><strong>Pipe Weight per Foot (lb/ft):</strong></label>
-                                        <input type="number" id="editPipeWeightPerFoot${index}" value="${equipment.pipeWeightPerFoot || ''}" step="0.1" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Pipe Diameter:</strong></label>
-                                        <select id="editPipeDiameter${index}" style="width: 100%; padding: 5px;">
-                                            <option value="">Select diameter...</option>
-                                            <option value="1" ${equipment.pipeDiameter === '1' ? 'selected' : ''}>1"</option>
-                                            <option value="1-1/4" ${equipment.pipeDiameter === '1-1/4' ? 'selected' : ''}>1-1/4"</option>
-                                            <option value="1-1/2" ${equipment.pipeDiameter === '1-1/2' ? 'selected' : ''}>1-1/2"</option>
-                                            <option value="2" ${equipment.pipeDiameter === '2' ? 'selected' : ''}>2"</option>
-                                            <option value="2-1/2" ${equipment.pipeDiameter === '2-1/2' ? 'selected' : ''}>2-1/2"</option>
-                                            <option value="3" ${equipment.pipeDiameter === '3' ? 'selected' : ''}>3"</option>
-                                            <option value="4" ${equipment.pipeDiameter === '4' ? 'selected' : ''}>4"</option>
-                                            <option value="5" ${equipment.pipeDiameter === '5' ? 'selected' : ''}>5"</option>
-                                            <option value="6" ${equipment.pipeDiameter === '6' ? 'selected' : ''}>6"</option>
-                                            <option value="8" ${equipment.pipeDiameter === '8' ? 'selected' : ''}>8"</option>
-                                            <option value="10" ${equipment.pipeDiameter === '10' ? 'selected' : ''}>10"</option>
-                                            <option value="12" ${equipment.pipeDiameter === '12' ? 'selected' : ''}>12"</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label><strong>Support Type:</strong></label>
-                                        <select id="editSupportType${index}" style="width: 100%; padding: 5px;">
-                                            <option value="individual" ${equipment.supportType === 'individual' ? 'selected' : ''}>Individual Clevis</option>
-                                            <option value="trapeze" ${equipment.supportType === 'trapeze' ? 'selected' : ''}>Trapeze</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label><strong>Structure Type:</strong></label>
-                                        <select id="editStructureType${index}" style="width: 100%; padding: 5px;">
-                                            <option value="concrete-slab" ${equipment.structureType === 'concrete-slab' ? 'selected' : ''}>Concrete Slab</option>
-                                            <option value="concrete-deck" ${equipment.structureType === 'concrete-deck' ? 'selected' : ''}>Concrete Deck</option>
-                                            <option value="steel" ${equipment.structureType === 'steel' ? 'selected' : ''}>Structural Steel</option>
-                                            <option value="wood" ${equipment.structureType === 'wood' ? 'selected' : ''}>Wood Structure</option>
-                                        </select>
-                                    </div>
-                                ` : `
-                                    <!-- Traditional Equipment Edit Fields -->
-                                    <div>
-                                        <label><strong>Model:</strong></label>
-                                        <input type="text" id="editModel${index}" value="${equipment.model || ''}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Tag:</strong></label>
-                                        <input type="text" id="editTag${index}" value="${equipment.tag || ''}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Level:</strong></label>
-                                        <input type="number" id="editLevel${index}" value="${equipment.level || ''}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    ${(equipment.hasCalculation !== false || equipment._convertingToSeismic) ? `
-                                    <div>
-                                        <label><strong>NBC Category:</strong></label>
-                                        <select id="editNbcCategory${index}" style="width: 100%; padding: 5px;">
-                                            <option value="1" ${equipment.nbcCategory === '1' ? 'selected' : ''}>1 - All exterior and interior walls except those in Category 2 or 3</option>
-                                            <option value="2" ${equipment.nbcCategory === '2' ? 'selected' : ''}>2 - Cantilever parapet and other cantilever walls except retaining walls</option>
-                                            <option value="3" ${equipment.nbcCategory === '3' ? 'selected' : ''}>3 - Exterior and interior ornamentations and appendages</option>
-                                            <option value="5" ${equipment.nbcCategory === '5' ? 'selected' : ''}>5 - Towers, chimneys, smokestacks and penthouses when connected to or forming part of a building</option>
-                                            <option value="6" ${equipment.nbcCategory === '6' ? 'selected' : ''}>6 - Horizontally cantilevered floors, balconies, beams, etc.</option>
-                                            <option value="7" ${equipment.nbcCategory === '7' ? 'selected' : ''}>7 - Suspended ceilings, light fixtures and other attachments to ceilings with independent vertical support</option>
-                                            <option value="8" ${equipment.nbcCategory === '8' ? 'selected' : ''}>8 - Masonry veneer connections</option>
-                                            <option value="9" ${equipment.nbcCategory === '9' ? 'selected' : ''}>9 - Access floors</option>
-                                            <option value="10" ${equipment.nbcCategory === '10' ? 'selected' : ''}>10 - Masonry or concrete fences more than 1.8 m tall</option>
-                                            <option value="11-rigid" ${equipment.nbcCategory === '11-rigid' ? 'selected' : ''}>11 - Machinery, fixtures, equipment and tanks (rigid and rigidly connected)</option>
-                                            <option value="11-flexible" ${equipment.nbcCategory === '11-flexible' ? 'selected' : ''}>11 - Machinery, fixtures, equipment and tanks (flexible or flexibly connected)</option>
-                                            <option value="12-rigid" ${equipment.nbcCategory === '12-rigid' ? 'selected' : ''}>12 - Machinery with toxic/explosive materials (rigid and rigidly connected)</option>
-                                            <option value="12-flexible" ${equipment.nbcCategory === '12-flexible' ? 'selected' : ''}>12 - Machinery with toxic/explosive materials (flexible or flexibly connected)</option>
-                                            <option value="13" ${equipment.nbcCategory === '13' ? 'selected' : ''}>13 - Flat bottom tanks attached directly to a floor at or below grade</option>
-                                            <option value="14" ${equipment.nbcCategory === '14' ? 'selected' : ''}>14 - Flat bottom tanks with toxic/explosive materials at or below grade</option>
-                                            <option value="15" ${equipment.nbcCategory === '15' ? 'selected' : ''}>15 - Pipes, ducts (including contents)</option>
-                                            <option value="16" ${equipment.nbcCategory === '16' ? 'selected' : ''}>16 - Pipes, ducts containing toxic or explosive materials</option>
-                                            <option value="17" ${equipment.nbcCategory === '17' ? 'selected' : ''}>17 - Electrical cable trays, bus ducts, conduits</option>
-                                            <option value="18" ${equipment.nbcCategory === '18' ? 'selected' : ''}>18 - Rigid components with ductile material and connections</option>
-                                            <option value="19" ${equipment.nbcCategory === '19' ? 'selected' : ''}>19 - Rigid components with non-ductile material or connections</option>
-                                            <option value="20" ${equipment.nbcCategory === '20' ? 'selected' : ''}>20 - Flexible components with ductile material and connections</option>
-                                            <option value="21" ${equipment.nbcCategory === '21' ? 'selected' : ''}>21 - Flexible components with non-ductile material or connections</option>
-                                            <option value="22-machinery" ${equipment.nbcCategory === '22-machinery' ? 'selected' : ''}>22 - Elevators and escalators (machinery and equipment)</option>
-                                            <option value="22-rails" ${equipment.nbcCategory === '22-rails' ? 'selected' : ''}>22 - Elevators and escalators (elevator rails)</option>
-                                            <option value="23" ${equipment.nbcCategory === '23' ? 'selected' : ''}>23 - Floor-mounted steel pallet storage racks</option>
-                                            <option value="24" ${equipment.nbcCategory === '24' ? 'selected' : ''}>24 - Floor-mounted steel pallet storage racks with toxic/explosive materials</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label><strong>Install Method:</strong></label>
-                                        <select id="editInstallMethod${index}" style="width: 100%; padding: 5px;" onchange="toggleEditSlabCeilingFields(${index})">
-                                            <option value="" ${!equipment.installMethod ? 'selected' : ''}>Select installation method...</option>
-                                            <option value="1" ${equipment.installMethod === '1' ? 'selected' : ''}>Fixed to Slab</option>
-                                            <option value="2" ${equipment.installMethod === '2' ? 'selected' : ''}>Fixed to Wall</option>
-                                            <option value="3" ${equipment.installMethod === '3' ? 'selected' : ''}>Fixed to Structure</option>
-                                            <option value="4" ${equipment.installMethod === '4' ? 'selected' : ''}>Fixed to Ceiling</option>
-                                            <option value="5" ${equipment.installMethod === '5' ? 'selected' : ''}>Fixed to Roof</option>
-                                            <option value="6" ${equipment.installMethod === '6' ? 'selected' : ''}>Fixed to Interior Wall</option>
-                                            <option value="7" ${equipment.installMethod === '7' ? 'selected' : ''}>Fixed to Wooden Sleeper</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label><strong>Weight:</strong></label>
-                                        <div style="display: flex; gap: 5px;">
-                                            <input type="number" id="editWeight${index}" value="${equipment.weight || ''}" step="0.01" style="flex: 1; padding: 5px;">
-                                            <select id="editWeightUnit${index}" style="padding: 5px;">
-                                                <option value="lbs" ${equipment.weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                                                <option value="kg" ${equipment.weightUnit === 'kg' ? 'selected' : ''}>kg</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label><strong>Dimensions (H×W×L inches):</strong></label>
-                                        <div style="display: flex; gap: 3px;">
-                                            <input type="number" id="editHeight${index}" value="${equipment.height || ''}" placeholder="H" style="flex: 1; padding: 5px;">
-                                            <input type="number" id="editWidth${index}" value="${equipment.width || ''}" placeholder="W" style="flex: 1; padding: 5px;">
-                                            <input type="number" id="editLength${index}" value="${equipment.length || ''}" placeholder="L" style="flex: 1; padding: 5px;">
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label><strong>Height Above Base (hx) meters:</strong></label>
-                                        <input type="number" id="editHx${index}" value="${equipment.hx || ''}" step="0.01" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Number of Anchors:</strong></label>
-                                        <input type="number" id="editNumberOfAnchors${index}" value="${equipment.numberOfAnchors || ''}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Anchor Type:</strong></label>
-                                        <select id="editAnchorType${index}" style="width: 100%; padding: 5px;" onchange="updateEditAnchorDiameters(${index})">
-                                            <option value="">Select anchor type...</option>
-                                            <option value="expansion" ${equipment.anchorType === 'expansion' ? 'selected' : ''}>KWIK BOLT TZ2 Expansion anchor</option>
-                                            <option value="screw" ${equipment.anchorType === 'screw' ? 'selected' : ''}>KWIK HUS EZ Screw anchor</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label><strong>Anchor Diameter:</strong></label>
-                                        <select id="editAnchorDiameter${index}" style="width: 100%; padding: 5px;">
-                                            <option value="">Select anchor type first...</option>
-                                        </select>
-                                    </div>
-                                    <div id="editSlabThicknessGroup${index}" style="display: ${equipment.installMethod === '1' || equipment.installMethod === '4' ? 'block' : 'none'};">
-                                        <label><strong>Slab Thickness (inches):</strong></label>
-                                        <input type="number" id="editSlabThickness${index}" value="${equipment.slabThickness || '4'}" step="0.25" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div id="editFcGroup${index}" style="display: ${equipment.installMethod === '1' || equipment.installMethod === '4' ? 'block' : 'none'};">
-                                        <label><strong>Concrete Strength f'c (psi):</strong></label>
-                                        <input type="number" id="editFc${index}" value="${equipment.fc || '2500'}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Mounting Type:</strong></label>
-                                        <select id="editMountingType${index}" style="width: 100%; padding: 5px;" onchange="updateEditMountingTypeFields(${index})">
-                                            <option value="no-isolators" ${equipment.mountingType === 'no-isolators' || !equipment.mountingType ? 'selected' : ''}>No isolators (rigidly mounted)</option>
-                                            <option value="type-3-1" ${equipment.mountingType === 'type-3-1' ? 'selected' : ''}>1. Restrained with Type 3-1 vibration isolators</option>
-                                            <option value="type-3-1-snubber" ${equipment.mountingType === 'type-3-1-snubber' ? 'selected' : ''}>2. Restrained with Type 3-1 vibration isolators + snubbers</option>
-                                            <option value="type-3-2" ${equipment.mountingType === 'type-3-2' ? 'selected' : ''}>3. Restrained with Type 3-2 vibration isolators</option>
-                                            <option value="type-3-5a" ${equipment.mountingType === 'type-3-5a' ? 'selected' : ''}>4. Restrained with Type 3-5A vibration isolators</option>
-                                            <option value="type-3-5b" ${equipment.mountingType === 'type-3-5b' ? 'selected' : ''}>5. Restrained with Type 3-5B vibration isolators</option>
-                                            <option value="type-3-5c" ${equipment.mountingType === 'type-3-5c' ? 'selected' : ''}>6. Restrained with Type 3-5C vibration isolators</option>
-                                            <option value="type-3-5d" ${equipment.mountingType === 'type-3-5d' ? 'selected' : ''}>7. Restrained with Type 3-5D vibration isolators</option>
-                                            <option value="type-3-10" ${equipment.mountingType === 'type-3-10' ? 'selected' : ''}>8. Restrained with Type 3-10 seismic snubbers</option>
-                                            <option value="type-3-11" ${equipment.mountingType === 'type-3-11' ? 'selected' : ''}>9. Restrained with Type 3-11 seismic snubbers</option>
-                                        </select>
-                                    </div>
-                                    <!-- ASHRAE fields - shown conditionally based on mounting type -->
-                                    <div id="editIsolatorWidthGroup${index}" style="display: none;">
-                                        <label><strong>Isolator Width (B) inches:</strong></label>
-                                        <input type="number" id="editIsolatorWidth${index}" value="${equipment.isolatorWidth || ''}" step="0.01" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div id="editRestraintHeightGroup${index}" style="display: none;">
-                                        <label><strong>Restraint Height (H) inches:</strong></label>
-                                        <input type="number" id="editRestraintHeight${index}" value="${equipment.restraintHeight || ''}" step="0.01" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div id="editEdgeDistancesGroup${index}" style="display: none;">
-                                        <label><strong>Edge Distance A (a) inches:</strong></label>
-                                        <input type="number" id="editEdgeDistanceA${index}" value="${equipment.edgeDistanceA || ''}" step="0.01" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div id="editEdgeDistanceBGroup${index}" style="display: none;">
-                                        <label><strong>Edge Distance B (b) inches:</strong></label>
-                                        <input type="number" id="editEdgeDistanceB${index}" value="${equipment.edgeDistanceB || ''}" step="0.01" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div id="editNumberOfIsolatorsGroup${index}" style="display: none;">
-                                        <label><strong>Number of Isolators (N):</strong></label>
-                                        <input type="number" id="editNumberOfIsolators${index}" value="${equipment.numberOfIsolators || ''}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Total Levels:</strong></label>
-                                        <input type="number" id="editTotalLevels${index}" value="${equipment.totalLevels || projectData?.numberOfFloors || ''}" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    <div>
-                                        <label><strong>Building Height (hn) meters:</strong></label>
-                                        <input type="number" id="editHn${index}" value="${equipment.hn || ''}" step="0.01" style="width: 100%; padding: 5px;">
-                                    </div>
-                                    ` : ''}
-                                `}
-                                
-                                </div>
-                            
-                            <!-- Image Upload Section for Without Calculation equipment -->
-                            ${equipment.hasCalculation === false && !equipment._convertingToSeismic ? `
-                            <div class="edit-image-section" id="editImageUploadSection${index}">
-                                <div class="edit-image-header">
-                                    <h4>Equipment Image</h4>
-                                    <button type="button" class="camera-btn" onclick="triggerEditFormImageUpload(${index})">
-                                        <i class="fas fa-camera"></i>
-                                        ${(equipment.images && equipment.images.length > 0) ? 'Change Image' : 'Add Image'}
-                                    </button>
-                                </div>
-
-                                <div id="editFormDropZone${index}" class="edit-drop-zone" tabindex="0">
-                                    <div class="drop-zone-message" id="editFormDropZoneMessage${index}">
-                                        <i class="fas fa-image"></i>
-                                        <p class="drop-zone-primary">Drop image here or paste from clipboard</p>
-                                        <small class="drop-zone-secondary">Or click the button above to select a file</small>
-                                    </div>
-                                    <div class="edit-image-preview-container" id="editFormImagePreviewContainer${index}"></div>
-                                </div>
-
-                                <input type="file" id="editFormImageFileInput${index}" accept="image/*" style="display: none;" onchange="handleEditFormFileSelect(event, ${index})">
-                            </div>
-                            ` : ''}
-                            
-                            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                                    <i class="fas fa-save"></i> Save Changes
-                                </button>
-                                <button type="button" onclick="cancelEquipmentEdit(${index})" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    
                 </div>
             `;
             const thumbImgs = equipmentCard.querySelectorAll('.equip-thumb img[data-key]');
@@ -4147,50 +3896,180 @@ function editEquipment(index) {
         return;
     }
 
-    // Hide view mode and show edit mode
-    document.getElementById(`equipmentView${index}`).style.display = 'none';
-    document.getElementById(`equipmentEdit${index}`).style.display = 'block';
-    
-    // Initialize edit form image upload for without-calc equipment
     const equipment = projectEquipment[index];
-    if (equipment.hasCalculation === false) {
-        setTimeout(() => initializeEditFormImageUpload(index), 100);
+    if (!equipment) {
+        alert('Equipment not found.');
+        return;
     }
     
-    // Ensure details are expanded
-    const detailsDiv = document.getElementById(`equipmentDetails${index}`);
-    const detailsButton = detailsDiv.closest('.equipment-card').querySelector('.details-btn');
+    // Set edit mode
+    editingEquipmentIndex = index;
     
-    if (!detailsDiv.classList.contains('show')) {
-        detailsDiv.classList.add('show');
-        if (detailsButton) {
-            detailsButton.textContent = 'Hide Details';
-        }
+    // Collapse any open equipment details
+    collapseAllEquipmentDetails();
+    
+    // Update form title
+    const formTitle = document.getElementById('equipmentFormTitle');
+    if (formTitle) {
+        formTitle.textContent = 'Edit Equipment';
     }
+    
+    // Show the form
+    const equipmentForm = document.getElementById('equipmentForm');
+    const newCalcButton = document.getElementById('newCalculationButton');
+    equipmentForm.classList.add('show');
+    if (newCalcButton) {
+        newCalcButton.textContent = 'Hide Form';
+    }
+    
+    // Populate form with equipment data
+    populateFormWithEquipment(equipment);
+    
+    // Determine which mode to select
+    const hasSeismicData = equipment.weight || equipment.isPipe || 
+    (equipment.nbcCategory && equipment.level && equipment.hn);
+    
+    if (hasSeismicData || equipment.hasCalculation !== false) {
+    selectEquipmentMode('seismic');
+} else {
+    selectEquipmentMode('photos');
+}
 
-    setTimeout(() => {
-        const equipment = projectEquipment[index];
-        // Keep only valid images for THIS project (prevents phantom tiles)
-        const validPrefix = `users-equipment-images/${currentProjectId}/`;
-        const images = normalizeEquipmentImages(equipment).filter(img =>
-        img && typeof img.key === 'string' && img.key.startsWith(validPrefix)
-        );
+// Ensure mounting type field visibility is correct after form population
+if (currentEquipmentMode === 'seismic') {
+    toggleMountingTypeField();
+}
 
-// Optionally write back so future renders stay clean
-equipment.images = images;
-        const domain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
+// Update Calculate button to show Cancel
+    const calculateBtn = document.getElementById('calculateEquipment');
+    if (calculateBtn) {
+        calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+        calculateBtn.style.background = '#6c757d';
+        calculateBtn.style.display = 'block';
+    }
+    
+    // Scroll to the form
+    equipmentForm.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+    
+    // Initialize image upload
+    initializeFormImageUpload();
+}
+
+// Function to populate form with existing equipment data
+function populateFormWithEquipment(equipment) {
+    const domain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
+    
+    // Basic fields
+    document.getElementById('equipment').value = equipment.equipment || equipment.equipmentType || '';
+    document.getElementById('model').value = equipment.model || '';
+    document.getElementById('tag').value = equipment.tag || '';
+    document.getElementById('level').value = equipment.level || '';
+    
+    // Pipe-specific handling
+    if (equipment.isPipe) {
+        const pipeTypeSelect = document.getElementById('pipeType');
+        if (pipeTypeSelect) pipeTypeSelect.value = equipment.pipeType || '';
         
-        // For traditional equipment, set up conditional field visibility
-        if (!equipment.isPipe) {
-            populateEditAnchorDiameters(index, equipment);
-            updateEditMountingTypeFields(index);
-            toggleEditSlabCeilingFields(index);
-            populateEditInstallMethodOptions(index, domain, equipment.equipmentType || equipment.equipment);
-            
-            // NEW: Initialize install method filtering for edit form
-            populateEditInstallMethodOptions(index, domain, equipment.equipmentType || equipment.equipment);
+        const pipeDiameter = document.getElementById('pipeDiameter');
+        if (pipeDiameter) pipeDiameter.value = equipment.pipeDiameter || '';
+        
+        const pipeWeightPerFoot = document.getElementById('pipeWeightPerFoot');
+        if (pipeWeightPerFoot) pipeWeightPerFoot.value = equipment.pipeWeightPerFoot || '';
+        
+        const supportType = document.getElementById('supportType');
+        if (supportType) supportType.value = equipment.supportType || '';
+        
+        const structureType = document.getElementById('structureType');
+        if (structureType) structureType.value = equipment.structureType || '';
+        
+        handleEquipmentChange();
+    }
+    
+    // Seismic calculation fields
+    if (equipment.hasCalculation !== false) {
+        const nbcCategory = document.getElementById('nbcCategory');
+        if (nbcCategory) nbcCategory.value = equipment.nbcCategory || '11-rigid';
+        
+        const weight = document.getElementById('weight');
+        if (weight) weight.value = equipment.weight || '';
+        
+        const weightUnit = document.getElementById('weightUnit');
+        if (weightUnit) weightUnit.value = equipment.weightUnit || 'lbs';
+        
+        const height = document.getElementById('height');
+        if (height) height.value = equipment.height || '';
+        
+        const width = document.getElementById('width');
+        if (width) width.value = equipment.width || '';
+        
+        const length = document.getElementById('length');
+        if (length) length.value = equipment.length || '';
+        
+        const installMethod = document.getElementById('installMethod');
+        if (installMethod) {
+            populateInstallMethodOptions(domain, equipment.equipment || equipment.equipmentType);
+            installMethod.value = equipment.installMethod || '';
         }
-    }, 100);
+        
+        const numberOfAnchors = document.getElementById('numberOfAnchors');
+        if (numberOfAnchors) numberOfAnchors.value = equipment.numberOfAnchors || 4;
+        
+        const anchorType = document.getElementById('anchorType');
+        if (anchorType) anchorType.value = equipment.anchorType || '';
+        
+        const anchorDiameter = document.getElementById('anchorDiameter');
+        if (anchorDiameter) {
+            updateAnchorDiameterOptions();
+            anchorDiameter.value = equipment.anchorDiameter || '';
+        }
+        
+        const slabThickness = document.getElementById('slabThickness');
+        if (slabThickness) slabThickness.value = equipment.slabThickness || '';
+        
+        const fc = document.getElementById('fc');
+        if (fc) fc.value = equipment.fc || '2500';
+        
+        const hx = document.getElementById('hx');
+        if (hx) hx.value = equipment.hx || '';
+        
+        const hn = document.getElementById('hn');
+        if (hn) hn.value = equipment.hn || '';
+        
+        const totalLevels = document.getElementById('totalLevels');
+        if (totalLevels) totalLevels.value = equipment.totalLevels || projectData?.numberOfFloors || '';
+        
+        const mountingType = document.getElementById('mountingType');
+        if (mountingType) mountingType.value = equipment.mountingType || 'no-isolators';
+        
+        // ASHRAE fields
+        const isolatorWidth = document.getElementById('isolatorWidth');
+        if (isolatorWidth) isolatorWidth.value = equipment.isolatorWidth || '';
+        
+        const restraintHeight = document.getElementById('restraintHeight');
+        if (restraintHeight) restraintHeight.value = equipment.restraintHeight || '';
+        
+        const edgeDistanceA = document.getElementById('edgeDistanceA');
+        if (edgeDistanceA) edgeDistanceA.value = equipment.edgeDistanceA || '';
+        
+        const edgeDistanceB = document.getElementById('edgeDistanceB');
+        if (edgeDistanceB) edgeDistanceB.value = equipment.edgeDistanceB || '';
+        
+        const numberOfIsolators = document.getElementById('numberOfIsolators');
+        if (numberOfIsolators) numberOfIsolators.value = equipment.numberOfIsolators || '';
+        
+        // Don't call toggle functions here - they're called in applyEquipmentMode()
+        // which runs after this function via selectEquipmentMode()
+    }
+    
+    // Clear new form images (existing images stay in equipment object)
+    currentFormImages = [];
+    updateFormImagePreview();
+    
+    // Update equipment image display
+    updateEquipmentImage();
 }
 
 // Function to convert photos-only equipment to seismic calculation equipment
@@ -4630,6 +4509,12 @@ function setupEquipmentFormHandler() {
 
 // Handle Calculate button click
 function handleCalculateEquipment() {
+    // If in edit mode, cancel the edit instead
+    if (editingEquipmentIndex !== null) {
+        cancelEdit();
+        return;
+    }
+    
     console.log('Calculate button clicked!');
     
     try {
@@ -4648,6 +4533,22 @@ function handleCalculateEquipment() {
     }
 }
 
+// Cancel edit mode
+function cancelEdit() {
+    editingEquipmentIndex = null;
+    
+    // Hide form
+    const equipmentForm = document.getElementById('equipmentForm');
+    const newCalcButton = document.getElementById('newCalculationButton');
+    equipmentForm.classList.remove('show');
+    if (newCalcButton) {
+        newCalcButton.textContent = 'Add Equipment';
+    }
+    
+    // Clear the form
+    clearEquipmentForm();
+}
+
 // Handle Save button click (original submit functionality)
 async function handleSaveEquipment(e) {
     if (!canModifyProject()) {
@@ -4655,7 +4556,8 @@ async function handleSaveEquipment(e) {
         return;
     }
     
-    console.log('Save button clicked!');
+    const isEditMode = editingEquipmentIndex !== null;
+    console.log(isEditMode ? 'Saving equipment edit...' : 'Save button clicked!');
     
     try {
         // Get form data and validate
@@ -4666,18 +4568,34 @@ async function handleSaveEquipment(e) {
 
         console.log('Equipment data to save:', equipmentData);
         
-        // Initialize images array
+        // Handle images
         equipmentData.images = [];
 
-        // Upload form images to S3 if exists (for photos mode)
-        if (currentEquipmentMode === 'photos' && currentFormImages.length > 0) {
+        if (currentFormImages.length > 0) {
             for (const formImage of currentFormImages) {
                 try {
+                    // If this is an existing image (already uploaded), just keep it
+                    if (formImage.isExisting && formImage.key) {
+                        // Find the original image data from the equipment by key
+                        if (isEditMode) {
+                            const existingEquipment = projectEquipment[editingEquipmentIndex];
+                            const originalImage = existingEquipment.images?.find(img =>
+                                img.key === formImage.key
+                            );
+                            if (originalImage) {
+                                equipmentData.images.push(originalImage);
+                                console.log('Kept existing image:', originalImage.key);
+                                continue;
+                            }
+                        }
+                    }
+
+                    // This is a new image, upload it to S3
                     // Convert base64 to blob
                     const response = await fetch(formImage.data);
                     const blob = await response.blob();
                     const file = new File([blob], formImage.name, { type: formImage.type });
-                    
+
                     // Get presigned URL from backend
                     const res = await fetch(
                         `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`,
@@ -4693,24 +4611,24 @@ async function handleSaveEquipment(e) {
                             })
                         }
                     );
-                    
+
                     if (!res.ok) {
                         throw new Error('Failed to get upload URL');
                     }
-                    
+
                     const { uploadUrl, key, viewUrlSigned, publicUrlHint } = await res.json();
-                    
+
                     // Upload to S3
                     const putRes = await fetch(uploadUrl, {
                         method: 'PUT',
                         headers: { 'Content-Type': file.type || 'application/octet-stream' },
                         body: file
                     });
-                    
+
                     if (!putRes.ok) {
                         throw new Error('Image upload to S3 failed');
                     }
-                    
+
                     // Add image to equipment data
                     equipmentData.images.push({
                         key,
@@ -4718,9 +4636,9 @@ async function handleSaveEquipment(e) {
                         signedUrl: viewUrlSigned || null,
                         uploadedAt: Date.now()
                     });
-                    
+
                     console.log('Image uploaded to S3 successfully:', key);
-                    
+
                 } catch (imgError) {
                     console.error('Error uploading form image:', imgError);
                     alert('Warning: One image upload failed, but equipment will still be saved.');
@@ -4728,46 +4646,63 @@ async function handleSaveEquipment(e) {
             }
         }
 
-        // Add to project equipment array
-        projectEquipment.push(equipmentData);
+        if (isEditMode) {
+            // Update existing equipment
+            const existingEquipment = projectEquipment[editingEquipmentIndex];
+            projectEquipment[editingEquipmentIndex] = {
+                ...existingEquipment,
+                ...equipmentData,
+                lastModified: new Date().toISOString(),
+                modifiedBy: currentUser?.email || 'unknown'
+            };
+            console.log('Updated equipment at index:', editingEquipmentIndex);
+        } else {
+            // Add to project equipment array
+            projectEquipment.push(equipmentData);
+        }
         
         console.log('Current projectEquipment array:', projectEquipment);
         
         // Save to project
         await saveEquipmentToProject();
-        
-        // Render equipment list
-        renderEquipmentList();
-        
-        // Get the index of newly added equipment
-        const newEquipmentIndex = projectEquipment.length - 1;
 
-        // Clear form and reset state
-        clearEquipmentForm();
-        
-        // Hide form and update button text
+        // Get the index for highlighting
+        const targetIndex = isEditMode ? editingEquipmentIndex : projectEquipment.length - 1;
+
+        // Hide form before clearing it so hidden fields don't briefly flash
         const equipmentForm = document.getElementById('equipmentForm');
         const newCalcButton = document.getElementById('newCalculationButton');
-        equipmentForm.classList.remove('show');
+        if (equipmentForm) {
+            equipmentForm.classList.remove('show');
+        }
         if (newCalcButton) {
             newCalcButton.textContent = 'Add Equipment';
         }
+
+        // Reset edit mode
+        editingEquipmentIndex = null;
+
+        // Clear form and reset state
+        clearEquipmentForm();
+
+        // Render equipment list
+        renderEquipmentList();
         
-        // Automatically expand new equipment details
+        // Automatically expand equipment details and scroll to it
         setTimeout(() => {
-            const newEquipmentCard = document.querySelector(`#equipmentDetails${newEquipmentIndex}`);
-            if (newEquipmentCard) {
+            const equipmentDetailsDiv = document.querySelector(`#equipmentDetails${targetIndex}`);
+            if (equipmentDetailsDiv) {
                 // Expand the details
-                toggleEquipmentDetails(newEquipmentIndex);
+                toggleEquipmentDetails(targetIndex);
                 
-                // Scroll to the new equipment card
-                newEquipmentCard.scrollIntoView({ 
+                // Scroll to the equipment card
+                equipmentDetailsDiv.scrollIntoView({ 
                     behavior: 'smooth', 
                     block: 'center' 
                 });
                 
-                // Highlight the new equipment briefly using CSS class
-                const equipmentCard = newEquipmentCard.closest('.equipment-card');
+                // Highlight the equipment briefly using CSS class
+                const equipmentCard = equipmentDetailsDiv.closest('.equipment-card');
                 if (equipmentCard) {
                     equipmentCard.classList.add('highlighted');
                     
@@ -4780,7 +4715,7 @@ async function handleSaveEquipment(e) {
         }, 100); // Small delay to ensure DOM is updated
             
         // Success message
-        alert('Equipment saved successfully!');
+        alert(isEditMode ? 'Equipment updated successfully!' : 'Equipment saved successfully!');
         
     } catch (error) {
         console.error('Error saving equipment:', error);
@@ -4871,6 +4806,15 @@ function applyEquipmentMode(mode) {
         formImageUploadSection.style.display = 'none';
         calculateBtn.style.display = 'block';
         
+        // Update Calculate button based on edit mode
+        if (editingEquipmentIndex !== null) {
+            calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+            calculateBtn.style.background = '#6c757d';
+        } else {
+            calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
+            calculateBtn.style.background = '#17a2b8';
+        }
+        
         // Apply visibility rules based on equipment type
         handleEquipmentChange();
         toggleSlabCeilingFields();
@@ -4891,7 +4835,15 @@ function applyEquipmentMode(mode) {
         // Hide seismic fields, show image upload
         seismicFieldsContainer.style.display = 'none';
         formImageUploadSection.style.display = 'block';
-        calculateBtn.style.display = 'none';
+        
+        // In edit mode, show Cancel button; otherwise hide Calculate button
+        if (editingEquipmentIndex !== null) {
+            calculateBtn.style.display = 'block';
+            calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+            calculateBtn.style.background = '#6c757d';
+        } else {
+            calculateBtn.style.display = 'none';
+        }
         
         // Initialize image upload
         initializeFormImageUpload();
@@ -4985,37 +4937,74 @@ window.hideFloorsModal = hideFloorsModal;
 window.saveFloorsAndContinue = saveFloorsAndContinue;
 
 // ========== Form Image Upload Functions ==========
-function initializeFormImageUpload() {
-    currentFormImages = [];
-    
+async function initializeFormImageUpload() {
+    // If in edit mode, load existing images from equipment
+    if (editingEquipmentIndex !== null) {
+        const equipment = projectEquipment[editingEquipmentIndex];
+        if (equipment && equipment.images && equipment.images.length > 0) {
+            // Convert equipment images (S3 URLs) to currentFormImages format for preview
+            // Fetch fresh signed URLs for all images
+            currentFormImages = [];
+            for (const img of equipment.images) {
+                try {
+                    // Get fresh signed URL from backend
+                    const freshUrl = await getSignedImageUrl(currentProjectId, img.key);
+                    currentFormImages.push({
+                        name: img.key ? img.key.split('/').pop() : 'image',
+                        type: 'image/jpeg',
+                        data: freshUrl,
+                        timestamp: img.uploadedAt || Date.now(),
+                        isExisting: true, // Mark as existing image
+                        key: img.key // Keep the key for reference
+                    });
+                } catch (error) {
+                    console.error('Failed to load image:', img.key, error);
+                    // Still add it with the old URL as fallback
+                    currentFormImages.push({
+                        name: img.key ? img.key.split('/').pop() : 'image',
+                        type: 'image/jpeg',
+                        data: img.signedUrl || img.url || '',
+                        timestamp: img.uploadedAt || Date.now(),
+                        isExisting: true,
+                        key: img.key
+                    });
+                }
+            }
+        } else {
+            currentFormImages = [];
+        }
+    } else {
+        currentFormImages = [];
+    }
+
     const cameraBtn = document.getElementById('formCameraBtn');
     const fileInput = document.getElementById('formImageFileInput');
     const dropZone = document.getElementById('formDropZone');
-    
+
     if (cameraBtn && fileInput) {
         // Remove existing listeners before adding new ones
         cameraBtn.replaceWith(cameraBtn.cloneNode(true));
         fileInput.replaceWith(fileInput.cloneNode(true));
-        
+
         // Get fresh references after cloning
         const newCameraBtn = document.getElementById('formCameraBtn');
         const newFileInput = document.getElementById('formImageFileInput');
-        
+
         newCameraBtn.addEventListener('click', () => newFileInput.click());
         newFileInput.addEventListener('change', handleFormFileSelect);
     }
-    
+
     if (dropZone) {
         // Remove existing listeners before adding new ones
         dropZone.replaceWith(dropZone.cloneNode(true));
         const newDropZone = document.getElementById('formDropZone');
-        
+
         newDropZone.addEventListener('paste', handleFormPaste);
         newDropZone.addEventListener('dragover', handleFormDragOver);
         newDropZone.addEventListener('dragleave', handleFormDragLeave);
         newDropZone.addEventListener('drop', handleFormDrop);
     }
-    
+
     updateFormImagePreview();
 }
 
@@ -5775,6 +5764,22 @@ function clearEquipmentForm() {
     const form = document.getElementById('equipmentFormElement');
     if (form) {
         form.reset();
+        
+        // Reset edit mode
+        editingEquipmentIndex = null;
+        
+        // Reset form title
+        const formTitle = document.getElementById('equipmentFormTitle');
+        if (formTitle) {
+            formTitle.textContent = 'New Equipment';
+        }
+        
+        // Reset Calculate button
+        const calculateBtn = document.getElementById('calculateEquipment');
+        if (calculateBtn) {
+            calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
+            calculateBtn.style.background = '#17a2b8';
+        }
         
         // Reset mode selection
         currentEquipmentMode = null;
