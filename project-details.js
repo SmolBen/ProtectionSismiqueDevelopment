@@ -4441,18 +4441,27 @@ function setupEquipmentFormHandler() {
     const equipmentForm = document.getElementById('equipmentFormElement');
     const calculateButton = document.getElementById('calculateEquipment');
     const saveButton = document.getElementById('saveEquipment');
-    
+    const saveAndKeepButton = document.getElementById('saveAndKeepEquipment');
+
     if (!equipmentForm) return;
-    
+
     // Calculate button event listener
     if (calculateButton) {
         calculateButton.addEventListener('click', handleCalculateEquipment);
     }
-    
-    // Save button (form submission) event listener
+
+    // Save and Keep Form button event listener
+    if (saveAndKeepButton) {
+        saveAndKeepButton.addEventListener('click', async function(e) {
+            e.preventDefault();
+            await handleSaveEquipment(e, true); // true = keep form open
+        });
+    }
+
+    // Save and Close Form button (form submission) event listener
     equipmentForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        await handleSaveEquipment(e);
+        await handleSaveEquipment(e, false); // false = close form
     });
 }
 
@@ -4499,15 +4508,16 @@ function cancelEdit() {
 }
 
 // Handle Save button click (original submit functionality)
-async function handleSaveEquipment(e) {
+async function handleSaveEquipment(e, keepFormOpen = false) {
     if (!canModifyProject()) {
         alert('You do not have permission to add equipment to this project.');
         return;
     }
-    
+
     const isEditMode = editingEquipmentIndex !== null;
     console.log(isEditMode ? 'Saving equipment edit...' : 'Save button clicked!');
-    
+    console.log('Keep form open:', keepFormOpen);
+
     try {
         // Get form data and validate
         const equipmentData = getEquipmentFormData();
@@ -4618,53 +4628,82 @@ async function handleSaveEquipment(e) {
         // Get the index for highlighting
         const targetIndex = isEditMode ? editingEquipmentIndex : projectEquipment.length - 1;
 
-        // Hide form before clearing it so hidden fields don't briefly flash
-        const equipmentForm = document.getElementById('equipmentForm');
-        const newCalcButton = document.getElementById('newCalculationButton');
-        if (equipmentForm) {
-            equipmentForm.classList.remove('show');
-        }
-        if (newCalcButton) {
-            newCalcButton.textContent = 'Add Equipment';
-        }
+        if (keepFormOpen) {
+            // Keep form open mode: reset to new equipment mode but keep data
+            editingEquipmentIndex = null;
 
-        // Reset edit mode
-        editingEquipmentIndex = null;
-
-        // Clear form and reset state
-        clearEquipmentForm();
-
-        // Render equipment list
-        renderEquipmentList();
-        
-        // Automatically expand equipment details and scroll to it
-        setTimeout(() => {
-            const equipmentDetailsDiv = document.querySelector(`#equipmentDetails${targetIndex}`);
-            if (equipmentDetailsDiv) {
-                // Expand the details
-                toggleEquipmentDetails(targetIndex);
-                
-                // Scroll to the equipment card
-                equipmentDetailsDiv.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
-                });
-                
-                // Highlight the equipment briefly using CSS class
-                const equipmentCard = equipmentDetailsDiv.closest('.equipment-card');
-                if (equipmentCard) {
-                    equipmentCard.classList.add('highlighted');
-                    
-                    // Remove highlight after 3 seconds
-                    setTimeout(() => {
-                        equipmentCard.classList.remove('highlighted');
-                    }, 3000);
-                }
+            // Update form title to "New Equipment"
+            const formTitle = document.getElementById('equipmentFormTitle');
+            if (formTitle) {
+                formTitle.textContent = 'New Equipment';
             }
-        }, 100); // Small delay to ensure DOM is updated
-            
-        // Success message
-        alert(isEditMode ? 'Equipment updated successfully!' : 'Equipment saved successfully!');
+
+            // Update Calculate button to show Calculate (not Cancel)
+            const calculateBtn = document.getElementById('calculateEquipment');
+            if (calculateBtn) {
+                calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
+                calculateBtn.style.background = '#17a2b8';
+            }
+
+            // Clear only the images (user can modify other fields for next equipment)
+            currentFormImages = [];
+            updateFormImagePreview();
+
+            // Render equipment list to show the new/updated equipment
+            renderEquipmentList();
+
+            // Success message
+            alert(isEditMode ? 'Equipment updated successfully! Form is still open for your next entry.' : 'Equipment saved successfully! Form is still open for your next entry.');
+
+        } else {
+            // Close form mode: hide and clear everything
+            const equipmentForm = document.getElementById('equipmentForm');
+            const newCalcButton = document.getElementById('newCalculationButton');
+            if (equipmentForm) {
+                equipmentForm.classList.remove('show');
+            }
+            if (newCalcButton) {
+                newCalcButton.textContent = 'Add Equipment';
+            }
+
+            // Reset edit mode
+            editingEquipmentIndex = null;
+
+            // Clear form and reset state
+            clearEquipmentForm();
+
+            // Render equipment list
+            renderEquipmentList();
+
+            // Automatically expand equipment details and scroll to it
+            setTimeout(() => {
+                const equipmentDetailsDiv = document.querySelector(`#equipmentDetails${targetIndex}`);
+                if (equipmentDetailsDiv) {
+                    // Expand the details
+                    toggleEquipmentDetails(targetIndex);
+
+                    // Scroll to the equipment card
+                    equipmentDetailsDiv.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+
+                    // Highlight the equipment briefly using CSS class
+                    const equipmentCard = equipmentDetailsDiv.closest('.equipment-card');
+                    if (equipmentCard) {
+                        equipmentCard.classList.add('highlighted');
+
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                            equipmentCard.classList.remove('highlighted');
+                        }, 3000);
+                    }
+                }
+            }, 100); // Small delay to ensure DOM is updated
+
+            // Success message
+            alert(isEditMode ? 'Equipment updated successfully!' : 'Equipment saved successfully!');
+        }
         
     } catch (error) {
         console.error('Error saving equipment:', error);
@@ -4729,39 +4768,44 @@ function selectEquipmentMode(mode) {
 // Apply the selected mode
 function applyEquipmentMode(mode) {
     currentEquipmentMode = mode;
-    
+
     const modeSelection = document.getElementById('modeSelection');
     const modeIndicator = document.getElementById('modeIndicator');
     const modeIndicatorText = document.getElementById('modeIndicatorText');
     const seismicFieldsContainer = document.getElementById('seismicFieldsContainer');
     const formImageUploadSection = document.getElementById('formImageUploadSection');
     const calculateBtn = document.getElementById('calculateEquipment');
+    const saveAndKeepBtn = document.getElementById('saveAndKeepEquipment');
     const calcPlaceholder = document.getElementById('calculationPlaceholder');
-    
+
     // Keep mode selection visible, hide indicator
     modeSelection.style.display = 'block';
     modeIndicator.style.display = 'none';
-    
+
     // Update active state on buttons
     document.getElementById('btn-seismic').classList.toggle('active', mode === 'seismic');
     document.getElementById('btn-photos').classList.toggle('active', mode === 'photos');
-    
+
     if (mode === 'seismic') {
         modeIndicatorText.innerHTML = '<i class="fas fa-calculator"></i> <strong>Seismic Calculation</strong>';
         modeIndicator.classList.remove('photos-mode');
-        
+
         // Show seismic fields
         seismicFieldsContainer.style.display = 'block';
         formImageUploadSection.style.display = 'none';
         calculateBtn.style.display = 'block';
-        
-        // Update Calculate button based on edit mode
+
+        // Update buttons based on edit mode
         if (editingEquipmentIndex !== null) {
+            // Edit mode: show Cancel button, hide Save and Keep Form
             calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
             calculateBtn.style.background = '#6c757d';
+            if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'none';
         } else {
+            // New equipment mode: show Calculate and Save and Keep Form
             calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
             calculateBtn.style.background = '#17a2b8';
+            if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'block';
         }
         
         // Apply visibility rules based on equipment type
@@ -4780,18 +4824,22 @@ function applyEquipmentMode(mode) {
     } else if (mode === 'photos') {
         modeIndicatorText.innerHTML = '<i class="fas fa-camera"></i> <strong>Add Photos for Certification</strong>';
         modeIndicator.classList.add('photos-mode');
-        
+
         // Hide seismic fields, show image upload
         seismicFieldsContainer.style.display = 'none';
         formImageUploadSection.style.display = 'block';
-        
-        // In edit mode, show Cancel button; otherwise hide Calculate button
+
+        // Update buttons based on edit mode
         if (editingEquipmentIndex !== null) {
+            // Edit mode: show Cancel button, hide Save and Keep Form
             calculateBtn.style.display = 'block';
             calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
             calculateBtn.style.background = '#6c757d';
+            if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'none';
         } else {
+            // New equipment mode: hide Calculate, show Save and Keep Form
             calculateBtn.style.display = 'none';
+            if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'block';
         }
         
         // Initialize image upload
@@ -5729,7 +5777,13 @@ function clearEquipmentForm() {
             calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
             calculateBtn.style.background = '#17a2b8';
         }
-        
+
+        // Show Save and Keep Form button (new equipment mode)
+        const saveAndKeepBtn = document.getElementById('saveAndKeepEquipment');
+        if (saveAndKeepBtn) {
+            saveAndKeepBtn.style.display = 'block';
+        }
+
         // Reset mode selection
         currentEquipmentMode = null;
         document.getElementById('seismicFieldsContainer').style.display = 'none';
