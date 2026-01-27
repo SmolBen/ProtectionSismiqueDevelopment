@@ -47,49 +47,47 @@
             <div class="left-section">
                 <h1>Project Details</h1>
                 
-                <!-- Basic Information (Always Visible) -->
-                <div class="basic-info">
-                    <p><strong>Project Name:</strong> <span id="projectName"></span></p>
-                    <p><strong>Description:</strong> <span id="projectDescription"></span></p>
-                    <p><strong>Type:</strong> <span id="projectType"></span></p>
-                    <p><strong>Domain:</strong> <span id="projectDomain"></span></p>
-                    <p><strong>Status:</strong> 
-                        <select id="projectStatusDropdown">
-                            <option value="Planning">Planning</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </p>
-                    <p><strong>Number of Floors:</strong> <span id="projectFloors"></span></p>
-                    <p><strong>Address:</strong> <span id="projectAddress"></span></p>
-                </div>
+                <div class="project-info-container">
+                    <!-- Basic Information -->
+                    <div class="basic-info">
+                        <p><strong>Project Name:</strong> <span id="projectName"></span></p>
+                        <p><strong>Description:</strong> <span id="projectDescription"></span></p>
+                        <p><strong>Type:</strong> <span id="projectType"></span></p>
+                        <p><strong>Domain:</strong> <span id="projectDomain"></span></p>
+                        <p><strong>Status:</strong> 
+                            <select id="projectStatusDropdown">
+                                <option value="Planning">Planning</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </p>
+                        <p><strong>Number of Floors:</strong> <span id="projectFloors"></span></p>
+                        <p><strong>Address:</strong> <span id="projectAddress"></span></p>
+                        <div id="projectOwnerInfo">
+                            <!-- Owner info will be populated for admins -->
+                        </div>
+                    </div>
 
-                <!-- Toggle Button -->
-                <div class="details-toggle-container">
-                    <button class="details-toggle-btn" id="detailsToggleBtn" onclick="toggleProjectDetails()">
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </button>
-                </div>
-
-                <!-- Detailed Technical Information (Collapsible) -->
-                <div class="detailed-info" id="detailedInfo">
-                    <p><strong>Latitude:</strong> <span id="projectLatitude"></span></p>
-                    <p><strong>Longitude:</strong> <span id="projectLongitude"></span></p>
-                    <p><strong>Max Sa (0.2):</strong> <span id="projectMaxSa0_2"></span></p>
-                    <p><strong>Max Sa (1.0):</strong> <span id="projectMaxSa1_0"></span></p>
-                    <p><strong>Max VGA:</strong> <span id="projectMaxVGA"></span></p>
-                    <p><strong>PGAref:</strong> <span id="projectPGAref"></span></p>
-                    <p><strong>F10:</strong> <span id="projectF10"></span></p>
-                    <p><strong>F02:</strong> <span id="projectF02"></span></p>
-                    <p><strong>S_MS:</strong> <span id="projectSMS"></span></p>
-                    <p><strong>S_DS:</strong> <span id="projectSDS"></span></p>
-                    <p><strong>S_M1:</strong> <span id="projectSM1"></span></p>
-                    <p><strong>S_D1:</strong> <span id="projectSD1"></span></p>
-                    <p><strong>RiskS_DS:</strong> <span id="projectRiskSDS"></span></p>
-                    <p><strong>RiskS_D1:</strong> <span id="projectRiskSD1"></span></p>
-                    <p><strong>Final Risk Category:</strong> <span id="projectFinalRiskCategory"></span></p>
-                    <div id="projectOwnerInfo">
-                        <!-- Owner info will be populated for admins -->
+                    <!-- Seismic Parameters -->
+                    <div class="seismic-info">
+                        <h3>Seismic Parameters</h3>
+                        <div class="seismic-grid">
+                            <p><strong>Lat:</strong> <span id="projectLatitude"></span></p>
+                            <p><strong>Long:</strong> <span id="projectLongitude"></span></p>
+                            <p><strong>Sa(0.2):</strong> <span id="projectMaxSa0_2"></span></p>
+                            <p><strong>Sa(1.0):</strong> <span id="projectMaxSa1_0"></span></p>
+                            <p><strong>VGA:</strong> <span id="projectMaxVGA"></span></p>
+                            <p><strong>PGAref:</strong> <span id="projectPGAref"></span></p>
+                            <p><strong>F10:</strong> <span id="projectF10"></span></p>
+                            <p><strong>F02:</strong> <span id="projectF02"></span></p>
+                            <p><strong>S_MS:</strong> <span id="projectSMS"></span></p>
+                            <p><strong>S_DS:</strong> <span id="projectSDS"></span></p>
+                            <p><strong>S_M1:</strong> <span id="projectSM1"></span></p>
+                            <p><strong>S_D1:</strong> <span id="projectSD1"></span></p>
+                            <p><strong>RiskS_DS:</strong> <span id="projectRiskSDS"></span></p>
+                            <p><strong>RiskS_D1:</strong> <span id="projectRiskSD1"></span></p>
+                            <p class="full-width"><strong>Final Risk:</strong> <span id="projectFinalRiskCategory"></span></p>
+                        </div>
                     </div>
                 </div>
             </div>

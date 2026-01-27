@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("projectDomain").textContent = project.domain || "N/A";
                 document.getElementById("projectStatusDropdown").value = project.status;
                 document.getElementById("projectFloors").textContent = project.numberOfFloors || "N/A";
+                
                 // Build full address from address components
                 const addressParts = [
                     project.addressLine1,
