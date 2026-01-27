@@ -3034,12 +3034,9 @@ return `
             ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
             
             ${canModifyProject() ? `
-                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <div style="margin-top: 15px;">
                     <button class="edit-btn" onclick="editEquipment(${index})" style="background: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
                         <i class="fas fa-edit"></i> Edit Equipment
-                    </button>
-                    <button class="convert-btn" onclick="convertToSeismicCalculation(${index})" style="background: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                        <i class="fas fa-calculator"></i> Add Seismic Calculation
                     </button>
                 </div>
             ` : ''}
@@ -3926,14 +3923,25 @@ function editEquipment(index) {
     populateFormWithEquipment(equipment);
     
     // Determine which mode to select
-    const hasSeismicData = equipment.weight || equipment.isPipe || 
-    (equipment.nbcCategory && equipment.level && equipment.hn);
-    
-    if (hasSeismicData || equipment.hasCalculation !== false) {
-    selectEquipmentMode('seismic');
-} else {
-    selectEquipmentMode('photos');
-}
+    // If hasCalculation is explicitly false, default to photos mode
+    // Otherwise, check if it has seismic data to determine mode
+    if (equipment.hasCalculation === false) {
+        // Equipment was created as photos-only
+        selectEquipmentMode('photos');
+    } else if (equipment.hasCalculation === true) {
+        // Equipment has full seismic calculations
+        selectEquipmentMode('seismic');
+    } else {
+        // hasCalculation is undefined/null - check for seismic data
+        const hasSeismicData = equipment.weight || equipment.isPipe ||
+            (equipment.nbcCategory && equipment.level && equipment.hn && equipment.installMethod);
+
+        if (hasSeismicData) {
+            selectEquipmentMode('seismic');
+        } else {
+            selectEquipmentMode('photos');
+        }
+    }
 
 // Ensure mounting type field visibility is correct after form population
 if (currentEquipmentMode === 'seismic') {
@@ -3949,13 +3957,12 @@ if (currentEquipmentMode === 'seismic') {
     }
     
     // Scroll to the form
-    equipmentForm.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
+    equipmentForm.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
     });
-    
-    // Initialize image upload
-    initializeFormImageUpload();
+
+    // Note: initializeFormImageUpload() is called by applyEquipmentMode() when mode is selected
 }
 
 // Function to populate form with existing equipment data
@@ -4072,65 +4079,7 @@ function populateFormWithEquipment(equipment) {
     updateEquipmentImage();
 }
 
-// Function to convert photos-only equipment to seismic calculation equipment
-function convertToSeismicCalculation(index) {
-    if (!canModifyProject()) {
-        alert('You do not have permission to modify equipment in this project.');
-        return;
-    }
-
-    const equipment = projectEquipment[index];
-    
-    if (equipment.hasCalculation !== false) {
-        alert('This equipment already has seismic calculations.');
-        return;
-    }
-
-    // Mark this equipment as being converted (used by the edit form to show seismic fields)
-    equipment._convertingToSeismic = true;
-
-    // Hide view mode and show edit mode
-    document.getElementById(`equipmentView${index}`).style.display = 'none';
-    document.getElementById(`equipmentEdit${index}`).style.display = 'block';
-
-    // Ensure details are expanded
-    const detailsDiv = document.getElementById(`equipmentDetails${index}`);
-    const detailsButton = detailsDiv.closest('.equipment-card').querySelector('.details-btn');
-    
-    if (!detailsDiv.classList.contains('show')) {
-        detailsDiv.classList.add('show');
-        if (detailsButton) {
-            detailsButton.textContent = 'Hide Details';
-        }
-    }
-
-    // Re-render just this equipment card to show seismic edit form
-    renderEquipmentList();
-    
-    // After re-render, expand details and show edit mode again
-    setTimeout(() => {
-        const newDetailsDiv = document.getElementById(`equipmentDetails${index}`);
-        const newEditDiv = document.getElementById(`equipmentEdit${index}`);
-        const newViewDiv = document.getElementById(`equipmentView${index}`);
-        
-        if (newDetailsDiv) newDetailsDiv.classList.add('show');
-        if (newEditDiv) newEditDiv.style.display = 'block';
-        if (newViewDiv) newViewDiv.style.display = 'none';
-        
-        // Update details button text
-        const newDetailsButton = newDetailsDiv?.closest('.equipment-card')?.querySelector('.details-btn');
-        if (newDetailsButton) newDetailsButton.textContent = 'Hide Details';
-
-        // Initialize edit form fields
-        const domain = document.getElementById('projectDomain')?.textContent?.toLowerCase() || 'electricity';
-        populateEditAnchorDiameters(index, equipment);
-        updateEditMountingTypeFields(index);
-        populateEditInstallMethodOptions(index, domain, equipment.equipmentType || equipment.equipment);
-    }, 100);
-}
-
-// Make it globally available
-window.convertToSeismicCalculation = convertToSeismicCalculation;
+// Note: convertToSeismicCalculation function removed - users can now switch modes via Edit Equipment button
 
 // Delete (server-side delete + update equipment)
 async function confirmDeleteImage(evt, equipmentIndex, imageKey) {
