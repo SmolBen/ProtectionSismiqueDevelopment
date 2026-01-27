@@ -1239,6 +1239,15 @@
     color: #6c757d;
 }
 
+.mode-btn.active {
+    border-color: #007bff;
+    background: #e7f1ff;
+}
+
+.mode-btn.active i {
+    color: #007bff;
+}
+
 /* Mode Indicator */
 .mode-indicator {
     display: flex;

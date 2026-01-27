@@ -4854,9 +4854,13 @@ function applyEquipmentMode(mode) {
     const calculateBtn = document.getElementById('calculateEquipment');
     const calcPlaceholder = document.getElementById('calculationPlaceholder');
     
-        // Hide mode selection, show indicator (but not for admins)
-    modeSelection.style.display = 'none';
-    modeIndicator.style.display = isAdmin ? 'none' : 'flex';
+    // Keep mode selection visible, hide indicator
+    modeSelection.style.display = 'block';
+    modeIndicator.style.display = 'none';
+    
+    // Update active state on buttons
+    document.getElementById('btn-seismic').classList.toggle('active', mode === 'seismic');
+    document.getElementById('btn-photos').classList.toggle('active', mode === 'photos');
     
     if (mode === 'seismic') {
         modeIndicatorText.innerHTML = '<i class="fas fa-calculator"></i> <strong>Seismic Calculation</strong>';
@@ -5778,14 +5782,14 @@ function clearEquipmentForm() {
         document.getElementById('formImageUploadSection').style.display = 'none';
         document.getElementById('calculateEquipment').style.display = 'block';
         
-        // If admin, auto-select seismic mode; otherwise show mode selection
+        // Show mode selection for everyone, auto-select seismic for admin
+        document.getElementById('modeSelection').style.display = 'block';
+        document.getElementById('modeIndicator').style.display = 'none';
+        document.getElementById('btn-seismic').classList.remove('active');
+        document.getElementById('btn-photos').classList.remove('active');
+        
         if (isAdmin) {
-            document.getElementById('modeSelection').style.display = 'none';
-            document.getElementById('modeIndicator').style.display = 'none';
             selectEquipmentMode('seismic');
-        } else {
-            document.getElementById('modeSelection').style.display = 'block';
-            document.getElementById('modeIndicator').style.display = 'none';
         }
         
         // Clear form images
