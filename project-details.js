@@ -1786,7 +1786,8 @@ function populateEquipmentOptions(domain) {
     hideAllConditionalFields();
     
     // Initialize NBC Category for traditional equipment (not pipes)
-    populateNBCCategoryOptions(false);
+    // Don't set default on initialization
+    populateNBCCategoryOptions(false, false);
     
     // Reset install methods to show all options initially (will be filtered when equipment is selected)
     const installMethodSelect = document.getElementById('installMethod');
@@ -1987,7 +1988,8 @@ function hideAllConditionalFields() {
     }
     
     // Initialize NBC Category options for non-pipe equipment by default
-    populateNBCCategoryOptions(false);
+    // Don't set default on initialization
+    populateNBCCategoryOptions(false, false);
 
 }
 
@@ -2202,38 +2204,38 @@ function setupImageEventListeners() {
 }
 
 // Function to populate NBC Category options based on equipment type
-function populateNBCCategoryOptions(isPipe = false) {
+function populateNBCCategoryOptions(isPipe = false, setDefault = false) {
     const nbcCategorySelect = document.getElementById('nbcCategory');
     if (!nbcCategorySelect) return;
-    
+
     // Clear existing options
     nbcCategorySelect.innerHTML = '<option value="">Select NBC category...</option>';
-    
+
     if (isPipe) {
-        // For pipes, only show categories 15 and 16, default to 15
+        // For pipes, only show categories 15 and 16
         const option15 = document.createElement('option');
         option15.value = '15';
         option15.textContent = `15 - ${nbcCategoryData['15'].description}`;
-        option15.selected = true; // Default to 15
+        if (setDefault) option15.selected = true; // Default to 15 when in seismic mode
         nbcCategorySelect.appendChild(option15);
-        
+
         const option16 = document.createElement('option');
         option16.value = '16';
         option16.textContent = `16 - ${nbcCategoryData['16'].description}`;
         nbcCategorySelect.appendChild(option16);
     } else {
-        // For all other equipment, show all categories, default to 11-rigid
+        // For all other equipment, show all categories
         Object.keys(nbcCategoryData).forEach(categoryKey => {
             const category = nbcCategoryData[categoryKey];
             const option = document.createElement('option');
             option.value = categoryKey;
             option.textContent = `${categoryKey} - ${category.description}`;
-            
-            // Set 11-rigid as default for non-pipe equipment
-            if (categoryKey === '11-rigid') {
+
+            // Set 11-rigid as default when in seismic mode
+            if (setDefault && categoryKey === '11-rigid') {
                 option.selected = true;
             }
-            
+
             nbcCategorySelect.appendChild(option);
         });
     }
@@ -2265,7 +2267,9 @@ function handleEquipmentChange() {
     }
 
     // Populate NBC Category options based on equipment type
-    populateNBCCategoryOptions(isPipe);
+    // Set default only if we're in seismic mode
+    const setDefault = currentEquipmentMode === 'seismic';
+    populateNBCCategoryOptions(isPipe, setDefault);
 
     // Show/hide form sections based on equipment type
     showHideFormSections(isPipe);
@@ -2465,8 +2469,16 @@ function toggleMountingTypeField() {
         if (numberOfIsolatorsGroup) numberOfIsolatorsGroup.style.display = 'none';
     } else {
         // Show mounting type field for traditional equipment (not pipes) and not wall mounting
-        if (mountingTypeGroup) mountingTypeGroup.style.display = 'block';
-        
+        if (mountingTypeGroup) {
+            mountingTypeGroup.style.display = 'block';
+
+            // Set default when field becomes visible (only if empty)
+            const mountingTypeInput = document.getElementById('mountingType');
+            if (mountingTypeInput && !mountingTypeInput.value) {
+                mountingTypeInput.value = 'no-isolators';
+            }
+        }
+
         // Show additional fields based on mounting type
         if (['type-3-2', 'type-3-5a', 'type-3-10'].includes(mountingType)) {
             // Need isolator width and height (two-bolt arrangements)
@@ -2542,16 +2554,31 @@ function toggleSlabCeilingFields() {
     const isPipe = equipment === 'Pipe';
     const slabThicknessGroup = document.getElementById('slabThicknessGroup');
     const fcGroup = document.getElementById('fcGroup');
-    
+    const slabThicknessInput = document.getElementById('slabThickness');
+    const fcInput = document.getElementById('fc');
+
     // Show fields for "Fixed to Slab" (1) or "Fixed to Ceiling" (4)
     // BUT NOT for pipes (pipes don't need f'c)
     if ((installMethod === '1' || installMethod === '4') && !isPipe) {
         slabThicknessGroup.style.display = 'block';
         fcGroup.style.display = 'block';
+
+        // Set defaults when fields become visible (only if empty)
+        if (slabThicknessInput && !slabThicknessInput.value) {
+            slabThicknessInput.value = '4';
+        }
+        if (fcInput && !fcInput.value) {
+            fcInput.value = '2500';
+        }
     } else if ((installMethod === '1' || installMethod === '4') && isPipe) {
         // For pipes, only show slab thickness, not f'c
         slabThicknessGroup.style.display = 'block';
         fcGroup.style.display = 'none';
+
+        // Set default when field becomes visible (only if empty)
+        if (slabThicknessInput && !slabThicknessInput.value) {
+            slabThicknessInput.value = '4';
+        }
     } else {
         slabThicknessGroup.style.display = 'none';
         fcGroup.style.display = 'none';
@@ -2867,6 +2894,20 @@ Ps = Fph/N = ${calc.formula.Fph}/${calc.formula.N} = ${calc.Ps} lbs `;
     alert(message);
 }
 
+// Helper function to check if equipment has enough data for calculations
+function hasCalculationData(equipment) {
+    if (!equipment) return false;
+
+    // For pipes: need pipeWeightPerFoot and pipeDiameter
+    if (equipment.isPipe) {
+        return equipment.pipeWeightPerFoot && equipment.pipeDiameter;
+    }
+
+    // For regular equipment: need weight and basic dimensions
+    // (calculations can work with partial data, but show if at least weight exists)
+    return equipment.weight !== undefined && equipment.weight !== null;
+}
+
 function renderEquipmentList() {
     try {
         console.log('=== renderEquipmentList() with overturning calculations START ===');
@@ -3019,7 +3060,7 @@ equipmentCard.innerHTML = `
                 ${equipment.model ? `<span>Model: ${equipment.model}</span><span class="meta-separator" style="margin: 0 4px;">•</span>` : ''}
                 ${equipment.tag ? `<span>Tag: ${equipment.tag}</span><span class="meta-separator" style="margin: 0 4px;">•</span>` : ''}
                 ${equipment.level ? `<span>Level: ${equipment.level}</span>` : ''}
-                ${equipment.hasCalculation !== false ? (equipment.isPipe ? `
+                ${hasCalculationData(equipment) ? (equipment.isPipe ? `
                     <span class="meta-separator" style="margin: 0 4px;">•</span>
                     <span>Pipe: ${equipment.pipeDiameter || 'N/A'}</span>
                     <span class="meta-separator" style="margin: 0 4px;">•</span>
@@ -3092,15 +3133,21 @@ return `
 })()}
 
 <div class="equipment-details-container">
-    ${equipment.hasCalculation === false ? `
-        <!-- Photos-only equipment - simplified view -->
+    ${!hasCalculationData(equipment) ? `
+        <!-- Equipment without calculation data - show all existing fields -->
         <div class="equipment-info-section" style="width: 100%;">
             <p><strong>Equipment:</strong> ${equipment.equipment}</p>
             ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
             ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
-            ${equipment.level ? `<p><strong>Level:</strong> ${equipment.level}</p>` : ''}
+            ${equipment.level ? `<p><strong>Level:</strong> ${equipment.level}${equipment.totalLevels ? `/${equipment.totalLevels}` : ''}</p>` : ''}
+            ${equipment.installMethod ? `<p><strong>Install Method:</strong> ${getInstallMethodText(equipment.installMethod)}</p>` : ''}
             ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
-            
+            ${equipment.anchorType ? `<p><strong>Anchor Type:</strong> ${getAnchorTypeText(equipment.anchorType)}</p>` : ''}
+            ${equipment.numberOfAnchors ? `<p><strong>Number of Anchors:</strong> ${equipment.numberOfAnchors}${equipment.anchorDiameter ? ` (⌀ ${equipment.anchorDiameter}")` : ''}</p>` : ''}
+            ${equipment.slabThickness ? `<p><strong>Slab Thickness:</strong> ${equipment.slabThickness}"${equipment.fc ? ` | <strong>f'c:</strong> ${equipment.fc} psi` : ''}</p>` : ''}
+            ${equipment.mountingType ? `<p><strong>Mounting Type:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
+            ${equipment.hn !== undefined ? `<p><strong>Building Height:</strong> ${equipment.hn} m</p>` : ''}
+
             ${canModifyProject() ? `
                 <div style="margin-top: 15px;">
                     <button class="edit-btn" onclick="editEquipment(${index})" style="background: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
@@ -3110,7 +3157,7 @@ return `
             ` : ''}
         </div>
     ` : `
-        <!-- Full seismic calculation equipment -->
+        <!-- Equipment with calculation data -->
         <div class="equipment-info-section">
                         ${equipment.isPipe ? `
                             <!-- Pipe specific fields -->
@@ -3990,25 +4037,13 @@ function editEquipment(index) {
     // Populate form with equipment data
     populateFormWithEquipment(equipment);
     
-    // Determine which mode to select
-    // If hasCalculation is explicitly false, default to photos mode
-    // Otherwise, check if it has seismic data to determine mode
-    if (equipment.hasCalculation === false) {
-        // Equipment was created as photos-only
-        selectEquipmentMode('photos');
-    } else if (equipment.hasCalculation === true) {
-        // Equipment has full seismic calculations
+    // Auto-select tab based on available data (just UI, doesn't change equipment type)
+    if (hasCalculationData(equipment)) {
+        // Has calculation data - show seismic tab
         selectEquipmentMode('seismic');
     } else {
-        // hasCalculation is undefined/null - check for seismic data
-        const hasSeismicData = equipment.weight || equipment.isPipe ||
-            (equipment.nbcCategory && equipment.level && equipment.hn && equipment.installMethod);
-
-        if (hasSeismicData) {
-            selectEquipmentMode('seismic');
-        } else {
-            selectEquipmentMode('photos');
-        }
+        // No calculation data - show photos tab
+        selectEquipmentMode('photos');
     }
 
 // Ensure mounting type field visibility is correct after form population
@@ -4062,11 +4097,11 @@ function populateFormWithEquipment(equipment) {
         
         handleEquipmentChange();
     }
-    
-    // Seismic calculation fields
-    if (equipment.hasCalculation !== false) {
+
+    // Populate all fields that exist (no hasCalculation check needed)
+    {
         const nbcCategory = document.getElementById('nbcCategory');
-        if (nbcCategory) nbcCategory.value = equipment.nbcCategory || '11-rigid';
+        if (nbcCategory) nbcCategory.value = equipment.nbcCategory || '';
         
         const weight = document.getElementById('weight');
         if (weight) weight.value = equipment.weight || '';
@@ -4105,7 +4140,7 @@ function populateFormWithEquipment(equipment) {
         if (slabThickness) slabThickness.value = equipment.slabThickness || '';
         
         const fc = document.getElementById('fc');
-        if (fc) fc.value = equipment.fc || '2500';
+        if (fc) fc.value = equipment.fc || '';
         
         const hx = document.getElementById('hx');
         if (hx) hx.value = equipment.hx || '';
@@ -4117,7 +4152,7 @@ function populateFormWithEquipment(equipment) {
         if (totalLevels) totalLevels.value = equipment.totalLevels || projectData?.numberOfFloors || '';
         
         const mountingType = document.getElementById('mountingType');
-        if (mountingType) mountingType.value = equipment.mountingType || 'no-isolators';
+        if (mountingType) mountingType.value = equipment.mountingType || '';
         
         // ASHRAE fields
         const isolatorWidth = document.getElementById('isolatorWidth');
@@ -4303,58 +4338,13 @@ async function saveEquipmentEdit(index, event) {
             updatedEquipment.edgeDistanceB = getFloat(`editEdgeDistanceB${index}`, null);
             updatedEquipment.numberOfIsolators = getInt(`editNumberOfIsolators${index}`, null);
             
-            // Validation for traditional equipment - only if hasCalculation or converting
-            if (currentEquipment.hasCalculation !== false || currentEquipment._convertingToSeismic) {
-                if (!updatedEquipment.weight || updatedEquipment.weight <= 0) {
-                    alert('Please enter a valid weight greater than 0.');
-                    return;
-                }
-                
-                if (!updatedEquipment.height || !updatedEquipment.width || !updatedEquipment.length) {
-                    alert('Please enter valid dimensions for height, width, and length.');
-                    return;
-                }
-                
-                if (!updatedEquipment.hx || updatedEquipment.hx > updatedEquipment.hn) {
-                    alert('Please enter valid heights. Equipment height above base must be less than or equal to building height.');
-                    return;
-                }
-            }
-        }
-
-        // Common validation - only for calculation equipment or converting
-        if (currentEquipment.hasCalculation !== false || currentEquipment._convertingToSeismic) {
-            if (updatedEquipment.level > updatedEquipment.totalLevels) {
-                alert('Equipment level cannot be greater than total levels.');
-                return;
-            }
-            
-            if (!updatedEquipment.hn || updatedEquipment.hn <= 0) {
-                alert('Please enter a valid building height greater than 0.');
-                return;
-            }
-
-            if (!updatedEquipment.nbcCategory) {
-                alert('Please select an NBC category.');
-                return;
-            }
-        }
-
-        // Handle conversion from photos-only to seismic calculation
-        if (currentEquipment._convertingToSeismic) {
-            // Remove the conversion flag
-            delete updatedEquipment._convertingToSeismic;
-            // Set hasCalculation to true (or remove the false flag)
-            delete updatedEquipment.hasCalculation;
-            // Keep existing images
-            updatedEquipment.images = currentEquipment.images || [];
-            console.log('🔄 Converting equipment to seismic calculation, keeping images');
+            // No strict validation - equipment is flexible now
         }
 
         console.log('🔄 Updating equipment:', updatedEquipment);
-        
-        // Handle image upload for without-calc equipment
-        if (updatedEquipment.hasCalculation === false && currentEditFormImages.length > 0) {
+
+        // Handle image upload
+        if (currentEditFormImages.length > 0) {
             // Keep existing images that weren't removed
             const existingImages = currentEditFormImages.filter(img => !img.isNew).map(img => ({
                 key: img.key,
@@ -4676,11 +4666,14 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
         }
 
         if (isEditMode) {
-            // Update existing equipment
+            // Update existing equipment - REPLACE completely, don't merge
             const existingEquipment = projectEquipment[editingEquipmentIndex];
             projectEquipment[editingEquipmentIndex] = {
-                ...existingEquipment,
                 ...equipmentData,
+                // Preserve original creation metadata
+                dateAdded: existingEquipment.dateAdded,
+                addedBy: existingEquipment.addedBy,
+                // Add modification metadata
                 lastModified: new Date().toISOString(),
                 modifiedBy: currentUser?.email || 'unknown'
             };
@@ -5620,44 +5613,25 @@ function getEquipmentFormData() {
         return null;
     }
 
-    // Seismic mode validation
-    if (currentEquipmentMode === 'seismic') {
-        if (!level || !totalLevels) {
-            alert('Please enter valid level information.');
-            return null;
-        }
+    // No strict validation - tabs are just UI, not equipment types
 
-        if (parseInt(level) > parseInt(totalLevels)) {
-            alert('Equipment level cannot be greater than total levels.');
-            return null;
-        }
-
-        if (!hn || parseFloat(hn) <= 0) {
-            alert('Please enter a valid building height greater than 0.');
-            return null;
-        }
-
-        if (!installMethod) {
-            alert('Please select an installation method.');
-            return null;
-        }
-    }
-
-    // Base equipment data
+    // Base equipment data - only include required fields
     let equipmentData = {
         equipment: isPipe ? `${pipeType}` : equipment, // Store full pipe type name for pipes
         equipmentType: equipment, // Store the base equipment type (Pipe or regular equipment)
-        pipeType: isPipe ? pipeType : null, // Store pipe type separately for pipes
-        model: model || null,
-        tag: tag || null,
         domain: domain,
-        level: parseInt(level),
-        totalLevels: parseInt(totalLevels),
-        installMethod: installMethod,
-        hn: parseFloat(hn),
         dateAdded: new Date().toISOString(),
         addedBy: currentUser.email
     };
+
+    // Add optional fields only if they have values
+    if (isPipe && pipeType) equipmentData.pipeType = pipeType;
+    if (model) equipmentData.model = model;
+    if (tag) equipmentData.tag = tag;
+    if (level && !isNaN(parseInt(level))) equipmentData.level = parseInt(level);
+    if (totalLevels && !isNaN(parseInt(totalLevels))) equipmentData.totalLevels = parseInt(totalLevels);
+    if (installMethod) equipmentData.installMethod = installMethod;
+    if (hn && !isNaN(parseFloat(hn))) equipmentData.hn = parseFloat(hn);
 
     if (isPipe) {
         // Pipe-specific fields
@@ -5667,31 +5641,16 @@ function getEquipmentFormData() {
         const structureType = document.getElementById('structureType').value;
         const nbcCategory = document.getElementById('nbcCategory').value;
 
-        if (!pipeWeightPerFoot || parseFloat(pipeWeightPerFoot) <= 0) {
-            alert('Please enter a valid pipe weight per foot greater than 0.');
-            return null;
-        }
+        // No validation - save only fields with values
+        equipmentData.isPipe = true;
 
-        if (!pipeDiameter) {
-            alert('Please select a pipe diameter.');
-            return null;
+        if (nbcCategory) equipmentData.nbcCategory = nbcCategory;
+        if (pipeWeightPerFoot && !isNaN(parseFloat(pipeWeightPerFoot))) {
+            equipmentData.pipeWeightPerFoot = parseFloat(pipeWeightPerFoot);
         }
-
-        if (!nbcCategory) {
-            alert('Please select an NBC category.');
-            return null;
-        }
-
-        equipmentData = {
-            ...equipmentData,
-            nbcCategory: nbcCategory,
-            pipeWeightPerFoot: parseFloat(pipeWeightPerFoot),
-            pipeDiameter: pipeDiameter,
-            supportType: supportType || 'individual',
-            structureType: structureType || 'concrete-slab',
-            // Set pipe as suspended piping for calculation purposes
-            isPipe: true
-        };
+        if (pipeDiameter) equipmentData.pipeDiameter = pipeDiameter;
+        if (supportType) equipmentData.supportType = supportType;
+        if (structureType) equipmentData.structureType = structureType;
 
     } else {
         // Traditional equipment fields
@@ -5714,80 +5673,30 @@ function getEquipmentFormData() {
         const numberOfIsolators = document.getElementById('numberOfIsolators').value;
         const hx = document.getElementById('hx').value;
 
-        // Only validate calculation-specific fields if "seismic" mode is active
-        if (currentEquipmentMode === 'seismic') {
-            if (!weight || parseFloat(weight) <= 0) {
-                alert('Please enter a valid weight greater than 0.');
-                return null;
-            }
+        // No validation - tabs are just UI, always save only fields with values
+        equipmentData.isPipe = false;
 
-            if (!height || !width || !length) {
-                alert('Please enter valid dimensions for height, width, and length.');
-                return null;
-            }
-
-            if (!hx || parseFloat(hx) > parseFloat(hn)) {
-                alert('Please enter valid heights. Equipment height above base must be less than or equal to building height.');
-                return null;
-            }
-
-            if (!numberOfAnchors || parseInt(numberOfAnchors) <= 0) {
-                alert('Please enter a valid number of anchors greater than 0.');
-                return null;
-            }
-
-            if (!anchorType) {
-                alert('Please select an anchor type.');
-                return null;
-            }
-
-            if (!anchorDiameter) {
-                alert('Please select an anchor diameter.');
-                return null;
-            }
+        // Add all fields that have actual values (no hasCalculation needed)
+        if (nbcCategory) equipmentData.nbcCategory = nbcCategory;
+        if (weight && !isNaN(parseFloat(weight))) {
+            equipmentData.weight = parseFloat(weight);
+            equipmentData.weightUnit = weightUnit || 'kg';
         }
-
-                // Build equipment data based on mode
-        if (currentEquipmentMode === 'photos') {
-            // Without Calculation - minimal fields only
-            equipmentData = {
-                ...equipmentData,
-                nbcCategory: nbcCategory,
-                weight: parseFloat(weight),
-                weightUnit: weightUnit,
-                model: model || null,
-                tag: tag || null,
-                isPipe: false,
-                hasCalculation: false
-            };
-        } else {
-            // With Calculation - full fields
-            equipmentData = {
-                ...equipmentData,
-                nbcCategory: nbcCategory,
-                weight: parseFloat(weight),
-                weightUnit: weightUnit,
-                height: parseFloat(height),
-                width: parseFloat(width),
-                length: parseFloat(length),
-                numberOfAnchors: parseInt(numberOfAnchors),
-                anchorType: anchorType,
-                anchorDiameter: anchorDiameter,
-                slabThickness: parseFloat(slabThickness) || null,
-                fc: parseInt(fc) || null,
-                mountingType: mountingType,
-                isolatorWidth: parseFloat(isolatorWidth) || null,
-                restraintHeight: parseFloat(restraintHeight) || null,
-                edgeDistanceA: parseFloat(edgeDistanceA) || null,
-                edgeDistanceB: parseFloat(edgeDistanceB) || null,
-                numberOfIsolators: parseInt(numberOfIsolators) || null,
-                hx: parseFloat(hx),
-                model: model || null,
-                tag: tag || null,
-                isPipe: false,
-                hasCalculation: true
-            };
-        }
+        if (height && !isNaN(parseFloat(height))) equipmentData.height = parseFloat(height);
+        if (width && !isNaN(parseFloat(width))) equipmentData.width = parseFloat(width);
+        if (length && !isNaN(parseFloat(length))) equipmentData.length = parseFloat(length);
+        if (numberOfAnchors && !isNaN(parseInt(numberOfAnchors))) equipmentData.numberOfAnchors = parseInt(numberOfAnchors);
+        if (anchorType) equipmentData.anchorType = anchorType;
+        if (anchorDiameter) equipmentData.anchorDiameter = anchorDiameter;
+        if (slabThickness && !isNaN(parseFloat(slabThickness))) equipmentData.slabThickness = parseFloat(slabThickness);
+        if (fc && !isNaN(parseInt(fc))) equipmentData.fc = parseInt(fc);
+        if (mountingType) equipmentData.mountingType = mountingType;
+        if (isolatorWidth && !isNaN(parseFloat(isolatorWidth))) equipmentData.isolatorWidth = parseFloat(isolatorWidth);
+        if (restraintHeight && !isNaN(parseFloat(restraintHeight))) equipmentData.restraintHeight = parseFloat(restraintHeight);
+        if (edgeDistanceA && !isNaN(parseFloat(edgeDistanceA))) equipmentData.edgeDistanceA = parseFloat(edgeDistanceA);
+        if (edgeDistanceB && !isNaN(parseFloat(edgeDistanceB))) equipmentData.edgeDistanceB = parseFloat(edgeDistanceB);
+        if (numberOfIsolators && !isNaN(parseInt(numberOfIsolators))) equipmentData.numberOfIsolators = parseInt(numberOfIsolators);
+        if (hx && !isNaN(parseFloat(hx))) equipmentData.hx = parseFloat(hx);
     }
 
     return equipmentData;
@@ -5904,12 +5813,19 @@ function clearEquipmentForm() {
             dropZone.classList.remove('max-reached');
         }
         
-        // Reset specific fields to defaults
+        // Reset specific fields to empty (no defaults)
         document.getElementById('model').value = '';
         document.getElementById('tag').value = '';
-        document.getElementById('nbcCategory').value = '11-rigid';
-        document.getElementById('weightUnit').value = 'lbs';
-        document.getElementById('fc').value = '2500';
+        // Don't set defaults - let user choose
+        document.getElementById('nbcCategory').value = '';
+        document.getElementById('weightUnit').value = 'lbs'; // Keep this as it's a unit selector
+        document.getElementById('fc').value = '';
+
+        // Clear mounting type and slab thickness
+        const mountingTypeEl = document.getElementById('mountingType');
+        if (mountingTypeEl) mountingTypeEl.value = '';
+        const slabThicknessEl = document.getElementById('slabThickness');
+        if (slabThicknessEl) slabThicknessEl.value = '';
         
         // Hide all conditional fields
         hideAllConditionalFields();

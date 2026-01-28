@@ -294,14 +294,15 @@
                             <!-- 9. Slab Thickness (slab/ceiling installations) -->
                             <div class="form-group" id="slabThicknessGroup" style="display: none;">
                                 <label for="slabThickness">Slab Thickness (inches):</label>
-                                <input type="number" id="slabThickness" name="slabThickness" step="0.25" value="4">
+                                <input type="number" id="slabThickness" name="slabThickness" step="0.25" placeholder="4">
                             </div>
 
                             <!-- f'c field (traditional equipment only, hidden for pipes) -->
                             <div class="form-group" id="fcGroup" style="display: none;">
                                 <label for="fc">f'c (psi):</label>
                                 <select id="fc" name="fc">
-                                    <option value="2500" selected>2500 psi</option>
+                                    <option value="">Select f'c...</option>
+                                    <option value="2500">2500 psi</option>
                                     <option value="3000">3000 psi</option>
                                     <option value="4000">4000 psi</option>
                                     <option value="6000">6000 psi</option>
@@ -312,6 +313,7 @@
                             <div class="form-group" id="mountingTypeGroup" style="display: none;">
                                 <label for="mountingType">Mounting Type:</label>
                                 <select id="mountingType" name="mountingType">
+                                    <option value="">Select mounting type...</option>
                                     <option value="no-isolators">1. No isolators</option>
                                     <option value="type-3-1">2. Restrained with Type 3-1 vibration isolators</option>
                                     <option value="type-3-2">3. Restrained with Type 3-2 vibration isolators</option>
@@ -386,7 +388,7 @@
                                     <i class="fas fa-calculator"></i> Calculate
                                 </button>
                                 <button type="button" id="saveAndKeepEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                    <i class="fas fa-save"></i> Save and Keep Form
+                                    <i class="fas fa-save"></i> Save
                                 </button>
                                 <button type="submit" id="saveEquipment" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
                                     <i class="fas fa-save"></i> Save and Close Form
