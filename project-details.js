@@ -3916,7 +3916,7 @@ function editEquipment(index) {
     const newCalcButton = document.getElementById('newCalculationButton');
     equipmentForm.classList.add('show');
     if (newCalcButton) {
-        newCalcButton.textContent = 'Hide Form';
+        newCalcButton.textContent = 'Cancel';
     }
     
     // Populate form with equipment data
@@ -4629,31 +4629,55 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
         const targetIndex = isEditMode ? editingEquipmentIndex : projectEquipment.length - 1;
 
         if (keepFormOpen) {
-            // Keep form open mode: reset to new equipment mode but keep data
-            editingEquipmentIndex = null;
+            // Keep form open mode: remember the equipment we just saved/created
+            // Set editingEquipmentIndex so next save updates this equipment (like saving a document in Word)
+            if (!isEditMode) {
+                // We just created new equipment, remember its index for future saves
+                editingEquipmentIndex = projectEquipment.length - 1;
+            }
+            // If already in edit mode, editingEquipmentIndex stays the same
 
-            // Update form title to "New Equipment"
+            // Update form title to show we're now editing
             const formTitle = document.getElementById('equipmentFormTitle');
             if (formTitle) {
-                formTitle.textContent = 'New Equipment';
+                formTitle.textContent = 'Edit Equipment';
             }
 
-            // Update Calculate button to show Calculate (not Cancel)
+            // Update Calculate button to show Cancel (we're now in edit mode)
             const calculateBtn = document.getElementById('calculateEquipment');
             if (calculateBtn) {
-                calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
-                calculateBtn.style.background = '#17a2b8';
+                calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+                calculateBtn.style.background = '#6c757d';
+                calculateBtn.style.display = 'block';
             }
 
-            // Clear only the images (user can modify other fields for next equipment)
-            currentFormImages = [];
-            updateFormImagePreview();
+            // Keep "Save and Keep Form" button visible so user can continue updating
+            const saveAndKeepBtn = document.getElementById('saveAndKeepEquipment');
+            if (saveAndKeepBtn) {
+                saveAndKeepBtn.style.display = 'block';
+            }
+
+            // Keep images visible in preview by converting them to "existing" images
+            // This allows users to see what they just uploaded
+            if (equipmentData.images && equipmentData.images.length > 0) {
+                currentFormImages = equipmentData.images.map(img => ({
+                    data: img.signedUrl || img.url,
+                    key: img.key,
+                    isExisting: true,
+                    name: img.key.split('/').pop(),
+                    type: 'image/jpeg'
+                }));
+                updateFormImagePreview();
+            } else {
+                currentFormImages = [];
+                updateFormImagePreview();
+            }
 
             // Render equipment list to show the new/updated equipment
             renderEquipmentList();
 
             // Success message
-            alert(isEditMode ? 'Equipment updated successfully! Form is still open for your next entry.' : 'Equipment saved successfully! Form is still open for your next entry.');
+            alert(isEditMode ? 'Equipment updated successfully!' : 'Equipment saved successfully!');
 
         } else {
             // Close form mode: hide and clear everything
@@ -4726,12 +4750,13 @@ function setupNewCalculationButton() {
             if (equipmentForm.classList.contains('show')) {
                 equipmentForm.classList.remove('show');
                 newCalcButton.textContent = 'Add Equipment';
+                clearEquipmentForm();
             } else {
                 // Collapse any open equipment details
                 collapseAllEquipmentDetails();
                 
                 equipmentForm.classList.add('show');
-                newCalcButton.textContent = 'Hide Form';
+                newCalcButton.textContent = 'Cancel';
                 
                 // Initialize image upload handlers
                 initializeFormImageUpload();
@@ -4797,10 +4822,10 @@ function applyEquipmentMode(mode) {
 
         // Update buttons based on edit mode
         if (editingEquipmentIndex !== null) {
-            // Edit mode: show Cancel button, hide Save and Keep Form
+            // Edit mode: show Cancel button, keep Save and Keep Form visible
             calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
             calculateBtn.style.background = '#6c757d';
-            if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'none';
+            if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'block';
         } else {
             // New equipment mode: show Calculate and Save and Keep Form
             calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
@@ -4831,11 +4856,11 @@ function applyEquipmentMode(mode) {
 
         // Update buttons based on edit mode
         if (editingEquipmentIndex !== null) {
-            // Edit mode: show Cancel button, hide Save and Keep Form
+            // Edit mode: show Cancel button, keep Save and Keep Form visible
             calculateBtn.style.display = 'block';
             calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
             calculateBtn.style.background = '#6c757d';
-            if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'none';
+            if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'block';
         } else {
             // New equipment mode: hide Calculate, show Save and Keep Form
             calculateBtn.style.display = 'none';
