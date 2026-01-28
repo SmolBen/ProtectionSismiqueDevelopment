@@ -4495,6 +4495,8 @@ function deleteEquipment(index) {
         projectEquipment.splice(index, 1);
         // Clear selection since indices have changed
         selectedEquipmentIndices.clear();
+        // Clear edit mode if we were editing this or any equipment
+        editingEquipmentIndex = null;
         saveEquipmentToProject();
         renderEquipmentList();
     }
@@ -4646,13 +4648,15 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
                         // Find the original image data from the equipment by key
                         if (isEditMode) {
                             const existingEquipment = projectEquipment[editingEquipmentIndex];
-                            const originalImage = existingEquipment.images?.find(img =>
-                                img.key === formImage.key
-                            );
-                            if (originalImage) {
-                                equipmentData.images.push(originalImage);
-                                console.log('Kept existing image:', originalImage.key);
-                                continue;
+                            if (existingEquipment) {
+                                const originalImage = existingEquipment.images?.find(img =>
+                                    img.key === formImage.key
+                                );
+                                if (originalImage) {
+                                    equipmentData.images.push(originalImage);
+                                    console.log('Kept existing image:', originalImage.key);
+                                    continue;
+                                }
                             }
                         }
                     }
@@ -4714,18 +4718,27 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
         }
 
         if (isEditMode) {
-            // Update existing equipment - REPLACE completely, don't merge
+            // Check if equipment still exists at this index
             const existingEquipment = projectEquipment[editingEquipmentIndex];
-            projectEquipment[editingEquipmentIndex] = {
-                ...equipmentData,
-                // Preserve original creation metadata
-                dateAdded: existingEquipment.dateAdded,
-                addedBy: existingEquipment.addedBy,
-                // Add modification metadata
-                lastModified: new Date().toISOString(),
-                modifiedBy: currentUser?.email || 'unknown'
-            };
-            console.log('Updated equipment at index:', editingEquipmentIndex);
+
+            if (existingEquipment) {
+                // Update existing equipment - REPLACE completely, don't merge
+                projectEquipment[editingEquipmentIndex] = {
+                    ...equipmentData,
+                    // Preserve original creation metadata
+                    dateAdded: existingEquipment.dateAdded,
+                    addedBy: existingEquipment.addedBy,
+                    // Add modification metadata
+                    lastModified: new Date().toISOString(),
+                    modifiedBy: currentUser?.email || 'unknown'
+                };
+                console.log('Updated equipment at index:', editingEquipmentIndex);
+            } else {
+                // Equipment was deleted, save as new instead
+                console.log('Equipment at index', editingEquipmentIndex, 'no longer exists, creating new equipment');
+                projectEquipment.push(equipmentData);
+                editingEquipmentIndex = null; // Reset edit mode
+            }
         } else {
             // Add to project equipment array
             projectEquipment.push(equipmentData);
@@ -6503,6 +6516,9 @@ async function deleteSelectedEquipment() {
 
         // Clear selection
         selectedEquipmentIndices.clear();
+
+        // Clear edit mode if we were editing any equipment
+        editingEquipmentIndex = null;
 
         // Save to database
         await saveEquipmentToProject();
