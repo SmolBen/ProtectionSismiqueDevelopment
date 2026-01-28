@@ -66,6 +66,9 @@ let currentFormImages = [];
 let currentEditFormImages = [];
 let editingEquipmentIndex = null;
 
+// Track selected equipment for bulk deletion
+let selectedEquipmentIndices = new Set();
+
 // Equipment options based on domain
 const equipmentOptions = {
     'ventilation': ['Ventilateur', 'Aérotherme', 'Caisson de ventilation', 'Condenseur', 'Diffuseur', 'Duct terminal unit', 'Échangeur', 'Extracteur d\'air de toit', 'Hotte', 'Plénum de ventilation', 'Serpentin', 'Silencieux', 'Unité de ventilation', 'Unknown', 'Pipe'],
@@ -2879,7 +2882,64 @@ function renderEquipmentList() {
 
         const listHeader = document.createElement('div');
         listHeader.className = 'equipment-list-header';
-        listHeader.textContent = `Equipment (${projectEquipment.length})`;
+        listHeader.style.display = 'flex';
+        listHeader.style.justifyContent = 'space-between';
+        listHeader.style.alignItems = 'center';
+
+        const leftSection = document.createElement('div');
+        leftSection.style.display = 'flex';
+        leftSection.style.alignItems = 'center';
+        leftSection.style.gap = '10px';
+
+        // Select All checkbox (only show if there are equipment items)
+        if (projectEquipment.length > 0 && canModifyProject()) {
+            const selectAllCheckbox = document.createElement('input');
+            selectAllCheckbox.type = 'checkbox';
+            selectAllCheckbox.id = 'selectAllCheckbox';
+            selectAllCheckbox.style.cursor = 'pointer';
+            selectAllCheckbox.style.width = '18px';
+            selectAllCheckbox.style.height = '18px';
+            selectAllCheckbox.checked = selectedEquipmentIndices.size === projectEquipment.length;
+            selectAllCheckbox.onchange = () => toggleSelectAll();
+
+            const selectAllLabel = document.createElement('label');
+            selectAllLabel.htmlFor = 'selectAllCheckbox';
+            selectAllLabel.textContent = `SELECT ALL (${projectEquipment.length})`;
+            selectAllLabel.style.cursor = 'pointer';
+            selectAllLabel.style.fontSize = '14px';
+            selectAllLabel.style.textTransform = 'uppercase';
+            selectAllLabel.style.color = '#666';
+
+            leftSection.appendChild(selectAllCheckbox);
+            leftSection.appendChild(selectAllLabel);
+        } else if (projectEquipment.length > 0) {
+            // Show equipment count for users who can't modify
+            const headerText = document.createElement('span');
+            headerText.textContent = `EQUIPMENT (${projectEquipment.length})`;
+            headerText.style.fontSize = '14px';
+            headerText.style.textTransform = 'uppercase';
+            headerText.style.color = '#666';
+            leftSection.appendChild(headerText);
+        }
+
+        listHeader.appendChild(leftSection);
+
+        // Delete Selected button (only show if items are selected)
+        if (selectedEquipmentIndices.size > 0 && canModifyProject()) {
+            const deleteSelectedBtn = document.createElement('button');
+            deleteSelectedBtn.className = 'delete-btn';
+            deleteSelectedBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Selected';
+            deleteSelectedBtn.style.background = '#dc3545';
+            deleteSelectedBtn.style.color = 'white';
+            deleteSelectedBtn.style.border = 'none';
+            deleteSelectedBtn.style.padding = '8px 15px';
+            deleteSelectedBtn.style.borderRadius = '4px';
+            deleteSelectedBtn.style.cursor = 'pointer';
+            deleteSelectedBtn.style.fontSize = '14px';
+            deleteSelectedBtn.onclick = () => deleteSelectedEquipment();
+            listHeader.appendChild(deleteSelectedBtn);
+        }
+
         equipmentListDiv.appendChild(listHeader);
 
         if (projectEquipment.length === 0) {
@@ -2936,6 +2996,14 @@ equipmentCard.innerHTML = `
     <div class="equipment-header">
         <div class="equipment-info-compact">
             <h4 title="Click to toggle details">
+                ${canModifyProject() ? `
+                    <input type="checkbox"
+                           class="equipment-checkbox"
+                           data-index="${index}"
+                           ${selectedEquipmentIndices.has(index) ? 'checked' : ''}
+                           onclick="event.stopPropagation(); toggleEquipmentSelection(${index})"
+                           style="margin-right: 10px; cursor: pointer; width: 18px; height: 18px; vertical-align: middle;">
+                ` : ''}
                 ${equipment.equipment}
                 ${(() => {
                     const requestInfo = getImageRequestInfo(equipment);
@@ -2947,21 +3015,21 @@ equipmentCard.innerHTML = `
                     return '';
                 })()}
             </h4>
-            <div class="equipment-meta-compact">
-                ${equipment.model ? `<span>Model: ${equipment.model}</span><span class="meta-separator">•</span>` : ''}
-                ${equipment.tag ? `<span>Tag: ${equipment.tag}</span><span class="meta-separator">•</span>` : ''}
+            <div class="equipment-meta-compact" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                ${equipment.model ? `<span>Model: ${equipment.model}</span><span class="meta-separator" style="margin: 0 4px;">•</span>` : ''}
+                ${equipment.tag ? `<span>Tag: ${equipment.tag}</span><span class="meta-separator" style="margin: 0 4px;">•</span>` : ''}
                 ${equipment.level ? `<span>Level: ${equipment.level}</span>` : ''}
                 ${equipment.hasCalculation !== false ? (equipment.isPipe ? `
-                    <span class="meta-separator">•</span>
+                    <span class="meta-separator" style="margin: 0 4px;">•</span>
                     <span>Pipe: ${equipment.pipeDiameter || 'N/A'}</span>
-                    <span class="meta-separator">•</span>
+                    <span class="meta-separator" style="margin: 0 4px;">•</span>
                     <span>Weight: ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</span>
                 ` : `
-                    <span class="meta-separator">•</span>
+                    <span class="meta-separator" style="margin: 0 4px;">•</span>
                     <span>${equipment.anchorType ? getAnchorTypeText(equipment.anchorType) : 'N/A'}</span>
-                    <span class="meta-separator">•</span>
+                    <span class="meta-separator" style="margin: 0 4px;">•</span>
                     <span>${equipment.numberOfAnchors || 'N/A'} anchors</span>
-                    ${equipment.anchorDiameter ? `<span class="meta-separator">•</span><span>⌀ ${equipment.anchorDiameter}"</span>` : ''}
+                    ${equipment.anchorDiameter ? `<span class="meta-separator" style="margin: 0 4px;">•</span><span>⌀ ${equipment.anchorDiameter}"</span>` : ''}
                 `) : ''}
             </div>
         </div>
@@ -4387,6 +4455,8 @@ function deleteEquipment(index) {
 
     if (confirm('Are you sure you want to delete this equipment?')) {
         projectEquipment.splice(index, 1);
+        // Clear selection since indices have changed
+        selectedEquipmentIndices.clear();
         saveEquipmentToProject();
         renderEquipmentList();
     }
@@ -6047,7 +6117,10 @@ async function duplicateEquipment(index) {
     
     // Add to equipment array
     projectEquipment.push(duplicatedEquipment);
-    
+
+    // Clear selection since indices have changed
+    selectedEquipmentIndices.clear();
+
     // Save to database and re-render
     try {
         await saveEquipmentToProject();
@@ -6413,6 +6486,73 @@ async function requestEquipmentImage(index) {
 }
 
 
+// Equipment selection functions for bulk deletion
+function toggleEquipmentSelection(index) {
+    if (selectedEquipmentIndices.has(index)) {
+        selectedEquipmentIndices.delete(index);
+    } else {
+        selectedEquipmentIndices.add(index);
+    }
+    renderEquipmentList();
+}
+
+function toggleSelectAll() {
+    if (selectedEquipmentIndices.size === projectEquipment.length) {
+        // Deselect all
+        selectedEquipmentIndices.clear();
+    } else {
+        // Select all
+        selectedEquipmentIndices.clear();
+        projectEquipment.forEach((_, index) => {
+            selectedEquipmentIndices.add(index);
+        });
+    }
+    renderEquipmentList();
+}
+
+async function deleteSelectedEquipment() {
+    if (selectedEquipmentIndices.size === 0) {
+        alert('No equipment selected.');
+        return;
+    }
+
+    if (!canModifyProject()) {
+        alert('You do not have permission to delete equipment from this project.');
+        return;
+    }
+
+    const count = selectedEquipmentIndices.size;
+    const confirmed = confirm(`Are you sure you want to delete ${count} selected equipment item${count > 1 ? 's' : ''}? This action cannot be undone.`);
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        // Convert Set to array and sort in descending order to avoid index shifting issues
+        const indicesToDelete = Array.from(selectedEquipmentIndices).sort((a, b) => b - a);
+
+        // Delete from highest index to lowest to avoid index shifting
+        for (const index of indicesToDelete) {
+            projectEquipment.splice(index, 1);
+        }
+
+        // Clear selection
+        selectedEquipmentIndices.clear();
+
+        // Save to database
+        await saveEquipmentToProject();
+
+        // Re-render list
+        renderEquipmentList();
+
+        alert(`${count} equipment item${count > 1 ? 's' : ''} deleted successfully.`);
+    } catch (error) {
+        console.error('Error deleting selected equipment:', error);
+        alert('Error deleting equipment: ' + error.message);
+    }
+}
+
 // Make functions globally available
 window.logout = logout;
 window.deleteEquipment = deleteEquipment;
@@ -6426,3 +6566,6 @@ window.updateEditMountingTypeFields = updateEditMountingTypeFields;
 window.generateProjectReport = generateProjectReport;
 window.requestEquipmentImage = requestEquipmentImage;
 window.duplicateEquipment = duplicateEquipment;
+window.toggleEquipmentSelection = toggleEquipmentSelection;
+window.toggleSelectAll = toggleSelectAll;
+window.deleteSelectedEquipment = deleteSelectedEquipment;
