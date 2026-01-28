@@ -2446,7 +2446,7 @@ function toggleMountingTypeField() {
     if (currentEquipmentMode === 'photos') {
         return;
     }
-    
+
     const installMethod = document.getElementById('installMethod')?.value;
     const equipment = document.getElementById('equipment')?.value;
     const isPipe = equipment === 'Pipe';
@@ -2457,23 +2457,38 @@ function toggleMountingTypeField() {
     const edgeDistancesGroup = document.getElementById('edgeDistancesGroup');
     const edgeDistanceBGroup = document.getElementById('edgeDistanceBGroup');
     const numberOfIsolatorsGroup = document.getElementById('numberOfIsolatorsGroup');
-    
+
+    // Get input elements for clearing
+    const mountingTypeInput = document.getElementById('mountingType');
+    const isolatorWidthInput = document.getElementById('isolatorWidth');
+    const restraintHeightInput = document.getElementById('restraintHeight');
+    const edgeDistanceAInput = document.getElementById('edgeDistanceA');
+    const edgeDistanceBInput = document.getElementById('edgeDistanceB');
+    const numberOfIsolatorsInput = document.getElementById('numberOfIsolators');
+
     // Hide mounting type for pipes OR for wall mounting
     if (isPipe || !installMethod || installMethod === '2') {
-        // Hide mounting type and all related fields
+        // Hide mounting type and all related fields, and CLEAR their values
         if (mountingTypeGroup) mountingTypeGroup.style.display = 'none';
         if (isolatorWidthGroup) isolatorWidthGroup.style.display = 'none';
         if (restraintHeightGroup) restraintHeightGroup.style.display = 'none';
         if (edgeDistancesGroup) edgeDistancesGroup.style.display = 'none';
         if (edgeDistanceBGroup) edgeDistanceBGroup.style.display = 'none';
         if (numberOfIsolatorsGroup) numberOfIsolatorsGroup.style.display = 'none';
+
+        // Clear all values
+        if (mountingTypeInput) mountingTypeInput.value = '';
+        if (isolatorWidthInput) isolatorWidthInput.value = '';
+        if (restraintHeightInput) restraintHeightInput.value = '';
+        if (edgeDistanceAInput) edgeDistanceAInput.value = '';
+        if (edgeDistanceBInput) edgeDistanceBInput.value = '';
+        if (numberOfIsolatorsInput) numberOfIsolatorsInput.value = '';
     } else {
         // Show mounting type field for traditional equipment (not pipes) and not wall mounting
         if (mountingTypeGroup) {
             mountingTypeGroup.style.display = 'block';
 
             // Set default when field becomes visible (only if empty)
-            const mountingTypeInput = document.getElementById('mountingType');
             if (mountingTypeInput && !mountingTypeInput.value) {
                 mountingTypeInput.value = 'no-isolators';
             }
@@ -2487,6 +2502,10 @@ function toggleMountingTypeField() {
             if (edgeDistancesGroup) edgeDistancesGroup.style.display = 'none';
             if (edgeDistanceBGroup) edgeDistanceBGroup.style.display = 'none';
             if (numberOfIsolatorsGroup) numberOfIsolatorsGroup.style.display = 'block';
+
+            // Clear hidden fields
+            if (edgeDistanceAInput) edgeDistanceAInput.value = '';
+            if (edgeDistanceBInput) edgeDistanceBInput.value = '';
         } else if (['type-3-5b', 'type-3-5c', 'type-3-5d', 'type-3-11'].includes(mountingType)) {
             // Need edge distances and height (four-bolt arrangements)
             if (isolatorWidthGroup) isolatorWidthGroup.style.display = 'none';
@@ -2494,6 +2513,9 @@ function toggleMountingTypeField() {
             if (edgeDistancesGroup) edgeDistancesGroup.style.display = 'block';
             if (edgeDistanceBGroup) edgeDistanceBGroup.style.display = 'block';
             if (numberOfIsolatorsGroup) numberOfIsolatorsGroup.style.display = 'block';
+
+            // Clear hidden field
+            if (isolatorWidthInput) isolatorWidthInput.value = '';
         } else if (['type-3-1'].includes(mountingType)) {
             // Type 3-1 needs isolator count only
             if (isolatorWidthGroup) isolatorWidthGroup.style.display = 'none';
@@ -2501,6 +2523,12 @@ function toggleMountingTypeField() {
             if (edgeDistancesGroup) edgeDistancesGroup.style.display = 'none';
             if (edgeDistanceBGroup) edgeDistanceBGroup.style.display = 'none';
             if (numberOfIsolatorsGroup) numberOfIsolatorsGroup.style.display = 'block';
+
+            // Clear hidden fields
+            if (isolatorWidthInput) isolatorWidthInput.value = '';
+            if (restraintHeightInput) restraintHeightInput.value = '';
+            if (edgeDistanceAInput) edgeDistanceAInput.value = '';
+            if (edgeDistanceBInput) edgeDistanceBInput.value = '';
         } else {
             // Hide all additional fields for other types (including no-isolators)
             if (isolatorWidthGroup) isolatorWidthGroup.style.display = 'none';
@@ -2508,6 +2536,13 @@ function toggleMountingTypeField() {
             if (edgeDistancesGroup) edgeDistancesGroup.style.display = 'none';
             if (edgeDistanceBGroup) edgeDistanceBGroup.style.display = 'none';
             if (numberOfIsolatorsGroup) numberOfIsolatorsGroup.style.display = 'none';
+
+            // Clear all isolator-related fields
+            if (isolatorWidthInput) isolatorWidthInput.value = '';
+            if (restraintHeightInput) restraintHeightInput.value = '';
+            if (edgeDistanceAInput) edgeDistanceAInput.value = '';
+            if (edgeDistanceBInput) edgeDistanceBInput.value = '';
+            if (numberOfIsolatorsInput) numberOfIsolatorsInput.value = '';
         }
     }
 }
@@ -2579,9 +2614,22 @@ function toggleSlabCeilingFields() {
         if (slabThicknessInput && !slabThicknessInput.value) {
             slabThicknessInput.value = '4';
         }
+
+        // Clear f'c when hidden
+        if (fcInput) {
+            fcInput.value = '';
+        }
     } else {
+        // Hide and clear values
         slabThicknessGroup.style.display = 'none';
         fcGroup.style.display = 'none';
+
+        if (slabThicknessInput) {
+            slabThicknessInput.value = '';
+        }
+        if (fcInput) {
+            fcInput.value = '';
+        }
     }
 }
 
@@ -6461,8 +6509,6 @@ async function deleteSelectedEquipment() {
 
         // Re-render list
         renderEquipmentList();
-
-        alert(`${count} equipment item${count > 1 ? 's' : ''} deleted successfully.`);
     } catch (error) {
         console.error('Error deleting selected equipment:', error);
         alert('Error deleting equipment: ' + error.message);
