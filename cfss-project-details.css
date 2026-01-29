@@ -2447,3 +2447,32 @@ button:not(.image-remove):not(.thumb-delete) {
 .limited-cfss-page .equipment-meta-compact {
     font-size: 13px !important;
 }
+
+/* Manual ULS/SLS input styling */
+.storey-uls.manual-input,
+.storey-sls.manual-input {
+    width: 70px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    background: #f8f9fa;
+}
+
+.storey-uls.manual-mode,
+.storey-sls.manual-mode {
+    background: white;
+    border-color: #17a2b8;
+}
+
+.storey-uls[readonly],
+.storey-sls[readonly] {
+    background: #f8f9fa;
+    cursor: pointer;
+}
+
+.storey-uls[readonly].clickable,
+.storey-sls[readonly].clickable {
+    color: #28a745;
+    cursor: pointer;
+}

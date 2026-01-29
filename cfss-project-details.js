@@ -6965,12 +6965,6 @@ async function saveCFSSData() {
     }
     
     try {
-        // First, calculate all wind loads
-        const calculationSuccess = calculateAllStoreyWindLoads();
-        if (!calculationSuccess) {
-            alert('Fill in all required fields for all floors.');
-            return;
-        }
         
         // Get global wind parameters
         const windParams = {
@@ -6997,22 +6991,37 @@ async function saveCFSSData() {
             const label = row.querySelector('.storey-label')?.value || '';
             const H = parseFloat(row.querySelector('.storey-height')?.value) || 0;
             const A = parseFloat(row.querySelector('.storey-area')?.value) || 0;
-            const ULS = parseFloat(row.querySelector('.storey-uls')?.textContent) || 0;
-            const SLS = parseFloat(row.querySelector('.storey-sls')?.textContent) || 0;
+            const ulsInput = row.querySelector('.storey-uls');
+            const slsInput = row.querySelector('.storey-sls');
+            const ULS = parseFloat(ulsInput?.value) || 0;
+            const SLS = parseFloat(slsInput?.value) || 0;
             
-            if (label && H > 0 && A > 0) {
+            // Manual entry: H is 0/empty, only need ULS and SLS
+            if ((!H || H <= 0) && ULS > 0 && SLS > 0 && label) {
+                storeys.push({
+                    label: label,
+                    height: 0,
+                    area: 0,
+                    uls: ULS,
+                    sls: SLS,
+                    isManual: true
+                });
+            }
+            // Calculated entry: H > 0, need all values
+            else if (label && H > 0 && A > 0 && ULS > 0 && SLS > 0) {
                 storeys.push({
                     label: label,
                     height: H,
                     area: A,
                     uls: ULS,
-                    sls: SLS
+                    sls: SLS,
+                    isManual: false
                 });
             }
         });
         
         if (storeys.length === 0) {
-            alert('Add at least one floor with valid data.');
+            alert('Add at least one floor with valid data (either calculated with H > 0, or manual ULS/SLS values).');
             return;
         }
         
@@ -11475,8 +11484,8 @@ window.updateDimensionOptions = updateDimensionOptions;
  * Calculate wind load for a single storey row
  */
 function calculateSingleStorey(row) {
-    const ulsSpan = row.querySelector('.storey-uls');
-    const slsSpan = row.querySelector('.storey-sls');
+    const ulsInput = row.querySelector('.storey-uls');
+    const slsInput = row.querySelector('.storey-sls');
 
     // Get global parameters
     const q50 = parseFloat(document.getElementById('q50')?.value);
@@ -11488,15 +11497,39 @@ function calculateSingleStorey(row) {
     const H = parseFloat(row.querySelector('.storey-height')?.value);
     const A = parseFloat(row.querySelector('.storey-area')?.value);
     
-    // Check if all required values are present
-    if (!q50 || !importanceFactor || !terrainType || !category || !H || !A || H <= 0 || A <= 0) {
-        if (ulsSpan) {
-            ulsSpan.textContent = '--';
-            ulsSpan.classList.remove('clickable');
+    // Check if H is empty or 0 - allow manual entry
+    if (!H || H <= 0) {
+        // Enable manual input mode
+        if (ulsInput) {
+            ulsInput.readOnly = false;
+            ulsInput.classList.add('manual-mode');
+            ulsInput.classList.remove('clickable');
         }
-        if (slsSpan) {
-            slsSpan.textContent = '--';
-            slsSpan.classList.remove('clickable');
+        if (slsInput) {
+            slsInput.readOnly = false;
+            slsInput.classList.add('manual-mode');
+            slsInput.classList.remove('clickable');
+        }
+        row.windBreakdown = null;
+        // Return true if manual values exist, false otherwise
+        const hasManualULS = ulsInput && ulsInput.value && parseFloat(ulsInput.value) > 0;
+        const hasManualSLS = slsInput && slsInput.value && parseFloat(slsInput.value) > 0;
+        return hasManualULS && hasManualSLS;
+    }
+    
+    // H > 0: Calculate mode - check if all required values are present
+    if (!q50 || !importanceFactor || !terrainType || !category || !A || A <= 0) {
+        if (ulsInput) {
+            ulsInput.value = '';
+            ulsInput.placeholder = '--';
+            ulsInput.readOnly = true;
+            ulsInput.classList.remove('manual-mode', 'clickable');
+        }
+        if (slsInput) {
+            slsInput.value = '';
+            slsInput.placeholder = '--';
+            slsInput.readOnly = true;
+            slsInput.classList.remove('manual-mode', 'clickable');
         }
         row.windBreakdown = null;
         return false;
@@ -11509,24 +11542,32 @@ function calculateSingleStorey(row) {
     
     // Update display
     if (result.ULS !== null && result.SLS !== null) {
-        if (ulsSpan) {
-            ulsSpan.textContent = result.ULS.toFixed(1);
-            ulsSpan.classList.toggle('clickable', !!result.breakdown);
+        if (ulsInput) {
+            ulsInput.value = result.ULS.toFixed(1);
+            ulsInput.readOnly = true;
+            ulsInput.classList.remove('manual-mode');
+            ulsInput.classList.toggle('clickable', !!result.breakdown);
         }
-        if (slsSpan) {
-            slsSpan.textContent = result.SLS.toFixed(1);
-            slsSpan.classList.toggle('clickable', !!result.breakdown);
+        if (slsInput) {
+            slsInput.value = result.SLS.toFixed(1);
+            slsInput.readOnly = true;
+            slsInput.classList.remove('manual-mode');
+            slsInput.classList.toggle('clickable', !!result.breakdown);
         }
         row.windBreakdown = result.breakdown || null;
         return true;
     } else {
-        if (ulsSpan) {
-            ulsSpan.textContent = '--';
-            ulsSpan.classList.remove('clickable');
+        if (ulsInput) {
+            ulsInput.value = '';
+            ulsInput.placeholder = '--';
+            ulsInput.readOnly = true;
+            ulsInput.classList.remove('manual-mode', 'clickable');
         }
-        if (slsSpan) {
-            slsSpan.textContent = '--';
-            slsSpan.classList.remove('clickable');
+        if (slsInput) {
+            slsInput.value = '';
+            slsInput.placeholder = '--';
+            slsInput.readOnly = true;
+            slsInput.classList.remove('manual-mode', 'clickable');
         }
         row.windBreakdown = null;
         return false;
@@ -11717,8 +11758,8 @@ function addStoreyRow() {
         <td><input type="text" class="storey-label" value="${label}" style="background: white;"></td>
         <td><input type="number" class="storey-height" placeholder="0" step="0.1" min="0"></td>
         <td><input type="number" class="storey-area" value="1" step="0.1" min="0"></td>
-        <td><span class="output-value storey-uls">--</span></td>
-        <td><span class="output-value storey-sls">--</span></td>
+        <td><input type="number" class="storey-uls manual-input" placeholder="--" step="0.1" min="0"></td>
+        <td><input type="number" class="storey-sls manual-input" placeholder="--" step="0.1" min="0"></td>
         <td><button class="remove-storey-btn" onclick="removeStoreyRow(this)"><i class="fas fa-trash"></i></button></td>
     `;
     
@@ -11740,17 +11781,25 @@ function addStoreyRow() {
  * Attach click handlers that show the wind breakdown modal for a row.
  */
 function attachWindBreakdownHandlers(row) {
-    const ulsSpan = row.querySelector('.storey-uls');
-    const slsSpan = row.querySelector('.storey-sls');
+    const ulsInput = row.querySelector('.storey-uls');
+    const slsInput = row.querySelector('.storey-sls');
     
-    if (ulsSpan && !ulsSpan.dataset.breakdownBound) {
-        ulsSpan.dataset.breakdownBound = 'true';
-        ulsSpan.addEventListener('click', () => showWindBreakdownModal(row, 'ULS'));
+    if (ulsInput && !ulsInput.dataset.breakdownBound) {
+        ulsInput.dataset.breakdownBound = 'true';
+        ulsInput.addEventListener('click', () => {
+            if (ulsInput.readOnly && row.windBreakdown) {
+                showWindBreakdownModal(row, 'ULS');
+            }
+        });
     }
     
-    if (slsSpan && !slsSpan.dataset.breakdownBound) {
-        slsSpan.dataset.breakdownBound = 'true';
-        slsSpan.addEventListener('click', () => showWindBreakdownModal(row, 'SLS'));
+    if (slsInput && !slsInput.dataset.breakdownBound) {
+        slsInput.dataset.breakdownBound = 'true';
+        slsInput.addEventListener('click', () => {
+            if (slsInput.readOnly && row.windBreakdown) {
+                showWindBreakdownModal(row, 'SLS');
+            }
+        });
     }
 }
 
@@ -12112,12 +12161,13 @@ function populateCFSSForm(cfssData) {
         if (cfssData.storeys && cfssData.storeys.length > 0) {
             cfssData.storeys.forEach((storey, index) => {
                 const row = document.createElement('tr');
+                const isManual = storey.isManual || (!storey.height || storey.height <= 0);
                 row.innerHTML = `
                     <td><input type="text" class="storey-label" value="${storey.label}" style="background: white;"></td>
-                    <td><input type="number" class="storey-height" value="${storey.height}" step="0.1" min="0"></td>
-                    <td><input type="number" class="storey-area" value="${storey.area}" step="0.1" min="0"></td>
-                    <td><span class="output-value storey-uls">${parseFloat(storey.uls.toFixed(1))}</span></td>
-                    <td><span class="output-value storey-sls">${parseFloat(storey.sls.toFixed(1))}</span></td>
+                    <td><input type="number" class="storey-height" value="${isManual ? '' : storey.height}" step="0.1" min="0"></td>
+                    <td><input type="number" class="storey-area" value="${isManual ? '' : storey.area}" step="0.1" min="0"></td>
+                    <td><input type="number" class="storey-uls manual-input ${isManual ? 'manual-mode' : ''}" value="${storey.uls ? parseFloat(storey.uls.toFixed(1)) : ''}" placeholder="--" step="0.1" min="0" ${isManual ? '' : 'readonly'}></td>
+                    <td><input type="number" class="storey-sls manual-input ${isManual ? 'manual-mode' : ''}" value="${storey.sls ? parseFloat(storey.sls.toFixed(1)) : ''}" placeholder="--" step="0.1" min="0" ${isManual ? '' : 'readonly'}></td>
                     <td><button class="remove-storey-btn" onclick="removeStoreyRow(this)"><i class="fas fa-trash"></i></button></td>
                 `;
                 tbody.appendChild(row);
@@ -12129,8 +12179,10 @@ function populateCFSSForm(cfssData) {
                 areaInput.addEventListener('input', () => calculateSingleStorey(row));
                 attachWindBreakdownHandlers(row);
                 
-                // Re-run calculation to refresh breakdown data
-                calculateSingleStorey(row);
+                // Re-run calculation to refresh breakdown data (only recalculates if H > 0)
+                if (!isManual) {
+                    calculateSingleStorey(row);
+                }
                 
                 storeyCounter++;
             });
