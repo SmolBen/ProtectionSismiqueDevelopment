@@ -626,11 +626,21 @@
         }
 
         function formatCell(header, value) {
-            if (value === null || value === undefined || value === '') {
-                return '<span style="color: var(--text-muted);">—</span>';
-            }
+    if (value === null || value === undefined || value === '') {
+        return '<span style="color: var(--text-muted);">—</span>';
+    }
 
-            const strValue = String(value);
+    // Format date columns
+    if (header === 'Date' && value) {
+        try {
+            const date = new Date(value);
+            if (!isNaN(date)) {
+                return `<div class="cell-content">${date.toLocaleDateString('en-CA')}</div>`;
+            }
+        } catch (e) {}
+    }
+
+    const strValue = String(value);
 
             // Email Link column
             if (header === 'Email Link' && strValue.startsWith('http')) {
