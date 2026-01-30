@@ -615,8 +615,27 @@ function openVerifyBulkProjects() {
     window.location.href = 'cfss-verify-bulk-projects.html';
 }
 
+function openEmailClassifications() {
+    if (!authHelper.isAdmin()) {
+        alert('Admin access required');
+        return;
+    }
+
+    const password = prompt('Enter password to access Email Classifications:');
+    if (password === null) {
+        return; // User cancelled
+    }
+
+    if (password === 'sismique2000') {
+        window.location.href = 'email-classifications.html';
+    } else {
+        alert('Incorrect password');
+    }
+}
+
 // Make functions available globally
 window.switchToSeismic = switchToSeismic;
 window.openUserManagement = openUserManagement;
 window.viewAllProjects = viewAllProjects;
 window.openVerifyBulkProjects = openVerifyBulkProjects;
+window.openEmailClassifications = openEmailClassifications;
