@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Classifications - Protection Sismique</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .classifications-container {
+            padding: 20px;
+            max-width: 100%;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--background-color);
+        }
+
+        .refresh-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-group label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            min-width: 150px;
+            background: white;
+        }
+
+        .filter-group input {
+            min-width: 200px;
+        }
+
+        .clear-filters-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .clear-filters-btn:hover {
+            background: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+        }
+
+        .stats-bar span {
+            color: var(--text-muted);
+        }
+
+        .stats-bar strong {
+            color: var(--text-primary);
+        }
+
+        /* Table Styles */
+        .table-container {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: calc(100vh - 320px);
+            overflow-y: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .data-table th {
+            background: var(--background-color);
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            vertical-align: top;
+        }
+
+        .data-table tr:hover {
+            background: var(--background-color);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Cell content styles */
+        .cell-content {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .cell-content.expandable {
+            cursor: pointer;
+        }
+
+        .cell-content.expanded {
+            white-space: normal;
+            max-width: none;
+        }
+
+        .cell-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .cell-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Delete button */
+        .delete-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .delete-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading state */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .loading-state i {
+            font-size: 32px;
+            margin-bottom: 12px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Category badges */
+        .category-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .category-badge.engineering {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .category-badge.price {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .category-badge.certificate {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .category-badge.other {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--background-color);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 0 12px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group select,
+            .filter-group input {
+                min-width: 100%;
+            }
+
+            .clear-filters-btn {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div>
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique</a>
+            <div class="user-info" id="userInfo"></div>
+        </div>
+    </nav>
+
+    <main class="classifications-container">
+        <div class="page-header">
+            <h1>
+                <i class="fas fa-envelope" style="color: var(--success-color);"></i>
+                Email Classifications
+            </h1>
+            <div class="header-actions">
+                <button class="back-btn" onclick="window.location.href='dashboard.html'">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </button>
+                <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>Filter by Column</label>
+                <select id="filterColumn">
+                    <option value="">Select column...</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Filter Value</label>
+                <input type="text" id="filterValue" placeholder="Type to filter...">
+            </div>
+            <button class="clear-filters-btn" onclick="clearFilters()">
+                <i class="fas fa-times"></i> Clear Filters
+            </button>
+        </div>
+
+        <div class="stats-bar" id="statsBar">
+            <span>Total: <strong id="totalCount">0</strong></span>
+            <span>Showing: <strong id="showingCount">0</strong></span>
+        </div>
+
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table class="data-table" id="dataTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-helper.js"></script>
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby6QVac-0c8zsoXWQjqc0eMEGTKkSNW2O0tBO-saGWrtmxUE6JZV41-fUjxRDxmex6A6A/exec';
+        const ROWS_PER_PAGE = 50;
+
+        let authHelper;
+        let allData = { headers: [], rows: [] };
+        let filteredRows = [];
+        let currentPage = 1;
+
+        // Initialize
+        window.addEventListener('load', async function() {
+            document.getElementById('loadingOverlay').classList.add('show');
+
+            try {
+                // Wait for AWS libraries
+                let retries = 0;
+                while ((typeof AWS === 'undefined' || typeof AmazonCognitoIdentity === 'undefined') && retries < 10) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    retries++;
+                }
+
+                authHelper = new AuthHelper();
+                const userData = await authHelper.checkAuthentication();
+
+                if (!userData) {
+                    window.location.href = 'auth.html';
+                    return;
+                }
+
+                // Check admin access
+                if (!authHelper.isAdmin()) {
+                    alert('Admin access required');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                authHelper.updateUserInterface();
+
+                // Load data
+                await loadData();
+
+                // Setup event listeners
+                document.getElementById('filterColumn').addEventListener('change', applyFilters);
+                document.getElementById('filterValue').addEventListener('input', debounce(applyFilters, 300));
+
+            } catch (error) {
+                console.error('Error initializing:', error);
+                alert('Error initializing: ' + error.message);
+                window.location.href = 'dashboard.html';
+            }
+
+            document.getElementById('loadingOverlay').classList.remove('show');
+        });
+
+        async function loadData() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Loading...';
+
+            document.getElementById('tableBody').innerHTML = `
+                <tr>
+                    <td colspan="100" class="loading-state">
+                        <i class="fas fa-spinner"></i>
+                        <span>Loading data from Google Sheets...</span>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getData`);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                allData = data;
+                filteredRows = [...allData.rows];
+
+                // Populate filter column dropdown
+                populateFilterDropdown();
+
+                // Update stats
+                document.getElementById('totalCount').textContent = allData.rows.length;
+
+                // Render table
+                currentPage = 1;
+                renderTable();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('tableBody').innerHTML = `
+                    <tr>
+                        <td colspan="100" class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Error loading data: ${error.message}</p>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        }
+
+        function populateFilterDropdown() {
+            const select = document.getElementById('filterColumn');
+            select.innerHTML = '<option value="">Select column...</option>';
+
+            allData.headers.forEach(header => {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+                select.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const column = document.getElementById('filterColumn').value;
+            const value = document.getElementById('filterValue').value.toLowerCase().trim();
+
+            if (!column || !value) {
+                filteredRows = [...allData.rows];
+            } else {
+                filteredRows = allData.rows.filter(row => {
+                    const cellValue = String(row[column] || '').toLowerCase();
+                    return cellValue.includes(value);
+                });
+            }
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('filterColumn').value = '';
+            document.getElementById('filterValue').value = '';
+            filteredRows = [...allData.rows];
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
+            const thead = document.getElementById('tableHead');
+            const tbody = document.getElementById('tableBody');
+
+            // Render headers
+            thead.innerHTML = `
+                <tr>
+                    <th style="width: 60px;">Actions</th>
+                    ${allData.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}
+                </tr>
+            `;
+
+            // Calculate pagination
+            const totalPages = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+            const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
+            const endIdx = startIdx + ROWS_PER_PAGE;
+            const pageRows = filteredRows.slice(startIdx, endIdx);
+
+            // Update showing count
+            document.getElementById('showingCount').textContent = filteredRows.length;
+
+            if (pageRows.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${allData.headers.length + 1}" class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No data found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = pageRows.map(row => `
+                    <tr data-row-index="${row._rowIndex}">
+                        <td>
+                            <button class="delete-btn" onclick="deleteRow(${row._rowIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        ${allData.headers.map(h => `<td>${formatCell(h, row[h])}</td>`).join('')}
+                    </tr>
+                `).join('');
+            }
+
+            // Render pagination
+            renderPagination(totalPages);
+        }
+
+        function formatCell(header, value) {
+            if (value === null || value === undefined || value === '') {
+                return '<span style="color: var(--text-muted);">—</span>';
+            }
+
+            const strValue = String(value);
+
+            // Email Link column
+            if (header === 'Email Link' && strValue.startsWith('http')) {
+                return `<a href="${escapeHtml(strValue)}" target="_blank" class="cell-link">
+                    <i class="fas fa-external-link-alt"></i> Open
+                </a>`;
+            }
+
+            // AI Category column
+            if (header === 'AI Category') {
+                return formatCategory(strValue);
+            }
+
+            // Long content
+            if (strValue.length > 50) {
+                return `<div class="cell-content expandable" onclick="toggleExpand(this)" title="Click to expand">
+                    ${escapeHtml(strValue)}
+                </div>`;
+            }
+
+            return `<div class="cell-content">${escapeHtml(strValue)}</div>`;
+        }
+
+        function formatCategory(category) {
+            let badgeClass = 'other';
+            if (category.toLowerCase().includes('engineering')) badgeClass = 'engineering';
+            else if (category.toLowerCase().includes('price')) badgeClass = 'price';
+            else if (category.toLowerCase().includes('certificate')) badgeClass = 'certificate';
+
+            return `<span class="category-badge ${badgeClass}">${escapeHtml(category)}</span>`;
+        }
+
+        function toggleExpand(el) {
+            el.classList.toggle('expanded');
+        }
+
+        function renderPagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            pagination.innerHTML = `
+                <button onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-left"></i>
+                </button>
+                <span class="page-info">Page ${currentPage} of ${totalPages}</span>
+                <button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                <button onclick="goToPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            `;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+            document.querySelector('.table-wrapper').scrollTop = 0;
+        }
+
+        async function deleteRow(rowIndex) {
+            if (!confirm(`Are you sure you want to delete row ${rowIndex}? This cannot be undone.`)) {
+                return;
+            }
+
+            const btn = document.querySelector(`tr[data-row-index="${rowIndex}"] .delete-btn`);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=deleteRow&rowIndex=${rowIndex}`);
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                // Reload data to get fresh row indices
+                await loadData();
+                alert('Row deleted successfully');
+
+            } catch (error) {
+                console.error('Error deleting row:', error);
+                alert('Error deleting row: ' + error.message);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i>';
+                }
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>
