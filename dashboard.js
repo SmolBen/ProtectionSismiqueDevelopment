@@ -520,6 +520,7 @@ function openEmailClassifications() {
     }
     
     if (password === 'sismique2000') {
+        sessionStorage.setItem('ecAccess', 'true');
         window.location.href = 'email-classifications.html';
     } else {
         alert('Incorrect password');
