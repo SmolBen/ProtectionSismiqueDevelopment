@@ -445,6 +445,9 @@
         let filteredRows = [];
         let currentPage = 1;
 
+        let deleteQueue = [];
+        let isProcessingDelete = false;
+
         // Initialize
         window.addEventListener('load', async function() {
             document.getElementById('loadingOverlay').classList.add('show');
@@ -721,37 +724,50 @@
         }
 
         async function deleteRow(rowIndex) {
-            if (!confirm(`Are you sure you want to delete row ${rowIndex}? This cannot be undone.`)) {
-                return;
-            }
+    if (!confirm('Delete this row?')) {
+        return;
+    }
 
-            const btn = document.querySelector(`tr[data-row-index="${rowIndex}"] .delete-btn`);
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            }
+    // Hide row immediately
+    const row = document.querySelector(`tr[data-row-index="${rowIndex}"]`);
+    if (row) row.style.display = 'none';
 
-            try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=deleteRow&rowIndex=${rowIndex}`);
-                const result = await response.json();
+    // Add to queue
+    deleteQueue.push(rowIndex);
 
-                if (result.error) {
-                    throw new Error(result.error);
-                }
+    // Process queue if not already processing
+    if (!isProcessingDelete) {
+        processDeleteQueue();
+    }
+}
 
-                // Reload data to get fresh row indices
-                await loadData();
-                alert('Row deleted successfully');
+async function processDeleteQueue() {
+    isProcessingDelete = true;
 
-            } catch (error) {
-                console.error('Error deleting row:', error);
-                alert('Error deleting row: ' + error.message);
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-trash"></i>';
-                }
-            }
+    while (deleteQueue.length > 0) {
+        const rowIndex = deleteQueue.shift();
+
+        try {
+            await fetch(`${APPS_SCRIPT_URL}?action=deleteRow&rowIndex=${rowIndex}`);
+
+            // Adjust indices in local data
+            allData.rows = allData.rows.filter(r => r._rowIndex !== rowIndex);
+            allData.rows.forEach(r => { if (r._rowIndex > rowIndex) r._rowIndex--; });
+            filteredRows = filteredRows.filter(r => r._rowIndex !== rowIndex);
+            filteredRows.forEach(r => { if (r._rowIndex > rowIndex) r._rowIndex--; });
+
+            // Adjust queued indices too
+            deleteQueue = deleteQueue.map(idx => idx > rowIndex ? idx - 1 : idx);
+
+        } catch (error) {
+            console.error('Error:', error);
         }
+    }
+
+    document.getElementById('totalCount').textContent = allData.rows.length;
+    document.getElementById('showingCount').textContent = filteredRows.length;
+    isProcessingDelete = false;
+}
 
         function escapeHtml(text) {
             const div = document.createElement('div');
