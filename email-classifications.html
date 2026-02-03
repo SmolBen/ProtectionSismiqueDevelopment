@@ -480,16 +480,13 @@
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
     <script src="auth-helper.js"></script>
     <script>
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby6QVac-0c8zsoXWQjqc0eMEGTKkSNW2O0tBO-saGWrtmxUE6JZV41-fUjxRDxmex6A6A/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyn5LmnIGFtdegivHImdSWYm2ArzGm2HTqV9dsCB7ubxbwaD0yyB-uKNgr2-3J4A9DVKw/exec';
         const ROWS_PER_PAGE = 50;
 
         let authHelper;
         let allData = { headers: [], rows: [] };
         let filteredRows = [];
         let currentPage = 1;
-
-        let deleteQueue = [];
-        let isProcessingDelete = false;
 
         // Initialize
         window.addEventListener('load', async function() {
@@ -571,6 +568,8 @@
                 }
 
                 allData = data;
+                console.log('Headers:', allData.headers);
+                console.log('First row keys:', allData.rows[0] ? Object.keys(allData.rows[0]) : 'no rows');
                 filteredRows = [...allData.rows];
 
                 // Populate filter column dropdown
@@ -763,52 +762,6 @@
             document.querySelector('.table-wrapper').scrollTop = 0;
         }
 
-        async function deleteRow(rowIndex) {
-    if (!confirm('Delete this row?')) {
-        return;
-    }
-
-    // Hide row immediately
-    const row = document.querySelector(`tr[data-row-index="${rowIndex}"]`);
-    if (row) row.style.display = 'none';
-
-    // Add to queue
-    deleteQueue.push(rowIndex);
-
-    // Process queue if not already processing
-    if (!isProcessingDelete) {
-        processDeleteQueue();
-    }
-}
-
-async function processDeleteQueue() {
-    isProcessingDelete = true;
-
-    while (deleteQueue.length > 0) {
-        const rowIndex = deleteQueue.shift();
-
-        try {
-            await fetch(`${APPS_SCRIPT_URL}?action=deleteRow&rowIndex=${rowIndex}`);
-
-            // Adjust indices in local data
-            allData.rows = allData.rows.filter(r => r._rowIndex !== rowIndex);
-            allData.rows.forEach(r => { if (r._rowIndex > rowIndex) r._rowIndex--; });
-            filteredRows = filteredRows.filter(r => r._rowIndex !== rowIndex);
-            filteredRows.forEach(r => { if (r._rowIndex > rowIndex) r._rowIndex--; });
-
-            // Adjust queued indices too
-            deleteQueue = deleteQueue.map(idx => idx > rowIndex ? idx - 1 : idx);
-
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    document.getElementById('totalCount').textContent = allData.rows.length;
-    document.getElementById('showingCount').textContent = filteredRows.length;
-    isProcessingDelete = false;
-}
-
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
@@ -894,8 +847,16 @@ async function deleteSelected() {
 
     // Delete from highest index to lowest to avoid index shifting issues
     for (const row of selectedRows) {
-        try {
-            await fetch(`${APPS_SCRIPT_URL}?action=deleteRow&rowIndex=${row._rowIndex}`);
+    try {
+        const params = new URLSearchParams({
+            action: 'deleteRow',
+            rowIndex: row._rowIndex,
+            emailLink: row['Email Link'] || ''
+        });
+        console.log('Deleting row:', row._rowIndex, 'emailLink:', row['Email Link']);
+        const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+        const result = await response.json();
+        console.log('Delete response:', result);
             
             // Adjust indices locally
             allData.rows = allData.rows.filter(r => r._rowIndex !== row._rowIndex);
