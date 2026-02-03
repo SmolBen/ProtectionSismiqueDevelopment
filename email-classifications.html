@@ -144,6 +144,9 @@
             display: flex;
             gap: 24px;
             font-size: 13px;
+            position: relative;
+            align-items: center;
+            min-height: 45px;
         }
 
         .stats-bar span {
@@ -226,6 +229,42 @@
 
         .cell-link:hover {
             text-decoration: underline;
+        }
+
+        /* Checkbox and selection styles */
+        .row-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .data-table tr.selected {
+            background: #dbeafe !important;
+        }
+
+        .data-table tr.selected:hover {
+            background: #bfdbfe !important;
+        }
+
+        .delete-selected-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 13px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .delete-selected-btn:hover {
+            background: #b91c1c;
+        }
+
+        .delete-selected-btn.visible {
+            display: inline-flex;
         }
 
         /* Delete button */
@@ -420,6 +459,10 @@
         <div class="stats-bar" id="statsBar">
             <span>Total: <strong id="totalCount">0</strong></span>
             <span>Showing: <strong id="showingCount">0</strong></span>
+            <button class="delete-selected-btn" id="deleteSelectedBtn" onclick="deleteSelected()">
+                <i class="fas fa-trash"></i>
+                Delete Selected (<span id="selectedCount">0</span>)
+            </button>
         </div>
 
         <div class="table-container">
@@ -594,51 +637,48 @@
         }
 
         function renderTable() {
-            const thead = document.getElementById('tableHead');
-            const tbody = document.getElementById('tableBody');
+    const thead = document.getElementById('tableHead');
+    const tbody = document.getElementById('tableBody');
 
-            // Render headers
-            thead.innerHTML = `
-                <tr>
-                    <th style="width: 60px;">Actions</th>
-                    ${allData.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}
-                </tr>
-            `;
+    // Render headers with select-all checkbox
+    thead.innerHTML = `
+        <tr>
+            <th style="width: 40px;"><input type="checkbox" class="row-checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+            ${allData.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}
+        </tr>
+    `;
 
-            // Calculate pagination
-            const totalPages = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
-            const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
-            const endIdx = startIdx + ROWS_PER_PAGE;
-            const pageRows = filteredRows.slice(startIdx, endIdx);
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+    const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
+    const endIdx = startIdx + ROWS_PER_PAGE;
+    const pageRows = filteredRows.slice(startIdx, endIdx);
 
-            // Update showing count
-            document.getElementById('showingCount').textContent = filteredRows.length;
+    // Update showing count
+    document.getElementById('showingCount').textContent = filteredRows.length;
 
-            if (pageRows.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="${allData.headers.length + 1}" class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <p>No data found</p>
-                        </td>
-                    </tr>
-                `;
-            } else {
-                tbody.innerHTML = pageRows.map(row => `
-                    <tr data-row-index="${row._rowIndex}">
-                        <td>
-                            <button class="delete-btn" onclick="deleteRow(${row._rowIndex})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                        ${allData.headers.map(h => `<td>${formatCell(h, row[h])}</td>`).join('')}
-                    </tr>
-                `).join('');
-            }
+    if (pageRows.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="${allData.headers.length + 1}" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No data found</p>
+                </td>
+            </tr>
+        `;
+    } else {
+        tbody.innerHTML = pageRows.map(row => `
+            <tr data-row-index="${row._rowIndex}" class="${row._selected ? 'selected' : ''}">
+                <td><input type="checkbox" class="row-checkbox" ${row._selected ? 'checked' : ''} onchange="toggleRowSelect(${row._rowIndex})"></td>
+                ${allData.headers.map(h => `<td>${formatCell(h, row[h])}</td>`).join('')}
+            </tr>
+        `).join('');
+    }
 
-            // Render pagination
-            renderPagination(totalPages);
-        }
+    // Render pagination
+    renderPagination(totalPages);
+    updateSelectAllCheckbox();
+}
 
         function formatCell(header, value) {
     if (value === null || value === undefined || value === '') {
@@ -786,6 +826,91 @@ async function processDeleteQueue() {
                 timeout = setTimeout(later, wait);
             };
         }
+
+        function toggleRowSelect(rowIndex) {
+    const row = allData.rows.find(r => r._rowIndex === rowIndex);
+    if (row) {
+        row._selected = !row._selected;
+        // Update visual
+        const tr = document.querySelector(`tr[data-row-index="${rowIndex}"]`);
+        if (tr) tr.classList.toggle('selected', row._selected);
+    }
+    updateSelectionUI();
+}
+
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
+    const endIdx = startIdx + ROWS_PER_PAGE;
+    const pageRows = filteredRows.slice(startIdx, endIdx);
+    
+    pageRows.forEach(row => {
+        row._selected = selectAll.checked;
+        const allDataRow = allData.rows.find(r => r._rowIndex === row._rowIndex);
+        if (allDataRow) allDataRow._selected = selectAll.checked;
+    });
+    
+    renderTable();
+}
+
+function updateSelectAllCheckbox() {
+    const selectAll = document.getElementById('selectAll');
+    if (!selectAll) return;
+    
+    const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
+    const endIdx = startIdx + ROWS_PER_PAGE;
+    const pageRows = filteredRows.slice(startIdx, endIdx);
+    
+    const selectedOnPage = pageRows.filter(r => r._selected).length;
+    selectAll.checked = selectedOnPage === pageRows.length && pageRows.length > 0;
+    selectAll.indeterminate = selectedOnPage > 0 && selectedOnPage < pageRows.length;
+    
+    updateSelectionUI();
+}
+
+function updateSelectionUI() {
+    const totalSelected = allData.rows.filter(r => r._selected).length;
+    const btn = document.getElementById('deleteSelectedBtn');
+    const count = document.getElementById('selectedCount');
+    
+    count.textContent = totalSelected;
+    btn.classList.toggle('visible', totalSelected > 0);
+}
+
+async function deleteSelected() {
+    const selectedRows = allData.rows.filter(r => r._selected).sort((a, b) => b._rowIndex - a._rowIndex);
+    
+    if (selectedRows.length === 0) return;
+    if (!confirm(`Delete ${selectedRows.length} row${selectedRows.length > 1 ? 's' : ''}?`)) return;
+
+    // Hide delete button immediately
+    document.getElementById('deleteSelectedBtn').classList.remove('visible');
+
+    // Hide all selected rows immediately
+    selectedRows.forEach(row => {
+        const tr = document.querySelector(`tr[data-row-index="${row._rowIndex}"]`);
+        if (tr) tr.style.display = 'none';
+    });
+
+    // Delete from highest index to lowest to avoid index shifting issues
+    for (const row of selectedRows) {
+        try {
+            await fetch(`${APPS_SCRIPT_URL}?action=deleteRow&rowIndex=${row._rowIndex}`);
+            
+            // Adjust indices locally
+            allData.rows = allData.rows.filter(r => r._rowIndex !== row._rowIndex);
+            allData.rows.forEach(r => { if (r._rowIndex > row._rowIndex) r._rowIndex--; });
+            filteredRows = filteredRows.filter(r => r._rowIndex !== row._rowIndex);
+            filteredRows.forEach(r => { if (r._rowIndex > row._rowIndex) r._rowIndex--; });
+        } catch (error) {
+            console.error('Error deleting row:', error);
+        }
+    }
+
+    document.getElementById('totalCount').textContent = allData.rows.length;
+    document.getElementById('showingCount').textContent = filteredRows.length;
+    renderTable();
+}
     </script>
 </body>
 </html>
