@@ -113,6 +113,34 @@
             color: white;
         }
 
+        .tab-count {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: #e5e7eb;
+            color: #6b7280;
+            margin-left: 6px;
+        }
+
+        .tab-count.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .sortable-header {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sortable-header:hover {
+            background: #e5e7eb;
+        }
+
+        .sort-icon {
+            color: var(--primary-color);
+            margin-left: 4px;
+        }
+
         /* Filter Section */
         .filter-section {
             background: var(--surface-color);
@@ -557,6 +585,7 @@
         let currentSheet = 'Review';
         let sheetCache = {};
         let allData = { headers: [], rows: [] };
+        let dateSortOrder = 'desc'; // 'asc' or 'desc'
         let filteredRows = [];
         let currentPage = 1;
 
@@ -620,15 +649,25 @@
 
         function renderSheetTabs() {
             const container = document.getElementById('sheetTabs');
-            container.innerHTML = SHEET_NAMES.map(name => 
-                `<button class="sheet-tab ${name === currentSheet ? 'active' : ''}" onclick="switchSheet('${name}')">${name}</button>`
-            ).join('');
+            container.innerHTML = SHEET_NAMES.map(name => {
+                const count = sheetCache[name] ? sheetCache[name].rows.length : '...';
+                const isActive = name === currentSheet;
+                return `<button class="sheet-tab ${isActive ? 'active' : ''}" onclick="switchSheet('${name}')">
+                    ${name}
+                    <span class="tab-count ${isActive ? 'active' : ''}">${count}</span>
+                </button>`;
+            }).join('');
         }
 
         async function switchSheet(sheetName) {
             currentSheet = sheetName;
             renderSheetTabs();
             await loadData();
+        }
+
+        function toggleDateSort() {
+            dateSortOrder = dateSortOrder === 'asc' ? 'desc' : 'asc';
+            renderTable();
         }
 
         async function refreshData() {
@@ -664,6 +703,9 @@
                 currentPage = 1;
                 renderTable();
             }
+
+            // Update tab counts now that all data is loaded
+            renderSheetTabs();
 
             refreshBtn.disabled = false;
             refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
@@ -781,15 +823,28 @@
     thead.innerHTML = `
         <tr>
             <th style="width: 40px;"><input type="checkbox" class="row-checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-            ${allData.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}
+            ${allData.headers.map(h => {
+                if (h === 'Date') {
+                    const icon = dateSortOrder === 'desc' ? '↓' : '↑';
+                    return `<th class="sortable-header" onclick="toggleDateSort()">${escapeHtml(h)}<span class="sort-icon">${icon}</span></th>`;
+                }
+                return `<th>${escapeHtml(h)}</th>`;
+            }).join('')}
         </tr>
     `;
 
+    // Sort by date
+    const sortedRows = [...filteredRows].sort((a, b) => {
+        const dateA = new Date(a['Date'] || 0);
+        const dateB = new Date(b['Date'] || 0);
+        return dateSortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+
     // Calculate pagination
-    const totalPages = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+    const totalPages = Math.ceil(sortedRows.length / ROWS_PER_PAGE);
     const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
     const endIdx = startIdx + ROWS_PER_PAGE;
-    const pageRows = filteredRows.slice(startIdx, endIdx);
+    const pageRows = sortedRows.slice(startIdx, endIdx);
 
     // Update showing count
     document.getElementById('showingCount').textContent = filteredRows.length;
@@ -1077,6 +1132,7 @@ async function deleteSelected() {
 
     document.getElementById('totalCount').textContent = allData.rows.length;
     document.getElementById('showingCount').textContent = filteredRows.length;
+    renderSheetTabs();
     renderTable();
 }
     </script>
