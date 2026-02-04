@@ -467,7 +467,7 @@
                     <i class="fas fa-arrow-left"></i>
                     Back to Dashboard
                 </button>
-                <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+                <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
                 <i class="fas fa-sync-alt"></i>
                 Refresh
             </button>
@@ -532,6 +532,7 @@
             'Client'
         ];
         let currentSheet = 'Review';
+        let sheetCache = {};
         let allData = { headers: [], rows: [] };
         let filteredRows = [];
         let currentPage = 1;
@@ -577,9 +578,9 @@
 
                 authHelper.updateUserInterface();
 
-                // Render tabs and load data
+                // Render tabs and load all data
                 renderSheetTabs();
-                await loadData();
+                await loadAllSheets();
 
                 // Setup event listeners
                 document.getElementById('filterColumn').addEventListener('change', applyFilters);
@@ -607,6 +608,44 @@
             await loadData();
         }
 
+        async function refreshData() {
+            delete sheetCache[currentSheet];
+            await loadData();
+        }
+
+        async function loadAllSheets() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Loading all...';
+
+            const promises = SHEET_NAMES.map(async (sheetName) => {
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
+                    const data = await response.json();
+                    if (!data.error) {
+                        sheetCache[sheetName] = data;
+                    }
+                } catch (err) {
+                    console.error(`Error loading ${sheetName}:`, err);
+                }
+            });
+
+            await Promise.all(promises);
+
+            // Now display the current sheet
+            if (sheetCache[currentSheet]) {
+                allData = sheetCache[currentSheet];
+                filteredRows = [...allData.rows];
+                populateFilterDropdown();
+                document.getElementById('totalCount').textContent = allData.rows.length;
+                currentPage = 1;
+                renderTable();
+            }
+
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        }
+
         async function loadData() {
             const refreshBtn = document.getElementById('refreshBtn');
             refreshBtn.disabled = true;
@@ -622,6 +661,19 @@
             `;
 
             try {
+                // Check cache first
+                if (sheetCache[currentSheet]) {
+                    allData = sheetCache[currentSheet];
+                    filteredRows = [...allData.rows];
+                    populateFilterDropdown();
+                    document.getElementById('totalCount').textContent = allData.rows.length;
+                    currentPage = 1;
+                    renderTable();
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                    return;
+                }
+
                 const response = await fetch(`${APPS_SCRIPT_URL}?action=getData&sheet=${encodeURIComponent(currentSheet)}`);
                 const data = await response.json();
 
@@ -630,6 +682,7 @@
                 }
 
                 allData = data;
+                sheetCache[currentSheet] = data;
                 console.log('Headers:', allData.headers);
                 console.log('First row keys:', allData.rows[0] ? Object.keys(allData.rows[0]) : 'no rows');
                 filteredRows = [...allData.rows];
