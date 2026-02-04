@@ -79,6 +79,40 @@
             cursor: not-allowed;
         }
 
+        /* Sheet Tabs */
+        .sheet-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 8px;
+        }
+
+        .sheet-tab {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .sheet-tab:hover {
+            background: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        .sheet-tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
         /* Filter Section */
         .filter-section {
             background: var(--surface-color);
@@ -434,13 +468,15 @@
                     Back to Dashboard
                 </button>
                 <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
-                    <i class="fas fa-sync-alt"></i>
-                    Refresh
-                </button>
-            </div>
+                <i class="fas fa-sync-alt"></i>
+                Refresh
+            </button>
         </div>
+    </div>
 
-        <div class="filter-section">
+    <div class="sheet-tabs" id="sheetTabs"></div>
+
+    <div class="filter-section">
             <div class="filter-group">
                 <label>Filter by Column</label>
                 <select id="filterColumn">
@@ -484,6 +520,18 @@
         const ROWS_PER_PAGE = 50;
 
         let authHelper;
+        const SHEET_NAMES = [
+            'Review',
+            'Engineering - Existing Projects',
+            'Engineering - Unknown Projects',
+            'New Projects',
+            'Price Requests',
+            'Existing Projects - Certificate Requests',
+            'Other',
+            'Spam',
+            'Client'
+        ];
+        let currentSheet = 'Review';
         let allData = { headers: [], rows: [] };
         let filteredRows = [];
         let currentPage = 1;
@@ -529,7 +577,8 @@
 
                 authHelper.updateUserInterface();
 
-                // Load data
+                // Render tabs and load data
+                renderSheetTabs();
                 await loadData();
 
                 // Setup event listeners
@@ -544,6 +593,19 @@
 
             document.getElementById('loadingOverlay').classList.remove('show');
         });
+
+        function renderSheetTabs() {
+            const container = document.getElementById('sheetTabs');
+            container.innerHTML = SHEET_NAMES.map(name => 
+                `<button class="sheet-tab ${name === currentSheet ? 'active' : ''}" onclick="switchSheet('${name}')">${name}</button>`
+            ).join('');
+        }
+
+        async function switchSheet(sheetName) {
+            currentSheet = sheetName;
+            renderSheetTabs();
+            await loadData();
+        }
 
         async function loadData() {
             const refreshBtn = document.getElementById('refreshBtn');
@@ -560,7 +622,7 @@
             `;
 
             try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=getData`);
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getData&sheet=${encodeURIComponent(currentSheet)}`);
                 const data = await response.json();
 
                 if (data.error) {
