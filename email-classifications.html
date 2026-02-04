@@ -1054,8 +1054,11 @@ async function deleteSelected() {
     try {
         const params = new URLSearchParams({
             action: 'deleteRow',
+            sheet: currentSheet,
             rowIndex: row._rowIndex,
-            emailLink: row['Email Link'] || ''
+            emailLink: row['Email Link'] || '',
+            matchColumn: currentSheet === 'Client' ? 'Domain' : '',
+            matchValue: currentSheet === 'Client' ? (row['Domain'] || '') : ''
         });
         console.log('Deleting row:', row._rowIndex, 'emailLink:', row['Email Link']);
         const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
