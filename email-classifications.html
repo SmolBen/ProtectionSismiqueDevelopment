@@ -384,6 +384,29 @@
             color: #6b7280;
         }
 
+        /* Correct Category Dropdown */
+        .correct-category-select {
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            background: white;
+            cursor: pointer;
+            min-width: 180px;
+        }
+
+        .correct-category-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .correct-category-select.has-value {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #16a34a;
+            font-weight: 500;
+        }
+
         /* Pagination */
         .pagination {
             display: flex;
@@ -784,7 +807,7 @@
         tbody.innerHTML = pageRows.map(row => `
             <tr data-row-index="${row._rowIndex}" class="${row._selected ? 'selected' : ''}">
                 <td><input type="checkbox" class="row-checkbox" ${row._selected ? 'checked' : ''} onchange="toggleRowSelect(${row._rowIndex})"></td>
-                ${allData.headers.map(h => `<td>${formatCell(h, row[h])}</td>`).join('')}
+                ${allData.headers.map(h => `<td>${formatCell(h, row[h], row._rowIndex)}</td>`).join('')}
             </tr>
         `).join('');
     }
@@ -794,10 +817,35 @@
     updateSelectAllCheckbox();
 }
 
-        function formatCell(header, value) {
-    if (value === null || value === undefined || value === '') {
-        return '<span style="color: var(--text-muted);">—</span>';
-    }
+        const CATEGORY_OPTIONS = [
+            'Engineering - Unknown projects',
+            'Engineering -Existing Projects',
+            'Existing Projects - Certificate Request',
+            'New Projects',
+            'Price Requests',
+            'Other',
+            'Spam'
+        ];
+
+        function formatCell(header, value, rowIndex) {
+            // Correct Category dropdown (only on Review tab)
+            if (header === 'Correct Category' && currentSheet === 'Review') {
+                const currentValue = value || '';
+                const hasValue = currentValue !== '';
+                return `
+                    <select class="correct-category-select ${hasValue ? 'has-value' : ''}" 
+                            onchange="updateCorrectCategory(${rowIndex}, this.value)">
+                        <option value="">Select...</option>
+                        ${CATEGORY_OPTIONS.map(opt => 
+                            `<option value="${opt}" ${currentValue === opt ? 'selected' : ''}>${opt}</option>`
+                        ).join('')}
+                    </select>
+                `;
+            }
+
+            if (value === null || value === undefined || value === '') {
+                return '<span style="color: var(--text-muted);">—</span>';
+            }
 
     // Format date columns
     if (header === 'Date' && value) {
@@ -875,6 +923,47 @@
             currentPage = page;
             renderTable();
             document.querySelector('.table-wrapper').scrollTop = 0;
+        }
+
+        async function updateCorrectCategory(rowIndex, value) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateCell',
+                    sheet: 'Review',
+                    rowIndex: rowIndex,
+                    column: 'I',
+                    value: value
+                });
+                
+                const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                // Update local cache
+                const row = allData.rows.find(r => r._rowIndex === rowIndex);
+                if (row) {
+                    row['Correct Category'] = value;
+                }
+                if (sheetCache['Review']) {
+                    const cachedRow = sheetCache['Review'].rows.find(r => r._rowIndex === rowIndex);
+                    if (cachedRow) {
+                        cachedRow['Correct Category'] = value;
+                    }
+                }
+
+                // Update the select styling
+                const select = document.querySelector(`tr[data-row-index="${rowIndex}"] .correct-category-select`);
+                if (select) {
+                    select.classList.toggle('has-value', value !== '');
+                }
+
+            } catch (error) {
+                console.error('Error updating category:', error);
+                alert('Failed to update: ' + error.message);
+            }
         }
 
         function escapeHtml(text) {
