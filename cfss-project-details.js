@@ -7495,7 +7495,7 @@ function updateDropZoneState() {
     }
 }
 
-async function compressImageForUpload(file, maxWidth = 800, quality = 0.8) {
+async function compressImageForUpload(file, maxWidth = 1600, quality = 0.9) {
     // Skip if already small enough (under 500KB)
     if (file.size <= 500_000) {
         console.log(`🖼️ Image already small (${(file.size / 1024).toFixed(0)}KB), skipping compression`);
