@@ -917,9 +917,9 @@
             }
 
     // Format date columns
-    if (header === 'Date' && value) {
+        if (header === 'Date' && value) {
         try {
-            const date = new Date(value);
+            const date = new Date(value + 'T12:00:00');
             if (!isNaN(date)) {
                 return `<div class="cell-content">${date.toLocaleDateString('en-CA')}</div>`;
             }
