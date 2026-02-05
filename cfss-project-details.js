@@ -7495,8 +7495,65 @@ function updateDropZoneState() {
     }
 }
 
+async function compressImageForUpload(file, maxWidth = 800, quality = 0.8) {
+    // Skip if already small enough (under 500KB)
+    if (file.size <= 500_000) {
+        console.log(`🖼️ Image already small (${(file.size / 1024).toFixed(0)}KB), skipping compression`);
+        return file;
+    }
+
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            // Calculate new dimensions
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) {
+                        console.warn('⚠️ Compression failed, using original');
+                        resolve(file);
+                        return;
+                    }
+                    
+                    const compressed = new File([blob], file.name.replace(/\.png$/i, '.jpg'), {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    
+                    console.log(`🗜️ Compressed: ${(file.size / 1024).toFixed(0)}KB → ${(compressed.size / 1024).toFixed(0)}KB (${width}×${height})`);
+                    resolve(compressed);
+                },
+                'image/jpeg',
+                quality
+            );
+        };
+        img.onerror = () => {
+            console.warn('⚠️ Could not load image for compression, using original');
+            resolve(file);
+        };
+        img.src = URL.createObjectURL(file);
+    });
+}
+
 async function uploadImageToS3(file) {
     try {
+        // Compress large images before upload
+        file = await compressImageForUpload(file);
+        
         // Get upload URL from backend
         const response = await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/image-upload-url`, {
             method: 'POST',
