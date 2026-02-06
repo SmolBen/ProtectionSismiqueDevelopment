@@ -533,9 +533,13 @@
                     Back to Dashboard
                 </button>
                 <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
-                <i class="fas fa-sync-alt"></i>
-                Refresh
-            </button>
+    <i class="fas fa-sync-alt"></i>
+    Refresh
+</button>
+<a href="create-project-overview.html" class="refresh-btn" id="newProjectBtn" style="display:none; text-decoration:none;">
+    <i class="fas fa-folder-plus"></i>
+    New Project
+</a>
         </div>
     </div>
 
@@ -643,6 +647,13 @@
                 }
 
                 authHelper.updateUserInterface();
+
+// Show New Project button for allowed users
+const allowedEmails = ['anhquan1212004@gmail.com', 'hoangminhduc.ite@gmail.com'];
+const currentUser = authHelper.getCurrentUser();
+if (currentUser && allowedEmails.includes(currentUser.email.toLowerCase())) {
+    document.getElementById('newProjectBtn').style.display = 'inline-flex';
+}
 
                 // Render tabs and load all data
                 renderSheetTabs();
