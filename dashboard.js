@@ -85,6 +85,9 @@ function setupEventListeners() {
     // Filter projects
     document.getElementById('projectFilter').addEventListener('change', handleProjectFilter);
 
+    // Category filter
+    document.getElementById('categoryFilter').addEventListener('change', handleProjectFilter);
+
     // Search projects
     document.getElementById('projectSearch').addEventListener('input', handleProjectSearch);
 }
@@ -187,20 +190,20 @@ function getDomainInfo(domain) {
             displayName: 'Plumbing',
             icon: 'fas fa-faucet'
         },
-        'sprinkler': {
-            badgeClass: 'sprinkler',
-            displayName: 'Sprinkler',
+        'sprinklers': {
+            badgeClass: 'sprinklers',
+            displayName: 'Sprinklers',
             icon: 'fas fa-fire-extinguisher'
         },
-        'interior system': {
-            badgeClass: 'interior-system',
-            displayName: 'Interior System',
-            icon: 'fas fa-home'
+        'interior-design': {
+            badgeClass: 'interior-design',
+            displayName: 'Interior Design',
+            icon: 'fas fa-couch'
         },
-        'interior_system': {
-            badgeClass: 'interior-system',
-            displayName: 'Interior System',
-            icon: 'fas fa-home'
+        'exterior': {
+            badgeClass: 'exterior',
+            displayName: 'Exterior',
+            icon: 'fas fa-building'
         }
     };
 
@@ -331,32 +334,35 @@ function renderProjects(filteredProjects) {
 }
 
 // Filter projects
-async function handleProjectFilter(e) {
-    const filter = e.target.value.toLowerCase();
+async function handleProjectFilter() {
+    const statusFilter = document.getElementById('projectFilter').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
     const searchTerm = document.getElementById('projectSearch').value.toLowerCase();
-    
+
     try {
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: authHelper.getAuthHeaders()
         });
-        
+
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
+
         const allProjects = await response.json();
         // Filter for seismic projects (projects with domain field)
         const projects = allProjects.filter(p => p.domain);
-        
-        // Apply both search and filter
+
+        // Apply search, status filter, and category filter
         const filteredProjects = projects.filter(project => {
-            const matchesSearch = searchTerm === '' || 
+            const matchesSearch = searchTerm === '' ||
                 project.name.toLowerCase().includes(searchTerm);
-            const matchesFilter = filter === 'all' || 
-                project.status.toLowerCase() === filter;
-            
-            return matchesSearch && matchesFilter;
+            const matchesStatus = statusFilter === 'all' ||
+                project.status.toLowerCase() === statusFilter;
+            const matchesCategory = categoryFilter === 'all' ||
+                (project.domain || '').toLowerCase() === categoryFilter;
+
+            return matchesSearch && matchesStatus && matchesCategory;
         });
-        
+
         renderProjects(filteredProjects);
     } catch (error) {
         console.error('Error filtering seismic projects:', error);
@@ -366,30 +372,33 @@ async function handleProjectFilter(e) {
 // Combined search and filter function
 async function handleProjectSearch() {
     const searchTerm = document.getElementById('projectSearch').value.toLowerCase();
-    const filterValue = document.getElementById('projectFilter').value.toLowerCase();
-    
+    const statusFilter = document.getElementById('projectFilter').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
+
     try {
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: authHelper.getAuthHeaders()
         });
-        
+
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
+
         const allProjects = await response.json();
         // Filter for seismic projects (projects with domain field)
         const projects = allProjects.filter(p => p.domain);
-        
-        // Apply both search and filter
+
+        // Apply search, status filter, and category filter
         const filteredProjects = projects.filter(project => {
-            const matchesSearch = searchTerm === '' || 
+            const matchesSearch = searchTerm === '' ||
                 project.name.toLowerCase().includes(searchTerm);
-            const matchesFilter = filterValue === 'all' || 
-                project.status.toLowerCase() === filterValue;
-            
-            return matchesSearch && matchesFilter;
+            const matchesStatus = statusFilter === 'all' ||
+                project.status.toLowerCase() === statusFilter;
+            const matchesCategory = categoryFilter === 'all' ||
+                (project.domain || '').toLowerCase() === categoryFilter;
+
+            return matchesSearch && matchesStatus && matchesCategory;
         });
-        
+
         renderProjects(filteredProjects);
     } catch (error) {
         console.error('Error searching seismic projects:', error);
