@@ -536,6 +536,24 @@ function openEmailClassifications() {
     }
 }
 
+function openNewProjectOverview() {
+    if (!authHelper.isAdmin()) {
+        alert('Admin access required');
+        return;
+    }
+
+    const password = prompt('Enter password to access New Project:');
+    if (password === null) {
+        return;
+    }
+
+    if (password === 'sismique2000') {
+        window.location.href = 'create-project-overview.html';
+    } else {
+        alert('Incorrect password');
+    }
+}
+
 // Make functions available globally
 window.switchToCFSS = switchToCFSS;
 window.openUserManagement = openUserManagement;
@@ -543,3 +561,4 @@ window.viewAllProjects = viewAllProjects;
 window.openVerifyBulkProjects = openVerifyBulkProjects;
 window.exportData = exportData;
 window.openEmailClassifications = openEmailClassifications;
+window.openNewProjectOverview = openNewProjectOverview;

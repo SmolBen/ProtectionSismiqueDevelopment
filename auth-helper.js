@@ -221,13 +221,23 @@ class AuthHelper {
             adminPanel.classList.add('show');
         }
 
+        const userEmail = (this.currentUserData?.email || '').toLowerCase();
+
         const verifyBulkButton = document.getElementById('verifyBulkProjectsButton');
         if (verifyBulkButton) {
-            const userEmail = (this.currentUserData?.email || '').toLowerCase();
             if (BULK_VERIFY_ALLOWED_EMAILS.includes(userEmail)) {
                 verifyBulkButton.style.display = 'inline-flex';
             } else {
                 verifyBulkButton.style.display = 'none';
+            }
+        }
+
+        const newProjectOverviewButton = document.getElementById('newProjectOverviewButton');
+        if (newProjectOverviewButton) {
+            if (BULK_VERIFY_ALLOWED_EMAILS.includes(userEmail)) {
+                newProjectOverviewButton.style.display = 'inline-flex';
+            } else {
+                newProjectOverviewButton.style.display = 'none';
             }
         }
     }
