@@ -548,9 +548,19 @@
                     <option value="">Select column...</option>
                 </select>
             </div>
-            <div class="filter-group">
+            <div class="filter-group" id="filterValueGroup">
                 <label>Filter Value</label>
                 <input type="text" id="filterValue" placeholder="Type to filter...">
+            </div>
+            <div class="filter-group" id="filterDateGroup" style="display: none;">
+                <label>Date Range</label>
+                <select id="filterDateRange">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="this_week">This Week</option>
+                    <option value="this_month">This Month</option>
+                    <option value="this_year">This Year</option>
+                </select>
             </div>
             <button class="clear-filters-btn" onclick="clearFilters()">
                 <i class="fas fa-times"></i> Clear Filters
@@ -649,8 +659,9 @@
                 await loadAllSheets();
 
                 // Setup event listeners
-                document.getElementById('filterColumn').addEventListener('change', applyFilters);
+                document.getElementById('filterColumn').addEventListener('change', onFilterColumnChange);
                 document.getElementById('filterValue').addEventListener('input', debounce(applyFilters, 300));
+                document.getElementById('filterDateRange').addEventListener('change', applyFilters);
 
             } catch (error) {
                 console.error('Error initializing:', error);
@@ -804,17 +815,70 @@
             });
         }
 
+        function onFilterColumnChange() {
+            const column = document.getElementById('filterColumn').value;
+            const isDate = column === 'Date';
+            document.getElementById('filterValueGroup').style.display = isDate ? 'none' : '';
+            document.getElementById('filterDateGroup').style.display = isDate ? '' : 'none';
+            // Reset both inputs
+            document.getElementById('filterValue').value = '';
+            document.getElementById('filterDateRange').value = '';
+            applyFilters();
+        }
+
+        function getDateRangeStart(range) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            switch (range) {
+                case 'today':
+                    return today;
+                case 'this_week': {
+                    const day = today.getDay();
+                    const diff = day === 0 ? 6 : day - 1; // Monday as start of week
+                    return new Date(today.getFullYear(), today.getMonth(), today.getDate() - diff);
+                }
+                case 'this_month':
+                    return new Date(today.getFullYear(), today.getMonth(), 1);
+                case 'this_year':
+                    return new Date(today.getFullYear(), 0, 1);
+                default:
+                    return null;
+            }
+        }
+
         function applyFilters() {
             const column = document.getElementById('filterColumn').value;
-            const value = document.getElementById('filterValue').value.toLowerCase().trim();
 
-            if (!column || !value) {
+            if (!column) {
                 filteredRows = [...allData.rows];
+                currentPage = 1;
+                renderTable();
+                return;
+            }
+
+            if (column === 'Date') {
+                const range = document.getElementById('filterDateRange').value;
+                const startDate = getDateRangeStart(range);
+                if (!startDate) {
+                    filteredRows = [...allData.rows];
+                } else {
+                    filteredRows = allData.rows.filter(row => {
+                        const dateVal = row['Date'];
+                        if (!dateVal) return false;
+                        const rowDate = new Date(dateVal + 'T12:00:00');
+                        return !isNaN(rowDate) && rowDate >= startDate;
+                    });
+                }
             } else {
-                filteredRows = allData.rows.filter(row => {
-                    const cellValue = String(row[column] || '').toLowerCase();
-                    return cellValue.includes(value);
-                });
+                const value = document.getElementById('filterValue').value.toLowerCase().trim();
+                if (!value) {
+                    filteredRows = [...allData.rows];
+                } else {
+                    filteredRows = allData.rows.filter(row => {
+                        const cellValue = String(row[column] || '').toLowerCase();
+                        return cellValue.includes(value);
+                    });
+                }
             }
 
             currentPage = 1;
@@ -824,6 +888,9 @@
         function clearFilters() {
             document.getElementById('filterColumn').value = '';
             document.getElementById('filterValue').value = '';
+            document.getElementById('filterDateRange').value = '';
+            document.getElementById('filterValueGroup').style.display = '';
+            document.getElementById('filterDateGroup').style.display = 'none';
             filteredRows = [...allData.rows];
             currentPage = 1;
             renderTable();
