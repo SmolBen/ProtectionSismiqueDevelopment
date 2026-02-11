@@ -1,7 +1,8 @@
 // auth-helper.js - Centralized authentication without JWT
 const BULK_VERIFY_ALLOWED_EMAILS = [
     'anhquan1212004@gmail.com',
-    'hoangminhduc.ite@gmail.com'
+    'hoangminhduc.ite@gmail.com',
+    'bakopanosgeorge@gmail.com'
 ];
 
 if (typeof window !== 'undefined') {
