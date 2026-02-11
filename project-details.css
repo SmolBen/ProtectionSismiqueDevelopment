@@ -792,6 +792,12 @@
     .right-section {
         flex: none;
         min-height: auto;
+        padding: 12px;
+    }
+
+    .basic-info p {
+        margin: 4px 0;
+        font-size: 13px;
     }
 
     .container {
@@ -891,11 +897,24 @@
     }
 
     .seismic-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px 8px;
     }
 
-    .seismic-grid p.full-width {
-        grid-column: span 1;
+    .seismic-grid p {
+        margin: 2px 0;
+    }
+
+    .seismic-info h3 {
+        margin: 0 0 6px 0;
+    }
+
+    .project-info-container {
+        gap: 10px;
+    }
+
+    .project-info-container .seismic-info {
+        padding-top: 10px;
     }
 }
 

@@ -1094,7 +1094,7 @@
     .tab-content {
         padding: 15px;
         height: auto;
-        max-height: 500px;
+        max-height: none;
     }
     
     .option-thumbnail {
@@ -2487,13 +2487,62 @@ button:not(.image-remove):not(.thumb-delete) {
     }
 
     .top-half {
+        flex-direction: column;
         min-height: auto;
     }
 
     .left-section,
     .right-section {
-        flex: none;
+        flex: none !important;
         min-height: auto;
+        padding: 12px;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .left-section {
+        overflow-y: visible;
+    }
+
+    .right-section .tab-content {
+        max-height: none;
+    }
+
+    /* Tab header: horizontal scroll instead of overflow */
+    .tab-header {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+    }
+
+    .tab-button {
+        flex: 0 0 auto !important;
+        white-space: nowrap;
+        padding: 10px 12px !important;
+        font-size: 12px !important;
+    }
+
+    /* Action buttons bar (Generate Report, etc.) - stack vertically */
+    .wall-list-content > div[style*="display: flex"][style*="justify-content: space-between"],
+    .tab-content-section > div[style*="display: flex"][style*="justify-content: space-between"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+
+    .wall-list-content > div[style*="display: flex"] > div[style*="display:flex"],
+    .tab-content-section > div[style*="display: flex"] > div[style*="display:flex"] {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .wall-list-content .button.primary,
+    .tab-content-section .button.primary {
+        font-size: 12px !important;
+        padding: 8px 12px !important;
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+        min-width: 0 !important;
     }
 
     .equipment-info-compact {
@@ -2502,6 +2551,47 @@ button:not(.image-remove):not(.thumb-delete) {
 
     .equipment-form-section {
         flex: none;
+        padding: 15px;
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    /* Fix image upload section overflowing on mobile */
+    .image-upload-section {
+        min-width: 0 !important;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .upload-controls {
+        flex-direction: row;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .drop-zone {
+        display: none !important;
+    }
+
+    /* Uniform buttons on mobile */
+    .camera-btn {
+        width: 100% !important;
+        height: auto !important;
+        padding: 12px 24px !important;
+        font-size: 14px !important;
+        border-radius: 5px !important;
+    }
+
+    #calculateEquipment,
+    #saveEquipment {
+        width: 100% !important;
+        flex: none !important;
+    }
+
+    .form-fields {
+        max-width: 100%;
     }
 
     .form-group input,
@@ -2509,8 +2599,36 @@ button:not(.image-remove):not(.thumb-delete) {
         max-width: 100%;
     }
 
-    #equipmentFormElement div[style*="display: flex"][style*="gap: 15px"] {
-        flex-direction: column;
+    /* Stack ALL inline flex form field rows on mobile */
+    #equipmentFormElement div[style*="display: flex"][style*="gap: 15px"],
+    #equipmentFormElement div[style*="display: flex"][style*="gap: 20px"],
+    #windowFormElement div[style*="display: flex"][style*="gap: 15px"],
+    #windowFormElement div[style*="display: flex"][style*="gap: 20px"],
+    #parapetFormElement div[style*="display: flex"][style*="gap: 15px"],
+    #parapetFormElement div[style*="display: flex"][style*="gap: 20px"],
+    div[style*="display: flex"][style*="gap: 20px"][style*="margin-bottom: 15px"] {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: flex-start !important;
+    }
+
+    /* Keep ULS/SLS badges on the same row */
+    #equipmentFormElement div[style*="font-size: 13px"][style*="gap: 15px"] {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+
+    /* Override fixed width on form-group inside flex rows */
+    #equipmentFormElement .form-group[style*="width: 200px"],
+    #windowFormElement .form-group[style*="width: 200px"],
+    #parapetFormElement .form-group[style*="width: 200px"],
+    .form-group[style*="width: 200px"] {
+        width: 100% !important;
+    }
+
+    /* Thermoclip details grid: 2 columns instead of 3 */
+    div[style*="grid-template-columns: 1fr 1fr 1fr"] {
+        grid-template-columns: 1fr 1fr !important;
     }
 
     .form-tabs {
@@ -2520,6 +2638,80 @@ button:not(.image-remove):not(.thumb-delete) {
     .form-tab {
         padding: 10px 14px;
         font-size: 13px;
+    }
+
+    /* Equipment header stacking */
+    .equipment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .equipment-actions-compact {
+        flex-wrap: wrap;
+        margin-right: 0 !important;
+    }
+
+    .equipment-card.draggable .equipment-header {
+        padding-left: 35px !important;
+        padding-right: 10px !important;
+    }
+
+    /* ---- Window / Exterior Wall Form Mobile Fixes ---- */
+
+    /* Stack form + reference image vertically for all forms with gap: 30px */
+    .equipment-form > div[style*="display: flex"][style*="gap: 30px"],
+    .equipment-form form > div[style*="display: flex"][style*="gap: 30px"],
+    #windowFormElement > div[style*="display: flex"][style*="gap: 30px"] {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+
+    /* Hide reference images on mobile (too large) */
+    .equipment-form > div[style*="display: flex"][style*="gap: 30px"] > div[style*="flex: 0 0 auto"],
+    #windowFormElement > div[style*="display: flex"][style*="gap: 30px"] > div[style*="flex: 0 0 auto"] {
+        display: none !important;
+    }
+
+    /* Let form columns take full width */
+    .equipment-form > div[style*="display: flex"][style*="gap: 30px"] > div[style*="flex: 0 0 400px"],
+    #windowFormElement > div[style*="display: flex"][style*="gap: 30px"] > div[style*="flex: 1"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        flex: none !important;
+    }
+
+    /* Stack type + composition pairs vertically */
+    #windowFormElement div[style*="display: flex"][style*="gap: 20px"][style*="align-items: flex-start"] {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: stretch !important;
+    }
+
+    /* Make composition builders full width */
+    #windowFormElement .form-group[style*="width: 250px"] {
+        width: 100% !important;
+    }
+
+    /* Make type selects full width */
+    .type-selection-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100%;
+    }
+
+    .type-selection-row select {
+        width: 100% !important;
+    }
+
+    #windowFormElement select[style*="width: 180px"] {
+        width: 100% !important;
+    }
+
+    /* Type image preview: full width below select */
+    .type-image-preview {
+        width: 100% !important;
+        max-width: 120px;
     }
 }
 
@@ -2536,5 +2728,27 @@ button:not(.image-remove):not(.thumb-delete) {
     .edit-image-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    /* Tab buttons even smaller */
+    .tab-button {
+        padding: 8px 10px !important;
+        font-size: 11px !important;
+    }
+
+    /* Thermoclip grid: single column */
+    div[style*="grid-template-columns: 1fr 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Action buttons: stack fully */
+    .wall-list-content .button.primary,
+    .tab-content-section .button.primary {
+        width: 100% !important;
+    }
+
+    .left-section,
+    .right-section {
+        padding: 8px;
     }
 }
