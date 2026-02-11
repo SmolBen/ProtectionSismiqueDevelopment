@@ -389,11 +389,11 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     main {
-        padding: 16px;
+        padding: 12px;
     }
 
     .navbar {
-        padding: 12px 16px;
+        padding: 10px 16px;
     }
 
     .controls {
@@ -404,26 +404,159 @@
     .controls-row {
         flex-direction: column;
         align-items: stretch;
-        gap: 8px;
+        gap: 6px;
     }
 
-    .search {
+    .controls-row .search {
         min-width: auto;
+        order: 1;
+    }
+
+    .controls-row .filter {
+        order: 2;
+    }
+
+    .controls-row #createProjectButton {
+        order: 0;
+        margin-left: 0 !important;
+        width: 100%;
+        justify-content: center;
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+        border-radius: 8px;
+    }
+
+    .header-section {
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+
+    .title-row {
+        margin-bottom: 10px;
+    }
+
+    .stats-grid {
+        padding: 12px;
+        margin-bottom: 8px;
     }
 
     .stats-compact {
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 8px 16px;
+    }
+
+    /* Project card mobile layout */
+    .project-card {
+        padding: 12px 14px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .project-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .project-info {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .project-card h2 {
+        font-size: 15px;
+        font-weight: 600;
+        white-space: normal;
+        margin-bottom: 4px;
+    }
+
+    .domain-badge {
+        font-size: 8px;
+        padding: 1px 6px;
+        margin-left: 6px;
+        vertical-align: middle;
+    }
+
+    .domain-badge i {
+        font-size: 7px;
     }
 
     .project-meta {
         flex-direction: column;
         align-items: flex-start;
-        gap: 4px;
+        gap: 1px;
+        font-size: 11px;
+        margin-bottom: 2px;
     }
 
     .meta-separator {
         display: none;
+    }
+
+    .project-card p {
+        font-size: 11px;
+        display: none;
+    }
+
+    /* Status + Actions on same row on mobile */
+    .project-status {
+        min-width: auto;
+        position: absolute;
+        top: 12px;
+        right: 14px;
+    }
+
+    .project-card {
+        position: relative;
+    }
+
+    .project-actions {
+        min-width: auto !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+        height: auto !important;
+    }
+
+    /* Compact icon-only buttons on mobile */
+    .project-card button.view-details,
+    .project-card button.duplicate-project,
+    .project-card button.delete-project {
+        width: auto !important;
+        height: 30px !important;
+        padding: 0 12px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
+        gap: 4px;
+    }
+
+    .project-card button.view-details i,
+    .project-card button.duplicate-project i,
+    .project-card button.delete-project i {
+        margin-right: 3px !important;
+        font-size: 10px !important;
+    }
+
+    /* Admin panel mobile */
+    .admin-panel {
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+    .admin-panel h2 {
+        font-size: 16px;
+        margin-bottom: 14px;
+    }
+
+    .admin-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .admin-btn {
+        padding: 10px 12px;
+        font-size: 12px;
+        justify-content: center;
     }
 
     .domain-label {
@@ -431,42 +564,17 @@
         padding: 1px 4px;
     }
 
-    .domain-badge {
-        font-size: 9px;
-        padding: 1px 6px;
-        margin-left: 6px;
-    }
-
-    .domain-badge i {
-        font-size: 8px;
-    }
-
-    .admin-controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .project-main {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .project-info {
-        max-width: 100%;
-    }
-
-    .project-actions {
-        min-width: auto !important;
-        width: 100%;
-        justify-content: flex-start !important;
-    }
-
-    .project-status {
-        min-width: auto;
+    .list-header {
+        padding: 6px 14px;
+        font-size: 10px;
     }
 }
 
 @media (max-width: 480px) {
+    main {
+        padding: 8px;
+    }
+
     .user-info {
         gap: 8px;
     }
@@ -476,11 +584,13 @@
     }
 
     .admin-panel {
-        padding: 16px;
+        padding: 12px;
+        border-radius: 8px;
     }
 
     .admin-controls {
         grid-template-columns: 1fr;
+        gap: 6px;
     }
 
     .admin-btn {
@@ -488,11 +598,48 @@
         font-size: 13px;
     }
 
+    .header-section {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .project-card {
+        padding: 10px 12px;
+    }
+
+    .project-card h2 {
+        font-size: 14px;
+        padding-right: 80px;
+    }
+
+    .project-meta {
+        font-size: 11px;
+    }
+
+    /* Even more compact buttons on small screens */
     .project-card button.view-details,
     .project-card button.duplicate-project,
     .project-card button.delete-project {
-        width: 60px !important;
-        font-size: 11px !important;
+        height: 28px !important;
+        padding: 0 10px !important;
+        font-size: 10px !important;
+    }
+
+    .controls-row .filter {
+        padding: 5px 8px;
+    }
+
+    .controls-row .filter select {
+        font-size: 12px;
+        min-width: 100px;
+    }
+
+    .controls-row .search {
+        padding: 5px 8px;
+    }
+
+    .controls-row .search input {
+        font-size: 12px;
     }
 }
 

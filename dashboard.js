@@ -267,6 +267,10 @@ function renderProjects(filteredProjects) {
                         <span>${formattedAddress}</span>
                         <span class="meta-separator">•</span>
                         <span>${formattedDate}</span>
+                        ${project.createdBy && authHelper.isAdmin() ? `
+                            <span class="meta-separator">•</span>
+                            <span class="created-by" style="color: #94a3b8;"><i class="fas fa-user" style="font-size: 9px; margin-right: 3px;"></i>${project.createdBy}</span>
+                        ` : ''}
                     </div>
                     <p>${project.description}</p>
                 </div>
@@ -291,11 +295,6 @@ function renderProjects(filteredProjects) {
                     ` : ''}
                 </div>
             </div>
-            ${project.createdBy && authHelper.isAdmin() ? `
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                    Created by: ${project.createdBy}
-                </div>
-            ` : ''}
         `;
 
         projectList.appendChild(projectCard);
