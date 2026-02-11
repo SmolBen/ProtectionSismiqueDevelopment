@@ -367,6 +367,26 @@
             cursor: not-allowed;
         }
 
+        /* Create Project button */
+        .create-project-btn {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: none;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .create-project-btn:hover {
+            background: #bfdbfe;
+        }
+
         /* Loading state */
         .loading-state {
             display: flex;
@@ -595,6 +615,7 @@
         const ROWS_PER_PAGE = 50;
 
         let authHelper;
+        let isSpecialUser = false;
         const SHEET_NAMES = [
             'Review',
             'Engineering - Existing Projects',
@@ -653,6 +674,10 @@
                 }
 
                 authHelper.updateUserInterface();
+
+                // Check if user is in the special emails list
+                const userEmail = (authHelper.getCurrentUser()?.email || '').toLowerCase();
+                isSpecialUser = BULK_VERIFY_ALLOWED_EMAILS.includes(userEmail);
 
                 // Render tabs and load all data
                 renderSheetTabs();
@@ -900,6 +925,8 @@
     const thead = document.getElementById('tableHead');
     const tbody = document.getElementById('tableBody');
 
+    const showCreateProject = currentSheet === 'New Projects' && isSpecialUser;
+
     // Render headers with select-all checkbox
     thead.innerHTML = `
         <tr>
@@ -911,6 +938,7 @@
                 }
                 return `<th>${escapeHtml(h)}</th>`;
             }).join('')}
+            ${showCreateProject ? '<th>Actions</th>' : ''}
         </tr>
     `;
 
@@ -933,7 +961,7 @@
     if (pageRows.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="${allData.headers.length + 1}" class="empty-state">
+                <td colspan="${allData.headers.length + 1 + (showCreateProject ? 1 : 0)}" class="empty-state">
                     <i class="fas fa-inbox"></i>
                     <p>No data found</p>
                 </td>
@@ -944,6 +972,7 @@
             <tr data-row-index="${row._rowIndex}" class="${row._selected ? 'selected' : ''}">
                 <td><input type="checkbox" class="row-checkbox" ${row._selected ? 'checked' : ''} onchange="toggleRowSelect(${row._rowIndex})"></td>
                 ${allData.headers.map(h => `<td>${formatCell(h, row[h], row._rowIndex)}</td>`).join('')}
+                ${showCreateProject ? `<td><button class="create-project-btn" onclick="createProjectFromRow(${row._rowIndex})"><i class="fas fa-plus"></i> Create Project</button></td>` : ''}
             </tr>
         `).join('');
     }
@@ -1215,6 +1244,15 @@ async function deleteSelected() {
     document.getElementById('showingCount').textContent = filteredRows.length;
     renderSheetTabs();
     renderTable();
+}
+function createProjectFromRow(rowIndex) {
+    const row = allData.rows.find(r => r._rowIndex === rowIndex);
+    if (!row) return;
+    const params = new URLSearchParams();
+    allData.headers.forEach(h => {
+        if (row[h]) params.set(h, row[h]);
+    });
+    window.location.href = 'create-project-overview.html?' + params.toString();
 }
     </script>
 </body>
