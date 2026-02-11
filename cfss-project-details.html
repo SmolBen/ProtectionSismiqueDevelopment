@@ -957,29 +957,26 @@
                                 <!-- 3. Hauteur Max - MANUAL INPUT WITH UNIT SELECTION -->
                                 <div class="form-group">
                                     <label for="hauteurMax">Hauteur Max:</label>
-                                        <div style="display: flex; gap: 10px; align-items: center;">
-                                        <input 
-                                            type="number" 
-                                            id="hauteurMax" 
-                                            name="hauteurMax" 
+                                        <div class="hauteur-row" style="display: flex; gap: 10px; align-items: center;">
+                                        <input
+                                            type="number"
+                                            id="hauteurMax"
+                                            name="hauteurMax"
                                             min="0"
                                             step="1"
-                                            required 
-                                            style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                                            required
                                         >
-                                        <input 
-                                            type="text" 
-                                            id="hauteurMaxMinor" 
-                                            name="hauteurMaxMinor" 
+                                        <input
+                                            type="text"
+                                            id="hauteurMaxMinor"
+                                            name="hauteurMaxMinor"
                                             placeholder=""
-                                            style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                         >
-                                        <select 
-                                            id="hauteurMaxUnit" 
-                                            name="hauteurMaxUnit" 
-                                            required 
+                                        <select
+                                            id="hauteurMaxUnit"
+                                            name="hauteurMaxUnit"
+                                            required
                                             onchange="toggleMinorField('hauteur')"
-                                            style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                                         >
                                             <option value="ft-in" selected>ft-in</option>
                                             <option value="mm">mm</option>
@@ -1262,29 +1259,26 @@
         <!-- Hauteur Max - Dual Input with Unit Toggle -->
         <div class="form-group">
             <label for="windowHauteurMax">Hauteur Max</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input 
-                    type="number" 
-                    id="windowHauteurMax" 
-                    name="windowHauteurMax" 
+            <div class="hauteur-row" style="display: flex; gap: 10px; align-items: center;">
+                <input
+                    type="number"
+                    id="windowHauteurMax"
+                    name="windowHauteurMax"
                     min="0"
                     step="1"
-                    required 
-                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                    required
                 >
-                <input 
-                    type="text" 
-                    id="windowHauteurMaxMinor" 
-                    name="windowHauteurMaxMinor" 
+                <input
+                    type="text"
+                    id="windowHauteurMaxMinor"
+                    name="windowHauteurMaxMinor"
                     placeholder=""
-                    style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                 >
-                <select 
-                    id="windowHauteurMaxUnit" 
-                    name="windowHauteurMaxUnit" 
-                    required 
+                <select
+                    id="windowHauteurMaxUnit"
+                    name="windowHauteurMaxUnit"
+                    required
                     onchange="toggleMinorField('windowHauteur')"
-                    style="flex: 1; padding: 8px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                 >
                     <option value="ft-in" selected>ft-in</option>
                     <option value="mm">mm</option>
@@ -1516,27 +1510,25 @@
                     <!-- Hauteur Max - Dual Input with Unit Toggle -->
                     <div class="form-group">
                         <label for="parapetHauteurMax">Hauteur Max</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input 
-                                type="number" 
-                                id="parapetHauteurMax" 
-                                name="parapetHauteurMax" 
+                        <div class="hauteur-row" style="display: flex; gap: 10px; align-items: center;">
+                            <input
+                                type="number"
+                                id="parapetHauteurMax"
+                                name="parapetHauteurMax"
                                 min="0"
                                 step="1"
-                                required 
-                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                                required
                             >
-                            <input 
-                                type="text" 
-                                id="parapetHauteurMaxMinor" 
-                                name="parapetHauteurMaxMinor" 
+                            <input
+                                type="text"
+                                id="parapetHauteurMaxMinor"
+                                name="parapetHauteurMaxMinor"
                                 placeholder=""
-                                style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                             >
-                            <select 
-                                id="parapetHauteurMaxUnit" 
-                                name="parapetHauteurMaxUnit" 
-                                required 
+                            <select
+                                id="parapetHauteurMaxUnit"
+                                name="parapetHauteurMaxUnit"
+                                required
                                 onchange="toggleMinorField('parapetHauteur')"
                             >
                                 <option value="ft-in" selected>ft-in</option>

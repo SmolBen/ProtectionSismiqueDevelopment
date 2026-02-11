@@ -267,6 +267,18 @@
     box-sizing: border-box;
 }
 
+/* Hauteur Max dual-input row */
+.hauteur-row input {
+    flex: 3;
+    width: auto;
+    min-width: 0;
+}
+
+.hauteur-row select {
+    flex: 0 0 auto;
+    width: auto;
+}
+
 /* Image upload section */
 .image-upload-section {
     flex: 1;

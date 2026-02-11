@@ -112,7 +112,8 @@ function setupWallCalcButton() {
             }
             form.classList.add('show');
             this.innerHTML = '<i class="fas fa-times"></i> Hide Form';
-            
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
             // Clear previous results
             const resultsDiv = document.getElementById('wallCalcResults');
             if (resultsDiv) {

@@ -6672,7 +6672,8 @@ function toggleCFSSForm() {
         // Show CFSS form
         form.classList.remove('hidden');
         btn.classList.add('expanded');
-        
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
         // Check if we have existing CFSS data and populate form
         if (cfssWindData && (Array.isArray(cfssWindData) ? cfssWindData.length > 0 : cfssWindData.storeys)) {
             populateCFSSForm(cfssWindData);
@@ -9229,6 +9230,7 @@ function setupWindowHandlers() {
                 // Show window form
                 windowForm.classList.add('show');
                 this.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                windowForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
     }
@@ -9304,12 +9306,23 @@ function hideAllForms() {
         }
     }
     
+    // Hide exterior wall calculation form
+    const exteriorWallForm = document.getElementById('exteriorWallForm');
+    if (exteriorWallForm) {
+        exteriorWallForm.classList.remove('show');
+    }
+
     // Reset button texts
+    const exteriorWallCalcButton = document.getElementById('exteriorWallCalcButton');
+    if (exteriorWallCalcButton) {
+        exteriorWallCalcButton.innerHTML = '<i class="fas fa-calculator"></i> Exterior Wall Calculation';
+    }
+
     const addWindowButton = document.getElementById('addWindowButton');
     if (addWindowButton) {
         addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
     }
-    
+
     const newCalcButton = document.getElementById('newCalculationButton');
     if (newCalcButton) {
         newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
