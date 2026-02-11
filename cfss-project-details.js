@@ -6,6 +6,7 @@ let isAdmin = false;
 let projectData = null;
 let cfssWindData = []; // Store wind data
 let storeyCounter = 0; // Counter for storey labels (RDC, NV1, NV2...)
+let isSavingEquipment = false;
 
 // Global state for floor selection
 let selectedFloorIndices = new Set();
@@ -4534,13 +4535,19 @@ async function forceSaveCurrentState() {
 }
 
 async function handleSaveEquipmentWithRevisions(e) {
+    if (isSavingEquipment) return;
     if (!canModifyProject()) {
         alert('You do not have permission to add walls to this project.');
         return;
     }
-    
+
+    isSavingEquipment = true;
+    const saveBtn = document.getElementById('saveEquipment');
+    const saveBtnOriginal = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
     console.log('💾 Save button clicked for CFSS wall with revisions!');
-    
+
     try {
         const wallData = getWallFormData();
         if (!wallData) {
@@ -4599,18 +4606,23 @@ async function handleSaveEquipmentWithRevisions(e) {
         }
         
         alert('Error saving wall: ' + error.message);
+    } finally {
+        isSavingEquipment = false;
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; saveBtn.style.cursor = 'pointer'; saveBtn.innerHTML = saveBtnOriginal; }
     }
 }
 
 // Updated saveEquipmentEdit with revision system
 async function saveEquipmentEditWithRevisions(index, event) {
     event.preventDefault();
-    
+    if (isSavingEquipment) return;
+
     if (!canModifyProject()) {
         alert('You do not have permission to edit walls in this project.');
         return;
     }
 
+    isSavingEquipment = true;
     try {
         const currentWall = projectEquipment[index];
         const wallName = currentWall.equipment;
@@ -4824,6 +4836,8 @@ async function saveEquipmentEditWithRevisions(index, event) {
     } catch (error) {
         console.error('Error saving wall edit:', error);
         alert('Error saving wall changes: ' + error.message);
+    } finally {
+        isSavingEquipment = false;
     }
 }
 
@@ -6066,12 +6080,14 @@ function cancelEquipmentEdit(index) {
 // Function to save wall edit
 async function saveEquipmentEdit(index, event) {
     event.preventDefault();
-    
+    if (isSavingEquipment) return;
+
     if (!canModifyProject()) {
         alert('You do not have permission to edit walls in this project.');
         return;
     }
 
+    isSavingEquipment = true;
     try {
         const currentWall = projectEquipment[index];
         
@@ -6152,6 +6168,8 @@ async function saveEquipmentEdit(index, event) {
     } catch (error) {
         console.error('Error saving wall edit:', error);
         alert('Error saving wall changes: ' + error.message);
+    } finally {
+        isSavingEquipment = false;
     }
 }
 
@@ -6333,13 +6351,19 @@ function generateWallDetailsHTML(wallData) {
 
 // Handle Save button
 async function handleSaveEquipment(e) {
+    if (isSavingEquipment) return;
     if (!canModifyProject()) {
         alert('You do not have permission to add walls to this project.');
         return;
     }
-    
+
+    isSavingEquipment = true;
+    const saveBtn = document.getElementById('saveEquipment');
+    const saveBtnOriginal = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
     console.log('Save button clicked for CFSS wall!');
-    
+
     try {
         const wallData = getWallFormData();
         if (!wallData) {
@@ -6385,10 +6409,13 @@ async function handleSaveEquipment(e) {
         }, 100);
             
         alert('Wall saved successfully!');
-        
+
     } catch (error) {
         console.error('Error saving wall:', error);
         alert('Error saving wall: ' + error.message);
+    } finally {
+        isSavingEquipment = false;
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; saveBtn.style.cursor = 'pointer'; saveBtn.innerHTML = saveBtnOriginal; }
     }
 }
 

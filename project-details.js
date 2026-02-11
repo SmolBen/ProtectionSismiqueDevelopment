@@ -65,6 +65,7 @@ let currentFormImages = [];
 // Track images being uploaded in edit form
 let currentEditFormImages = [];
 let editingEquipmentIndex = null;
+let isSavingEquipment = false;
 
 // Track selected equipment for bulk deletion
 let selectedEquipmentIndices = new Set();
@@ -4296,12 +4297,14 @@ function cancelEquipmentEdit(index) {
 // Function to save equipment edit
 async function saveEquipmentEdit(index, event) {
     event.preventDefault();
+    if (isSavingEquipment) return;
 
     if (!canModifyProject()) {
         alert('You do not have permission to edit equipment in this project.');
         return;
     }
 
+    isSavingEquipment = true;
     try {
         const currentEquipment = projectEquipment[index];
         const isPipe = currentEquipment.isPipe;
@@ -4481,6 +4484,8 @@ async function saveEquipmentEdit(index, event) {
     } catch (error) {
         console.error('Error saving equipment edit:', error);
         alert('Error saving equipment changes: ' + error.message);
+    } finally {
+        isSavingEquipment = false;
     }
 }
 
@@ -4619,10 +4624,19 @@ function cancelEdit() {
 
 // Handle Save button click (original submit functionality)
 async function handleSaveEquipment(e, keepFormOpen = false) {
+    if (isSavingEquipment) return;
     if (!canModifyProject()) {
         alert('You do not have permission to add equipment to this project.');
         return;
     }
+
+    isSavingEquipment = true;
+    const saveBtn = document.getElementById('saveEquipment');
+    const saveAndKeepBtn = document.getElementById('saveAndKeepEquipment');
+    const saveBtnOriginal = saveBtn ? saveBtn.innerHTML : '';
+    const saveAndKeepBtnOriginal = saveAndKeepBtn ? saveAndKeepBtn.innerHTML : '';
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+    if (saveAndKeepBtn) { saveAndKeepBtn.disabled = true; saveAndKeepBtn.style.opacity = '0.6'; saveAndKeepBtn.style.cursor = 'not-allowed'; saveAndKeepBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
 
     const isEditMode = editingEquipmentIndex !== null;
     console.log(isEditMode ? 'Saving equipment edit...' : 'Save button clicked!');
@@ -4856,6 +4870,10 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
     } catch (error) {
         console.error('Error saving equipment:', error);
         alert('Error saving equipment: ' + error.message);
+    } finally {
+        isSavingEquipment = false;
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; saveBtn.style.cursor = 'pointer'; saveBtn.innerHTML = saveBtnOriginal; }
+        if (saveAndKeepBtn) { saveAndKeepBtn.disabled = false; saveAndKeepBtn.style.opacity = ''; saveAndKeepBtn.style.cursor = 'pointer'; saveAndKeepBtn.innerHTML = saveAndKeepBtnOriginal; }
     }
 }
 
