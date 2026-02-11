@@ -381,6 +381,12 @@
     display: none;
 }
 
+.created-by-line {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }

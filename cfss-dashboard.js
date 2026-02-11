@@ -355,6 +355,11 @@ function renderCFSSProjects(filteredProjects) {
                         <span>${formattedDate}</span>
                     </div>
                     <p>${project.description || ''}</p>
+                    ${project.createdBy && authHelper.isAdmin() ? `
+                        <div class="created-by-line">
+                            Created by: ${project.createdBy}
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="project-status">
                     <div class="status-dot ${statusClass}"></div>
@@ -377,11 +382,6 @@ function renderCFSSProjects(filteredProjects) {
                     ` : ''}
                 </div>
             </div>
-            ${project.createdBy && authHelper.isAdmin() ? `
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                    Created by: ${project.createdBy}
-                </div>
-            ` : ''}
         `;
 
         projectList.appendChild(projectCard);

@@ -267,12 +267,13 @@ function renderProjects(filteredProjects) {
                         <span>${formattedAddress}</span>
                         <span class="meta-separator">•</span>
                         <span>${formattedDate}</span>
-                        ${project.createdBy && authHelper.isAdmin() ? `
-                            <span class="meta-separator">•</span>
-                            <span class="created-by" style="color: #94a3b8;"><i class="fas fa-user" style="font-size: 9px; margin-right: 3px;"></i>${project.createdBy}</span>
-                        ` : ''}
                     </div>
                     <p>${project.description}</p>
+                    ${project.createdBy && authHelper.isAdmin() ? `
+                        <div class="created-by-line">
+                            Created by: ${project.createdBy}
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="project-status">
                     <div class="status-dot ${statusClass}"></div>
