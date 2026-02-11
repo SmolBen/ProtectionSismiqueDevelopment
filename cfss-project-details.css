@@ -2561,6 +2561,10 @@ button:not(.image-remove):not(.thumb-delete) {
         max-width: 100%;
     }
 
+    .meta-separator {
+        display: none;
+    }
+
     .equipment-form-section {
         flex: none;
         padding: 15px;
