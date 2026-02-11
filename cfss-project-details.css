@@ -2476,3 +2476,65 @@ button:not(.image-remove):not(.thumb-delete) {
     color: #28a745;
     cursor: pointer;
 }
+
+/* ============================================= */
+/* MOBILE RESPONSIVENESS                         */
+/* ============================================= */
+@media (max-width: 768px) {
+    .container {
+        height: auto;
+        max-height: none;
+    }
+
+    .top-half {
+        min-height: auto;
+    }
+
+    .left-section,
+    .right-section {
+        flex: none;
+        min-height: auto;
+    }
+
+    .equipment-info-compact {
+        max-width: 100%;
+    }
+
+    .equipment-form-section {
+        flex: none;
+    }
+
+    .form-group input,
+    .form-group select {
+        max-width: 100%;
+    }
+
+    #equipmentFormElement div[style*="display: flex"][style*="gap: 15px"] {
+        flex-direction: column;
+    }
+
+    .form-tabs {
+        flex-wrap: wrap;
+    }
+
+    .form-tab {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .equipment-details-container {
+        flex-direction: column;
+    }
+
+    .equipment-actions-compact {
+        min-width: auto;
+        gap: 4px;
+    }
+
+    .edit-image-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

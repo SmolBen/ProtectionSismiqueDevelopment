@@ -787,23 +787,28 @@
     .top-half {
         flex-direction: column;
     }
-    
+
     .left-section,
     .right-section {
         flex: none;
-        min-height: 300px;
+        min-height: auto;
     }
-    
+
+    .container {
+        height: auto;
+        max-height: none;
+    }
+
     .calculation-sections {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .equipment-buttons {
         flex-direction: column;
         gap: 5px;
     }
-    
+
     .equipment-header {
         flex-direction: column;
         align-items: flex-start;
@@ -836,7 +841,7 @@
 
     .equipment-image-section {
         min-width: 120px;
-        max-width: 150px;
+        max-width: none;
     }
 
     .equipment-meta-compact {
@@ -848,16 +853,78 @@
     .equipment-meta-compact .meta-separator {
         display: none;
     }
+
+    .equipment-info-compact {
+        max-width: 100%;
+    }
+
+    .equipment-actions-compact {
+        min-width: auto;
+        flex-wrap: wrap;
+    }
+
+    .form-group input,
+    .form-group select {
+        max-width: 100%;
+    }
+
+    .mode-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .mode-btn {
+        padding: 14px;
+    }
+
+    #equipmentFormElement div[style*="display: flex"][style*="gap: 15px"] {
+        flex-direction: column;
+    }
+
+    .form-tabs {
+        flex-wrap: wrap;
+    }
+
+    .form-tab {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .seismic-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .seismic-grid p.full-width {
+        grid-column: span 1;
+    }
 }
 
 @media (max-width: 480px) {
     .equipment-image-section {
         min-width: 100px;
-        max-width: 120px;
+        max-width: none;
     }
-    
+
     .equipment-actions-compact {
-        min-width: 150px;
+        min-width: auto;
+        gap: 4px;
+    }
+
+    .equipment-details-container {
+        flex-direction: column;
+    }
+
+    .mode-btn {
+        padding: 12px;
+    }
+
+    .mode-btn i {
+        font-size: 20px;
+    }
+
+    .edit-image-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 

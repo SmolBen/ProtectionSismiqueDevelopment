@@ -531,16 +531,48 @@ h3 {
         margin: 12px auto;
         padding: 0 12px;
     }
-    
+
     .navbar .title {
         font-size: 16px;
     }
-    
+
     h1 {
         font-size: 24px;
     }
-    
+
     .project-card {
         padding: 20px;
+    }
+
+    .user-info .user-details {
+        display: none;
+    }
+
+    .user-info {
+        gap: 8px;
+    }
+
+    .logout-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .container {
+        height: auto;
+        max-height: none;
+    }
+
+    .top-half {
+        min-height: auto;
+    }
+
+    .left-section,
+    .right-section {
+        flex: none;
+    }
+
+    .title-area {
+        flex-wrap: wrap;
+        gap: 8px;
     }
 }

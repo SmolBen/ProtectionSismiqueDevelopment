@@ -523,6 +523,56 @@
             .clear-filters-btn {
                 margin-left: 0;
             }
+
+            .stats-bar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .sheet-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .sheet-tab {
+                flex-shrink: 0;
+            }
+
+            .data-table {
+                font-size: 11px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 8px 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .back-btn,
+            .refresh-btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .classifications-container {
+                padding: 12px;
+            }
+
+            .pagination button {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
