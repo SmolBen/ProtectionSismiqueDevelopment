@@ -1647,6 +1647,27 @@
         </div>
     </div>
 
+                    <!-- Image Upload Section for Parapet -->
+                    <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #333;">Images:</label>
+                    <div class="image-upload-section" style="position: static; flex: none; width: 100%;">
+                        <div class="upload-controls">
+                            <button type="button" class="camera-btn" id="parapetCameraBtn" title="Upload Image">
+                                <i class="fas fa-camera"></i>
+                                Browse
+                            </button>
+
+                            <input
+                                class="drop-zone"
+                                id="parapetDropZone"
+                                placeholder="Drop or paste image here (Ctrl+V)"
+                                readonly
+                                tabindex="0">
+                        </div>
+
+                        <div class="image-preview-container" id="parapetImagePreviewContainer"></div>
+                        <input type="file" id="parapetImageFileInput" accept="image/*" style="display: none;">
+                    </div>
+
                     <!-- Save Button -->
                     <div style="margin-top: 20px;">
                         <button type="submit" id="saveParapet" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; width: 100%;">
@@ -1654,25 +1675,6 @@
                         </button>
                     </div>
                 </form>
-            </div>
-<!-- Image Upload Section for Parapet -->
-            <div class="image-upload-section">
-                <div class="upload-controls">
-                    <button type="button" class="camera-btn" id="parapetCameraBtn" title="Upload Image">
-                        <i class="fas fa-camera"></i>
-                        Browse
-                    </button>
-                    
-                    <input 
-                        class="drop-zone" 
-                        id="parapetDropZone" 
-                        placeholder="Drop or paste image here (Ctrl+V)"
-                        readonly
-                        tabindex="0">
-                </div>
-                
-                <div class="image-preview-container" id="parapetImagePreviewContainer"></div>
-                <input type="file" id="parapetImageFileInput" accept="image/*" style="display: none;">
             </div>
         </div>
     </div>
