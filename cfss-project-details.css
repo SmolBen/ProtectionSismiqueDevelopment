@@ -2729,6 +2729,22 @@ button:not(.image-remove):not(.thumb-delete) {
         width: 100% !important;
         max-width: 120px;
     }
+
+    /* Composition row: allow wrapping with slightly narrower selects */
+    .composition-item {
+        padding: 6px !important;
+        gap: 4px !important;
+    }
+
+    .composition-item > div[style*="flex-wrap: nowrap"] {
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+    }
+
+    .composition-item select {
+        padding: 6px 4px !important;
+        font-size: 12px !important;
+    }
 }
 
 @media (max-width: 480px) {
