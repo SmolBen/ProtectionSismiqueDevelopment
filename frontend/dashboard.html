@@ -98,6 +98,16 @@
                             <option value="ventilation">Ventilation</option>
                         </select>
                     </div>
+                    <div class="bulk-actions" id="bulkActions">
+                        <label class="select-all-wrapper">
+                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                            Select All
+                        </label>
+                        <button class="delete-selected-btn" id="deleteSelectedBtn" onclick="deleteSelectedProjects()">
+                            <i class="fas fa-trash"></i>
+                            Delete Selected (<span id="selectedCount">0</span>)
+                        </button>
+                    </div>
                     <button id="createProjectButton" class="button primary" style="margin-left: auto; padding: 6px 12px; font-size: 13px;">
                         <i class="fas fa-plus"></i> New
                     </button>

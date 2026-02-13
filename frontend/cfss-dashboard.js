@@ -4,6 +4,8 @@ const apiUrl = 'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/proje
 
 // Initialize authHelper for dashboard
 let authHelper;
+let selectedProjectIds = new Set();
+let currentRenderedProjects = [];
 
 // Initialize CFSS dashboard
 window.addEventListener('load', async function() {
@@ -313,7 +315,15 @@ window.debugAPIConnection = debugAPIConnection;
 function renderCFSSProjects(filteredProjects) {
     const projectList = document.getElementById('projectList');
     projectList.innerHTML = '';
-    
+    currentRenderedProjects = filteredProjects;
+
+    // Clean up selected IDs that are no longer visible
+    const visibleIds = new Set(filteredProjects.map(p => p.id));
+    for (const id of selectedProjectIds) {
+        if (!visibleIds.has(id)) selectedProjectIds.delete(id);
+    }
+    updateSelectionUI();
+
     if (filteredProjects.length === 0) {
         projectList.innerHTML = `
             <div class="list-header">CFSS Projects (0)</div>
@@ -323,28 +333,33 @@ function renderCFSSProjects(filteredProjects) {
         `;
         return;
     }
-    
+
     // Add list header
     const listHeader = document.createElement('div');
     listHeader.className = 'list-header';
     listHeader.textContent = `CFSS Projects (${filteredProjects.length})`;
     projectList.appendChild(listHeader);
-    
+
     filteredProjects.forEach((project) => {
         const formattedAddress = `${project.addressLine1 || ''}${project.city ? ', ' + project.city : ''}${project.province ? ', ' + project.province : ''}${project.country ? ', ' + project.country : ''}`;
-        const formattedDate = project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
+        const formattedDate = project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
         }) : 'N/A';
-        
+
         // Get status dot class
         const statusClass = project.status ? project.status.toLowerCase().replace(' ', '-') : 'planning';
-        
+
+        const isSelected = selectedProjectIds.has(project.id);
+        const canModify = authHelper.canModifyProject(project);
+
         const projectCard = document.createElement('div');
-        projectCard.className = 'project-card';
+        projectCard.className = `project-card${isSelected ? ' selected' : ''}`;
+        projectCard.dataset.projectId = project.id;
         projectCard.innerHTML = `
             <div class="project-main">
+                ${canModify ? `<input type="checkbox" class="project-checkbox" ${isSelected ? 'checked' : ''} data-id="${project.id}">` : ''}
                 <div class="project-info">
                     <h2>${project.name || 'Untitled'}</h2>
                     <div class="project-meta">
@@ -374,7 +389,7 @@ function renderCFSSProjects(filteredProjects) {
                         <i class="fas fa-copy"></i>
                         Copy
                     </button>
-                    ${authHelper.canModifyProject(project) ? `
+                    ${canModify ? `
                         <button class="delete-project" data-id="${project.id}" title="Delete">
                             <i class="fas fa-trash"></i>
                             Delete
@@ -386,10 +401,25 @@ function renderCFSSProjects(filteredProjects) {
 
         projectList.appendChild(projectCard);
 
+        // Checkbox click handler
+        const checkbox = projectCard.querySelector('.project-checkbox');
+        if (checkbox) {
+            checkbox.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            checkbox.addEventListener('change', (e) => {
+                e.stopPropagation();
+                toggleProjectSelect(project.id, e.target.checked, projectCard);
+            });
+        }
+
         // Add click event to entire card for navigation
         const detailsPage = project.isLimitedProject ? 'limited-cfss-project-details.html' : 'cfss-project-details.html';
-        
-        projectCard.addEventListener('click', () => {
+
+        projectCard.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('.project-checkbox')) {
+                return;
+            }
             window.location.href = `${detailsPage}?id=${project.id}`;
         });
 
@@ -633,6 +663,105 @@ function openNewProjectOverview() {
     window.location.href = 'create-project-overview.html';
 }
 
+// Bulk selection functions
+function toggleProjectSelect(projectId, isChecked, cardEl) {
+    if (isChecked) {
+        selectedProjectIds.add(projectId);
+        cardEl.classList.add('selected');
+    } else {
+        selectedProjectIds.delete(projectId);
+        cardEl.classList.remove('selected');
+    }
+    updateSelectionUI();
+}
+
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.project-checkbox');
+
+    checkboxes.forEach(cb => {
+        const id = cb.dataset.id;
+        const card = cb.closest('.project-card');
+        cb.checked = selectAllCheckbox.checked;
+        if (selectAllCheckbox.checked) {
+            selectedProjectIds.add(id);
+            card.classList.add('selected');
+        } else {
+            selectedProjectIds.delete(id);
+            card.classList.remove('selected');
+        }
+    });
+    updateSelectionUI();
+}
+
+function updateSelectionUI() {
+    const count = selectedProjectIds.size;
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+
+    if (selectedCountEl) selectedCountEl.textContent = count;
+    if (bulkActions) bulkActions.classList.toggle('visible', count > 0);
+
+    // Update select-all checkbox state
+    if (selectAllCheckbox) {
+        const allCheckboxes = document.querySelectorAll('.project-checkbox');
+        const checkedCount = document.querySelectorAll('.project-checkbox:checked').length;
+        selectAllCheckbox.checked = allCheckboxes.length > 0 && checkedCount === allCheckboxes.length;
+        selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+    }
+}
+
+async function deleteSelectedProjects() {
+    const count = selectedProjectIds.size;
+    if (count === 0) return;
+    if (!confirm(`Delete ${count} selected CFSS project${count > 1 ? 's' : ''}? This cannot be undone.`)) return;
+
+    const ids = [...selectedProjectIds];
+    let successCount = 0;
+    let failCount = 0;
+
+    // Hide selected cards immediately
+    ids.forEach(id => {
+        const card = document.querySelector(`.project-card[data-project-id="${id}"]`);
+        if (card) card.style.display = 'none';
+    });
+
+    // Delete sequentially to avoid throttling
+    for (const id of ids) {
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'DELETE',
+                headers: {
+                    ...authHelper.getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id })
+            });
+            if (response.ok) {
+                successCount++;
+            } else {
+                failCount++;
+            }
+        } catch (error) {
+            console.error('Error deleting CFSS project:', id, error);
+            failCount++;
+        }
+    }
+
+    selectedProjectIds.clear();
+
+    // Refresh
+    await Promise.all([
+        fetchCFSSProjects(),
+        loadCFSSDashboardStats()
+    ]);
+
+    if (failCount > 0) {
+        alert(`Deleted ${successCount} project${successCount !== 1 ? 's' : ''}. ${failCount} failed.`);
+    }
+}
+
 // Make functions available globally
 window.switchToSeismic = switchToSeismic;
 window.openUserManagement = openUserManagement;
@@ -640,3 +769,5 @@ window.viewAllProjects = viewAllProjects;
 window.openVerifyBulkProjects = openVerifyBulkProjects;
 window.openEmailClassifications = openEmailClassifications;
 window.openNewProjectOverview = openNewProjectOverview;
+window.toggleSelectAll = toggleSelectAll;
+window.deleteSelectedProjects = deleteSelectedProjects;
