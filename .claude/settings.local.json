@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(aws apigateway get-stages:*)",
+      "Bash(aws apigateway:*)",
+      "Bash(timeout:*)",
+      "Bash(aws logs describe-log-groups:*)",
+      "Bash(MSYS_NO_PATHCONV=1 aws logs describe-log-groups:*)",
+      "Bash(MSYS_NO_PATHCONV=1 aws logs:*)",
+      "Bash(MSYS_NO_PATHCONV=1 PYTHONIOENCODING=utf-8 aws logs filter-log-events:*)",
+      "Bash(chcp:*)",
+      "Bash(iconv:*)",
+      "Bash(MSYS_NO_PATHCONV=1 PYTHONUTF8=1 aws logs filter-log-events:*)",
+      "Bash(MSYS_NO_PATHCONV=1 aws apigateway get-gateway-responses:*)"
+    ]
+  }
+}

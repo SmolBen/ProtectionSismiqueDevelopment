@@ -1907,14 +1907,40 @@ equipment.images.push({
 });
 } 
 
+// Concurrency limiter for image signing requests to avoid Lambda throttling
+const imageSignQueue = { running: 0, max: 4, queue: [] };
+function enqueueImageSign(fn) {
+    return new Promise((resolve, reject) => {
+        imageSignQueue.queue.push({ fn, resolve, reject });
+        drainImageSignQueue();
+    });
+}
+function drainImageSignQueue() {
+    while (imageSignQueue.running < imageSignQueue.max && imageSignQueue.queue.length > 0) {
+        const { fn, resolve, reject } = imageSignQueue.queue.shift();
+        imageSignQueue.running++;
+        fn().then(resolve, reject).finally(() => {
+            imageSignQueue.running--;
+            drainImageSignQueue();
+        });
+    }
+}
+
 async function getSignedImageUrl(projectId, key) {
-const r = await fetch(
-    `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${projectId}/images/sign?key=${encodeURIComponent(key)}`,
-    { headers: getAuthHeaders() }
-);
-if (!r.ok) throw new Error('Failed to sign image URL');
-const { url } = await r.json();
-return url;
+    return enqueueImageSign(async () => {
+        for (let attempt = 0; attempt < 3; attempt++) {
+            const r = await fetch(
+                `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${projectId}/images/sign?key=${encodeURIComponent(key)}`,
+                { headers: getAuthHeaders() }
+            );
+            if (r.ok) {
+                const { url } = await r.json();
+                return url;
+            }
+            if (attempt < 2) await new Promise(res => setTimeout(res, 300 * (attempt + 1)));
+        }
+        throw new Error('Failed to sign image URL');
+    });
 }
 
 // Helper function to hide all conditional fields initially
