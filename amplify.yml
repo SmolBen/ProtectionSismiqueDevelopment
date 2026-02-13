@@ -7,4 +7,46 @@ frontend:
     baseDirectory: frontend
     files:
       - '**/*'
-customRules: []
+customRules:
+  - source: /auth
+    target: /auth.html
+    status: '200'
+  - source: /dashboard
+    target: /dashboard.html
+    status: '200'
+  - source: /create-project
+    target: /create-project.html
+    status: '200'
+  - source: /project-details
+    target: /project-details.html
+    status: '200'
+  - source: /user-management
+    target: /user-management.html
+    status: '200'
+  - source: /email-classifications
+    target: /email-classifications.html
+    status: '200'
+  - source: /create-project-overview
+    target: /create-project-overview.html
+    status: '200'
+  - source: /cfss-dashboard
+    target: /cfss-dashboard.html
+    status: '200'
+  - source: /cfss-create-project
+    target: /cfss-create-project.html
+    status: '200'
+  - source: /cfss-project-details
+    target: /cfss-project-details.html
+    status: '200'
+  - source: /cfss-verify-bulk-projects
+    target: /cfss-verify-bulk-projects.html
+    status: '200'
+  - source: /limited-cfss-dashboard
+    target: /limited-cfss-dashboard.html
+    status: '200'
+  - source: /limited-cfss-create-project
+    target: /limited-cfss-create-project.html
+    status: '200'
+  - source: /limited-cfss-project-details
+    target: /limited-cfss-project-details.html
+    status: '200'
