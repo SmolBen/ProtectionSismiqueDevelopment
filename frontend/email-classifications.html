@@ -1302,7 +1302,7 @@ function createProjectFromRow(rowIndex) {
     allData.headers.forEach(h => {
         if (row[h]) params.set(h, row[h]);
     });
-    window.location.href = 'create-project-overview.html?' + params.toString();
+    window.open('create-project-overview.html?' + params.toString(), '_blank');
 }
     </script>
 </body>
