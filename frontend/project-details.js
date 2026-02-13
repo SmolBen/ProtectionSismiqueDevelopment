@@ -2203,13 +2203,21 @@ function setupImageEventListeners() {
     
     if (equipmentSelect) {
         equipmentSelect.addEventListener('change', function() {
+            this.style.border = '';
+            const msg = this.parentNode.querySelector('.field-validation-msg');
+            if (msg) msg.remove();
             handleEquipmentChange();
             updateEquipmentImage();
         });
     }
-    
+
     if (pipeTypeSelect) {
-        pipeTypeSelect.addEventListener('change', updateEquipmentImage);
+        pipeTypeSelect.addEventListener('change', function() {
+            this.style.border = '';
+            const msg = this.parentNode.querySelector('.field-validation-msg');
+            if (msg) msg.remove();
+            updateEquipmentImage();
+        });
     }
     
     if (installMethodSelect) {
@@ -2319,61 +2327,6 @@ function handleEquipmentChange() {
     toggleSlabCeilingFields();
     toggleMountingTypeField();
 }
-    
-    // Handle NBC Category restrictions for pipes
-    const nbcCategorySelect = document.getElementById('nbcCategory');
-    if (nbcCategorySelect) {
-        if (isPipe) {
-            // For pipes, only show categories 15 and 16
-            nbcCategorySelect.innerHTML = `
-                <option value="15" selected>15 - Pipes, ducts (including contents)</option>
-                <option value="16">16 - Pipes, ducts containing toxic or explosive materials</option>
-            `;
-        } else {
-            // Restore all NBC categories for non-pipe equipment
-            nbcCategorySelect.innerHTML = `
-                <option value="1">1 - All exterior and interior walls except those in Category 2 or 3</option>
-                <option value="2">2 - Cantilever parapet and other cantilever walls except retaining walls</option>
-                <option value="3">3 - Exterior and interior ornamentations and appendages</option>
-                <option value="5">5 - Towers, chimneys, smokestacks and penthouses when connected to or forming part of a building</option>
-                <option value="6">6 - Horizontally cantilevered floors, balconies, beams, etc.</option>
-                <option value="7">7 - Suspended ceilings, light fixtures and other attachments to ceilings with independent vertical support</option>
-                <option value="8">8 - Masonry veneer connections</option>
-                <option value="9">9 - Access floors</option>
-                <option value="10">10 - Masonry or concrete fences more than 1.8 m tall</option>
-                <option value="11-rigid" selected>11 - Machinery, fixtures, equipment and tanks (rigid and rigidly connected)</option>
-                <option value="11-flexible">11 - Machinery, fixtures, equipment and tanks (flexible or flexibly connected)</option>
-                <option value="12-rigid">12 - Machinery with toxic/explosive materials (rigid and rigidly connected)</option>
-                <option value="12-flexible">12 - Machinery with toxic/explosive materials (flexible or flexibly connected)</option>
-                <option value="13">13 - Flat bottom tanks attached directly to a floor at or below grade</option>
-                <option value="14">14 - Flat bottom tanks with toxic/explosive materials at or below grade</option>
-                <option value="15">15 - Pipes, ducts (including contents)</option>
-                <option value="16">16 - Pipes, ducts containing toxic or explosive materials</option>
-                <option value="17">17 - Electrical cable trays, bus ducts, conduits</option>
-                <option value="18">18 - Rigid components with ductile material and connections</option>
-                <option value="19">19 - Rigid components with non-ductile material or connections</option>
-                <option value="20">20 - Flexible components with ductile material and connections</option>
-                <option value="21">21 - Flexible components with non-ductile material or connections</option>
-                <option value="22-machinery">22 - Elevators and escalators (machinery and equipment)</option>
-                <option value="22-rails">22 - Elevators and escalators (elevator rails)</option>
-                <option value="23">23 - Floor-mounted steel pallet storage racks</option>
-                <option value="24">24 - Floor-mounted steel pallet storage racks with toxic/explosive materials</option>
-            `;
-        }
-    }
-    
-    // Show/hide form sections based on equipment type
-    showHideFormSections(isPipe);
-    
-    // Set default install method for pipes
-    if (isPipe) {
-        const installMethodSelect = document.getElementById('installMethod');
-        if (installMethodSelect) {
-            installMethodSelect.value = '4'; // Fixed to Ceiling
-            installMethodSelect.dispatchEvent(new Event('change')); // Trigger change event
-        }
-    }
-
 // Function to show/hide form sections based on equipment type
 function showHideFormSections(isPipe) {
     // If in "photos" mode, keep all calculation fields hidden
@@ -5706,17 +5659,43 @@ function getEquipmentFormData() {
     const installMethod = document.getElementById('installMethod').value;
     const hn = document.getElementById('hn').value;
 
-    // Validation
+    // Validation — highlight missing required fields instead of popups
+    let hasError = false;
+    const equipmentEl = document.getElementById('equipment');
+    const pipeTypeEl = document.getElementById('pipeType');
+
+    // Clear previous validation styling and messages
+    document.querySelectorAll('.field-validation-msg').forEach(el => el.remove());
+    if (equipmentEl) equipmentEl.style.border = '';
+    if (pipeTypeEl) pipeTypeEl.style.border = '';
+
     if (!equipment) {
-        alert('Please select an equipment type.');
-        return null;
+        if (equipmentEl) {
+            equipmentEl.style.border = '2px solid #ff0000';
+            const msg = document.createElement('div');
+            msg.className = 'field-validation-msg';
+            msg.style.cssText = 'color:#ff0000;font-size:12px;margin-top:4px;';
+            msg.textContent = 'Please enter or select equipment name';
+            equipmentEl.parentNode.insertBefore(msg, equipmentEl.nextSibling);
+            equipmentEl.focus();
+        }
+        hasError = true;
     }
 
-    // Additional validation for pipes
     if (isPipe && !pipeType) {
-        alert('Please select a pipe type.');
-        return null;
+        if (pipeTypeEl) {
+            pipeTypeEl.style.border = '2px solid #ff0000';
+            const msg = document.createElement('div');
+            msg.className = 'field-validation-msg';
+            msg.style.cssText = 'color:#ff0000;font-size:12px;margin-top:4px;';
+            msg.textContent = 'Please select a pipe type';
+            pipeTypeEl.parentNode.insertBefore(msg, pipeTypeEl.nextSibling);
+            if (!hasError) pipeTypeEl.focus();
+        }
+        hasError = true;
     }
+
+    if (hasError) return null;
 
     // No strict validation - tabs are just UI, not equipment types
 
