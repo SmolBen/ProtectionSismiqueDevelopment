@@ -25,7 +25,8 @@ function handleRequest(e) {
       var matchValue = e.parameter.matchValue || '';
       return deleteRow(sheet, rowIndex, emailLink, matchColumn, matchValue);
     } else if (action === 'bulkDelete') {
-      var payload = JSON.parse(e.parameter.payload || '{}');
+      var raw = (e.postData && e.postData.contents) ? e.postData.contents : (e.parameter.payload || '{}');
+      var payload = JSON.parse(raw);
       return bulkDelete(sheet, payload.emailLinks || [], payload.matchColumn || '', payload.matchValues || []);
     } else if (action === 'updateCell') {
       var rowIndex = parseInt(e.parameter.rowIndex);

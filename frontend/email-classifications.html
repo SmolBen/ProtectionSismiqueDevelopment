@@ -1265,14 +1265,11 @@ async function deleteSelected() {
             ? { matchColumn: 'Domain', matchValues: selectedRows.map(r => r['Domain']).filter(Boolean) }
             : { emailLinks: selectedRows.map(r => r['Email Link']).filter(Boolean) };
 
-        const params = new URLSearchParams({
-            action: 'bulkDelete',
-            sheet: currentSheet,
-            payload: JSON.stringify(payload)
-        });
-
         console.log(`Bulk deleting ${selectedRows.length} rows...`);
-        const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=bulkDelete&sheet=${encodeURIComponent(currentSheet)}`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
         const result = await response.json();
         console.log('Bulk delete response:', result);
 
