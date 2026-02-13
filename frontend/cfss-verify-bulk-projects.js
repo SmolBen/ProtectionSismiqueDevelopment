@@ -54,10 +54,10 @@ async function flattenPdfInBrowser(file, scale = 3.75) {
     canvas.height = Math.ceil(renderViewport.height);
     await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.4);
-    const jpgBytes = await (await fetch(dataUrl)).arrayBuffer();
+    const dataUrl = canvas.toDataURL('image/png');
+    const pngBytes = await (await fetch(dataUrl)).arrayBuffer();
 
-    const img      = await out.embedJpg(jpgBytes);
+    const img      = await out.embedPng(pngBytes);
     const outPage = out.addPage([widthPts, heightPts]);
     if (rotation) outPage.setRotation(degrees(rotation));
     outPage.drawImage(img, { x: 0, y: 0, width: widthPts, height: heightPts });
