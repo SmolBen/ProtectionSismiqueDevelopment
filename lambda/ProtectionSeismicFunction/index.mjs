@@ -49,6 +49,15 @@ const PRIVILEGED_FLATTEN_EMAILS = new Set([
     return PRIVILEGED_FLATTEN_EMAILS.has(email) && !!project?.signDocument;
   }
 
+// Helper: update form field appearances with a Unicode-capable font (supports Vietnamese characters like "đ")
+async function updateFieldAppearancesWithUnicodeFont(pdfDoc, form) {
+    pdfDoc.registerFontkit(fontkit);
+    const fontPath = path.resolve('./fonts/RobotoCondensed-Regular.ttf');
+    const fontBuffer = await fs.promises.readFile(fontPath);
+    const unicodeFont = await pdfDoc.embedFont(new Uint8Array(fontBuffer));
+    form.updateFieldAppearances(unicodeFont);
+}
+
 // CORS headers - define once, use everywhere
 const CORS_HEADERS = {
     'Content-Type': 'application/json',
@@ -1633,7 +1642,7 @@ await drawCFSSWindowsSpecificationTable(pdfDoc, page, project);
 // Apply condensed font to projectAddress field (always, regardless of admin status)
 try {
     const form = pdfDoc.getForm();
-    form.updateFieldAppearances();
+    await updateFieldAppearancesWithUnicodeFont(pdfDoc, form);
     await applyProjectAddressCondensedStyle(pdfDoc);
     
     // 🔒 Flatten at the source (same rule as cover/walls)
@@ -2871,7 +2880,7 @@ async function generateCFSSOptionsPages(selectedOptions, project, userInfo) {
                 try {
                     const f = pagePdf.getForm();
                     if (!userInfo.isAdmin || shouldForceFlattenForUser(userInfo, project)) {
-                        f.updateFieldAppearances();
+                        await updateFieldAppearancesWithUnicodeFont(pagePdf, f);
                         f.flatten();
                     }
                 } catch (e) { /* no form */ }
@@ -2893,7 +2902,7 @@ async function generateCFSSOptionsPages(selectedOptions, project, userInfo) {
                 try {
                     const f = pagePdf.getForm();
                     if (!userInfo.isAdmin || shouldForceFlattenForUser(userInfo, project)) {
-                        f.updateFieldAppearances();
+                        await updateFieldAppearancesWithUnicodeFont(pagePdf, f);
                         f.flatten();
                     }
                 } catch (e) { /* no form */ }
@@ -4108,7 +4117,7 @@ async function createFenetrePage(project, userInfo, imageCache = null, templateB
     try {
         const form = pdfDoc.getForm();
         await fillOptionsTemplateFields(pdfDoc, form, project, userInfo, 0, 1);
-        form.updateFieldAppearances();
+        await updateFieldAppearancesWithUnicodeFont(pdfDoc, form);
         await applyProjectAddressCondensedStyle(pdfDoc);
     } catch (e) { /* no form */ }
     console.log(`✅ [FENETRE] T+${Date.now() - pageStart}ms: Form filled in ${Date.now() - formStart}ms`);
@@ -4608,9 +4617,9 @@ async function fillOptionsTemplateFields(pdfDoc, form, project, userInfo, pageNu
         });
         
         console.log(`✅ Filled ${filledCount} options form fields`);
-        
+
         try {
-            form.updateFieldAppearances();
+            await updateFieldAppearancesWithUnicodeFont(pdfDoc, form);
             await applyProjectAddressCondensedStyle(pdfDoc);
         } catch (error) {
             console.warn('Could not update options form appearances:', error.message);
@@ -5199,13 +5208,13 @@ async function fillCoverPageTemplate(templateBuffer, project, userInfo) {
         });
 
         try {
-            form.updateFieldAppearances();
+            await updateFieldAppearancesWithUnicodeFont(pdfDoc, form);
             await applyProjectAddressCondensedStyle(pdfDoc);
 
         } catch (error) {
             console.warn('Could not update form appearances:', error.message);
         }
-        
+
         // ✅ NEW: Flatten cover page for non-admin users BEFORE returning
         if (!userInfo.isAdmin) {
             console.log('🔒 Flattening cover page form fields for non-admin user...');
@@ -5491,12 +5500,12 @@ async function fillEquipmentTemplateOptimized(templateBuffer, equipmentData, pro
         });
 
         try {
-            form.updateFieldAppearances();
+            await updateFieldAppearancesWithUnicodeFont(pdfDoc, form);
             await applyProjectAddressCondensedStyle(pdfDoc);
         } catch (error) {
             console.warn('⚠️ Could not update form appearances:', error.message);
         }
-        
+
         // NEW: Flatten form fields for non-admin users
         if (!userInfo.isAdmin) {
             console.log('🔒 Flattening equipment form fields for non-admin user...');
@@ -7286,7 +7295,7 @@ async function createCFSSWallPageWithPagination(templateBuffer, wallGroups, proj
         // Apply condensed font to projectAddress field
         try {
             const form = pdfDoc.getForm();
-            form.updateFieldAppearances();
+            await updateFieldAppearancesWithUnicodeFont(pdfDoc, form);
             await applyProjectAddressCondensedStyle(pdfDoc);
         } catch (error) {
             console.warn('Could not update wall form appearances or apply condensed style:', error.message);
@@ -7925,7 +7934,7 @@ async function createCFSSParapetPageWithPagination(templateBuffer, parapets, pro
         // Apply condensed font to projectAddress field
         try {
             const form = pdfDoc.getForm();
-            form.updateFieldAppearances();
+            await updateFieldAppearancesWithUnicodeFont(pdfDoc, form);
             await applyProjectAddressCondensedStyle(pdfDoc);
         } catch (error) {
             console.warn('Could not update parapet form appearances or apply condensed style:', error.message);
@@ -8919,7 +8928,7 @@ const templateDoc = await PDFDocument.load(filledTemplateBuffer);
 try {
 const tForm = templateDoc.getForm();
 if (!userInfo.isAdmin || shouldForceFlattenForUser(userInfo, project)) {
-tForm.updateFieldAppearances();
+await updateFieldAppearancesWithUnicodeFont(templateDoc, tForm);
 await applyProjectAddressCondensedStyle(pdfDoc);
 tForm.flatten();
 }
@@ -9224,7 +9233,7 @@ function hexToRgb(colorString) {
       console.log(`✅ Filled ${filledCount} custom page form fields in template`);
       
       try {
-        form.updateFieldAppearances();
+        await updateFieldAppearancesWithUnicodeFont(pdfDoc, form);
         await applyProjectAddressCondensedStyle(pdfDoc);
       } catch (error) {
         console.warn('Could not update custom page form appearances:', error.message);
@@ -9414,7 +9423,14 @@ async function generateCFSSSummaryTable(project, userInfo) {
                 const form = pdfDoc.getForm();
                 // CHANGED: Pass revision data to summary template
                 await fillCFSSWallsTemplateFields(form, project, userInfo, revisionData);
-                form.updateFieldAppearances();
+
+                // Use Unicode-capable font for updateFieldAppearances to support Vietnamese characters (e.g. "đ")
+                pdfDoc.registerFontkit(fontkit);
+                const summaryFontPath = path.resolve('./fonts/RobotoCondensed-Regular.ttf');
+                const summaryFontBuffer = await fs.promises.readFile(summaryFontPath);
+                const summaryUnicodeFont = await pdfDoc.embedFont(new Uint8Array(summaryFontBuffer));
+                form.updateFieldAppearances(summaryUnicodeFont);
+
                 await applyProjectAddressCondensedStyle(pdfDoc);
                 if (!userInfo.isAdmin || shouldForceFlattenForUser(userInfo, project)) {
                     form.flatten(); // flatten form fields (allowed cases)
@@ -9441,7 +9457,14 @@ async function generateCFSSSummaryTable(project, userInfo) {
                 const form = pdfDoc.getForm();
                 // CHANGED: Pass revision data to summary template
                 await fillCFSSWallsTemplateFields(form, project, userInfo, revisionData);
-                form.updateFieldAppearances();
+
+                // Use Unicode-capable font for updateFieldAppearances to support Vietnamese characters (e.g. "đ")
+                pdfDoc.registerFontkit(fontkit);
+                const summaryFontPath2 = path.resolve('./fonts/RobotoCondensed-Regular.ttf');
+                const summaryFontBuffer2 = await fs.promises.readFile(summaryFontPath2);
+                const summaryUnicodeFont2 = await pdfDoc.embedFont(new Uint8Array(summaryFontBuffer2));
+                form.updateFieldAppearances(summaryUnicodeFont2);
+
                 await applyProjectAddressCondensedStyle(pdfDoc);
                 form.flatten();
             } catch (formError) {
