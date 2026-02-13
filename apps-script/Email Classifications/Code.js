@@ -24,6 +24,9 @@ function handleRequest(e) {
       var matchColumn = e.parameter.matchColumn || '';
       var matchValue = e.parameter.matchValue || '';
       return deleteRow(sheet, rowIndex, emailLink, matchColumn, matchValue);
+    } else if (action === 'bulkDelete') {
+      var payload = JSON.parse(e.parameter.payload || '{}');
+      return bulkDelete(sheet, payload.emailLinks || [], payload.matchColumn || '', payload.matchValues || []);
     } else if (action === 'updateCell') {
       var rowIndex = parseInt(e.parameter.rowIndex);
       var column = e.parameter.column;
@@ -109,6 +112,46 @@ function deleteRow(sheet, rowIndex, emailLink, matchColumn, matchValue) {
   
   sheet.deleteRow(rowIndex);
   return jsonResponse({ success: true, deletedRow: rowIndex });
+}
+
+function bulkDelete(sheet, emailLinks, matchColumn, matchValues) {
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+
+  // Build a set of values to match against
+  var deleteSet = {};
+  var colIndex = -1;
+
+  if (emailLinks.length > 0) {
+    colIndex = headers.indexOf('Email Link');
+    if (colIndex === -1) return jsonResponse({ error: 'Email Link column not found' }, 400);
+    for (var i = 0; i < emailLinks.length; i++) deleteSet[emailLinks[i]] = true;
+  } else if (matchColumn && matchValues.length > 0) {
+    colIndex = headers.indexOf(matchColumn);
+    if (colIndex === -1) return jsonResponse({ error: 'Column not found: ' + matchColumn }, 400);
+    for (var i = 0; i < matchValues.length; i++) deleteSet[matchValues[i]] = true;
+  } else {
+    return jsonResponse({ error: 'No delete criteria provided' }, 400);
+  }
+
+  // Collect rows to keep (header + non-matching rows)
+  var rowsToKeep = [headers];
+  var deletedCount = 0;
+  for (var i = 1; i < data.length; i++) {
+    if (deleteSet[data[i][colIndex]]) {
+      deletedCount++;
+    } else {
+      rowsToKeep.push(data[i]);
+    }
+  }
+
+  // Clear and rewrite — much faster than deleting rows one by one
+  sheet.clearContents();
+  if (rowsToKeep.length > 0) {
+    sheet.getRange(1, 1, rowsToKeep.length, rowsToKeep[0].length).setValues(rowsToKeep);
+  }
+
+  return jsonResponse({ success: true, deletedCount: deletedCount });
 }
 
 function updateCell(sheet, rowIndex, column, value) {

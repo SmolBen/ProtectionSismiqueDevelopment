@@ -1212,31 +1212,25 @@
 
 function toggleSelectAll() {
     const selectAll = document.getElementById('selectAll');
-    const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
-    const endIdx = startIdx + ROWS_PER_PAGE;
-    const pageRows = filteredRows.slice(startIdx, endIdx);
-    
-    pageRows.forEach(row => {
+
+    filteredRows.forEach(row => {
         row._selected = selectAll.checked;
         const allDataRow = allData.rows.find(r => r._rowIndex === row._rowIndex);
         if (allDataRow) allDataRow._selected = selectAll.checked;
     });
-    
+
     renderTable();
 }
 
 function updateSelectAllCheckbox() {
     const selectAll = document.getElementById('selectAll');
     if (!selectAll) return;
-    
-    const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
-    const endIdx = startIdx + ROWS_PER_PAGE;
-    const pageRows = filteredRows.slice(startIdx, endIdx);
-    
-    const selectedOnPage = pageRows.filter(r => r._selected).length;
-    selectAll.checked = selectedOnPage === pageRows.length && pageRows.length > 0;
-    selectAll.indeterminate = selectedOnPage > 0 && selectedOnPage < pageRows.length;
-    
+
+    const totalFiltered = filteredRows.length;
+    const selectedFiltered = filteredRows.filter(r => r._selected).length;
+    selectAll.checked = selectedFiltered === totalFiltered && totalFiltered > 0;
+    selectAll.indeterminate = selectedFiltered > 0 && selectedFiltered < totalFiltered;
+
     updateSelectionUI();
 }
 
@@ -1251,7 +1245,7 @@ function updateSelectionUI() {
 
 async function deleteSelected() {
     const selectedRows = allData.rows.filter(r => r._selected).sort((a, b) => b._rowIndex - a._rowIndex);
-    
+
     if (selectedRows.length === 0) return;
     if (!confirm(`Delete ${selectedRows.length} row${selectedRows.length > 1 ? 's' : ''}?`)) return;
 
@@ -1264,30 +1258,37 @@ async function deleteSelected() {
         if (tr) tr.style.display = 'none';
     });
 
-    // Delete from highest index to lowest to avoid index shifting issues
-    for (const row of selectedRows) {
     try {
+        // Build bulk delete payload
+        const isClient = currentSheet === 'Client';
+        const payload = isClient
+            ? { matchColumn: 'Domain', matchValues: selectedRows.map(r => r['Domain']).filter(Boolean) }
+            : { emailLinks: selectedRows.map(r => r['Email Link']).filter(Boolean) };
+
         const params = new URLSearchParams({
-            action: 'deleteRow',
+            action: 'bulkDelete',
             sheet: currentSheet,
-            rowIndex: row._rowIndex,
-            emailLink: row['Email Link'] || '',
-            matchColumn: currentSheet === 'Client' ? 'Domain' : '',
-            matchValue: currentSheet === 'Client' ? (row['Domain'] || '') : ''
+            payload: JSON.stringify(payload)
         });
-        console.log('Deleting row:', row._rowIndex, 'emailLink:', row['Email Link']);
+
+        console.log(`Bulk deleting ${selectedRows.length} rows...`);
         const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
         const result = await response.json();
-        console.log('Delete response:', result);
-            
-            // Adjust indices locally
-            allData.rows = allData.rows.filter(r => r._rowIndex !== row._rowIndex);
-            allData.rows.forEach(r => { if (r._rowIndex > row._rowIndex) r._rowIndex--; });
-            filteredRows = filteredRows.filter(r => r._rowIndex !== row._rowIndex);
-            filteredRows.forEach(r => { if (r._rowIndex > row._rowIndex) r._rowIndex--; });
-        } catch (error) {
-            console.error('Error deleting row:', error);
-        }
+        console.log('Bulk delete response:', result);
+
+        // Remove deleted rows from local data
+        const selectedIndices = new Set(selectedRows.map(r => r._rowIndex));
+        allData.rows = allData.rows.filter(r => !selectedIndices.has(r._rowIndex));
+        filteredRows = filteredRows.filter(r => !selectedIndices.has(r._rowIndex));
+
+        // Re-index remaining rows
+        allData.rows.forEach((r, i) => { r._rowIndex = i + 2; });
+        filteredRows.forEach(r => {
+            const match = allData.rows.find(a => a['Email Link'] === r['Email Link'] || a === r);
+            if (match) r._rowIndex = match._rowIndex;
+        });
+    } catch (error) {
+        console.error('Error bulk deleting rows:', error);
     }
 
     document.getElementById('totalCount').textContent = allData.rows.length;
