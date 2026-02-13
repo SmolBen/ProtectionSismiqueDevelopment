@@ -6570,3 +6570,59 @@ window.duplicateEquipment = duplicateEquipment;
 window.toggleEquipmentSelection = toggleEquipmentSelection;
 window.toggleSelectAll = toggleSelectAll;
 window.deleteSelectedEquipment = deleteSelectedEquipment;
+window.toggleVoiceInput = toggleVoiceInput;
+
+// ========== Voice Input for Equipment Name ==========
+let speechRecognition = null;
+let isListening = false;
+
+function toggleVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert('Voice input is not supported in this browser.');
+        return;
+    }
+
+    const micBtn = document.getElementById('micBtn');
+    const input = document.getElementById('equipment');
+
+    if (isListening && speechRecognition) {
+        speechRecognition.stop();
+        return;
+    }
+
+    speechRecognition = new SpeechRecognition();
+    speechRecognition.lang = 'en-US';
+    speechRecognition.interimResults = true;
+    speechRecognition.maxAlternatives = 1;
+
+    const textBefore = input.value;
+
+    speechRecognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add('listening');
+    };
+
+    speechRecognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = textBefore ? textBefore + ' ' + transcript : transcript;
+    };
+
+    speechRecognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove('listening');
+        speechRecognition = null;
+    };
+
+    speechRecognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        isListening = false;
+        micBtn.classList.remove('listening');
+        speechRecognition = null;
+        if (event.error === 'not-allowed') {
+            alert('Microphone access denied. Please allow microphone access in your browser settings.');
+        }
+    };
+
+    speechRecognition.start();
+}

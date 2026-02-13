@@ -115,7 +115,12 @@
                             <!-- 1. Equipment Selection -->
                             <div class="form-group">
                                 <label for="equipment">Equipment:</label>
-                                <input type="text" id="equipment" name="equipment" list="equipmentOptions" placeholder="Select or type equipment..." required>
+                                <div class="input-with-mic">
+                                    <input type="text" id="equipment" name="equipment" list="equipmentOptions" placeholder="Select or type equipment..." required>
+                                    <button type="button" class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" title="Voice input">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                </div>
                                 <datalist id="equipmentOptions">
                                     <!-- Options will be populated dynamically based on the selected domain -->
                                 </datalist>
