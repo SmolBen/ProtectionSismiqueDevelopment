@@ -711,18 +711,6 @@
                     return;
                 }
 
-                // Check password
-                const hasAccess = sessionStorage.getItem('ecAccess') === 'true';
-                if (!hasAccess) {
-                    const password = prompt('Enter password to access Email Classifications:');
-                    if (password !== 'sismique2000') {
-                        alert('Incorrect password');
-                        window.location.href = 'dashboard.html';
-                        return;
-                    }
-                    sessionStorage.setItem('ecAccess', 'true');
-                }
-
                 authHelper.updateUserInterface();
 
                 // Check if user is in the special emails list

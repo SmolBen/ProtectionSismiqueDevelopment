@@ -621,16 +621,7 @@ function openEmailClassifications() {
         return;
     }
 
-    const password = prompt('Enter password to access Email Classifications:');
-    if (password === null) {
-        return; // User cancelled
-    }
-
-    if (password === 'sismique2000') {
-        window.location.href = 'email-classifications.html';
-    } else {
-        alert('Incorrect password');
-    }
+    window.location.href = 'email-classifications.html';
 }
 
 function openNewProjectOverview() {
@@ -639,16 +630,7 @@ function openNewProjectOverview() {
         return;
     }
 
-    const password = prompt('Enter password to access New Project:');
-    if (password === null) {
-        return;
-    }
-
-    if (password === 'sismique2000') {
-        window.location.href = 'create-project-overview.html';
-    } else {
-        alert('Incorrect password');
-    }
+    window.location.href = 'create-project-overview.html';
 }
 
 // Make functions available globally
