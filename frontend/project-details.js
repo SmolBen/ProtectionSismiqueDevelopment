@@ -6592,7 +6592,7 @@ function toggleVoiceInput() {
     }
 
     speechRecognition = new SpeechRecognition();
-    speechRecognition.lang = 'en-US';
+    speechRecognition.lang = navigator.language || navigator.userLanguage || 'en-US';
     speechRecognition.interimResults = true;
     speechRecognition.maxAlternatives = 1;
 
