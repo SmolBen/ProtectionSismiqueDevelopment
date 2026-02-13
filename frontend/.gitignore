@@ -1,9 +1,0 @@
-# API keys and secrets
-config.js
-.env
-.env.local
-.env.production
-
-# Other sensitive files
-*.key
-secrets.js
