@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         projectList.innerHTML = '';
         
         if (filteredProjects.length === 0) {
-            projectList.innerHTML = '<p>No projects found. Create your first project to get started!</p>';
+            projectList.innerHTML = `<p>${t('dashboard.noProjectsBasic')}</p>`;
             return;
         }
 
@@ -144,12 +144,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <h2>${project.name}</h2>
                 <p>${project.description}</p>
                 <span class="status ${project.status.toLowerCase().replace(' ', '-')}">${project.status}</span>
-                <p>Type: ${project.type}</p>
-                <p>Domain: ${project.domain || 'N/A'}</p>
-                <p>Address: ${formattedAddress}</p>
-                ${project.createdAt ? `<p><small>Created: ${new Date(project.createdAt).toLocaleDateString()}</small></p>` : ''}
-                <button class="view-details">View Details</button>
-                ${authHelper.canModifyProject(project) ? `<button class="delete-project" data-id="${project.id}">Delete</button>` : ''}
+                <p>${t('project.type')}: ${project.type}</p>
+                <p>${t('project.domain')}: ${project.domain || 'N/A'}</p>
+                <p>${t('project.address')}: ${formattedAddress}</p>
+                ${project.createdAt ? `<p><small>${t('project.created')}: ${new Date(project.createdAt).toLocaleDateString()}</small></p>` : ''}
+                <button class="view-details">${t('common.view')}</button>
+                ${authHelper.canModifyProject(project) ? `<button class="delete-project" data-id="${project.id}">${t('common.delete')}</button>` : ''}
             `;
 
             // Append the project card to the list
@@ -193,13 +193,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderProjects(filteredProjects);
         } catch (error) {
             console.error('Error filtering projects:', error);
-            alert('Error filtering projects: ' + error.message);
+            alert(t('dashboard.errorFiltering') + error.message);
         }
     }
 
     // Function to delete a project with simplified authentication
     async function deleteProject(id) {
-        if (!confirm('Are you sure you want to delete this project?')) {
+        if (!confirm(t('project.deleteConfirm'))) {
             return;
         }
 
@@ -223,14 +223,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log('✅ Delete response:', result);
 
             // Show success message
-            alert('Project deleted successfully!');
+            alert(t('project.deleteSuccess'));
 
             // Fetch projects again to update the list
             await fetchProjects();
 
         } catch (error) {
             console.error('❌ Error deleting project:', error);
-            alert('Error deleting project: ' + error.message);
+            alert(t('project.deleteError') + error.message);
         }
     }
 

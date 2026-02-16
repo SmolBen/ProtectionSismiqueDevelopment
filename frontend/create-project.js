@@ -82,7 +82,7 @@ async function initializeAuth() {
         
         if (!userData) {
             console.log('❌ No user authenticated, redirecting to auth page');
-            alert('Please login to create projects');
+            alert(t('auth.pleaseLogin'));
             window.location.href = 'auth.html';
             return;
         }
@@ -196,11 +196,11 @@ async function getGeocode(address) {
         const formContainer = document.querySelector('.form-container');
         
         if (loading) {
-            submitButton.innerHTML = '<span class="spinner-inline"></span>Creating Project...';
+            submitButton.innerHTML = '<span class="spinner-inline"></span>' + t('createProject.creatingProject');
             submitButton.disabled = true;
             formContainer.classList.add('loading-state');
         } else {
-            submitButton.textContent = 'Create Project';
+            submitButton.textContent = t('createProject.createProject');
             submitButton.disabled = false;
             formContainer.classList.remove('loading-state');
         }
@@ -213,13 +213,13 @@ async function getGeocode(address) {
         try {
             const userData = await authHelper.checkAuthentication();
             if (!userData) {
-                alert('Session expired. Please login again.');
+                alert(t('auth.sessionExpired'));
                 window.location.href = 'auth.html';
                 return;
             }
         } catch (error) {
             console.error('Authentication check failed:', error);
-            alert('Authentication error. Please login again.');
+            alert(t('auth.authError'));
             window.location.href = 'auth.html';
             return;
         }
@@ -268,13 +268,13 @@ async function getGeocode(address) {
             const createdProject = await response.json();
             console.log('✅ Project created successfully:', createdProject);
 
-            alert('Project created successfully!');
+            alert(t('createProject.projectCreated'));
             // Redirect directly to the new project's details page
             window.location.href = `project-details.html?id=${createdProject.id}`;
 
         } catch (error) {
             console.error('❌ Error creating project:', error);
-            alert('Error creating project: ' + error.message);
+            alert(t('createProject.errorCreating') + error.message);
         } finally {
             // Reset loading state
             setFormLoading(false);

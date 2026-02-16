@@ -580,7 +580,7 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div>
             <div class="spinner"></div>
-            <p>Loading...</p>
+            <p data-i18n="common.loading">Loading...</p>
         </div>
     </div>
 
@@ -595,16 +595,16 @@
         <div class="page-header">
             <h1>
                 <i class="fas fa-envelope" style="color: var(--success-color);"></i>
-                Email Classifications
+                <span data-i18n="email.title">Email Classifications</span>
             </h1>
             <div class="header-actions">
                 <button class="back-btn" onclick="window.location.href='dashboard.html'">
                     <i class="fas fa-arrow-left"></i>
-                    Back to Dashboard
+                    <span data-i18n="common.backToDashboard">Back to Dashboard</span>
                 </button>
                 <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
     <i class="fas fa-sync-alt"></i>
-    Refresh
+    <span data-i18n="common.refresh">Refresh</span>
 </button>
         </div>
     </div>
@@ -613,36 +613,36 @@
 
     <div class="filter-section">
             <div class="filter-group">
-                <label>Filter by Column</label>
+                <label data-i18n="email.filterByColumn">Filter by Column</label>
                 <select id="filterColumn">
-                    <option value="">Select column...</option>
+                    <option value="" data-i18n="email.selectColumn">Select column...</option>
                 </select>
             </div>
             <div class="filter-group" id="filterValueGroup">
-                <label>Filter Value</label>
-                <input type="text" id="filterValue" placeholder="Type to filter...">
+                <label data-i18n="email.filterValue">Filter Value</label>
+                <input type="text" id="filterValue" placeholder="Type to filter..." data-i18n-placeholder="email.typeToFilter">
             </div>
             <div class="filter-group" id="filterDateGroup" style="display: none;">
-                <label>Date Range</label>
+                <label data-i18n="email.dateRange">Date Range</label>
                 <select id="filterDateRange">
-                    <option value="">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="this_week">This Week</option>
-                    <option value="this_month">This Month</option>
-                    <option value="this_year">This Year</option>
+                    <option value="" data-i18n="email.allTime">All Time</option>
+                    <option value="today" data-i18n="email.today">Today</option>
+                    <option value="this_week" data-i18n="email.thisWeek">This Week</option>
+                    <option value="this_month" data-i18n="email.thisMonth">This Month</option>
+                    <option value="this_year" data-i18n="email.thisYear">This Year</option>
                 </select>
             </div>
             <button class="clear-filters-btn" onclick="clearFilters()">
-                <i class="fas fa-times"></i> Clear Filters
+                <i class="fas fa-times"></i> <span data-i18n="email.clearFilters">Clear Filters</span>
             </button>
         </div>
 
         <div class="stats-bar" id="statsBar">
-            <span>Total: <strong id="totalCount">0</strong></span>
-            <span>Showing: <strong id="showingCount">0</strong></span>
+            <span><span data-i18n="email.total">Total</span>: <strong id="totalCount">0</strong></span>
+            <span><span data-i18n="email.showing">Showing</span>: <strong id="showingCount">0</strong></span>
             <button class="delete-selected-btn" id="deleteSelectedBtn" onclick="deleteSelected()">
                 <i class="fas fa-trash"></i>
-                Delete Selected (<span id="selectedCount">0</span>)
+                <span data-i18n="email.deleteSelected">Delete Selected</span> (<span id="selectedCount">0</span>)
             </button>
         </div>
 
@@ -659,6 +659,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyn5LmnIGFtdegivHImdSWYm2ArzGm2HTqV9dsCB7ubxbwaD0yyB-uKNgr2-3J4A9DVKw/exec';

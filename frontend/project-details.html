@@ -12,8 +12,8 @@
     <nav class="navbar">
         <div class="navbar-content">
             <div class="title-area">
-                <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique</a>
-                <a href="dashboard.html" class="dashboard-btn">
+                <a href="https://www.protectionsismique2000.com/" class="title" data-i18n="nav.protectionSismique">Protection Sismique</a>
+                <a href="dashboard.html" class="dashboard-btn" data-i18n="nav.dashboard">
                     <i class="fas fa-th-large"></i>
                     Dashboard
                 </a>
@@ -25,44 +25,44 @@
     </nav>
     
     <div class="loading-project" id="loadingProject">
-        <h2>Loading Project...</h2>
-        <p>Please wait while we load the project details.</p>
+        <h2 data-i18n="common.loadingProject">Loading Project...</h2>
+        <p data-i18n="project.pleaseWaitLoading">Please wait while we load the project details.</p>
     </div>
     
     <div class="auth-error" id="authError" style="display: none;">
-        <h2>Authentication Required</h2>
-        <p>Please log in to view project details.</p>
-        <button onclick="window.location.href='auth.html'">Go to Login</button>
+        <h2 data-i18n="project.authRequired">Authentication Required</h2>
+        <p data-i18n="project.pleaseLoginToView">Please log in to view project details.</p>
+        <button onclick="window.location.href='auth.html'" data-i18n="project.goToLogin">Go to Login</button>
     </div>
     
     <div class="access-denied" id="accessDenied" style="display: none;">
-        <h2>Access Denied</h2>
-        <p>You don't have permission to view this project.</p>
-        <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+        <h2 data-i18n="project.accessDenied">Access Denied</h2>
+        <p data-i18n="project.noPermission">You don't have permission to view this project.</p>
+        <button onclick="window.location.href='dashboard.html'" data-i18n="nav.backToDashboard">Back to Dashboard</button>
     </div>
     
     <div class="container" id="projectContainer" style="display: none;">
         <!-- Top Half split into two horizontal sections -->
         <div class="top-half">
             <div class="left-section">
-                <h1>Project Details</h1>
+                <h1 data-i18n="project.projectDetails">Project Details</h1>
                 
                 <div class="project-info-container">
                     <!-- Basic Information -->
                     <div class="basic-info">
-                        <p><strong>Project Name:</strong> <span id="projectName"></span></p>
-                        <p><strong>Description:</strong> <span id="projectDescription"></span></p>
-                        <p><strong>Type:</strong> <span id="projectType"></span></p>
-                        <p><strong>Domain:</strong> <span id="projectDomain"></span></p>
-                        <p><strong>Status:</strong> 
+                        <p><strong data-i18n="project.projectName">Project Name:</strong> <span id="projectName"></span></p>
+                        <p><strong data-i18n="project.description">Description:</strong> <span id="projectDescription"></span></p>
+                        <p><strong data-i18n="project.type">Type:</strong> <span id="projectType"></span></p>
+                        <p><strong data-i18n="project.domain">Domain:</strong> <span id="projectDomain"></span></p>
+                        <p><strong data-i18n="project.status">Status:</strong>
                             <select id="projectStatusDropdown">
-                                <option value="Planning">Planning</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
+                                <option value="Planning" data-i18n="status.planning">Planning</option>
+                                <option value="In Progress" data-i18n="status.inProgress">In Progress</option>
+                                <option value="Completed" data-i18n="status.completed">Completed</option>
                             </select>
                         </p>
-                        <p><strong>Number of Floors:</strong> <span id="projectFloors"></span></p>
-                        <p><strong>Address:</strong> <span id="projectAddress"></span></p>
+                        <p><strong data-i18n="project.numberOfFloors">Number of Floors:</strong> <span id="projectFloors"></span></p>
+                        <p><strong data-i18n="project.address">Address:</strong> <span id="projectAddress"></span></p>
                         <div id="projectOwnerInfo">
                             <!-- Owner info will be populated for admins -->
                         </div>
@@ -70,10 +70,10 @@
 
                     <!-- Seismic Parameters -->
                     <div class="seismic-info">
-                        <h3 id="seismicParametersHeading">Seismic Parameters</h3>
+                        <h3 id="seismicParametersHeading" data-i18n="project.seismicParameters">Seismic Parameters</h3>
                         <div class="seismic-grid">
-                            <p><strong>Lat:</strong> <span id="projectLatitude"></span></p>
-                            <p><strong>Long:</strong> <span id="projectLongitude"></span></p>
+                            <p><strong data-i18n="project.lat">Lat:</strong> <span id="projectLatitude"></span></p>
+                            <p><strong data-i18n="project.long">Long:</strong> <span id="projectLongitude"></span></p>
                             <p><strong>Sa(0.2):</strong> <span id="projectMaxSa0_2"></span></p>
                             <p><strong>Sa(1.0):</strong> <span id="projectMaxSa1_0"></span></p>
                             <p><strong>VGA:</strong> <span id="projectMaxVGA"></span></p>
@@ -86,16 +86,16 @@
                             <p><strong>S_D1:</strong> <span id="projectSD1"></span></p>
                             <p><strong>RiskS_DS:</strong> <span id="projectRiskSDS"></span></p>
                             <p><strong>RiskS_D1:</strong> <span id="projectRiskSD1"></span></p>
-                            <p class="full-width"><strong>Final Risk:</strong> <span id="projectFinalRiskCategory"></span></p>
+                            <p class="full-width"><strong data-i18n="project.finalRisk">Final Risk:</strong> <span id="projectFinalRiskCategory"></span></p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="right-section">
-                <h1>Equipment List</h1>
+                <h1 data-i18n="project.equipmentList">Equipment List</h1>
                 <div id="equipmentList"></div>
                     <div class="equipment-actions" style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                        <button id="generateReportButton" class="button primary" style="background: #28a745;">
+                        <button id="generateReportButton" class="button primary" style="background: #28a745;" data-i18n="project.generateReport">
                             <i class="fas fa-file-pdf"></i> Generate Report
                         </button>
                     </div>
@@ -104,20 +104,20 @@
 
         <!-- Bottom Half for Equipment Details -->
         <div class="bottom-half">
-            <button id="newCalculationButton">Add Equipment</button>
+            <button id="newCalculationButton" data-i18n="project.addEquipment">Add Equipment</button>
             <div id="equipmentForm">
                 <div class="calculation-sections">
                     <!-- Section 1: Equipment Form -->
                     <div class="equipment-form-section">
-                        <h2 id="equipmentFormTitle">New Equipment</h2>
+                        <h2 id="equipmentFormTitle" data-i18n="project.newEquipment">New Equipment</h2>
                         
                         <form id="equipmentFormElement" novalidate>
                             <!-- 1. Equipment Selection -->
                             <div class="form-group">
-                                <label for="equipment">Equipment:</label>
+                                <label for="equipment" data-i18n="project.equipment">Equipment:</label>
                                 <div class="input-with-mic">
-                                    <input type="text" id="equipment" name="equipment" list="equipmentOptions" placeholder="Select or type equipment..." required>
-                                    <button type="button" class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" title="Voice input">
+                                    <input type="text" id="equipment" name="equipment" list="equipmentOptions" placeholder="Select or type equipment..." data-i18n-placeholder="project.selectOrTypeEquipment" required>
+                                    <button type="button" class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" title="Voice input" data-i18n-title="project.voiceInput">
                                         <i class="fas fa-microphone"></i>
                                     </button>
                                 </div>
@@ -127,33 +127,33 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="model">Model: <span style="color: #999; font-weight: normal;">(optional)</span></label>
-                                <input type="text" id="model" name="model" placeholder="Enter equipment model...">
+                                <label for="model" data-i18n="project.modelLabel">Model: <span style="color: #999; font-weight: normal;">(optional)</span></label>
+                                <input type="text" id="model" name="model" placeholder="Enter equipment model..." data-i18n-placeholder="project.enterModel">
                             </div>
 
                             <div class="form-group">
-                                <label for="tag">Tag: <span style="color: #999; font-weight: normal;">(optional)</span></label>
-                                <input type="text" id="tag" name="tag" placeholder="Enter equipment tag...">
+                                <label for="tag" data-i18n="project.tagLabel">Tag: <span style="color: #999; font-weight: normal;">(optional)</span></label>
+                                <input type="text" id="tag" name="tag" placeholder="Enter equipment tag..." data-i18n-placeholder="project.enterTag">
                             </div>
 
                             <div class="form-group">
-                                <label for="level">Level: <span style="color: #999; font-weight: normal;">(optional)</span></label>
+                                <label for="level" data-i18n="project.levelLabel">Level: <span style="color: #999; font-weight: normal;">(optional)</span></label>
                                 <input type="number" id="level" name="level">
                             </div>
 
                             <!-- Mode Selection Buttons -->
                             <div class="mode-selection" id="modeSelection">
-                                <p style="margin-bottom: 10px; font-weight: 500;">What would you like to do?</p>
+                                <p style="margin-bottom: 10px; font-weight: 500;" data-i18n="project.whatWouldYouLikeToDo">What would you like to do?</p>
                                 <div class="mode-buttons">
                                     <button type="button" class="mode-btn" id="btn-seismic" onclick="selectEquipmentMode('seismic')">
                                         <i class="fas fa-calculator"></i>
-                                        <span class="mode-btn-title">Seismic Calculation</span>
-                                        <span class="mode-btn-desc">Full engineering analysis</span>
+                                        <span class="mode-btn-title" data-i18n="project.seismicCalculation">Seismic Calculation</span>
+                                        <span class="mode-btn-desc" data-i18n="project.fullEngineeringAnalysis">Full engineering analysis</span>
                                     </button>
                                     <button type="button" class="mode-btn" id="btn-photos" onclick="selectEquipmentMode('photos')">
                                         <i class="fas fa-camera"></i>
-                                        <span class="mode-btn-title">Add Photos for Certification</span>
-                                        <span class="mode-btn-desc">Documentation only</span>
+                                        <span class="mode-btn-title" data-i18n="project.addPhotosForCertification">Add Photos for Certification</span>
+                                        <span class="mode-btn-desc" data-i18n="project.documentationOnly">Documentation only</span>
                                     </button>
                                 </div>
                             </div>
@@ -161,50 +161,50 @@
                             <!-- Mode Indicator (shown after selection) -->
                             <div class="mode-indicator" id="modeIndicator" style="display: none;">
                                 <span id="modeIndicatorText"></span>
-                                <button type="button" onclick="switchEquipmentMode()">Switch</button>
+                                <button type="button" onclick="switchEquipmentMode()" data-i18n="project.switch">Switch</button>
                             </div>
 
                             <!-- Seismic Calculation Fields (hidden until mode selected) -->
                             <div id="seismicFieldsContainer" style="display: none;">
 
                             <div class="form-group">
-                                <label for="nbcCategory">NBC Category:</label>
+                                <label for="nbcCategory" data-i18n="project.nbcCategory">NBC Category:</label>
                                 <select id="nbcCategory" name="nbcCategory" required>
-                                    <option value="">Select NBC category...</option>
+                                    <option value="" data-i18n="project.selectNbcCategory">Select NBC category...</option>
                                     <!-- Options will be populated dynamically -->
                                 </select>
                             </div>
 
                             <!-- 2. Pipe Type (show only when Pipe is selected) -->
                             <div class="form-group" id="pipeTypeGroup" style="display: none;">
-                                <label for="pipeType">Pipe Type:</label>
+                                <label for="pipeType" data-i18n="project.pipeType">Pipe Type:</label>
                                 <select id="pipeType" name="pipeType">
-                                    <option value="">Select pipe type...</option>
-                                    <option value="Steel_Pipe">Steel Pipe</option>
-                                    <option value="Copper_Pipe">Copper Pipe</option>
-                                    <option value="PVC_Pipe">PVC Pipe</option>
-                                    <option value="No_Hub_Pipe">No Hub Pipe</option>
+                                    <option value="" data-i18n="project.selectPipeType">Select pipe type...</option>
+                                    <option value="Steel_Pipe" data-i18n="project.steelPipe">Steel Pipe</option>
+                                    <option value="Copper_Pipe" data-i18n="project.copperPipe">Copper Pipe</option>
+                                    <option value="PVC_Pipe" data-i18n="project.pvcPipe">PVC Pipe</option>
+                                    <option value="No_Hub_Pipe" data-i18n="project.noHubPipe">No Hub Pipe</option>
                                 </select>
                             </div>
 
                             <!-- 4. Install Method -->
                             <div class="form-group">
-                                <label for="installMethod">Install Method:</label>
+                                <label for="installMethod" data-i18n="project.installMethod">Install Method:</label>
                                 <select id="installMethod" name="installMethod">
-                                    <option value="">Select install method...</option>
-                                    <option value="1">Fixed to Slab</option>
-                                    <option value="2">Fixed to Wall</option>
-                                    <option value="3">Fixed to Structure</option>
-                                    <option value="4">Fixed to Ceiling</option>
-                                    <option value="5">Fixed to Roof</option>
-                                    <option value="6">Fixed to Interior Wall</option>
-                                    <option value="7">Fixed to Wooden Sleeper</option>
+                                    <option value="" data-i18n="project.selectInstallMethod">Select install method...</option>
+                                    <option value="1" data-i18n="project.fixedToSlab">Fixed to Slab</option>
+                                    <option value="2" data-i18n="project.fixedToWall">Fixed to Wall</option>
+                                    <option value="3" data-i18n="project.fixedToStructure">Fixed to Structure</option>
+                                    <option value="4" data-i18n="project.fixedToCeiling">Fixed to Ceiling</option>
+                                    <option value="5" data-i18n="project.fixedToRoof">Fixed to Roof</option>
+                                    <option value="6" data-i18n="project.fixedToInteriorWall">Fixed to Interior Wall</option>
+                                    <option value="7" data-i18n="project.fixedToWoodenSleeper">Fixed to Wooden Sleeper</option>
                                 </select>
                             </div>
 
                             <!-- Traditional Equipment Fields (hidden for pipes) -->
                             <div class="form-group" id="weightGroup">
-                                <label for="weight">Weight:</label>
+                                <label for="weight" data-i18n="project.weight">Weight:</label>
                                 <div style="display: flex; gap: 5px; align-items: center;">
                                     <input type="text" id="weight" name="weight" style="flex: 1; max-width: 120px;">
                                     <select id="weightUnit" name="weightUnit" style="max-width: 80px;">
@@ -215,30 +215,30 @@
                             </div>
 
                             <div class="form-group" id="dimensionGroup">
-                                <label for="dimension">Dimensions HxWxL (inches):</label>
+                                <label for="dimension" data-i18n="project.dimensions">Dimensions HxWxL (inches):</label>
                                 <div class="dimension-fields">
-                                    <input type="text" id="height" placeholder="Height">
-                                    <input type="text" id="width" placeholder="Width">
-                                    <input type="text" id="length" placeholder="Length">
+                                    <input type="text" id="height" placeholder="Height" data-i18n-placeholder="project.height">
+                                    <input type="text" id="width" placeholder="Width" data-i18n-placeholder="project.width">
+                                    <input type="text" id="length" placeholder="Length" data-i18n-placeholder="project.length">
                                 </div>
                             </div>
 
                             <div class="form-group" id="hxGroup">
-                                <label for="hx">Equipment Height Above Base (hx) in meters:</label>
+                                <label for="hx" data-i18n="project.hxLabel">Equipment Height Above Base (hx) in meters:</label>
                                 <input type="number" id="hx" name="hx" step="0.01" required>
                             </div>
 
                             <!-- 5. Pipe Weight per Foot (pipe only) -->
                             <div class="form-group" id="pipingFieldsGroup" style="display: none;">
-                                <label for="pipeWeightPerFoot">Pipe Weight per Foot (lb/ft):</label>
+                                <label for="pipeWeightPerFoot" data-i18n="project.pipeWeightPerFoot">Pipe Weight per Foot (lb/ft):</label>
                                 <input type="number" id="pipeWeightPerFoot" name="pipeWeightPerFoot" step="0.1" min="0">
                             </div>
 
                             <!-- 6. Pipe Diameter (pipe only) -->
                             <div class="form-group" id="pipeDiameterGroup" style="display: none;">
-                                <label for="pipeDiameter">Pipe Diameter:</label>
+                                <label for="pipeDiameter" data-i18n="project.pipeDiameter">Pipe Diameter:</label>
                                 <select id="pipeDiameter" name="pipeDiameter">
-                                    <option value="">Select diameter...</option>
+                                    <option value="" data-i18n="project.selectDiameter">Select diameter...</option>
                                     <option value="1">1"</option>
                                     <option value="1-1/4">1-1/4"</option>
                                     <option value="1-1/2">1-1/2"</option>
@@ -256,49 +256,49 @@
 
                             <!-- 7. Support Type (pipe only) -->
                             <div class="form-group" id="supportTypeGroup" style="display: none;">
-                                <label for="supportType">Support Type:</label>
+                                <label for="supportType" data-i18n="project.supportType">Support Type:</label>
                                 <select id="supportType" name="supportType">
-                                    <option value="individual">Individual Clevis</option>
-                                    <option value="trapeze">Trapeze</option>
+                                    <option value="individual" data-i18n="project.individualClevis">Individual Clevis</option>
+                                    <option value="trapeze" data-i18n="project.trapeze">Trapeze</option>
                                 </select>
                             </div>
 
                             <!-- 8. Structure Type (pipe only) -->
                             <div class="form-group" id="structureTypeGroup" style="display: none;">
-                                <label for="structureType">Structure Type:</label>
+                                <label for="structureType" data-i18n="project.structureType">Structure Type:</label>
                                 <select id="structureType" name="structureType">
-                                    <option value="concrete-slab">Concrete Slab</option>
-                                    <option value="concrete-deck">Concrete Deck</option>
-                                    <option value="steel">Structural Steel</option>
-                                    <option value="wood">Wood Structure</option>
+                                    <option value="concrete-slab" data-i18n="project.concreteSlab">Concrete Slab</option>
+                                    <option value="concrete-deck" data-i18n="project.concreteDeck">Concrete Deck</option>
+                                    <option value="steel" data-i18n="project.structuralSteel">Structural Steel</option>
+                                    <option value="wood" data-i18n="project.woodStructure">Wood Structure</option>
                                 </select>
                             </div>
 
                             <!-- Traditional Equipment Anchor Fields -->
                             <div class="form-group" id="numberOfAnchorsGroup">
-                                <label for="numberOfAnchors">Number of Anchors:</label>
+                                <label for="numberOfAnchors" data-i18n="project.numberOfAnchors">Number of Anchors:</label>
                                 <input type="number" id="numberOfAnchors" name="numberOfAnchors" min="1" required>
                             </div>
 
                             <div class="form-group" id="anchorTypeGroup">
-                                <label for="anchorType">Anchor Type:</label>
+                                <label for="anchorType" data-i18n="project.anchorType">Anchor Type:</label>
                                 <select id="anchorType" name="anchorType" required>
-                                    <option value="">Select anchor type...</option>
-                                    <option value="expansion">KWIK BOLT TZ2 Expansion anchor</option>
-                                    <option value="screw">KWIK HUS EZ Screw anchor</option>
+                                    <option value="" data-i18n="project.selectAnchorType">Select anchor type...</option>
+                                    <option value="expansion" data-i18n="project.expansionAnchor">KWIK BOLT TZ2 Expansion anchor</option>
+                                    <option value="screw" data-i18n="project.screwAnchor">KWIK HUS EZ Screw anchor</option>
                                 </select>
                             </div>
 
                             <div class="form-group" id="anchorDiameterGroup">
-                                <label for="anchorDiameter">Anchor Diameter (inches):</label>
+                                <label for="anchorDiameter" data-i18n="project.anchorDiameter">Anchor Diameter (inches):</label>
                                 <select id="anchorDiameter" name="anchorDiameter" required>
-                                    <option value="">Select anchor type first...</option>
+                                    <option value="" data-i18n="project.selectAnchorTypeFirst">Select anchor type first...</option>
                                 </select>
                             </div>
 
                             <!-- 9. Slab Thickness (slab/ceiling installations) -->
                             <div class="form-group" id="slabThicknessGroup" style="display: none;">
-                                <label for="slabThickness">Slab Thickness (inches):</label>
+                                <label for="slabThickness" data-i18n="project.slabThickness">Slab Thickness (inches):</label>
                                 <input type="number" id="slabThickness" name="slabThickness" step="0.25" placeholder="4">
                             </div>
 
@@ -306,7 +306,7 @@
                             <div class="form-group" id="fcGroup" style="display: none;">
                                 <label for="fc">f'c (psi):</label>
                                 <select id="fc" name="fc">
-                                    <option value="">Select f'c...</option>
+                                    <option value="" data-i18n="project.selectFc">Select f'c...</option>
                                     <option value="2500">2500 psi</option>
                                     <option value="3000">3000 psi</option>
                                     <option value="4000">4000 psi</option>
@@ -316,50 +316,50 @@
 
                             <!-- Mounting Type field (traditional equipment only, hidden for pipes) -->
                             <div class="form-group" id="mountingTypeGroup" style="display: none;">
-                                <label for="mountingType">Mounting Type:</label>
+                                <label for="mountingType" data-i18n="project.mountingType">Mounting Type:</label>
                                 <select id="mountingType" name="mountingType">
-                                    <option value="">Select mounting type...</option>
-                                    <option value="no-isolators">1. No isolators</option>
-                                    <option value="type-3-1">2. Restrained with Type 3-1 vibration isolators</option>
-                                    <option value="type-3-2">3. Restrained with Type 3-2 vibration isolators</option>
-                                    <option value="type-3-5a">4. Restrained with Type 3-5A vibration isolators</option>
-                                    <option value="type-3-5b">5. Restrained with Type 3-5B vibration isolators</option>
-                                    <option value="type-3-5c">6. Restrained with Type 3-5C vibration isolators</option>
-                                    <option value="type-3-5d">7. Restrained with Type 3-5D vibration isolators</option>
-                                    <option value="type-3-10">8. Restrained with Type 3-10 seismic snubbers</option>
-                                    <option value="type-3-11">9. Restrained with Type 3-11 seismic snubbers</option>
+                                    <option value="" data-i18n="project.selectMountingType">Select mounting type...</option>
+                                    <option value="no-isolators" data-i18n="project.noIsolators">1. No isolators</option>
+                                    <option value="type-3-1" data-i18n="project.type31">2. Restrained with Type 3-1 vibration isolators</option>
+                                    <option value="type-3-2" data-i18n="project.type32">3. Restrained with Type 3-2 vibration isolators</option>
+                                    <option value="type-3-5a" data-i18n="project.type35a">4. Restrained with Type 3-5A vibration isolators</option>
+                                    <option value="type-3-5b" data-i18n="project.type35b">5. Restrained with Type 3-5B vibration isolators</option>
+                                    <option value="type-3-5c" data-i18n="project.type35c">6. Restrained with Type 3-5C vibration isolators</option>
+                                    <option value="type-3-5d" data-i18n="project.type35d">7. Restrained with Type 3-5D vibration isolators</option>
+                                    <option value="type-3-10" data-i18n="project.type310">8. Restrained with Type 3-10 seismic snubbers</option>
+                                    <option value="type-3-11" data-i18n="project.type311">9. Restrained with Type 3-11 seismic snubbers</option>
                                 </select>
                             </div>
 
                             <!-- ASHRAE fields (traditional equipment only) -->
                             <div class="form-group" id="isolatorWidthGroup" style="display: none;">
-                                <label for="isolatorWidth">Isolator/Snubber Width (B) in inches:</label>
+                                <label for="isolatorWidth" data-i18n="project.isolatorWidth">Isolator/Snubber Width (B) in inches:</label>
                                 <input type="number" id="isolatorWidth" name="isolatorWidth" step="0.01">
                             </div>
 
                             <div class="form-group" id="restraintHeightGroup" style="display: none;">
-                                <label for="restraintHeight">Height to Restraint Connection (H) in inches:</label>
+                                <label for="restraintHeight" data-i18n="project.restraintHeight">Height to Restraint Connection (H) in inches:</label>
                                 <input type="number" id="restraintHeight" name="restraintHeight" step="0.01">
                             </div>
 
                             <div class="form-group" id="edgeDistancesGroup" style="display: none;">
-                                <label for="edgeDistanceA">Edge Distance A (a) in inches:</label>
+                                <label for="edgeDistanceA" data-i18n="project.edgeDistanceA">Edge Distance A (a) in inches:</label>
                                 <input type="number" id="edgeDistanceA" name="edgeDistanceA" step="0.01">
                             </div>
 
                             <div class="form-group" id="edgeDistanceBGroup" style="display: none;">
-                                <label for="edgeDistanceB">Edge Distance B (b) in inches:</label>
+                                <label for="edgeDistanceB" data-i18n="project.edgeDistanceB">Edge Distance B (b) in inches:</label>
                                 <input type="number" id="edgeDistanceB" name="edgeDistanceB" step="0.01">
                             </div>
 
                             <div class="form-group" id="numberOfIsolatorsGroup" style="display: none;">
-                                <label for="numberOfIsolators">Number of Isolators/Snubbers (N):</label>
+                                <label for="numberOfIsolators" data-i18n="project.numberOfIsolators">Number of Isolators/Snubbers (N):</label>
                                 <input type="number" id="numberOfIsolators" name="numberOfIsolators" min="1">
                             </div>
 
                             <!-- Total Building Height -->
                             <div class="form-group">
-                                <label for="hn">Total Building Height (hn) in meters:</label>
+                                <label for="hn" data-i18n="project.hnLabel">Total Building Height (hn) in meters:</label>
                                 <input type="number" id="hn" name="hn" step="0.01" required>
                             </div>
 
@@ -368,17 +368,18 @@
                             
                             <!-- Image Upload Section (only for Photos mode) -->
                             <div class="form-image-upload-section" id="formImageUploadSection" style="display: none;">
-                                <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #333;">Images:</label>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #333;" data-i18n="project.images">Images:</label>
                                 <div class="upload-controls">
-                                    <button type="button" class="camera-btn" id="formCameraBtn" title="Upload Images">
+                                    <button type="button" class="camera-btn" id="formCameraBtn" title="Upload Images" data-i18n="project.browse" data-i18n-title="project.uploadImages">
                                         <i class="fas fa-camera"></i>
                                         Browse
                                     </button>
                                     
-                                    <input 
-                                        class="drop-zone" 
-                                        id="formDropZone" 
+                                    <input
+                                        class="drop-zone"
+                                        id="formDropZone"
                                         placeholder="Drop or paste images here (Ctrl+V)"
+                                        data-i18n-placeholder="project.dropOrPasteImages"
                                         readonly
                                         tabindex="0">
                                 </div>
@@ -389,13 +390,13 @@
 
                             <!-- Calculate and Save Buttons -->
                             <div style="display: flex; gap: 15px; margin-top: 20px;">
-                                <button type="button" id="calculateEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                <button type="button" id="calculateEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;" data-i18n="project.calculate">
                                     <i class="fas fa-calculator"></i> Calculate
                                 </button>
-                                <button type="button" id="saveAndKeepEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                <button type="button" id="saveAndKeepEquipment" style="background: #17a2b8; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;" data-i18n="common.save">
                                     <i class="fas fa-save"></i> Save
                                 </button>
-                                <button type="submit" id="saveEquipment" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                <button type="submit" id="saveEquipment" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;" data-i18n="project.saveAndCloseForm">
                                     <i class="fas fa-save"></i> Save and Close Form
                                 </button>
                             </div>
@@ -404,12 +405,12 @@
 
                     <!-- Section 2: Equipment Image -->
                     <div class="equipment-image-section">
-                        <h2>Equipment Image</h2>
+                        <h2 data-i18n="project.equipmentImage">Equipment Image</h2>
                         <div class="image-container">
                             <img id="equipmentImage" src="" alt="Equipment Installation" style="border: 1px solid #ccc; display: none;">
                             <div id="imagePlaceholder">
                                 <i class="fas fa-image" style="font-size: 48px; color: #ccc; margin-bottom: 10px; display: block;"></i>
-                                Select equipment and installation method to view image
+                                <span data-i18n="project.selectEquipmentToViewImage">Select equipment and installation method to view image</span>
                             </div>
                         </div>
                     </div>
@@ -417,14 +418,14 @@
                     <!-- Section 3: Calculation Results -->
                     <div class="calculation-results-section">
                         <div id="calculationResults" style="display: none;">
-                            <h2>Calculation Results</h2>
+                            <h2 data-i18n="project.calculationResults">Calculation Results</h2>
                             <div id="calculationResultsContent"></div>
                         </div>
                         <div id="calculationPlaceholder">
-                            <h2 style="color: #666; text-align: center; margin-bottom: 10px;">Calculation Results</h2>
+                            <h2 style="color: #666; text-align: center; margin-bottom: 10px;" data-i18n="project.calculationResults">Calculation Results</h2>
                             <div style="text-align: center; color: #999; padding: 40px 20px;">
                                 <i class="fas fa-calculator" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
-                                Click "Calculate" to see detailed analysis and calculations
+                                <span data-i18n="project.clickCalculate">Click "Calculate" to see detailed analysis and calculations</span>
                             </div>
                         </div>
                     </div>
@@ -445,6 +446,8 @@
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script src="project-details.js"></script>
     <script src="project-details-init.js"></script>
@@ -452,15 +455,15 @@
     <!-- Number of Floors Modal -->
     <div class="modal-overlay" id="floorsModal" style="display: none;">
         <div class="modal-content">
-            <h3>Project Setup Required</h3>
-            <p>To perform seismic calculations, we need to know the total number of floors in this building.</p>
+            <h3 data-i18n="project.projectSetupRequired">Project Setup Required</h3>
+            <p data-i18n="project.floorsRequiredMessage">To perform seismic calculations, we need to know the total number of floors in this building.</p>
             <div class="form-group">
-                <label for="modalNumberOfFloors">Number of Floors *</label>
-                <input type="number" id="modalNumberOfFloors" min="1" placeholder="Enter total floors">
+                <label for="modalNumberOfFloors" data-i18n="project.numberOfFloorsRequired">Number of Floors *</label>
+                <input type="number" id="modalNumberOfFloors" min="1" placeholder="Enter total floors" data-i18n-placeholder="project.enterTotalFloors">
             </div>
             <div class="modal-buttons">
-                <button type="button" class="modal-btn cancel" onclick="hideFloorsModal()">Cancel</button>
-                <button type="button" class="modal-btn save" onclick="saveFloorsAndContinue()">Save & Continue</button>
+                <button type="button" class="modal-btn cancel" onclick="hideFloorsModal()" data-i18n="common.cancel">Cancel</button>
+                <button type="button" class="modal-btn save" onclick="saveFloorsAndContinue()" data-i18n="project.saveAndContinue">Save & Continue</button>
             </div>
         </div>
     </div>

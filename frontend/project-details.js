@@ -1117,30 +1117,30 @@ function calculateSuspendedPipingBracing(equipment, project) {
 function showSuspendedPipingDetails(equipment, project) {
     const bracing = calculateSuspendedPipingBracing(equipment, project);
     
-    const message = `SUSPENDED PIPING BRACING SPECIFICATIONS (ASHRAE Chapter 8)
-Equipment: ${equipment.equipment}
-Pipe Weight: ${bracing.pipeWeight} lb/ft
-Seismic Level: ${bracing.seismicLevel}
-${bracing.exceedsTable ? '⚠️ WARNING: Pipe weight exceeds table limits - using maximum specifications' : ''}
-HANGER ROD SPECIFICATIONS:
-- Diameter: ${bracing.specifications.hangerRod.diameter}"
-- Working Load: ${bracing.specifications.hangerRod.workingLoad} lbs
-- Seismic Load: ${bracing.specifications.hangerRod.seismicLoad} lbs  
-- Max Unbraced Length: ${bracing.specifications.hangerRod.maxUnbraced}"
-- Connection Type: ${bracing.specifications.hangerRod.connection}
-SOLID BRACE OPTIONS:
-- Steel Angle: ${bracing.specifications.solidBrace.steelAngle}
-- Channel Strut: ${bracing.specifications.solidBrace.channelStrut}
-- Maximum Length: ${bracing.specifications.solidBrace.maxLength}
-CABLE BRACE OPTIONS:
-- Prestretched Cable: ${bracing.specifications.cableBrace.prestretched} lbs min breaking strength
-- Standard Cable: ${bracing.specifications.cableBrace.standard} lbs min breaking strength
-STRUCTURAL CONNECTIONS:
-- Concrete Slab: ${bracing.specifications.structuralConnection.concreteSlab}
-- Concrete Deck: ${bracing.specifications.structuralConnection.concreteDeck}
-- Steel Structure: ${bracing.specifications.structuralConnection.steelBolt}
-- Wood Structure: ${bracing.specifications.structuralConnection.lagBolt}
-Reference: ASHRAE Tables 8-6 through 8-10`;
+    const message = `${t('project.suspendedPipingBracingSpecs')}
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.pipeWeightLabel')}: ${bracing.pipeWeight} lb/ft
+${t('project.seismicLevel')}: ${bracing.seismicLevel}
+${bracing.exceedsTable ? t('project.pipeWeightExceedsTableWarning') : ''}
+${t('project.hangerRodSpecs')}:
+- ${t('project.diameter')}: ${bracing.specifications.hangerRod.diameter}"
+- ${t('project.workingLoad')}: ${bracing.specifications.hangerRod.workingLoad} lbs
+- ${t('project.seismicLoad')}: ${bracing.specifications.hangerRod.seismicLoad} lbs
+- ${t('project.maxUnbracedLength')}: ${bracing.specifications.hangerRod.maxUnbraced}"
+- ${t('project.connectionType')}: ${bracing.specifications.hangerRod.connection}
+${t('project.solidBraceOptions')}:
+- ${t('project.steelAngle')}: ${bracing.specifications.solidBrace.steelAngle}
+- ${t('project.channelStrut')}: ${bracing.specifications.solidBrace.channelStrut}
+- ${t('project.maximumLength')}: ${bracing.specifications.solidBrace.maxLength}
+${t('project.cableBraceOptions')}:
+- ${t('project.prestretchedCable')}: ${bracing.specifications.cableBrace.prestretched} ${t('project.lbsMinBreakingStrength')}
+- ${t('project.standardCable')}: ${bracing.specifications.cableBrace.standard} ${t('project.lbsMinBreakingStrength')}
+${t('project.structuralConnections')}:
+- ${t('project.concreteSlab')}: ${bracing.specifications.structuralConnection.concreteSlab}
+- ${t('project.concreteDeck')}: ${bracing.specifications.structuralConnection.concreteDeck}
+- ${t('project.steelStructure')}: ${bracing.specifications.structuralConnection.steelBolt}
+- ${t('project.woodStructure')}: ${bracing.specifications.structuralConnection.lagBolt}
+${t('project.reference')}: ASHRAE Tables 8-6 through 8-10`;
     
     alert(message);
 }
@@ -1239,16 +1239,16 @@ function generateShoppingList(selectedRow, solidBrace, cableBrace, structConnect
 function showSuspendedHangerDetails(equipment, project) {
     const bracing = calculateSuspendedEquipmentBracing(equipment, project);
     
-    const message = `Equipment: ${equipment.equipment}
-Weight: ${bracing.weightLbs} lbs
-Seismic Level: ${bracing.seismicLevel}
-Brace Position: ${bracing.bracePosition} center of gravity
+    const message = `${t('project.equipment')}: ${equipment.equipment}
+${t('project.weight')}: ${bracing.weightLbs} lbs
+${t('project.seismicLevel')}: ${bracing.seismicLevel}
+${t('project.bracePosition')}: ${bracing.bracePosition} ${t('project.centerOfGravity')}
 
-HANGER RODS:
-- Diameter: ${bracing.specifications.hangerRod.diameter}"
-- Max Unbraced Length: ${bracing.specifications.hangerRod.maxUnbracedLength}"
-- Tension Capacity: ${bracing.specifications.hangerRod.tensionCapacity.seismic} lbs (seismic)
-- Connection Type: ${bracing.specifications.hangerRod.connection}`;
+${t('project.hangerRods')}:
+- ${t('project.diameter')}: ${bracing.specifications.hangerRod.diameter}"
+- ${t('project.maxUnbracedLength')}: ${bracing.specifications.hangerRod.maxUnbracedLength}"
+- ${t('project.tensionCapacity')}: ${bracing.specifications.hangerRod.tensionCapacity.seismic} lbs (${t('project.seismic')})
+- ${t('project.connectionType')}: ${bracing.specifications.hangerRod.connection}`;
     
     alert(message);
 }
@@ -1258,29 +1258,29 @@ function showSuspendedBraceDetails(equipment, project) {
     const bracing = calculateSuspendedEquipmentBracing(equipment, project);
     const aircraftCable = bracing.shoppingList.aircraftCableDetails;
     
-    const message = `BRACE MEMBERS:
-Solid Brace Option:
-- Steel Angle: ${bracing.specifications.solidBrace.steelAngle}
-- Channel Strut: ${bracing.specifications.solidBrace.channelStrut}
-- Max Length: ${bracing.specifications.solidBrace.maxLength}
+    const message = `${t('project.braceMembers')}:
+${t('project.solidBraceOption')}:
+- ${t('project.steelAngle')}: ${bracing.specifications.solidBrace.steelAngle}
+- ${t('project.channelStrut')}: ${bracing.specifications.solidBrace.channelStrut}
+- ${t('project.maxLength')}: ${bracing.specifications.solidBrace.maxLength}
 
-Cable Brace Option:
-- Prestretched Cable: ${bracing.specifications.cableBrace.prestretched} lbs min breaking strength
-- Aircraft Cable: ⌀ ${aircraftCable.diameter}"
-• Breaking Strength: ${aircraftCable.breakingStrength} lbs
-• Work Load Limit: ${aircraftCable.workLoad} lbs
-${aircraftCable.insufficient ? '⚠️ WARNING: Largest available cable (⌀ 3/8") insufficient for required load!' : ''}
+${t('project.cableBraceOption')}:
+- ${t('project.prestretchedCable')}: ${bracing.specifications.cableBrace.prestretched} ${t('project.lbsMinBreakingStrength')}
+- ${t('project.aircraftCable')}: ⌀ ${aircraftCable.diameter}"
+• ${t('project.breakingStrength')}: ${aircraftCable.breakingStrength} lbs
+• ${t('project.workLoadLimit')}: ${aircraftCable.workLoad} lbs
+${aircraftCable.insufficient ? t('project.largestCableInsufficient') : ''}
 
-STRUCTURAL CONNECTIONS:
-- Concrete Slab: ${bracing.specifications.structuralConnection.concreteSlab}
-- Concrete Deck: ${bracing.specifications.structuralConnection.concreteDeck}
-- Steel Structure: ${bracing.specifications.structuralConnection.steelBolt}
-- Wood Structure: ${bracing.specifications.structuralConnection.lagBolt}
+${t('project.structuralConnections')}:
+- ${t('project.concreteSlab')}: ${bracing.specifications.structuralConnection.concreteSlab}
+- ${t('project.concreteDeck')}: ${bracing.specifications.structuralConnection.concreteDeck}
+- ${t('project.steelStructure')}: ${bracing.specifications.structuralConnection.steelBolt}
+- ${t('project.woodStructure')}: ${bracing.specifications.structuralConnection.lagBolt}
 
-SHOPPING LIST:
+${t('project.shoppingList')}:
 1. ${bracing.shoppingList.hangerRods}
 2. ${bracing.shoppingList.solidBracing}
-3. Aircraft Cable: ⌀ ${aircraftCable.diameter}" (7x19 GAC), ${aircraftCable.breakingStrength} lbs breaking strength`;
+3. ${t('project.aircraftCable')}: ⌀ ${aircraftCable.diameter}" (7x19 GAC), ${aircraftCable.breakingStrength} lbs ${t('project.breakingStrength')}`;
     
     alert(message);
 }
@@ -1289,57 +1289,57 @@ SHOPPING LIST:
 function showASHRAETboltDetails(equipment, project) {
     const ashrae = calculateASHRAEAnchorBolts(equipment, project);
     if (!ashrae) {
-        alert('ASHRAE anchor bolt calculations require additional parameters based on mounting type');
+        alert(t('project.ashraeCalcRequiresParams'));
         return;
     }
     
     const p = ashrae.parameters;
-    let message = `ASHRAE ANCHOR BOLT TENSION (Tbolt) CALCULATION
+    let message = `${t('project.ashraeTboltCalcTitle')}
 
-Equipment: ${equipment.equipment}
-Mounting Type: ${ashrae.formulaType}
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.mountingTypeLabel')}: ${ashrae.formulaType}
 
 `;
 
     if (equipment.mountingType === 'no-isolators') {
-        message += `Formula: Tbolt = Tb / (n/2)
+        message += `${t('project.formula')}: Tbolt = Tb / (n/2)
 
-PARAMETERS:
-Tb (Total Tension) = ${p.Tb} lbs
-n (Number of Anchor Bolts) = ${p.n}
+${t('project.parameters')}:
+Tb (${t('project.totalTension')}) = ${p.Tb} lbs
+n (${t('project.numberOfAnchorBolts')}) = ${p.n}
 
-CALCULATION:
-Tbolt = ${p.Tb} / (${p.n}/2) = ${ashrae.Tbolt} lbs per bolt`;
+${t('project.calculation')}:
+Tbolt = ${p.Tb} / (${p.n}/2) = ${ashrae.Tbolt} ${t('project.lbsPerBolt')}`;
 
     } else if (equipment.mountingType === 'type-3-1') {
-        message += `Formula: Tbolt = Pt / n
+        message += `${t('project.formula')}: Tbolt = Pt / n
 
-PARAMETERS:
-Pt (Maximum Tension) = ${p.Pt} lbs
-n (Number of Anchor Bolts) = ${p.n}
+${t('project.parameters')}:
+Pt (${t('project.maximumTension')}) = ${p.Pt} lbs
+n (${t('project.numberOfAnchorBolts')}) = ${p.n}
 
-CALCULATION:
-Tbolt = ${p.Pt} / ${p.n} = ${ashrae.Tbolt} lbs per bolt`;
+${t('project.calculation')}:
+Tbolt = ${p.Pt} / ${p.n} = ${ashrae.Tbolt} ${t('project.lbsPerBolt')}`;
 
     } else if (equipment.mountingType === 'type-3-2') {
-        message += `Formula: Tbolt = (Ps × H) / (n × (B/2)) + (Ps / n)
+        message += `${t('project.formula')}: Tbolt = (Ps × H) / (n × (B/2)) + (Ps / n)
 
-PARAMETERS:
-Ps (Maximum Shear) = ${p.Ps} lbs
-H (Height to Restraint) = ${p.H} in
-B (Isolator Width) = ${p.B} in
-n (Number of Anchor Bolts) = ${p.n}
+${t('project.parameters')}:
+Ps (${t('project.maximumShear')}) = ${p.Ps} lbs
+H (${t('project.heightToRestraint')}) = ${p.H} in
+B (${t('project.isolatorWidth')}) = ${p.B} in
+n (${t('project.numberOfAnchorBolts')}) = ${p.n}
 
-CALCULATION:
+${t('project.calculation')}:
 Term 1: (Ps × H) / (n × (B/2)) = (${p.Ps} × ${p.H}) / (${p.n} × ${p.B/2}) = ${((p.Ps * p.H) / (p.n * (p.B/2))).toFixed(2)} lbs
 Term 2: Ps / n = ${p.Ps} / ${p.n} = ${(p.Ps / p.n).toFixed(2)} lbs
-Tbolt = Term 1 + Term 2 = ${ashrae.Tbolt} lbs per bolt`;
+Tbolt = Term 1 + Term 2 = ${ashrae.Tbolt} ${t('project.lbsPerBolt')}`;
 
     } else {
-        message += `Formula varies by mounting type - see ASHRAE guidelines
+        message += `${t('project.formulaVariesByMountingType')}
 
-RESULT:
-Tbolt = ${ashrae.Tbolt} lbs per bolt`;
+${t('project.result')}:
+Tbolt = ${ashrae.Tbolt} ${t('project.lbsPerBolt')}`;
     }
     
     alert(message);
@@ -1348,36 +1348,36 @@ Tbolt = ${ashrae.Tbolt} lbs per bolt`;
 function showASHRAEVboltDetails(equipment, project) {
     const ashrae = calculateASHRAEAnchorBolts(equipment, project);
     if (!ashrae) {
-        alert('ASHRAE anchor bolt calculations require additional parameters based on mounting type');
+        alert(t('project.ashraeCalcRequiresParams'));
         return;
     }
     
     const p = ashrae.parameters;
-    let message = `ASHRAE ANCHOR BOLT SHEAR (Vbolt) CALCULATION
+    let message = `${t('project.ashraeVboltCalcTitle')}
 
-Equipment: ${equipment.equipment}
-Mounting Type: ${ashrae.formulaType}
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.mountingTypeLabel')}: ${ashrae.formulaType}
 
 `;
 
     if (equipment.mountingType === 'no-isolators') {
-        message += `Formula: Vbolt = Vb / n
+        message += `${t('project.formula')}: Vbolt = Vb / n
 
-PARAMETERS:
-Vb (Total Shear) = ${p.Vb} lbs
-n (Number of Anchor Bolts) = ${p.n}
+${t('project.parameters')}:
+Vb (${t('project.totalShear')}) = ${p.Vb} lbs
+n (${t('project.numberOfAnchorBolts')}) = ${p.n}
 
-CALCULATION:
-Vbolt = ${p.Vb} / ${p.n} = ${ashrae.Vbolt} lbs per bolt`;
+${t('project.calculation')}:
+Vbolt = ${p.Vb} / ${p.n} = ${ashrae.Vbolt} ${t('project.lbsPerBolt')}`;
     } else {
-        message += `Formula: Vbolt = Ps / n
+        message += `${t('project.formula')}: Vbolt = Ps / n
 
-PARAMETERS:
-Ps (Maximum Shear) = ${p.Ps} lbs
-n (Number of Anchor Bolts) = ${p.n}
+${t('project.parameters')}:
+Ps (${t('project.maximumShear')}) = ${p.Ps} lbs
+n (${t('project.numberOfAnchorBolts')}) = ${p.n}
 
-CALCULATION:
-Vbolt = ${p.Ps} / ${p.n} = ${ashrae.Vbolt} lbs per bolt`;
+${t('project.calculation')}:
+Vbolt = ${p.Ps} / ${p.n} = ${ashrae.Vbolt} ${t('project.lbsPerBolt')}`;
     }
     
     alert(message);
@@ -1387,30 +1387,30 @@ Vbolt = ${p.Ps} / ${p.n} = ${ashrae.Vbolt} lbs per bolt`;
 function showConcreteFormula1Details(equipment, project) {
     const ashrae = calculateASHRAEAnchorBolts(equipment, project);
     if (!ashrae || !ashrae.concreteAnalysis) {
-        alert('Concrete expansion anchor analysis not available');
+        alert(t('project.concreteAnalysisNotAvailable'));
         return;
     }
     
     const concrete = ashrae.concreteAnalysis;
-    const message = `CONCRETE EXPANSION ANCHOR - INTERACTION FORMULA 1
+    const message = `${t('project.concreteFormula1Title')}
 
-Equipment: ${equipment.equipment}
-Mounting Type: ${ashrae.formulaType}
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.mountingTypeLabel')}: ${ashrae.formulaType}
 
-ASHRAE FORMULA (11-36):
+ASHRAE ${t('project.formula')} (11-36):
 (Tbolt/Tallow) + (Vbolt/Vallow) ≤ 1.0
 
-PARAMETERS:
-Tbolt (Anchor Bolt Tension) = ${ashrae.Tbolt} lbs per bolt
-Vbolt (Anchor Bolt Shear) = ${ashrae.Vbolt} lbs per bolt
-Tallow (Allowable Tension) = ${concrete.Tallow} lbs (placeholder)
-Vallow (Allowable Shear) = ${concrete.Vallow} lbs (placeholder)
+${t('project.parameters')}:
+Tbolt (${t('project.anchorBoltTension')}) = ${ashrae.Tbolt} ${t('project.lbsPerBolt')}
+Vbolt (${t('project.anchorBoltShear')}) = ${ashrae.Vbolt} ${t('project.lbsPerBolt')}
+Tallow (${t('project.allowableTension')}) = ${concrete.Tallow} lbs
+Vallow (${t('project.allowableShear')}) = ${concrete.Vallow} lbs
 
-CALCULATION:
+${t('project.calculation')}:
 (${ashrae.Tbolt}/${concrete.Tallow}) + (${ashrae.Vbolt}/${concrete.Vallow}) = ${concrete.formula1.value}
 
-RESULT: ${concrete.formula1.value} ${concrete.formula1.pass ? '≤' : '>'} ${concrete.formula1.limit}
-STATUS: ${concrete.formula1.pass ? '✅ PASS' : '❌ FAIL'}`;
+${t('project.result')}: ${concrete.formula1.value} ${concrete.formula1.pass ? '≤' : '>'} ${concrete.formula1.limit}
+${t('project.status')}: ${concrete.formula1.pass ? '✅ ' + t('project.pass') : '❌ ' + t('project.fail')}`;
     
     alert(message);
 }
@@ -1419,35 +1419,35 @@ STATUS: ${concrete.formula1.pass ? '✅ PASS' : '❌ FAIL'}`;
 function showConcreteFormula2Details(equipment, project) {
     const ashrae = calculateASHRAEAnchorBolts(equipment, project);
     if (!ashrae || !ashrae.concreteAnalysis) {
-        alert('Concrete expansion anchor analysis not available');
+        alert(t('project.concreteAnalysisNotAvailable'));
         return;
     }
     
     const concrete = ashrae.concreteAnalysis;
-    const message = `CONCRETE EXPANSION ANCHOR - INTERACTION FORMULA 2
+    const message = `${t('project.concreteFormula2Title')}
 
-Equipment: ${equipment.equipment}
-Mounting Type: ${ashrae.formulaType}
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.mountingTypeLabel')}: ${ashrae.formulaType}
 
-ASHRAE FORMULA (11-37):
+ASHRAE ${t('project.formula')} (11-37):
 (Tbolt/Tallow)^(5/3) + (Vbolt/Vallow)^(5/3) ≤ 1.0
 
-PARAMETERS:
-Tbolt (Anchor Bolt Tension) = ${ashrae.Tbolt} lbs per bolt
-Vbolt (Anchor Bolt Shear) = ${ashrae.Vbolt} lbs per bolt
-Tallow (Allowable Tension) = ${concrete.Tallow} lbs (placeholder)
-Vallow (Allowable Shear) = ${concrete.Vallow} lbs (placeholder)
+${t('project.parameters')}:
+Tbolt (${t('project.anchorBoltTension')}) = ${ashrae.Tbolt} ${t('project.lbsPerBolt')}
+Vbolt (${t('project.anchorBoltShear')}) = ${ashrae.Vbolt} ${t('project.lbsPerBolt')}
+Tallow (${t('project.allowableTension')}) = ${concrete.Tallow} lbs
+Vallow (${t('project.allowableShear')}) = ${concrete.Vallow} lbs
 
-CALCULATION:
+${t('project.calculation')}:
 (${ashrae.Tbolt}/${concrete.Tallow})^(5/3) + (${ashrae.Vbolt}/${concrete.Vallow})^(5/3) = ${concrete.formula2.value}
 
-BREAKDOWN:
+${t('project.breakdown')}:
 Term 1: (${ashrae.Tbolt}/${concrete.Tallow})^(5/3) = ${Math.pow(ashrae.Tbolt/concrete.Tallow, 5/3).toFixed(4)}
 Term 2: (${ashrae.Vbolt}/${concrete.Vallow})^(5/3) = ${Math.pow(ashrae.Vbolt/concrete.Vallow, 5/3).toFixed(4)}
-Sum: ${concrete.formula2.value}
+${t('project.sum')}: ${concrete.formula2.value}
 
-RESULT: ${concrete.formula2.value} ${concrete.formula2.pass ? '≤' : '>'} ${concrete.formula2.limit}
-STATUS: ${concrete.formula2.pass ? '✅ PASS' : '❌ FAIL'}`;
+${t('project.result')}: ${concrete.formula2.value} ${concrete.formula2.pass ? '≤' : '>'} ${concrete.formula2.limit}
+${t('project.status')}: ${concrete.formula2.pass ? '✅ ' + t('project.pass') : '❌ ' + t('project.fail')}`;
     
     alert(message);
 }
@@ -1455,30 +1455,30 @@ STATUS: ${concrete.formula2.pass ? '✅ PASS' : '❌ FAIL'}`;
 function showConcreteEmbedmentDetails(equipment, project) {
     const ashrae = calculateASHRAEAnchorBolts(equipment, project);
     if (!ashrae || !ashrae.embedmentAnalysis) {
-        alert('Embedment analysis not available');
+        alert(t('project.embedmentAnalysisNotAvailable'));
         return;
     }
     
     const embed = ashrae.embedmentAnalysis;
-    const tableRef = embed.anchorType === 'screw' ? 'TABLE 3 - SCREW ANCHOR CRACKED CONCRETE' : 'TABLE 19 - EXPANSION ANCHOR CRACKED CONCRETE';
-    
-    const message = `CONCRETE FAILURE - MINIMUM EMBEDMENT ANALYSIS
+    const tableRef = embed.anchorType === 'screw' ? t('project.tableRefScrewConcrete') : t('project.tableRefExpansionConcrete');
 
-Equipment: ${equipment.equipment}
-Anchor: ${embed.anchorDiameter}" ${getAnchorTypeText(embed.anchorType)} anchor
+    const message = `${t('project.concreteFailureEmbedmentTitle')}
 
-REQUIREMENTS:
-Tbolt (Required Tension) = ${embed.Tbolt} lbs per bolt
-f'c (Concrete Strength) = ${embed.fc} psi
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.anchor')}: ${embed.anchorDiameter}" ${getAnchorTypeText(embed.anchorType)}
 
-${tableRef} ANALYSIS:
+${t('project.requirements')}:
+Tbolt (${t('project.requiredTension')}) = ${embed.Tbolt} ${t('project.lbsPerBolt')}
+f'c (${t('project.concreteStrength')}) = ${embed.fc} psi
+
+${tableRef}:
 ${embed.minConcreteEmbedment ? `
-✅ RESULT: Minimum embedment = ${embed.minConcreteEmbedment}"
-Concrete tension capacity = ${embed.concreteCapacity} lbs ≥ ${embed.Tbolt} lbs` : `
-❌ RESULT: NO SUFFICIENT EMBEDMENT FOUND
-RECOMMENDATION: Use a larger anchor diameter.`}
+✅ ${t('project.result')}: ${t('project.minimumEmbedment')} = ${embed.minConcreteEmbedment}"
+${t('project.concreteTensionCapacity')} = ${embed.concreteCapacity} lbs ≥ ${embed.Tbolt} lbs` : `
+❌ ${t('project.result')}: ${t('project.noSufficientEmbedmentFound')}
+${t('project.recommendation')}: ${t('project.useLargerAnchorDiameter')}`}
 
-Reference: HILTI ${embed.tableReference} (${embed.anchorType === 'screw' ? 'KWIK HUS-EZ Screw' : 'KWIK BOLT TZ2 Expansion'} Anchor per ACI 318 Ch. 17)`;
+${t('project.reference')}: HILTI ${embed.tableReference} (${embed.anchorType === 'screw' ? 'KWIK HUS-EZ Screw' : 'KWIK BOLT TZ2 Expansion'} Anchor per ACI 318 Ch. 17)`;
     
     alert(message);
 }
@@ -1486,31 +1486,31 @@ Reference: HILTI ${embed.tableReference} (${embed.anchorType === 'screw' ? 'KWIK
 function showSteelEmbedmentDetails(equipment, project) {
     const ashrae = calculateASHRAEAnchorBolts(equipment, project);
     if (!ashrae || !ashrae.embedmentAnalysis) {
-        alert('Embedment analysis not available');
+        alert(t('project.embedmentAnalysisNotAvailable'));
         return;
     }
     
     const embed = ashrae.embedmentAnalysis;
-    const tableRef = embed.anchorType === 'screw' ? 'TABLE 22 - SCREW ANCHOR STEEL FAILURE' : 'TABLE 20 - EXPANSION ANCHOR STEEL FAILURE';
-    
-    const message = `STEEL FAILURE - MINIMUM EMBEDMENT ANALYSIS
+    const tableRef = embed.anchorType === 'screw' ? t('project.tableRefScrewSteel') : t('project.tableRefExpansionSteel');
 
-Equipment: ${equipment.equipment}
-Anchor: ${embed.anchorDiameter}" ${getAnchorTypeText(embed.anchorType)} anchor
+    const message = `${t('project.steelFailureEmbedmentTitle')}
 
-REQUIREMENTS:
-Tbolt (Required Tension) = ${embed.Tbolt} lbs per bolt
-Vbolt (Required Shear) = ${embed.Vbolt} lbs per bolt
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.anchor')}: ${embed.anchorDiameter}" ${getAnchorTypeText(embed.anchorType)}
 
-${tableRef} ANALYSIS:
+${t('project.requirements')}:
+Tbolt (${t('project.requiredTension')}) = ${embed.Tbolt} ${t('project.lbsPerBolt')}
+Vbolt (${t('project.requiredShear')}) = ${embed.Vbolt} ${t('project.lbsPerBolt')}
+
+${tableRef}:
 ${embed.minSteelEmbedment ? `
-✅ RESULT: Minimum embedment = ${embed.minSteelEmbedment}"
-Steel tensile capacity = ${embed.steelTensileCapacity} lbs ≥ ${embed.Tbolt} lbs
-Steel seismic shear capacity = ${embed.steelShearCapacity} lbs ≥ ${embed.Vbolt} lbs` : `
-❌ RESULT: NO SUFFICIENT EMBEDMENT FOUND
-RECOMMENDATION: Use a larger anchor diameter.`}
+✅ ${t('project.result')}: ${t('project.minimumEmbedment')} = ${embed.minSteelEmbedment}"
+${t('project.steelTensileCapacity')} = ${embed.steelTensileCapacity} lbs ≥ ${embed.Tbolt} lbs
+${t('project.steelSeismicShearCapacity')} = ${embed.steelShearCapacity} lbs ≥ ${embed.Vbolt} lbs` : `
+❌ ${t('project.result')}: ${t('project.noSufficientEmbedmentFound')}
+${t('project.recommendation')}: ${t('project.useLargerAnchorDiameter')}`}
 
-Reference: HILTI ${embed.tableReference} (${embed.anchorType === 'screw' ? 'KWIK HUS-EZ Screw' : 'KWIK BOLT TZ2 Expansion'} Anchor per ACI 318 Ch. 17)`;
+${t('project.reference')}: HILTI ${embed.tableReference} (${embed.anchorType === 'screw' ? 'KWIK HUS-EZ Screw' : 'KWIK BOLT TZ2 Expansion'} Anchor per ACI 318 Ch. 17)`;
     
     alert(message);
 }
@@ -1518,34 +1518,34 @@ Reference: HILTI ${embed.tableReference} (${embed.anchorType === 'screw' ? 'KWIK
 function showFinalEmbedmentDetails(equipment, project) {
     const ashrae = calculateASHRAEAnchorBolts(equipment, project);
     if (!ashrae || !ashrae.embedmentAnalysis) {
-        alert('Embedment analysis not available');
+        alert(t('project.embedmentAnalysisNotAvailable'));
         return;
     }
     
     const embed = ashrae.embedmentAnalysis;
-    const message = `FINAL MINIMUM EMBEDMENT DETERMINATION
+    const message = `${t('project.finalMinEmbedmentTitle')}
 
-Equipment: ${equipment.equipment}
-Anchor: ${embed.anchorDiameter}" ${equipment.anchorType || 'expansion'} anchor
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.anchor')}: ${embed.anchorDiameter}" ${equipment.anchorType || 'expansion'}
 
-ANALYSIS RESULTS:
-Concrete Failure (Table 19): ${embed.minConcreteEmbedment || 'INSUFFICIENT'}"
-Steel Failure (Table 20): ${embed.minSteelEmbedment || 'INSUFFICIENT'}"
+${t('project.analysisResults')}:
+${t('project.concreteFailure')} (Table 19): ${embed.minConcreteEmbedment || t('project.insufficient')}"
+${t('project.steelFailure')} (Table 20): ${embed.minSteelEmbedment || t('project.insufficient')}"
 
-GOVERNING REQUIREMENT:
+${t('project.governingRequirement')}:
 ${embed.recommendLargerDiameter ? `
-❌ CURRENT ANCHOR INSUFFICIENT
-Neither concrete nor steel capacity is adequate.
+❌ ${t('project.currentAnchorInsufficient')}
+${t('project.neitherCapacityAdequate')}
 
-RECOMMENDATION: Use a larger anchor diameter and re-analyze.` : `
-✅ FINAL MINIMUM EMBEDMENT: ${embed.finalMinEmbedment}"
+${t('project.recommendation')}: ${t('project.useLargerDiameterAndReanalyze')}` : `
+✅ ${t('project.finalMinEmbedmentResult')}: ${embed.finalMinEmbedment}"
 
-This is the LARGER of the two minimum embedments, ensuring both concrete and steel failure modes are satisfied.
+${t('project.largerOfTwoEmbedments')}
 
-DESIGN RULE: 
-Use embedment ≥ ${embed.finalMinEmbedment}" to satisfy both failure modes.`}
+${t('project.designRule')}:
+${t('project.useEmbedmentGreaterThan', { value: embed.finalMinEmbedment })}`}
 
-The governing embedment must satisfy BOTH concrete breakout and steel failure criteria.`;
+${t('project.governingEmbedmentNote')}`;
     
     alert(message);
 }
@@ -1553,7 +1553,7 @@ The governing embedment must satisfy BOTH concrete breakout and steel failure cr
 function showEmbedmentRecommendationDetails(equipment, project) {
     const ashrae = calculateASHRAEAnchorBolts(equipment, project);
     if (!ashrae || !ashrae.embedmentAnalysis) {
-        alert('Embedment analysis not available');
+        alert(t('project.embedmentAnalysisNotAvailable'));
         return;
     }
     
@@ -1567,29 +1567,29 @@ function showEmbedmentRecommendationDetails(equipment, project) {
         '3/4': '1"'
     };
     
-    const message = `ANCHOR DIAMETER RECOMMENDATION
+    const message = `${t('project.anchorDiameterRecommendation')}
 
-Current Configuration:
-Anchor: ${currentDiam}" ${equipment.anchorType || 'expansion'} anchor
-Required Forces: Tbolt = ${embed.Tbolt} lbs, Vbolt = ${embed.Vbolt} lbs
+${t('project.currentConfiguration')}:
+${t('project.anchor')}: ${currentDiam}" ${equipment.anchorType || 'expansion'}
+${t('project.requiredForces')}: Tbolt = ${embed.Tbolt} lbs, Vbolt = ${embed.Vbolt} lbs
 
-PROBLEM:
-The current ${currentDiam}" anchor diameter cannot provide sufficient capacity at any available embedment depth.
+${t('project.problem')}:
+${t('project.anchorCannotProvideSufficientCapacity', { diameter: currentDiam })}
 
-SOLUTION:
-Try ${nextSizes[currentDiam] || 'larger diameter'} anchor and re-analyze.
+${t('project.solution')}:
+${t('project.tryLargerAnchor', { size: nextSizes[currentDiam] || t('project.largerDiameter') })}
 
-REASON:
-Larger diameter anchors have:
-✓ Higher steel tensile capacity
-✓ Higher steel shear capacity  
-✓ Greater concrete breakout capacity
-✓ More embedment options available
+${t('project.reason')}:
+${t('project.largerAnchorsHave')}:
+✓ ${t('project.higherSteelTensileCapacity')}
+✓ ${t('project.higherSteelShearCapacity')}
+✓ ${t('project.greaterConcreteBreakoutCapacity')}
+✓ ${t('project.moreEmbedmentOptions')}
 
-ACTION REQUIRED:
-1. Change anchor diameter to larger size
-2. Re-run analysis to verify adequate capacity
-3. Determine minimum embedment for new diameter`;
+${t('project.actionRequired')}:
+1. ${t('project.changeAnchorDiameter')}
+2. ${t('project.rerunAnalysis')}
+3. ${t('project.determineMinEmbedment')}`;
     
     alert(message);
 }
@@ -1598,26 +1598,26 @@ ACTION REQUIRED:
 function showOTMCalculationDetails(equipment, project) {
     const calc = calculateOverturningForces(equipment, project);
     if (!calc) {
-        alert('Overturning calculations only apply to rigid equipment (NBC categories 11-rigid, 12-rigid, 18, 19)');
+        alert(t('project.overturningOnlyRigid'));
         return;
     }
     
-    const message = `OVERTURNING MOMENT (OTM) CALCULATION
+    const message = `${t('project.otmCalcTitle')}
 
-Equipment: ${equipment.equipment} (NBC Category: ${equipment.nbcCategory})
+${t('project.equipment')}: ${equipment.equipment} (${t('project.nbcCategory')}: ${equipment.nbcCategory})
 
-Formula: OTM = Fph × h
+${t('project.formula')}: OTM = Fph × h
 
-FORCES:
-CFS = ${calc.formula.CFS} (from CFS calculation)
-Weight = ${calc.formula.weightValue} ${calc.formula.weightUnit} = ${calc.formula.weightLbs} lbs
-Fph (Horizontal Force) = CFS × W = ${calc.formula.CFS} × ${calc.formula.weightLbs} = ${calc.formula.Fph} lbs
+${t('project.forces')}:
+CFS = ${calc.formula.CFS} (${t('project.fromCFSCalc')})
+${t('project.weight')} = ${calc.formula.weightValue} ${calc.formula.weightUnit} = ${calc.formula.weightLbs} lbs
+Fph (${t('project.horizontalForce')}) = CFS × W = ${calc.formula.CFS} × ${calc.formula.weightLbs} = ${calc.formula.Fph} lbs
 
-GEOMETRY:
-Equipment Height = ${calc.formula.heightIn}" 
-h = 55% of equipment height = 0.55 × ${calc.formula.heightIn}" = ${calc.formula.h}"
+${t('project.geometry')}:
+${t('project.equipmentHeight')} = ${calc.formula.heightIn}"
+h = 55% ${t('project.ofEquipmentHeight')} = 0.55 × ${calc.formula.heightIn}" = ${calc.formula.h}"
 
-CALCULATION:
+${t('project.calculation')}:
 OTM = Fph × h = ${calc.formula.Fph} × ${calc.formula.h} = ${calc.OTM} lb-in`;
     
     alert(message);
@@ -1626,24 +1626,24 @@ OTM = Fph × h = ${calc.formula.Fph} × ${calc.formula.h} = ${calc.OTM} lb-in`;
 function showRMCalculationDetails(equipment, project) {
     const calc = calculateOverturningForces(equipment, project);
     if (!calc) {
-        alert('Overturning calculations only apply to rigid equipment (NBC categories 11-rigid, 12-rigid, 18, 19)');
+        alert(t('project.overturningOnlyRigid'));
         return;
     }
     
-    const message = `RESISTING MOMENT (RM) CALCULATION
+    const message = `${t('project.rmCalcTitle')}
 
-Equipment: ${equipment.equipment} (NBC Category: ${equipment.nbcCategory})
+${t('project.equipment')}: ${equipment.equipment} (${t('project.nbcCategory')}: ${equipment.nbcCategory})
 
-Formula: RM = (W - Fpv) × dmin/2
+${t('project.formula')}: RM = (W - Fpv) × dmin/2
 
-FORCES:
-Weight = ${calc.formula.weightValue} ${calc.formula.weightUnit} = ${calc.formula.weightLbs} lbs
-Fpv (Vertical Force) = 0.2 × Sa(0.2) × Wp = 0.2 × ${parseFloat(project.maxSa0_2) || 0} × ${calc.formula.weightLbs} = ${calc.formula.Fpv} lbs
+${t('project.forces')}:
+${t('project.weight')} = ${calc.formula.weightValue} ${calc.formula.weightUnit} = ${calc.formula.weightLbs} lbs
+Fpv (${t('project.verticalForce')}) = 0.2 × Sa(0.2) × Wp = 0.2 × ${parseFloat(project.maxSa0_2) || 0} × ${calc.formula.weightLbs} = ${calc.formula.Fpv} lbs
 
-GEOMETRY:
-dmin = min(height, width) = min(${calc.formula.heightIn}", ${equipment.width}") = ${calc.formula.dmin}"
+${t('project.geometry')}:
+dmin = min(${t('project.heightLower')}, ${t('project.widthLower')}) = min(${calc.formula.heightIn}", ${equipment.width}") = ${calc.formula.dmin}"
 
-CALCULATION:
+${t('project.calculation')}:
 RM = (W - Fpv) × dmin/2 = (${calc.formula.weightLbs} - ${calc.formula.Fpv}) × ${calc.formula.dmin}/2 = ${calc.RM} lb-in`;
     
     alert(message);
@@ -1652,26 +1652,26 @@ RM = (W - Fpv) × dmin/2 = (${calc.formula.weightLbs} - ${calc.formula.Fpv}) × 
 function showTensionCalculationDetails(equipment, project) {
     const calc = calculateOverturningForces(equipment, project);
     if (!calc) {
-        alert('Overturning calculations only apply to rigid equipment (NBC categories 11-rigid, 12-rigid, 18, 19)');
+        alert(t('project.overturningOnlyRigid'));
         return;
     }
     
-    const message = `TOTAL TENSION (T) CALCULATION
+    const message = `${t('project.tensionCalcTitle')}
 
-Equipment: ${equipment.equipment} (NBC Category: ${equipment.nbcCategory})
+${t('project.equipment')}: ${equipment.equipment} (${t('project.nbcCategory')}: ${equipment.nbcCategory})
 
-Formula: T = (OTM - RM)/dmin
+${t('project.formula')}: T = (OTM - RM)/dmin
 
-REQUIRED VALUES:
-OTM (Overturning Moment) = ${calc.OTM} lb-in
-RM (Resisting Moment) = ${calc.RM} lb-in
-dmin = min(height, width) = ${calc.formula.dmin}"
+${t('project.requiredValues')}:
+OTM (${t('project.overturningMoment')}) = ${calc.OTM} lb-in
+RM (${t('project.resistingMoment')}) = ${calc.RM} lb-in
+dmin = min(${t('project.heightLower')}, ${t('project.widthLower')}) = ${calc.formula.dmin}"
 
-CALCULATION:
+${t('project.calculation')}:
 T = (OTM - RM)/dmin = (${calc.OTM} - ${calc.RM})/${calc.formula.dmin} = ${calc.T} lbs
 
-BOLT TENSION:
-Tbolt = T / (n/2) = ${calc.T} / (${calc.formula.numberOfAnchors}/2) = ${calc.Tbolt} lbs per bolt`;
+${t('project.boltTension')}:
+Tbolt = T / (n/2) = ${calc.T} / (${calc.formula.numberOfAnchors}/2) = ${calc.Tbolt} ${t('project.lbsPerBolt')}`;
     
     alert(message);
 }
@@ -1679,26 +1679,26 @@ Tbolt = T / (n/2) = ${calc.T} / (${calc.formula.numberOfAnchors}/2) = ${calc.Tbo
 function showShearCalculationDetails(equipment, project) {
     const calc = calculateOverturningForces(equipment, project);
     if (!calc) {
-        alert('Overturning calculations only apply to rigid equipment (NBC categories 11-rigid, 12-rigid, 18, 19)');
+        alert(t('project.overturningOnlyRigid'));
         return;
     }
     
-    const message = `TOTAL SHEAR (V) CALCULATION
+    const message = `${t('project.shearCalcTitle')}
 
-Equipment: ${equipment.equipment} (NBC Category: ${equipment.nbcCategory})
+${t('project.equipment')}: ${equipment.equipment} (${t('project.nbcCategory')}: ${equipment.nbcCategory})
 
-Formula: V = Fph
+${t('project.formula')}: V = Fph
 
-FORCES:
-CFS = ${calc.formula.CFS} (from CFS calculation)
-Weight = ${calc.formula.weightValue} ${calc.formula.weightUnit} = ${calc.formula.weightLbs} lbs
-Fph (Horizontal Force) = CFS × W = ${calc.formula.CFS} × ${calc.formula.weightLbs} = ${calc.formula.Fph} lbs
+${t('project.forces')}:
+CFS = ${calc.formula.CFS} (${t('project.fromCFSCalc')})
+${t('project.weight')} = ${calc.formula.weightValue} ${calc.formula.weightUnit} = ${calc.formula.weightLbs} lbs
+Fph (${t('project.horizontalForce')}) = CFS × W = ${calc.formula.CFS} × ${calc.formula.weightLbs} = ${calc.formula.Fph} lbs
 
-CALCULATION:
+${t('project.calculation')}:
 V = Fph = ${calc.V} lbs
 
-BOLT SHEAR:
-Vbolt = V / n = ${calc.V} / ${calc.formula.numberOfAnchors} = ${calc.Vbolt} lbs per bolt`;
+${t('project.boltShear')}:
+Vbolt = V / n = ${calc.V} / ${calc.formula.numberOfAnchors} = ${calc.Vbolt} ${t('project.lbsPerBolt')}`;
     
     alert(message);
 }
@@ -1759,7 +1759,7 @@ function handleAuthError(response) {
 }
 
 function logout() {
-    if (confirm('Are you sure you want to logout?')) {
+    if (confirm(t('project.logoutConfirm'))) {
         authHelper.logout();
         window.location.href = 'auth.html';
     }
@@ -1794,14 +1794,14 @@ function populateEquipmentOptions(domain) {
     const installMethodSelect = document.getElementById('installMethod');
     if (installMethodSelect) {
         installMethodSelect.innerHTML = `
-            <option value="">Select installation method...</option>
-            <option value="1">Fixed to Slab</option>
-            <option value="2">Fixed to Wall</option>
-            <option value="3">Fixed to Structure</option>
-            <option value="4">Fixed to Ceiling</option>
-            <option value="5">Fixed to Roof</option>
-            <option value="6">Fixed to Interior Wall</option>
-            <option value="7">Fixed to Wooden Sleeper</option>
+            <option value="">${t('project.selectInstallMethod')}</option>
+            <option value="1">${t('project.installMethod.fixedToSlab')}</option>
+            <option value="2">${t('project.installMethod.fixedToWall')}</option>
+            <option value="3">${t('project.installMethod.fixedToStructure')}</option>
+            <option value="4">${t('project.installMethod.fixedToCeiling')}</option>
+            <option value="5">${t('project.installMethod.fixedToRoof')}</option>
+            <option value="6">${t('project.installMethod.fixedToInteriorWall')}</option>
+            <option value="7">${t('project.installMethod.fixedToWoodenSleeper')}</option>
         `;
     }
     
@@ -1818,21 +1818,21 @@ function populateInstallMethodOptions(domain, equipment) {
     const currentValue = installMethodSelect.value;
     
     // Clear existing options
-    installMethodSelect.innerHTML = '<option value="">Select installation method...</option>';
-    
+    installMethodSelect.innerHTML = `<option value="">${t('project.selectInstallMethod')}</option>`;
+
     // All available install methods
     const allInstallMethods = {
-        '1': 'Fixed to Slab',
-        '2': 'Fixed to Wall', 
-        '3': 'Fixed to Structure',
-        '4': 'Fixed to Ceiling',
-        '5': 'Fixed to Roof',
-        '6': 'Fixed to Interior Wall',
-        '7': 'Fixed to Wooden Sleeper'
+        '1': t('project.installMethod.fixedToSlab'),
+        '2': t('project.installMethod.fixedToWall'),
+        '3': t('project.installMethod.fixedToStructure'),
+        '4': t('project.installMethod.fixedToCeiling'),
+        '5': t('project.installMethod.fixedToRoof'),
+        '6': t('project.installMethod.fixedToInteriorWall'),
+        '7': t('project.installMethod.fixedToWoodenSleeper')
     };
-    
+
     let allowedMethods = [];
-    
+
     // Check if we have domain-specific and equipment-specific restrictions
     if (equipmentInstallMethods[domain] && equipmentInstallMethods[domain][equipment] && equipmentInstallMethods[domain][equipment].length > 0) {
         allowedMethods = equipmentInstallMethods[domain][equipment];
@@ -1840,21 +1840,21 @@ function populateInstallMethodOptions(domain, equipment) {
         // If no restrictions defined, show all methods (fallback for other domains/equipment)
         allowedMethods = Object.keys(allInstallMethods);
     }
-    
+
     // Add allowed methods to dropdown
     allowedMethods.forEach(methodId => {
         const option = document.createElement('option');
         option.value = methodId;
         option.textContent = allInstallMethods[methodId];
-        
+
         // Restore previous selection if it's still valid
         if (methodId === currentValue) {
             option.selected = true;
         }
-        
+
         installMethodSelect.appendChild(option);
     });
-    
+
     // If previous selection is no longer valid, clear it and update image
     if (currentValue && !allowedMethods.includes(currentValue)) {
         installMethodSelect.value = '';
@@ -2138,7 +2138,7 @@ async function updateEquipmentImage() {
             equipmentImageElement.style.display = 'none';
             imagePlaceholder.innerHTML = `
                 <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107; margin-bottom: 10px; display: block;"></i>
-                Please select a pipe type
+                ${t('project.pleaseSelectPipeType')}
             `;
             imagePlaceholder.style.display = 'block';
             return;
@@ -2155,7 +2155,7 @@ async function updateEquipmentImage() {
             imagePlaceholder.style.display = 'none';
             equipmentImageElement.style.display = 'block';
             equipmentImageElement.src = fullImageUrl;
-            equipmentImageElement.alt = equipment === 'Pipe' ? `Image of ${pipeType} pipe` : `Image of ${equipment} with installation method ${installMethod}`;
+            equipmentImageElement.alt = equipment === 'Pipe' ? `${t('project.imageOf')} ${pipeType} ${t('project.pipe')}` : `${t('project.imageOf')} ${equipment} - ${t('project.installMethodLabel')} ${installMethod}`;
             
             equipmentImageElement.onload = function() {
                 console.log('✅ Image loaded successfully:', fullImageUrl);
@@ -2169,7 +2169,7 @@ async function updateEquipmentImage() {
                 this.style.display = 'none';
                 imagePlaceholder.innerHTML = `
                     <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107; margin-bottom: 10px; display: block;"></i>
-                    Image not available
+                    ${t('project.imageNotAvailable')}
                 `;
                 imagePlaceholder.style.display = 'block';
             };
@@ -2179,7 +2179,7 @@ async function updateEquipmentImage() {
             const imageName = getImageName(equipment, pipeType, installMethod, projectDomain);
             imagePlaceholder.innerHTML = `
                 <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107; margin-bottom: 10px; display: block;"></i>
-                Can't find ${imageName || 'image'}
+                ${t('project.cantFindImage', { name: imageName || t('project.image') })}
             `;
             imagePlaceholder.style.display = 'block';
         }
@@ -2188,7 +2188,7 @@ async function updateEquipmentImage() {
         equipmentImageElement.style.display = 'none';
         imagePlaceholder.innerHTML = `
             <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107; margin-bottom: 10px; display: block;"></i>
-            Error loading image
+            ${t('project.errorLoadingImage')}
         `;
         imagePlaceholder.style.display = 'block';
     }
@@ -2244,7 +2244,7 @@ function populateNBCCategoryOptions(isPipe = false, setDefault = false) {
     if (!nbcCategorySelect) return;
 
     // Clear existing options
-    nbcCategorySelect.innerHTML = '<option value="">Select NBC category...</option>';
+    nbcCategorySelect.innerHTML = `<option value="">${t('project.selectNBCCategory')}</option>`;
 
     if (isPipe) {
         // For pipes, only show categories 15 and 16
@@ -2536,12 +2536,12 @@ function updateAnchorDiameterOptions() {
     anchorDiameterSelect.innerHTML = '';
     
     if (!anchorType) {
-        anchorDiameterSelect.innerHTML = '<option value="">Select anchor type first...</option>';
+        anchorDiameterSelect.innerHTML = `<option value="">${t('project.selectAnchorTypeFirst')}</option>`;
         return;
     }
     
     // Add default option
-    anchorDiameterSelect.innerHTML = '<option value="">Select diameter...</option>';
+    anchorDiameterSelect.innerHTML = `<option value="">${t('project.selectDiameter')}</option>`;
     
     let diameters = [];
     
@@ -2712,18 +2712,18 @@ function calculateVp(project, equipment) {
 function showCFSCalculationDetails(equipment, project) {
     const cfsCalc = calculateCFS(project, equipment.level, equipment.totalLevels);
     
-    const message = `CFS (COEFFICIENT OF LATERAL SEISMIC FORCE) CALCULATION
+    const message = `${t('project.cfsCalcTitle')}
 
-Formula: CFS = 0.3 × Fa × Sa(0.2) × IE × Ax
+${t('project.formula')}: CFS = 0.3 × Fa × Sa(0.2) × IE × Ax
 
-Values Used:
-Constant = 0.3
-Fa (Site Acceleration Coefficient) = ${cfsCalc.formula.Fa}
-Sa(0.2) (Spectral Response Value) = ${cfsCalc.formula.Sa_02}
-IE (Seismic Risk Coefficient) = ${cfsCalc.formula.IE}
-Ax (Height Coefficient) = ${cfsCalc.formula.Ax}
+${t('project.valuesUsed')}:
+${t('project.constant')} = 0.3
+Fa (${t('project.siteAccelerationCoeff')}) = ${cfsCalc.formula.Fa}
+Sa(0.2) (${t('project.spectralResponseValue')}) = ${cfsCalc.formula.Sa_02}
+IE (${t('project.seismicRiskCoeff')}) = ${cfsCalc.formula.IE}
+Ax (${t('project.heightCoefficient')}) = ${cfsCalc.formula.Ax}
 
-Calculation:
+${t('project.calculation')}:
 CFS = 0.3 × ${cfsCalc.formula.Fa} × ${cfsCalc.formula.Sa_02} × ${cfsCalc.formula.IE} × ${cfsCalc.formula.Ax}
 CFS = ${cfsCalc.cfs}`;
     
@@ -2734,16 +2734,16 @@ function showLateralForceCalculationDetails(equipment, project) {
     const cfsCalc = calculateCFS(project, equipment.level, equipment.totalLevels);
     const force = calculateLateralSeismicForce(cfsCalc.cfs, equipment.weight);
     
-    const message = `LATERAL SEISMIC FORCE CALCULATION
+    const message = `${t('project.lateralForceCalcTitle')}
 
-Formula: Force = CFS × Weight
+${t('project.formula')}: ${t('project.force')} = CFS × ${t('project.weight')}
 
-Values Used:
-CFS (Coefficient of Lateral Seismic Force) = ${cfsCalc.cfs}
-Equipment Weight = ${equipment.weight || 'N/A'} kg
+${t('project.valuesUsed')}:
+CFS (${t('project.coeffLateralSeismicForce')}) = ${cfsCalc.cfs}
+${t('project.equipmentWeight')} = ${equipment.weight || 'N/A'} kg
 
-Calculation:
-Force = ${cfsCalc.cfs} × ${equipment.weight || 0} = ${force} N`;
+${t('project.calculation')}:
+${t('project.force')} = ${cfsCalc.cfs} × ${equipment.weight || 0} = ${force} N`;
     
     alert(message);
 }
@@ -2751,26 +2751,26 @@ Force = ${cfsCalc.cfs} × ${equipment.weight || 0} = ${force} N`;
 function showVpCalculationDetails(equipment, project) {
     const vpCalc = calculateVp(project, equipment);
     
-    const message = `Formula: Vp = 0.3 × Fa × Sa(0.2) × IE × Sp × Wp
+    const message = `${t('project.formula')}: Vp = 0.3 × Fa × Sa(0.2) × IE × Sp × Wp
 
-NBC Category: ${equipment.nbcCategory}
+${t('project.nbcCategory')}: ${equipment.nbcCategory}
 
-Step 1: Calculate Sp = Cp × Ar × Ax / Rp
-Cp (Component Factor) = ${vpCalc.formula.Cp}
-Ar (Amplification Factor) = ${vpCalc.formula.Ar}
-Ax (Height Factor) = ${vpCalc.formula.Ax} [calculated as 1 + 2(${equipment.hx}/${equipment.hn})]
-Rp (Response Modification Factor) = ${vpCalc.formula.Rp}
+${t('project.step')} 1: ${t('project.calculate')} Sp = Cp × Ar × Ax / Rp
+Cp (${t('project.componentFactor')}) = ${vpCalc.formula.Cp}
+Ar (${t('project.amplificationFactor')}) = ${vpCalc.formula.Ar}
+Ax (${t('project.heightFactor')}) = ${vpCalc.formula.Ax} [${t('project.calculatedAs')} 1 + 2(${equipment.hx}/${equipment.hn})]
+Rp (${t('project.responseModificationFactor')}) = ${vpCalc.formula.Rp}
 
 Sp = ${vpCalc.formula.Cp} × ${vpCalc.formula.Ar} × ${vpCalc.formula.Ax} / ${vpCalc.formula.Rp} = ${vpCalc.formula.Sp}
-(Limited between 0.7 and 4.0 per NBC requirements)
+(${t('project.limitedBetweenPerNBC')})
 
-Step 2: Calculate Vp
-Constant = ${vpCalc.formula.constant}
-Fa (Site Acceleration Coefficient) = ${vpCalc.formula.Fa}
-Sa(0.2) (Spectral Response Value) = ${vpCalc.formula.Sa_02}
-IE (Importance Factor) = ${vpCalc.formula.IE}
+${t('project.step')} 2: ${t('project.calculate')} Vp
+${t('project.constant')} = ${vpCalc.formula.constant}
+Fa (${t('project.siteAccelerationCoeff')}) = ${vpCalc.formula.Fa}
+Sa(0.2) (${t('project.spectralResponseValue')}) = ${vpCalc.formula.Sa_02}
+IE (${t('project.importanceFactor')}) = ${vpCalc.formula.IE}
 Sp = ${vpCalc.formula.Sp}
-Wp (Equipment Weight) = ${vpCalc.formula.Wp} kg
+Wp (${t('project.equipmentWeight')}) = ${vpCalc.formula.Wp} kg
 
 Vp = ${vpCalc.formula.constant} × ${vpCalc.formula.Fa} × ${vpCalc.formula.Sa_02} × ${vpCalc.formula.IE} × ${vpCalc.formula.Sp} × ${vpCalc.formula.Wp}
 Vp = ${vpCalc.vp} N`;
@@ -2782,53 +2782,53 @@ Vp = ${vpCalc.vp} N`;
 function showPtCalculationDetails(equipment, project) {
     const calc = calculateOverturningForces(equipment, project);
     if (!calc || calc.mountingType === 'rigidly-mounted') {
-        alert('This calculation only applies to vibration isolated equipment');
+        alert(t('project.calcOnlyVibrationIsolated'));
         return;
     }
     
-    const mountingTypeText = calc.mountingType === 'type-3-2' ? 'Type 3-2 Vibration Isolators' : 'Type 3-1/3-5/3-10/3-11 Vibration Isolators/Snubbers';
-    
+    const mountingTypeText = calc.mountingType === 'type-3-2' ? t('project.type32VibrationIsolators') : t('project.type31VibrationIsolatorsSnubbers');
+
     let message = `
-Equipment: ${equipment.equipment}
-Mounting Type: ${mountingTypeText}
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.mountingTypeLabel')}: ${mountingTypeText}
 `;
 
     if (calc.mountingType === 'type-3-2') {
-        message += `Formula: Pt = (W - Fpv)/N - (Fph×h×(b2/2)×cos(θ))/Iyy - (Fph×h×(b1/2)×sin(θ))/Ixx
+        message += `${t('project.formula')}: Pt = (W - Fpv)/N - (Fph×h×(b2/2)×cos(θ))/Iyy - (Fph×h×(b1/2)×sin(θ))/Ixx
 
-FORCES:
-W (Equipment Weight) = ${calc.formula.weightLbs} lbs
-Fpv (Vertical Seismic Force) = 0.2 × Sa(0.2) × W = ${calc.formula.Fpv} lbs
-Fph (Horizontal Seismic Force) = CFS × W = ${calc.formula.Fph} lbs
+${t('project.forces')}:
+W (${t('project.equipmentWeight')}) = ${calc.formula.weightLbs} lbs
+Fpv (${t('project.verticalSeismicForce')}) = 0.2 × Sa(0.2) × W = ${calc.formula.Fpv} lbs
+Fph (${t('project.horizontalSeismicForce')}) = CFS × W = ${calc.formula.Fph} lbs
 
-MOMENT OF INERTIA:
+${t('project.momentOfInertia')}:
 Ixx = N(N+2)×b1²/[12(N-2)] = ${calc.formula.N}(${calc.formula.N}+2)×${calc.formula.b1}²/[12(${calc.formula.N}-2)] = ${calc.formula.Ixx}
 Iyy = N×b2²/4 = ${calc.formula.N}×${calc.formula.b2}²/4 = ${calc.formula.Iyy}
 
-WORST ANGLE:
+${t('project.worstAngle')}:
 θ = tan⁻¹(Iyy×b1)/(Ixx×b2) = tan⁻¹(${calc.formula.Iyy}×${calc.formula.b1})/(${calc.formula.Ixx}×${calc.formula.b2}) = ${calc.formula.theta}°
 
-CALCULATION:
+${t('project.calculation')}:
 Term 1: (W - Fpv)/N = (${calc.formula.weightLbs} - ${calc.formula.Fpv})/${calc.formula.N} = ${((calc.formula.weightLbs - calc.formula.Fpv) / calc.formula.N).toFixed(2)} lbs
 Term 2: (Fph×h×(b2/2)×cos(θ))/Iyy = (${calc.formula.Fph}×${calc.formula.h}×${calc.formula.b2/2}×cos(${calc.formula.theta}°))/${calc.formula.Iyy} = ${((calc.formula.Fph * calc.formula.h * (calc.formula.b2/2) * Math.cos(calc.formula.theta * Math.PI/180)) / calc.formula.Iyy).toFixed(2)} lbs
 Term 3: (Fph×h×(b1/2)×sin(θ))/Ixx = (${calc.formula.Fph}×${calc.formula.h}×${calc.formula.b1/2}×sin(${calc.formula.theta}°))/${calc.formula.Ixx} = ${((calc.formula.Fph * calc.formula.h * (calc.formula.b1/2) * Math.sin(calc.formula.theta * Math.PI/180)) / calc.formula.Ixx).toFixed(2)} lbs
 
 Pt = Term 1 - Term 2 - Term 3 = ${calc.Pt} lbs`;
     } else {
-        message += `Formula: Pt = -Fpv/N - (Fph×h×(b2/2)×cos(θ))/Iyy - (Fph×h×(b1/2)×sin(θ))/Ixx
+        message += `${t('project.formula')}: Pt = -Fpv/N - (Fph×h×(b2/2)×cos(θ))/Iyy - (Fph×h×(b1/2)×sin(θ))/Ixx
 
-FORCES:
-Fpv (Vertical Seismic Force) = 0.2 × Sa(0.2) × W = ${calc.formula.Fpv} lbs
-Fph (Horizontal Seismic Force) = CFS × W = ${calc.formula.Fph} lbs
+${t('project.forces')}:
+Fpv (${t('project.verticalSeismicForce')}) = 0.2 × Sa(0.2) × W = ${calc.formula.Fpv} lbs
+Fph (${t('project.horizontalSeismicForce')}) = CFS × W = ${calc.formula.Fph} lbs
 
-MOMENT OF INERTIA:
+${t('project.momentOfInertia')}:
 Ixx = N(N+2)×b1²/[12(N-2)] = ${calc.formula.Ixx}
 Iyy = N×b2²/4 = ${calc.formula.Iyy}
 
-WORST ANGLE:
+${t('project.worstAngle')}:
 θ = tan⁻¹(Iyy×b1)/(Ixx×b2) = ${calc.formula.theta}°
 
-CALCULATION:
+${t('project.calculation')}:
 Term 1: -Fpv/N = -${calc.formula.Fpv}/${calc.formula.N} = ${(-calc.formula.Fpv / calc.formula.N).toFixed(2)} lbs
 Term 2: (Fph×h×(b2/2)×cos(θ))/Iyy = ${((calc.formula.Fph * calc.formula.h * (calc.formula.b2/2) * Math.cos(calc.formula.theta * Math.PI/180)) / calc.formula.Iyy).toFixed(2)} lbs
 Term 3: (Fph×h×(b1/2)×sin(θ))/Ixx = ${((calc.formula.Fph * calc.formula.h * (calc.formula.b1/2) * Math.sin(calc.formula.theta * Math.PI/180)) / calc.formula.Ixx).toFixed(2)} lbs
@@ -2842,50 +2842,50 @@ Pt = Term 1 - Term 2 - Term 3 = ${calc.Pt} lbs`;
 function showPcCalculationDetails(equipment, project) {
     const calc = calculateOverturningForces(equipment, project);
     if (!calc || calc.mountingType === 'rigidly-mounted') {
-        alert('This calculation only applies to vibration isolated equipment');
+        alert(t('project.calcOnlyVibrationIsolated'));
         return;
     }
     
-    const mountingTypeText = calc.mountingType === 'type-3-2' ? 'Type 3-2 Vibration Isolators' : 'Type 3-1/3-5/3-10/3-11 Vibration Isolators/Snubbers';
-    
-    let message = `MAXIMUM COMPRESSION (Pc) CALCULATION
+    const mountingTypeText = calc.mountingType === 'type-3-2' ? t('project.type32VibrationIsolators') : t('project.type31VibrationIsolatorsSnubbers');
 
-Equipment: ${equipment.equipment}
-Mounting Type: ${mountingTypeText}
+    let message = `${t('project.pcCalcTitle')}
+
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.mountingTypeLabel')}: ${mountingTypeText}
 
 `;
 
     if (calc.mountingType === 'type-3-2') {
-        message += `Formula: Pc = (W + Fpv)/N + (Fph×h×(b2/2)×cos(θ))/Iyy + (Fph×h×(b1/2)×sin(θ))/Ixx
+        message += `${t('project.formula')}: Pc = (W + Fpv)/N + (Fph×h×(b2/2)×cos(θ))/Iyy + (Fph×h×(b1/2)×sin(θ))/Ixx
 
-FORCES:
-W (Equipment Weight) = ${calc.formula.weightLbs} lbs
-Fpv (Vertical Seismic Force) = 0.2 × Sa(0.2) × W = ${calc.formula.Fpv} lbs
-Fph (Horizontal Seismic Force) = CFS × W = ${calc.formula.Fph} lbs
+${t('project.forces')}:
+W (${t('project.equipmentWeight')}) = ${calc.formula.weightLbs} lbs
+Fpv (${t('project.verticalSeismicForce')}) = 0.2 × Sa(0.2) × W = ${calc.formula.Fpv} lbs
+Fph (${t('project.horizontalSeismicForce')}) = CFS × W = ${calc.formula.Fph} lbs
 
-GEOMETRY & ANGLES:
-(Same as Pt calculation - see Pt details for geometry)
+${t('project.geometryAngles')}:
+(${t('project.sameAsPtCalc')})
 θ = ${calc.formula.theta}°
 
-CALCULATION:
+${t('project.calculation')}:
 Term 1: (W + Fpv)/N = (${calc.formula.weightLbs} + ${calc.formula.Fpv})/${calc.formula.N} = ${((calc.formula.weightLbs + calc.formula.Fpv) / calc.formula.N).toFixed(2)} lbs
 Term 2: (Fph×h×(b2/2)×cos(θ))/Iyy = ${((calc.formula.Fph * calc.formula.h * (calc.formula.b2/2) * Math.cos(calc.formula.theta * Math.PI/180)) / calc.formula.Iyy).toFixed(2)} lbs
 Term 3: (Fph×h×(b1/2)×sin(θ))/Ixx = ${((calc.formula.Fph * calc.formula.h * (calc.formula.b1/2) * Math.sin(calc.formula.theta * Math.PI/180)) / calc.formula.Ixx).toFixed(2)} lbs
 
 Pc = Term 1 + Term 2 + Term 3 = ${calc.Pc} lbs`;
     } else {
-        message += `Formula: Pc = Fpv/N + (Fph×h×(b2/2)×cos(θ))/Iyy + (Fph×h×(b1/2)×sin(θ))/Ixx
+        message += `${t('project.formula')}: Pc = Fpv/N + (Fph×h×(b2/2)×cos(θ))/Iyy + (Fph×h×(b1/2)×sin(θ))/Ixx
 
-FORCES:
-Fpv (Vertical Seismic Force) = 0.2 × Sa(0.2) × W = ${calc.formula.Fpv} lbs
-Fph (Horizontal Seismic Force) = CFS × W = ${calc.formula.Fph} lbs
-Note: Equipment weight NOT included in restoring force for this mounting type
+${t('project.forces')}:
+Fpv (${t('project.verticalSeismicForce')}) = 0.2 × Sa(0.2) × W = ${calc.formula.Fpv} lbs
+Fph (${t('project.horizontalSeismicForce')}) = CFS × W = ${calc.formula.Fph} lbs
+${t('project.noteWeightNotIncluded')}
 
-GEOMETRY & ANGLES:
-(Same as Pt calculation - see Pt details for geometry)
+${t('project.geometryAngles')}:
+(${t('project.sameAsPtCalc')})
 θ = ${calc.formula.theta}°
 
-CALCULATION:
+${t('project.calculation')}:
 Term 1: Fpv/N = ${calc.formula.Fpv}/${calc.formula.N} = ${(calc.formula.Fpv / calc.formula.N).toFixed(2)} lbs
 Term 2: (Fph×h×(b2/2)×cos(θ))/Iyy = ${((calc.formula.Fph * calc.formula.h * (calc.formula.b2/2) * Math.cos(calc.formula.theta * Math.PI/180)) / calc.formula.Iyy).toFixed(2)} lbs
 Term 3: (Fph×h×(b1/2)×sin(θ))/Ixx = ${((calc.formula.Fph * calc.formula.h * (calc.formula.b1/2) * Math.sin(calc.formula.theta * Math.PI/180)) / calc.formula.Ixx).toFixed(2)} lbs
@@ -2899,25 +2899,25 @@ Pc = Term 1 + Term 2 + Term 3 = ${calc.Pc} lbs`;
 function showPsCalculationDetails(equipment, project) {
     const calc = calculateOverturningForces(equipment, project);
     if (!calc || calc.mountingType === 'rigidly-mounted') {
-        alert('This calculation only applies to vibration isolated equipment');
+        alert(t('project.calcOnlyVibrationIsolated'));
         return;
     }
     
-    const mountingTypeText = calc.mountingType === 'type-3-2' ? 'Type 3-2 Vibration Isolators' : 'Type 3-1/3-5/3-10/3-11 Vibration Isolators/Snubbers';
-    
-    const message = `MAXIMUM SHEAR (Ps) CALCULATION
+    const mountingTypeText = calc.mountingType === 'type-3-2' ? t('project.type32VibrationIsolators') : t('project.type31VibrationIsolatorsSnubbers');
 
-Equipment: ${equipment.equipment}
-Mounting Type: ${mountingTypeText}
+    const message = `${t('project.psCalcTitle')}
 
-Formula: Ps = Fph/N
+${t('project.equipment')}: ${equipment.equipment}
+${t('project.mountingTypeLabel')}: ${mountingTypeText}
 
-FORCES:
-Fph (Horizontal Seismic Force) = CFS × W = ${calc.formula.Fph} lbs
-N (Number of Anchors) = ${calc.formula.N}
+${t('project.formula')}: Ps = Fph/N
 
-CALCULATION:
-Ps = Fph/N = ${calc.formula.Fph}/${calc.formula.N} = ${calc.Ps} lbs `;
+${t('project.forces')}:
+Fph (${t('project.horizontalSeismicForce')}) = CFS × W = ${calc.formula.Fph} lbs
+N (${t('project.numberOfAnchors')}) = ${calc.formula.N}
+
+${t('project.calculation')}:
+Ps = Fph/N = ${calc.formula.Fph}/${calc.formula.N} = ${calc.Ps} lbs`;
     
     alert(message);
 }
@@ -2973,7 +2973,7 @@ function renderEquipmentList() {
 
             const selectAllLabel = document.createElement('label');
             selectAllLabel.htmlFor = 'selectAllCheckbox';
-            selectAllLabel.textContent = `SELECT ALL (${projectEquipment.length})`;
+            selectAllLabel.textContent = `${t('common.selectAll')} (${projectEquipment.length})`;
             selectAllLabel.style.cursor = 'pointer';
             selectAllLabel.style.fontSize = '14px';
             selectAllLabel.style.textTransform = 'uppercase';
@@ -2984,7 +2984,7 @@ function renderEquipmentList() {
         } else if (projectEquipment.length > 0) {
             // Show equipment count for users who can't modify
             const headerText = document.createElement('span');
-            headerText.textContent = `EQUIPMENT (${projectEquipment.length})`;
+            headerText.textContent = `${t('project.equipment')} (${projectEquipment.length})`;
             headerText.style.fontSize = '14px';
             headerText.style.textTransform = 'uppercase';
             headerText.style.color = '#666';
@@ -2997,7 +2997,7 @@ function renderEquipmentList() {
         if (selectedEquipmentIndices.size > 0 && canModifyProject()) {
             const deleteSelectedBtn = document.createElement('button');
             deleteSelectedBtn.className = 'delete-btn';
-            deleteSelectedBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Selected';
+            deleteSelectedBtn.innerHTML = `<i class="fas fa-trash"></i> ${t('common.deleteSelected')}`;
             deleteSelectedBtn.style.background = '#dc3545';
             deleteSelectedBtn.style.color = 'white';
             deleteSelectedBtn.style.border = 'none';
@@ -3012,7 +3012,7 @@ function renderEquipmentList() {
         equipmentListDiv.appendChild(listHeader);
 
         if (projectEquipment.length === 0) {
-            equipmentListDiv.innerHTML = '<p>No equipment added yet.</p>';
+            equipmentListDiv.innerHTML = `<p>${t('project.noEquipmentYet')}</p>`;
             return;
         }
 
@@ -3085,42 +3085,42 @@ equipmentCard.innerHTML = `
                 })()}
             </h4>
             <div class="equipment-meta-compact" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
-                ${equipment.model ? `<span>Model: ${equipment.model}</span><span class="meta-separator" style="margin: 0 4px;">•</span>` : ''}
-                ${equipment.tag ? `<span>Tag: ${equipment.tag}</span><span class="meta-separator" style="margin: 0 4px;">•</span>` : ''}
-                ${equipment.level ? `<span>Level: ${equipment.level}</span>` : ''}
+                ${equipment.model ? `<span>${t('project.model')}: ${equipment.model}</span><span class="meta-separator" style="margin: 0 4px;">•</span>` : ''}
+                ${equipment.tag ? `<span>${t('project.tag')}: ${equipment.tag}</span><span class="meta-separator" style="margin: 0 4px;">•</span>` : ''}
+                ${equipment.level ? `<span>${t('project.level')}: ${equipment.level}</span>` : ''}
                 ${hasCalculationData(equipment) ? (equipment.isPipe ? `
                     <span class="meta-separator" style="margin: 0 4px;">•</span>
-                    <span>Pipe: ${equipment.pipeDiameter || 'N/A'}</span>
+                    <span>${t('project.pipe')}: ${equipment.pipeDiameter || 'N/A'}</span>
                     <span class="meta-separator" style="margin: 0 4px;">•</span>
-                    <span>Weight: ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</span>
+                    <span>${t('project.weight')}: ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</span>
                 ` : `
                     <span class="meta-separator" style="margin: 0 4px;">•</span>
                     <span>${equipment.anchorType ? getAnchorTypeText(equipment.anchorType) : 'N/A'}</span>
                     <span class="meta-separator" style="margin: 0 4px;">•</span>
-                    <span>${equipment.numberOfAnchors || 'N/A'} anchors</span>
+                    <span>${equipment.numberOfAnchors || 'N/A'} ${t('project.anchors')}</span>
                     ${equipment.anchorDiameter ? `<span class="meta-separator" style="margin: 0 4px;">•</span><span>⌀ ${equipment.anchorDiameter}"</span>` : ''}
                 `) : ''}
             </div>
         </div>
         <div class="equipment-actions-compact">
-            <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${index})">Details</button>
+            <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${index})">${t('common.details')}</button>
             ${canModifyProject() ? `
                 <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${index})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px;">
-            <i class="fas fa-copy"></i> Duplicate
+            <i class="fas fa-copy"></i> ${t('common.duplicate')}
                 </button>
                 ${!equipment.imageRequested ? `
-                    <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">Upload Image</button>
+                    <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">${t('project.uploadImage')}</button>
                 ` : `
-                    <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">Upload Image</button>
+                    <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">${t('project.uploadImage')}</button>
                 `}
                 ${isAdmin ? `
                     <button class="${equipment.imageRequested ? 'cancel-request-btn' : 'request-btn'}" 
                             onclick="event.stopPropagation(); requestEquipmentImage(${index})"
                             style="background: ${equipment.imageRequested ? '#dc3545' : '#6f42c1'}; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease; min-width: 60px;">
-                        ${equipment.imageRequested ? 'Cancel Request' : 'Request Image'}
+                        ${equipment.imageRequested ? t('project.cancelRequest') : t('project.requestImage')}
                     </button>
                 ` : ''}
-                <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${index})">Delete</button>
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${index})">${t('common.delete')}</button>
                 <input type="file" id="fileInput${index}" accept="image/*,.heic,.HEIC" multiple style="display:none" 
                 onchange="handleImageSelected(event, ${index})">
             ` : ''}
@@ -3135,21 +3135,21 @@ const images = normalizeEquipmentImages(equipment);
 return `
     <div class="equip-images">
     <div class="equip-images-header">
-        <span>Equipment Images</span>
+        <span>${t('project.equipmentImages')}</span>
     </div>
     ${images.length === 0 ? `
-        <div style="font-size:12px;color:#666;">No images yet.</div>
+        <div style="font-size:12px;color:#666;">${t('project.noImagesYet')}</div>
     ` : `
         <div class="equip-thumbs">
         ${images.map((img, i) => `
-            <div class="equip-thumb" tabindex="0" aria-label="View image">
+            <div class="equip-thumb" tabindex="0" aria-label="${t('project.viewImage')}">
             <img
-            src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='80'><rect width='120' height='80' fill='%23eee'/><text x='10' y='45' font-size='12' fill='%23666'>Loading...</text></svg>"
+            src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='80'><rect width='120' height='80' fill='%23eee'/><text x='10' y='45' font-size='12' fill='%23666'>${t('common.loading')}...</text></svg>"
             data-key="${img.key.replace(/"/g,'&quot;')}"
-            alt="Equipment image ${i+1}"
+            alt="${t('project.equipmentImage')} ${i+1}"
             />
             ${canModifyProject() ? `
-                <button class="thumb-delete" title="Delete image"
+                <button class="thumb-delete" title="${t('project.deleteImage')}"
                         onclick="confirmDeleteImage(event, ${index}, '${img.key.replace(/'/g,"\\'")}')">Delete</button>
             ` : ``}
             </div>
@@ -3164,22 +3164,22 @@ return `
     ${!hasCalculationData(equipment) ? `
         <!-- Equipment without calculation data - show all existing fields -->
         <div class="equipment-info-section" style="width: 100%;">
-            <p><strong>Equipment:</strong> ${equipment.equipment}</p>
-            ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
-            ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
-            ${equipment.level ? `<p><strong>Level:</strong> ${equipment.level}${equipment.totalLevels ? `/${equipment.totalLevels}` : ''}</p>` : ''}
-            ${equipment.installMethod ? `<p><strong>Install Method:</strong> ${getInstallMethodText(equipment.installMethod)}</p>` : ''}
-            ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
-            ${equipment.anchorType ? `<p><strong>Anchor Type:</strong> ${getAnchorTypeText(equipment.anchorType)}</p>` : ''}
-            ${equipment.numberOfAnchors ? `<p><strong>Number of Anchors:</strong> ${equipment.numberOfAnchors}${equipment.anchorDiameter ? ` (⌀ ${equipment.anchorDiameter}")` : ''}</p>` : ''}
-            ${equipment.slabThickness ? `<p><strong>Slab Thickness:</strong> ${equipment.slabThickness}"${equipment.fc ? ` | <strong>f'c:</strong> ${equipment.fc} psi` : ''}</p>` : ''}
-            ${equipment.mountingType ? `<p><strong>Mounting Type:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
-            ${equipment.hn !== undefined ? `<p><strong>Building Height:</strong> ${equipment.hn} m</p>` : ''}
+            <p><strong>${t('project.equipment')}:</strong> ${equipment.equipment}</p>
+            ${equipment.model ? `<p><strong>${t('project.model')}:</strong> ${equipment.model}</p>` : ''}
+            ${equipment.tag ? `<p><strong>${t('project.tag')}:</strong> ${equipment.tag}</p>` : ''}
+            ${equipment.level ? `<p><strong>${t('project.level')}:</strong> ${equipment.level}${equipment.totalLevels ? `/${equipment.totalLevels}` : ''}</p>` : ''}
+            ${equipment.installMethod ? `<p><strong>${t('project.installMethodLabel')}:</strong> ${getInstallMethodText(equipment.installMethod)}</p>` : ''}
+            ${equipment.nbcCategory ? `<p><strong>${t('project.nbcCategory')}:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : t('common.unknown')}</p>` : ''}
+            ${equipment.anchorType ? `<p><strong>${t('project.anchorTypeLabel')}:</strong> ${getAnchorTypeText(equipment.anchorType)}</p>` : ''}
+            ${equipment.numberOfAnchors ? `<p><strong>${t('project.numberOfAnchors')}:</strong> ${equipment.numberOfAnchors}${equipment.anchorDiameter ? ` (⌀ ${equipment.anchorDiameter}")` : ''}</p>` : ''}
+            ${equipment.slabThickness ? `<p><strong>${t('project.slabThickness')}:</strong> ${equipment.slabThickness}"${equipment.fc ? ` | <strong>f'c:</strong> ${equipment.fc} psi` : ''}</p>` : ''}
+            ${equipment.mountingType ? `<p><strong>${t('project.mountingTypeLabel')}:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
+            ${equipment.hn !== undefined ? `<p><strong>${t('project.buildingHeight')}:</strong> ${equipment.hn} m</p>` : ''}
 
             ${canModifyProject() ? `
                 <div style="margin-top: 15px;">
                     <button class="edit-btn" onclick="editEquipment(${index})" style="background: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                        <i class="fas fa-edit"></i> Edit Equipment
+                        <i class="fas fa-edit"></i> ${t('project.editEquipment')}
                     </button>
                 </div>
             ` : ''}
@@ -3189,33 +3189,33 @@ return `
         <div class="equipment-info-section">
                         ${equipment.isPipe ? `
                             <!-- Pipe specific fields -->
-                            ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
-                            <p><strong>Pipe Type:</strong> ${equipment.pipeType || equipment.equipment}</p>
-                            ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
-                            ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
-                            <p><strong>Pipe Weight per Foot:</strong> ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</p>
-                            <p><strong>Pipe Diameter:</strong> ${equipment.pipeDiameter || 'N/A'}</p>
-                            <p><strong>Support Type:</strong> ${equipment.supportType || 'N/A'} | <strong>Structure Type:</strong> ${equipment.structureType || 'N/A'}</p>
-                            <p><strong>Level:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>Install Method:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
-                            ${equipment.hn !== undefined ? `<p><strong>Building Height:</strong> ${equipment.hn} m</p>` : ''}
+                            ${equipment.nbcCategory ? `<p><strong>${t('project.nbcCategory')}:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : t('common.unknown')}</p>` : ''}
+                            <p><strong>${t('project.pipeType')}:</strong> ${equipment.pipeType || equipment.equipment}</p>
+                            ${equipment.model ? `<p><strong>${t('project.model')}:</strong> ${equipment.model}</p>` : ''}
+                            ${equipment.tag ? `<p><strong>${t('project.tag')}:</strong> ${equipment.tag}</p>` : ''}
+                            <p><strong>${t('project.pipeWeightPerFoot')}:</strong> ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</p>
+                            <p><strong>${t('project.pipeDiameter')}:</strong> ${equipment.pipeDiameter || 'N/A'}</p>
+                            <p><strong>${t('project.supportType')}:</strong> ${equipment.supportType || 'N/A'} | <strong>${t('project.structureType')}:</strong> ${equipment.structureType || 'N/A'}</p>
+                            <p><strong>${t('project.level')}:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>${t('project.installMethodLabel')}:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
+                            ${equipment.hn !== undefined ? `<p><strong>${t('project.buildingHeight')}:</strong> ${equipment.hn} m</p>` : ''}
                         ` : `
                             <!-- Traditional equipment fields -->
-                            ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
-                            ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
-                            ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
-                            <p><strong>Weight:</strong> ${equipment.weight || 'N/A'} ${equipment.weightUnit || 'kg'} | <strong>Dimensions:</strong> ${equipment.height}×${equipment.width}×${equipment.length} in</p>
-                            <p><strong>Level:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>Install Method:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
-                            ${equipment.mountingType ? `<p><strong>Mounting Type:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
-                            ${equipment.anchorType ? `<p><strong>Anchor Type:</strong> ${getAnchorTypeText(equipment.anchorType)}</p>` : ''}
-                            ${equipment.numberOfAnchors ? `<p><strong>Number of Anchors:</strong> ${equipment.numberOfAnchors}${equipment.anchorDiameter ? ` (⌀ ${equipment.anchorDiameter}")` : ''}</p>` : ''}
-                            ${equipment.slabThickness ? `<p><strong>Slab Thickness:</strong> ${equipment.slabThickness}" | <strong>f'c:</strong> ${equipment.fc} psi</p>` : ''}
-                            ${equipment.hx !== undefined && equipment.hn !== undefined ? `<p><strong>Height Above Base:</strong> ${equipment.hx} m | <strong>Building Height:</strong> ${equipment.hn} m</p>` : ''}
+                            ${equipment.nbcCategory ? `<p><strong>${t('project.nbcCategory')}:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : t('common.unknown')}</p>` : ''}
+                            ${equipment.model ? `<p><strong>${t('project.model')}:</strong> ${equipment.model}</p>` : ''}
+                            ${equipment.tag ? `<p><strong>${t('project.tag')}:</strong> ${equipment.tag}</p>` : ''}
+                            <p><strong>${t('project.weight')}:</strong> ${equipment.weight || 'N/A'} ${equipment.weightUnit || 'kg'} | <strong>${t('project.dimensions')}:</strong> ${equipment.height}×${equipment.width}×${equipment.length} in</p>
+                            <p><strong>${t('project.level')}:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>${t('project.installMethodLabel')}:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
+                            ${equipment.mountingType ? `<p><strong>${t('project.mountingTypeLabel')}:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
+                            ${equipment.anchorType ? `<p><strong>${t('project.anchorTypeLabel')}:</strong> ${getAnchorTypeText(equipment.anchorType)}</p>` : ''}
+                            ${equipment.numberOfAnchors ? `<p><strong>${t('project.numberOfAnchors')}:</strong> ${equipment.numberOfAnchors}${equipment.anchorDiameter ? ` (⌀ ${equipment.anchorDiameter}")` : ''}</p>` : ''}
+                            ${equipment.slabThickness ? `<p><strong>${t('project.slabThickness')}:</strong> ${equipment.slabThickness}" | <strong>f'c:</strong> ${equipment.fc} psi</p>` : ''}
+                            ${equipment.hx !== undefined && equipment.hn !== undefined ? `<p><strong>${t('project.heightAboveBase')}:</strong> ${equipment.hx} m | <strong>${t('project.buildingHeight')}:</strong> ${equipment.hn} m</p>` : ''}
                         `}
                         
                         <p>
-                            <strong>CFS:</strong> <span class="calculation-value cfs-value" title="Click to see CFS calculation details">${cfsResult.cfs}</span> | 
-                            <strong>Lateral Force:</strong> <span class="calculation-value force-value" title="Click to see lateral force calculation details">${lateralForce} N</span>
-                            ${equipment.nbcCategory ? ` | <strong>NBC Vp:</strong> <span class="calculation-value vp-value" title="Click to see NBC Vp calculation details">${vpResult.vp} N</span>` : ''}
+                            <strong>CFS:</strong> <span class="calculation-value cfs-value" title="${t('project.clickToSeeCFSDetails')}">${cfsResult.cfs}</span> |
+                            <strong>${t('project.lateralForce')}:</strong> <span class="calculation-value force-value" title="${t('project.clickToSeeLateralForceDetails')}">${lateralForce} N</span>
+                            ${equipment.nbcCategory ? ` | <strong>NBC Vp:</strong> <span class="calculation-value vp-value" title="${t('project.clickToSeeNBCVpDetails')}">${vpResult.vp} N</span>` : ''}
                         </p>
 
                         ${(() => {
@@ -3224,85 +3224,85 @@ return `
                                 const suspendedPiping = calculateSuspendedPipingBracing(equipment, currentProject);
                                 return `
                                     <div class="suspended-piping-values" style="background: #f0f8ff; padding: 8px; border-radius: 4px; margin-top: 8px; border-left: 4px solid #8b5cf6;">
-                                        <p><strong>Suspended Piping Bracing (ASHRAE Ch. 8):</strong></p>
+                                        <p><strong>${t('project.suspendedPipingBracing')}:</strong></p>
                                         <p style="font-size: 12px; margin: 4px 0;">
-                                            <strong>Pipe Weight:</strong> ${suspendedPiping.pipeWeight} lb/ft | 
-                                            <strong>Seismic Level:</strong> ${suspendedPiping.seismicLevel}
+                                            <strong>${t('project.pipeWeightLabel')}:</strong> ${suspendedPiping.pipeWeight} lb/ft |
+                                            <strong>${t('project.seismicLevel')}:</strong> ${suspendedPiping.seismicLevel}
                                         </p>
                                         <p style="font-size: 12px; margin: 4px 0;">
-                                            <strong>Hanger Rod:</strong> <span class="calculation-value suspended-piping-value" title="Click to see complete specifications">${suspendedPiping.specifications.hangerRod.diameter}" dia. (${suspendedPiping.specifications.hangerRod.seismicLoad} lbs)</span> | 
-                                            <strong>Max Unbraced:</strong> ${suspendedPiping.specifications.hangerRod.maxUnbraced}"
+                                            <strong>${t('project.hangerRod')}:</strong> <span class="calculation-value suspended-piping-value" title="${t('project.clickToSeeCompleteSpecs')}">${suspendedPiping.specifications.hangerRod.diameter}" dia. (${suspendedPiping.specifications.hangerRod.seismicLoad} lbs)</span> |
+                                            <strong>${t('project.maxUnbraced')}:</strong> ${suspendedPiping.specifications.hangerRod.maxUnbraced}"
                                         </p>
                                         <p style="font-size: 12px; margin: 4px 0;">
-                                            <strong>Solid Brace:</strong> ${suspendedPiping.specifications.solidBrace.steelAngle} steel angle | 
-                                            <strong>Cable Brace:</strong> ${suspendedPiping.specifications.cableBrace.prestretched} lbs
+                                            <strong>${t('project.solidBrace')}:</strong> ${suspendedPiping.specifications.solidBrace.steelAngle} ${t('project.steelAngle')} |
+                                            <strong>${t('project.cableBrace')}:</strong> ${suspendedPiping.specifications.cableBrace.prestretched} lbs
                                         </p>
-                                        ${suspendedPiping.exceedsTable ? '<p style="font-size: 11px; color: #ef4444;">⚠️ Pipe weight exceeds table limits</p>' : ''}
+                                        ${suspendedPiping.exceedsTable ? `<p style="font-size: 11px; color: #ef4444;">${t('project.pipeWeightExceedsTableLimits')}</p>` : ''}
                                     </div>
                                 `;
                             }
                             return '';
                         })()}
-                    
+
                     ${overturningResult ? `
                         <div class="overturning-values">
-                            <p><strong>Overturning Analysis (${overturningResult.mountingType === 'no-isolators' ? 'No Isolators' : 'Vibration Isolated Equipment'}):</strong></p>
+                            <p><strong>${t('project.overturningAnalysis')} (${overturningResult.mountingType === 'no-isolators' ? t('project.noIsolators') : t('project.vibrationIsolatedEquipment')}):</strong></p>
                             ${overturningResult.mountingType === 'no-isolators' ? `
                                 <p>
-                                    <strong>OTM:</strong> <span class="calculation-value otm-value" title="Click to see OTM calculation details">${overturningResult.OTM} lb-in</span> | 
-                                    <strong>RM:</strong> <span class="calculation-value rm-value" title="Click to see RM calculation details">${overturningResult.RM} lb-in</span> | 
-                                    <strong>T:</strong> <span class="calculation-value tension-value" title="Click to see Tension calculation details">${overturningResult.T} lbs</span> | 
-                                    <strong>V:</strong> <span class="calculation-value shear-value" title="Click to see Shear calculation details">${overturningResult.V} lbs</span>
+                                    <strong>OTM:</strong> <span class="calculation-value otm-value" title="${t('project.clickToSeeOTMDetails')}">${overturningResult.OTM} lb-in</span> |
+                                    <strong>RM:</strong> <span class="calculation-value rm-value" title="${t('project.clickToSeeRMDetails')}">${overturningResult.RM} lb-in</span> |
+                                    <strong>T:</strong> <span class="calculation-value tension-value" title="${t('project.clickToSeeTensionDetails')}">${overturningResult.T} lbs</span> |
+                                    <strong>V:</strong> <span class="calculation-value shear-value" title="${t('project.clickToSeeShearDetails')}">${overturningResult.V} lbs</span>
                                 </p>
                             ` : `
                                 <p>
-                                    <strong>Pt:</strong> <span class="calculation-value pt-value" title="Click to see maximum tension calculation details">${overturningResult.Pt} lbs</span> | 
-                                    <strong>Pc:</strong> <span class="calculation-value pc-value" title="Click to see maximum compression calculation details">${overturningResult.Pc} lbs</span> | 
-                                    <strong>Ps:</strong> <span class="calculation-value ps-value" title="Click to see maximum shear calculation details">${overturningResult.Ps} lbs</span>
+                                    <strong>Pt:</strong> <span class="calculation-value pt-value" title="${t('project.clickToSeeMaxTensionDetails')}">${overturningResult.Pt} lbs</span> |
+                                    <strong>Pc:</strong> <span class="calculation-value pc-value" title="${t('project.clickToSeeMaxCompressionDetails')}">${overturningResult.Pc} lbs</span> |
+                                    <strong>Ps:</strong> <span class="calculation-value ps-value" title="${t('project.clickToSeeMaxShearDetails')}">${overturningResult.Ps} lbs</span>
                                 </p>
                             `}
                         </div>
                     ` : ''}
-                    
+
                     ${(() => {
                         const ashraeResult = calculateASHRAEAnchorBolts(equipment, currentProject);
                         return ashraeResult ? `
                             <div class="ashrae-values" style="background: #f0f8ff; padding: 8px; border-radius: 4px; margin-top: 8px; border-left: 4px solid #0066cc;">
-                                <p><strong>ASHRAE Anchor Bolt Analysis (${ashraeResult.formulaType}):</strong></p>
+                                <p><strong>${t('project.ashraeAnchorBoltAnalysis')} (${ashraeResult.formulaType}):</strong></p>
                                 <p>
-                                    <strong>Tbolt:</strong> <span class="calculation-value ashrae-tbolt-value" title="Click to see ASHRAE Tbolt calculation details">${ashraeResult.Tbolt} lbs per bolt</span> | 
-                                    <strong>Vbolt:</strong> <span class="calculation-value ashrae-vbolt-value" title="Click to see ASHRAE Vbolt calculation details">${ashraeResult.Vbolt} lbs per bolt</span>
+                                    <strong>Tbolt:</strong> <span class="calculation-value ashrae-tbolt-value" title="${t('project.clickToSeeASHRAETboltDetails')}">${ashraeResult.Tbolt} ${t('project.lbsPerBolt')}</span> |
+                                    <strong>Vbolt:</strong> <span class="calculation-value ashrae-vbolt-value" title="${t('project.clickToSeeASHRAEVboltDetails')}">${ashraeResult.Vbolt} ${t('project.lbsPerBolt')}</span>
                                 </p>
                                 ${ashraeResult.concreteAnalysis ? `
                                     <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
-                                        <p><strong>Structural Connection:</strong></p>
+                                        <p><strong>${t('project.structuralConnection')}:</strong></p>
                                         <p style="font-size: 12px; margin: 4px 0;">
-                                            <strong>Formula 1:</strong> <span class="calculation-value concrete-formula1-value" title="Click to see Formula 1 calculation details" style="color: ${ashraeResult.concreteAnalysis.formula1.pass ? '#16a34a' : '#ef4444'};">${ashraeResult.concreteAnalysis.formula1.value} ${ashraeResult.concreteAnalysis.formula1.pass ? '✅' : '❌'}</span> | 
-                                            <strong>Formula 2:</strong> <span class="calculation-value concrete-formula2-value" title="Click to see Formula 2 calculation details" style="color: ${ashraeResult.concreteAnalysis.formula2.pass ? '#16a34a' : '#ef4444'};">${ashraeResult.concreteAnalysis.formula2.value} ${ashraeResult.concreteAnalysis.formula2.pass ? '✅' : '❌'}</span>
+                                            <strong>${t('project.formula1')}:</strong> <span class="calculation-value concrete-formula1-value" title="${t('project.clickToSeeFormula1Details')}" style="color: ${ashraeResult.concreteAnalysis.formula1.pass ? '#16a34a' : '#ef4444'};">${ashraeResult.concreteAnalysis.formula1.value} ${ashraeResult.concreteAnalysis.formula1.pass ? '✅' : '❌'}</span> |
+                                            <strong>${t('project.formula2')}:</strong> <span class="calculation-value concrete-formula2-value" title="${t('project.clickToSeeFormula2Details')}" style="color: ${ashraeResult.concreteAnalysis.formula2.pass ? '#16a34a' : '#ef4444'};">${ashraeResult.concreteAnalysis.formula2.value} ${ashraeResult.concreteAnalysis.formula2.pass ? '✅' : '❌'}</span>
                                         </p>
                                         <p style="font-size: 11px; margin: 2px 0; color: ${ashraeResult.concreteAnalysis.overallPass ? '#16a34a' : '#ef4444'};">
-                                            <strong>Overall Status:</strong> ${ashraeResult.concreteAnalysis.overallPass ? '✅ BOTH FORMULAS PASS' : '❌ ONE OR MORE FORMULAS FAIL'}
+                                            <strong>${t('project.overallStatus')}:</strong> ${ashraeResult.concreteAnalysis.overallPass ? '✅ ' + t('project.bothFormulasPass') : '❌ ' + t('project.oneOrMoreFormulasFail')}
                                         </p>
                                     </div>
                                 ` : ''}
 
                                 ${ashraeResult.embedmentAnalysis ? `
                                     <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
-                                        <p><strong>Minimum Embedment Analysis (${ashraeResult.embedmentAnalysis.anchorType === 'screw' ? 'Screw Anchor' : 'Expansion Anchor'}):</strong></p>
+                                        <p><strong>${t('project.minimumEmbedmentAnalysis')} (${ashraeResult.embedmentAnalysis.anchorType === 'screw' ? t('project.screwAnchor') : t('project.expansionAnchor')}):</strong></p>
                                         ${ashraeResult.embedmentAnalysis.recommendLargerDiameter ? `
                                             <p style="font-size: 12px; margin: 4px 0; color: #ef4444;">
-                                                <strong>⚠️ RECOMMENDATION:</strong> <span class="calculation-value embedment-recommendation-value" title="Click to see embedment analysis details">Use larger anchor diameter</span>
+                                                <strong>${t('project.recommendation')}:</strong> <span class="calculation-value embedment-recommendation-value" title="${t('project.clickToSeeEmbedmentDetails')}">${t('project.useLargerAnchorDiameter')}</span>
                                             </p>
                                             <p style="font-size: 11px; margin: 2px 0; color: #ef4444;">
-                                                Current ${ashraeResult.embedmentAnalysis.anchorDiameter}" diameter insufficient for loads
+                                                ${t('project.currentDiameterInsufficient', { diameter: ashraeResult.embedmentAnalysis.anchorDiameter })}
                                             </p>
                                         ` : `
                                             <p style="font-size: 12px; margin: 4px 0;">
-                                                <strong>Concrete:</strong> <span class="calculation-value concrete-embedment-value" title="Click to see concrete embedment details">${ashraeResult.embedmentAnalysis.minConcreteEmbedment}" min</span> | 
-                                                <strong>Steel:</strong> <span class="calculation-value steel-embedment-value" title="Click to see steel embedment details">${ashraeResult.embedmentAnalysis.minSteelEmbedment}" min</span>
+                                                <strong>${t('project.concrete')}:</strong> <span class="calculation-value concrete-embedment-value" title="${t('project.clickToSeeConcreteEmbedmentDetails')}">${ashraeResult.embedmentAnalysis.minConcreteEmbedment}" min</span> |
+                                                <strong>${t('project.steel')}:</strong> <span class="calculation-value steel-embedment-value" title="${t('project.clickToSeeSteelEmbedmentDetails')}">${ashraeResult.embedmentAnalysis.minSteelEmbedment}" min</span>
                                             </p>
                                             <p style="font-size: 11px; margin: 2px 0; color: #16a34a;">
-                                                <strong>Required Min Embedment:</strong> <span class="calculation-value final-embedment-value" title="Click to see final embedment calculation">${ashraeResult.embedmentAnalysis.finalMinEmbedment}"</span>
+                                                <strong>${t('project.requiredMinEmbedment')}:</strong> <span class="calculation-value final-embedment-value" title="${t('project.clickToSeeFinalEmbedmentCalc')}">${ashraeResult.embedmentAnalysis.finalMinEmbedment}"</span>
                                             </p>
                                         `}
                                     </div>
@@ -3318,18 +3318,18 @@ return `
                             const aircraftCable = suspendedBracing.shoppingList.aircraftCableDetails;
                             return `
                                 <div class="suspended-bracing-values" style="background: #fef3c7; padding: 8px; border-radius: 4px; margin-top: 8px; border-left: 4px solid #f59e0b;">
-                                    <p><strong>Suspended Equipment Bracing:</strong></p>
+                                    <p><strong>${t('project.suspendedEquipmentBracing')}:</strong></p>
                                     <p style="font-size: 12px; margin: 4px 0;">
-                                        <strong>Cable Required:</strong> <span class="calculation-value cable-value" title="Click to see cable calculation details">${suspendedBracing.cableRequired ? 'Yes' : 'No'}</span> | 
-                                        <strong>Seismic Load:</strong> ${suspendedBracing.seismicLoad} lbs
+                                        <strong>${t('project.cableRequired')}:</strong> <span class="calculation-value cable-value" title="${t('project.clickToSeeCableDetails')}">${suspendedBracing.cableRequired ? t('common.yes') : t('common.no')}</span> |
+                                        <strong>${t('project.seismicLoad')}:</strong> ${suspendedBracing.seismicLoad} lbs
                                     </p>
                                     ${suspendedBracing.cableRequired && aircraftCable ? `
                                         <p style="font-size: 12px; margin: 4px 0;">
-                                            <strong>Cable Size:</strong> ${aircraftCable.cableSize}" | 
-                                            <strong>Tensile Strength:</strong> ${aircraftCable.tensileStrength} lbs
+                                            <strong>${t('project.cableSize')}:</strong> ${aircraftCable.cableSize}" |
+                                            <strong>${t('project.tensileStrength')}:</strong> ${aircraftCable.tensileStrength} lbs
                                         </p>
                                         <p style="font-size: 11px; margin: 4px 0; color: #666;">
-                                            Turnbuckle: ${aircraftCable.turnbuckle} | Thimble: ${aircraftCable.thimble} | Clips: ${aircraftCable.clips}
+                                            ${t('project.turnbuckle')}: ${aircraftCable.turnbuckle} | ${t('project.thimble')}: ${aircraftCable.thimble} | ${t('project.clips')}: ${aircraftCable.clips}
                                         </p>
                                     ` : ''}
                                 </div>
@@ -3341,18 +3341,18 @@ return `
                     ${canModifyProject() ? `
                         <div style="margin-top: 15px;">
                             <button class="edit-btn" onclick="editEquipment(${index})" style="background: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                                <i class="fas fa-edit"></i> Edit Equipment
+                                <i class="fas fa-edit"></i> ${t('project.editEquipment')}
                             </button>
                         </div>
                     ` : ''}
                 </div>
                 
                 <div class="equipment-image-section">
-                    <h4 style="margin-bottom: 10px; color: #333;">Equipment Image</h4>
+                    <h4 style="margin-bottom: 10px; color: #333;">${t('project.equipmentImage')}</h4>
                     <div class="equipment-detail-image-container" id="equipmentDetailImage${index}">
                         <div class="equipment-detail-placeholder" id="equipmentDetailPlaceholder${index}">
                             <i class="fas fa-image" style="font-size: 32px; color: #ccc; margin-bottom: 8px; display: block;"></i>
-                            Loading image...
+                            ${t('common.loadingImage')}
                         </div>
                     </div>
                 </div>
@@ -3375,7 +3375,7 @@ return `
                 el.closest('.equip-thumb').onclick = () => window.openEquipLightbox(url);
             } catch {
                 el.removeAttribute('src');
-                el.alt = 'Image unavailable';
+                el.alt = t('project.imageNotAvailable');
             }
             });
             
@@ -3584,7 +3584,7 @@ return `
 
 function triggerUploadImage(index) {
     if (!canModifyProject()) {
-        alert('You do not have permission to modify this project.');
+        alert(t('project.noPermissionModify'));
         return;
     }
     const input = document.getElementById(`fileInput${index}`);
@@ -3603,7 +3603,7 @@ async function handleImageSelected(evt, index) {
     
     // Check if already at max
     if (existingCount >= MAX_IMAGES) {
-        alert(`This equipment already has ${MAX_IMAGES} images (maximum).`);
+        alert(t('project.maxImagesReached', { max: MAX_IMAGES }));
         evt.target.value = '';
         return;
     }
@@ -3613,7 +3613,7 @@ async function handleImageSelected(evt, index) {
     const filesToUpload = Array.from(files).slice(0, availableSlots);
     
     if (files.length > availableSlots) {
-        alert(`Only uploading ${availableSlots} image(s). Maximum ${MAX_IMAGES} images per equipment.`);
+        alert(t('project.onlyUploadingImages', { count: availableSlots, max: MAX_IMAGES }));
     }
 
     let uploadedCount = 0;
@@ -3685,7 +3685,7 @@ async function handleImageSelected(evt, index) {
             
         } catch (err) {
             console.error('Image upload error:', err);
-            alert(`Failed to upload "${file.name}": ${err.message}`);
+            alert(t('project.failedToUpload') + ` "${file.name}": ${err.message}`);
         }
     }
     
@@ -3701,7 +3701,7 @@ async function handleImageSelected(evt, index) {
             }
         }, 100);
 
-        alert(`${uploadedCount} image(s) uploaded successfully!`);
+        alert(t('project.imagesUploadedSuccess', { count: uploadedCount }));
     }
     
     // reset the input so choosing the same file again still triggers change
@@ -3715,13 +3715,13 @@ function getImageRequestInfo(equipment) {
     }
 
     const hasImages = equipment.images && equipment.images.length > 0;
-    const tooltipText = hasImages 
-        ? "An admin has requested you to upload an additional image for this equipment"
-        : "An admin has requested you to upload an image for this equipment";
+    const tooltipText = hasImages
+        ? t('project.imageRequestAdditional')
+        : t('project.imageRequestUpload');
 
     return {
         icon: isAdmin ? 'fas fa-paper-plane' : 'fas fa-exclamation-triangle',
-        tooltipText: isAdmin ? "Image request sent" : tooltipText,
+        tooltipText: isAdmin ? t('project.imageRequestSent') : tooltipText,
         color: isAdmin ? '#17a2b8' : '#ffc107'
     };
 }
@@ -3729,15 +3729,15 @@ function getImageRequestInfo(equipment) {
 // Helper function to get install method text
 function getInstallMethodText(value) {
     const methods = {
-        '1': 'Fixed to Slab',
-        '2': 'Fixed to Wall',
-        '3': 'Fixed to Structure',
-        '4': 'Fixed to Ceiling',
-        '5': 'Fixed to Roof',
-        '6': 'Fixed to Interior Wall',
-        '7': 'Fixed to Wooden Sleeper'
+        '1': t('project.installMethod.fixedToSlab'),
+        '2': t('project.installMethod.fixedToWall'),
+        '3': t('project.installMethod.fixedToStructure'),
+        '4': t('project.installMethod.fixedToCeiling'),
+        '5': t('project.installMethod.fixedToRoof'),
+        '6': t('project.installMethod.fixedToInteriorWall'),
+        '7': t('project.installMethod.fixedToWoodenSleeper')
     };
-    return methods[value] || 'Unknown';
+    return methods[value] || t('common.unknown');
 }
 
 // Helper function to generate just the image name (without base URL and extension)
@@ -3768,26 +3768,26 @@ function getImageName(equipmentType, pipeType, installMethod, projectDomain) {
 // Helper function to get mounting type text
 function getMountingTypeText(value) {
     const types = {
-        'no-isolators': '1. No isolators',
-        'type-3-1': '2. Restrained with Type 3-1 vibration isolators',
-        'type-3-2': '3. Restrained with Type 3-2 vibration isolators',
-        'type-3-5a': '4. Restrained with Type 3-5A vibration isolators',
-        'type-3-5b': '5. Restrained with Type 3-5B vibration isolators',
-        'type-3-5c': '6. Restrained with Type 3-5C vibration isolators',
-        'type-3-5d': '7. Restrained with Type 3-5D vibration isolators',
-        'type-3-10': '8. Restrained with Type 3-10 seismic snubbers',
-        'type-3-11': '9. Restrained with Type 3-11 seismic snubbers'
+        'no-isolators': t('project.mountingType.noIsolators'),
+        'type-3-1': t('project.mountingType.type31'),
+        'type-3-2': t('project.mountingType.type32'),
+        'type-3-5a': t('project.mountingType.type35a'),
+        'type-3-5b': t('project.mountingType.type35b'),
+        'type-3-5c': t('project.mountingType.type35c'),
+        'type-3-5d': t('project.mountingType.type35d'),
+        'type-3-10': t('project.mountingType.type310'),
+        'type-3-11': t('project.mountingType.type311')
     };
-    return types[value] || 'Unknown mounting type';
+    return types[value] || t('project.mountingType.unknown');
 }
 
 // Helper function to get anchor type text
 function getAnchorTypeText(value) {
     const types = {
-        'expansion': 'KWIK BOLT TZ2 Expansion anchor',
-        'screw': 'KWIK HUS EZ Screw anchor'
+        'expansion': t('project.anchorType.expansion'),
+        'screw': t('project.anchorType.screw')
     };
-    return types[value] || 'Unknown anchor type';
+    return types[value] || t('project.anchorType.unknown');
 }
 
 // Function to update anchor diameter options in edit mode
@@ -3800,12 +3800,12 @@ function updateEditAnchorDiameters(index) {
     anchorDiameterSelect.innerHTML = '';
     
     if (!anchorType) {
-        anchorDiameterSelect.innerHTML = '<option value="">Select anchor type first...</option>';
+        anchorDiameterSelect.innerHTML = `<option value="">${t('project.selectAnchorTypeFirst')}</option>`;
         return;
     }
     
     // Add default option
-    anchorDiameterSelect.innerHTML = '<option value="">Select diameter...</option>';
+    anchorDiameterSelect.innerHTML = `<option value="">${t('project.selectDiameter')}</option>`;
     
     let diameters = [];
     
@@ -3901,17 +3901,17 @@ function populateEditInstallMethodOptions(index, domain, equipment) {
     const currentValue = editInstallMethodSelect.value;
     
     // Clear existing options and add placeholder
-    editInstallMethodSelect.innerHTML = '<option value="">Select installation method...</option>';
-    
+    editInstallMethodSelect.innerHTML = `<option value="">${t('project.selectInstallMethod')}</option>`;
+
     // All available install methods
     const allInstallMethods = {
-        '1': 'Fixed to Slab',
-        '2': 'Fixed to Wall', 
-        '3': 'Fixed to Structure',
-        '4': 'Fixed to Ceiling',
-        '5': 'Fixed to Roof',
-        '6': 'Fixed to Interior Wall',
-        '7': 'Fixed to Wooden Sleeper'
+        '1': t('project.installMethod.fixedToSlab'),
+        '2': t('project.installMethod.fixedToWall'),
+        '3': t('project.installMethod.fixedToStructure'),
+        '4': t('project.installMethod.fixedToCeiling'),
+        '5': t('project.installMethod.fixedToRoof'),
+        '6': t('project.installMethod.fixedToInteriorWall'),
+        '7': t('project.installMethod.fixedToWoodenSleeper')
     };
     
     let allowedMethods = [];
@@ -3954,12 +3954,12 @@ function populateEditAnchorDiameters(index, equipment) {
     }
 
     if (!anchorType) {
-        anchorDiameterSelect.innerHTML = '<option value="">Select anchor type first...</option>';
+        anchorDiameterSelect.innerHTML = `<option value="">${t('project.selectAnchorTypeFirst')}</option>`;
         return;
     }
 
     // Clear existing options
-    anchorDiameterSelect.innerHTML = '<option value="">Select diameter...</option>';
+    anchorDiameterSelect.innerHTML = `<option value="">${t('project.selectDiameter')}</option>`;
 
     let diameters = [];
 
@@ -3993,7 +3993,7 @@ function toggleEquipmentDetails(index) {
     if (detailsDiv.classList.contains('show')) {
         detailsDiv.classList.remove('show');
         if (detailsButton) {
-            detailsButton.textContent = 'Details';
+            detailsButton.textContent = t('common.details');
         }
     } else {
         // Collapse all other open details first
@@ -4001,7 +4001,7 @@ function toggleEquipmentDetails(index) {
         
         detailsDiv.classList.add('show');
         if (detailsButton) {
-            detailsButton.textContent = 'Hide Details';
+            detailsButton.textContent = t('common.hideDetails');
         }
     }
 }
@@ -4022,7 +4022,7 @@ function collapseAllEquipmentDetails(exceptIndex = null) {
                 const equipmentCard = detailsDiv.closest('.equipment-card');
                 const detailsButton = equipmentCard?.querySelector('.details-btn');
                 if (detailsButton) {
-                    detailsButton.textContent = 'Details';
+                    detailsButton.textContent = t('common.details');
                 }
             }
         }
@@ -4032,13 +4032,13 @@ function collapseAllEquipmentDetails(exceptIndex = null) {
 // Function to edit equipment
 function editEquipment(index) {
     if (!canModifyProject()) {
-        alert('You do not have permission to edit equipment in this project.');
+        alert(t('project.noPermissionEditEquipment'));
         return;
     }
 
     const equipment = projectEquipment[index];
     if (!equipment) {
-        alert('Equipment not found.');
+        alert(t('project.equipmentNotFound'));
         return;
     }
     
@@ -4051,7 +4051,7 @@ function editEquipment(index) {
     // Update form title
     const formTitle = document.getElementById('equipmentFormTitle');
     if (formTitle) {
-        formTitle.textContent = 'Edit Equipment';
+        formTitle.textContent = t('project.editEquipment');
     }
     
     // Show the form
@@ -4059,7 +4059,7 @@ function editEquipment(index) {
     const newCalcButton = document.getElementById('newCalculationButton');
     equipmentForm.classList.add('show');
     if (newCalcButton) {
-        newCalcButton.textContent = 'Cancel';
+        newCalcButton.textContent = t('common.cancel');
     }
     
     // Populate form with equipment data
@@ -4082,7 +4082,7 @@ if (currentEquipmentMode === 'seismic') {
 // Update Calculate button to show Cancel
     const calculateBtn = document.getElementById('calculateEquipment');
     if (calculateBtn) {
-        calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+        calculateBtn.innerHTML = `<i class="fas fa-times"></i> ${t('common.cancel')}`;
         calculateBtn.style.background = '#6c757d';
         calculateBtn.style.display = 'block';
     }
@@ -4215,7 +4215,7 @@ function populateFormWithEquipment(equipment) {
 // Delete (server-side delete + update equipment)
 async function confirmDeleteImage(evt, equipmentIndex, imageKey) {
 evt.stopPropagation();
-if (!confirm('Delete this image?')) return;
+if (!confirm(t('project.deleteImageConfirm'))) return;
 try {
     // 1) ask backend to delete the object
     const res = await fetch(
@@ -4251,7 +4251,7 @@ try {
         }
 } catch (err) {
     console.error('Delete image error:', err);
-    alert('Failed to delete image: ' + err.message);
+    alert(t('project.failedDeleteImage') + ': ' + err.message);
 }
 }
 
@@ -4279,7 +4279,7 @@ async function saveEquipmentEdit(index, event) {
     if (isSavingEquipment) return;
 
     if (!canModifyProject()) {
-        alert('You do not have permission to edit equipment in this project.');
+        alert(t('project.noPermissionEditEquipment'));
         return;
     }
 
@@ -4334,17 +4334,17 @@ async function saveEquipmentEdit(index, event) {
             
             // Validation for pipes
             if (!pipeType) {
-                alert('Please select a pipe type.');
+                alert(t('project.pleaseSelectPipeType'));
                 return;
             }
             
             if (!updatedEquipment.pipeWeightPerFoot || updatedEquipment.pipeWeightPerFoot <= 0) {
-                alert('Please enter a valid pipe weight per foot greater than 0.');
+                alert(t('project.pleaseEnterValidPipeWeight'));
                 return;
             }
             
             if (!updatedEquipment.pipeDiameter) {
-                alert('Please select a pipe diameter.');
+                alert(t('project.pleaseSelectPipeDiameter'));
                 return;
             }
         } else {
@@ -4439,7 +4439,7 @@ async function saveEquipmentEdit(index, event) {
                     
                 } catch (imgError) {
                     console.error('Error uploading edit form image:', imgError);
-                    alert('Warning: One image upload failed, but other changes will still be saved.');
+                    alert(t('project.imageUploadFailedWarning'));
                 }
             }
         }
@@ -4458,11 +4458,11 @@ async function saveEquipmentEdit(index, event) {
         renderEquipmentList();
         
         // Show success message
-        alert('Equipment updated successfully! All calculations have been recalculated.');
+        alert(t('project.equipmentUpdatedSuccess'));
         
     } catch (error) {
         console.error('Error saving equipment edit:', error);
-        alert('Error saving equipment changes: ' + error.message);
+        alert(t('project.errorSavingEquipmentChanges') + ': ' + error.message);
     } finally {
         isSavingEquipment = false;
     }
@@ -4471,11 +4471,11 @@ async function saveEquipmentEdit(index, event) {
 // Function to delete equipment
 function deleteEquipment(index) {
     if (!canModifyProject()) {
-        alert('You do not have permission to delete equipment from this project.');
+        alert(t('project.noPermissionDeleteEquipment'));
         return;
     }
 
-    if (confirm('Are you sure you want to delete this equipment?')) {
+    if (confirm(t('project.deleteEquipmentConfirm'))) {
         projectEquipment.splice(index, 1);
         // Clear selection since indices have changed
         selectedEquipmentIndices.clear();
@@ -4526,7 +4526,7 @@ async function saveEquipmentToProject(options = {}) {
         } catch (error) {
             console.error('Error saving equipment:', error);
             console.error('Error stack:', error.stack);
-            if (!silent) alert('Error saving equipment: ' + error.message);
+            if (!silent) alert(t('project.errorSavingEquipment') + ': ' + error.message);
         }
     }
 
@@ -4581,7 +4581,7 @@ function handleCalculateEquipment() {
         
     } catch (error) {
         console.error('Error calculating equipment:', error);
-        alert('Error calculating equipment: ' + error.message);
+        alert(t('project.errorCalculatingEquipment') + ': ' + error.message);
     }
 }
 
@@ -4594,7 +4594,7 @@ function cancelEdit() {
     const newCalcButton = document.getElementById('newCalculationButton');
     equipmentForm.classList.remove('show');
     if (newCalcButton) {
-        newCalcButton.textContent = 'Add Equipment';
+        newCalcButton.textContent = t('project.addEquipment');
     }
     
     // Clear the form
@@ -4605,7 +4605,7 @@ function cancelEdit() {
 async function handleSaveEquipment(e, keepFormOpen = false) {
     if (isSavingEquipment) return;
     if (!canModifyProject()) {
-        alert('You do not have permission to add equipment to this project.');
+        alert(t('project.noPermissionAddEquipment'));
         return;
     }
 
@@ -4614,8 +4614,8 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
     const saveAndKeepBtn = document.getElementById('saveAndKeepEquipment');
     const saveBtnOriginal = saveBtn ? saveBtn.innerHTML : '';
     const saveAndKeepBtnOriginal = saveAndKeepBtn ? saveAndKeepBtn.innerHTML : '';
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
-    if (saveAndKeepBtn) { saveAndKeepBtn.disabled = true; saveAndKeepBtn.style.opacity = '0.6'; saveAndKeepBtn.style.cursor = 'not-allowed'; saveAndKeepBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('common.saving')}`; }
+    if (saveAndKeepBtn) { saveAndKeepBtn.disabled = true; saveAndKeepBtn.style.opacity = '0.6'; saveAndKeepBtn.style.cursor = 'not-allowed'; saveAndKeepBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('common.saving')}`; }
 
     const isEditMode = editingEquipmentIndex !== null;
     console.log(isEditMode ? 'Saving equipment edit...' : 'Save button clicked!');
@@ -4705,7 +4705,7 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
 
                 } catch (imgError) {
                     console.error('Error uploading form image:', imgError);
-                    alert('Warning: One image upload failed, but equipment will still be saved.');
+                    alert(t('project.imageUploadFailedWarning'));
                 }
             }
         }
@@ -4757,13 +4757,13 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
             // Update form title to show we're now editing
             const formTitle = document.getElementById('equipmentFormTitle');
             if (formTitle) {
-                formTitle.textContent = 'Edit Equipment';
+                formTitle.textContent = t('project.editEquipment');
             }
 
             // Update Calculate button to show Cancel (we're now in edit mode)
             const calculateBtn = document.getElementById('calculateEquipment');
             if (calculateBtn) {
-                calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+                calculateBtn.innerHTML = `<i class="fas fa-times"></i> ${t('common.cancel')}`;
                 calculateBtn.style.background = '#6c757d';
                 calculateBtn.style.display = 'block';
             }
@@ -4794,7 +4794,7 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
             renderEquipmentList();
 
             // Success message
-            alert(isEditMode ? 'Equipment updated successfully!' : 'Equipment saved successfully!');
+            alert(isEditMode ? t('project.equipmentUpdated') : t('project.equipmentSaved'));
 
         } else {
             // Close form mode: hide and clear everything
@@ -4804,7 +4804,7 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
                 equipmentForm.classList.remove('show');
             }
             if (newCalcButton) {
-                newCalcButton.textContent = 'Add Equipment';
+                newCalcButton.textContent = t('project.addEquipment');
             }
 
             // Reset edit mode
@@ -4843,12 +4843,12 @@ async function handleSaveEquipment(e, keepFormOpen = false) {
             }, 100); // Small delay to ensure DOM is updated
 
             // Success message
-            alert(isEditMode ? 'Equipment updated successfully!' : 'Equipment saved successfully!');
+            alert(isEditMode ? t('project.equipmentUpdated') : t('project.equipmentSaved'));
         }
         
     } catch (error) {
         console.error('Error saving equipment:', error);
-        alert('Error saving equipment: ' + error.message);
+        alert(t('project.errorSavingEquipment') + ': ' + error.message);
     } finally {
         isSavingEquipment = false;
         if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; saveBtn.style.cursor = 'pointer'; saveBtn.innerHTML = saveBtnOriginal; }
@@ -4864,20 +4864,20 @@ function setupNewCalculationButton() {
     if (newCalcButton && equipmentForm) {
         newCalcButton.addEventListener('click', function() {
             if (!canModifyProject()) {
-                alert('You do not have permission to add equipment to this project.');
+                alert(t('project.noPermissionAddEquipment'));
                 return;
             }
             
             if (equipmentForm.classList.contains('show')) {
                 equipmentForm.classList.remove('show');
-                newCalcButton.textContent = 'Add Equipment';
+                newCalcButton.textContent = t('project.addEquipment');
                 clearEquipmentForm();
             } else {
                 // Collapse any open equipment details
                 collapseAllEquipmentDetails();
                 
                 equipmentForm.classList.add('show');
-                newCalcButton.textContent = 'Cancel';
+                newCalcButton.textContent = t('common.cancel');
                 
                 // Initialize image upload handlers
                 initializeFormImageUpload();
@@ -4933,7 +4933,7 @@ function applyEquipmentMode(mode) {
     document.getElementById('btn-photos').classList.toggle('active', mode === 'photos');
 
     if (mode === 'seismic') {
-        modeIndicatorText.innerHTML = '<i class="fas fa-calculator"></i> <strong>Seismic Calculation</strong>';
+        modeIndicatorText.innerHTML = `<i class="fas fa-calculator"></i> <strong>${t('project.seismicCalculation')}</strong>`;
         modeIndicator.classList.remove('photos-mode');
 
         // Show seismic fields
@@ -4944,12 +4944,12 @@ function applyEquipmentMode(mode) {
         // Update buttons based on edit mode
         if (editingEquipmentIndex !== null) {
             // Edit mode: show Cancel button, keep Save and Keep Form visible
-            calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+            calculateBtn.innerHTML = `<i class="fas fa-times"></i> ${t('common.cancel')}`;
             calculateBtn.style.background = '#6c757d';
             if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'block';
         } else {
             // New equipment mode: show Calculate and Save and Keep Form
-            calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
+            calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('common.calculate')}`;
             calculateBtn.style.background = '#17a2b8';
             if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'block';
         }
@@ -4963,12 +4963,12 @@ function applyEquipmentMode(mode) {
         if (calcPlaceholder) {
             calcPlaceholder.querySelector('div').innerHTML = `
                 <i class="fas fa-calculator" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
-                Click "Calculate" to see detailed analysis and calculations
+                ${t('project.clickCalculateToSeeDetails')}
             `;
         }
         
     } else if (mode === 'photos') {
-        modeIndicatorText.innerHTML = '<i class="fas fa-camera"></i> <strong>Add Photos for Certification</strong>';
+        modeIndicatorText.innerHTML = `<i class="fas fa-camera"></i> <strong>${t('project.addPhotosForCertification')}</strong>`;
         modeIndicator.classList.add('photos-mode');
 
         // Hide seismic fields, show image upload
@@ -4979,7 +4979,7 @@ function applyEquipmentMode(mode) {
         if (editingEquipmentIndex !== null) {
             // Edit mode: show Cancel button, keep Save and Keep Form visible
             calculateBtn.style.display = 'block';
-            calculateBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+            calculateBtn.innerHTML = `<i class="fas fa-times"></i> ${t('common.cancel')}`;
             calculateBtn.style.background = '#6c757d';
             if (saveAndKeepBtn) saveAndKeepBtn.style.display = 'block';
         } else {
@@ -4995,7 +4995,7 @@ function applyEquipmentMode(mode) {
         if (calcPlaceholder) {
             calcPlaceholder.querySelector('div').innerHTML = `
                 <i class="fas fa-info-circle" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
-                No calculations for this equipment type
+                ${t('project.noCalculationsForType')}
             `;
         }
         
@@ -5031,7 +5031,7 @@ async function saveFloorsAndContinue() {
     const floors = parseInt(floorsInput.value);
     
     if (!floors || floors < 1) {
-        alert('Please enter a valid number of floors.');
+        alert(t('project.pleaseEnterValidFloors'));
         return;
     }
     
@@ -5068,7 +5068,7 @@ async function saveFloorsAndContinue() {
         
     } catch (error) {
         console.error('Error saving number of floors:', error);
-        alert('Error saving number of floors: ' + error.message);
+        alert(t('project.errorSavingFloors') + ': ' + error.message);
     }
 }
 
@@ -5194,27 +5194,27 @@ async function processFormFiles(files) {
     let validFiles = files.filter(file => file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic'));
     
     if (validFiles.length === 0) {
-        alert('Please select valid image files.');
+        alert(t('project.pleaseSelectValidImages'));
         return;
     }
     
     const MAX_IMAGES = 10;
     
     if (currentFormImages.length >= MAX_IMAGES) {
-        alert(`Maximum ${MAX_IMAGES} images allowed. Please remove an existing image to add a new one.`);
+        alert(t('project.maxImagesAllowed', { max: MAX_IMAGES }));
         return;
     }
     
     // Limit to remaining slots
     const remainingSlots = MAX_IMAGES - currentFormImages.length;
     if (validFiles.length > remainingSlots) {
-        alert(`Only ${remainingSlots} more image(s) can be added. Only the first ${remainingSlots} will be used.`);
+        alert(t('project.onlyMoreImagesCanBeAdded', { count: remainingSlots }));
         validFiles = validFiles.slice(0, remainingSlots);
     }
     
     const dropZone = document.getElementById('formDropZone');
     if (dropZone) {
-        dropZone.placeholder = `Processing ${validFiles.length} image(s)...`;
+        dropZone.placeholder = t('project.processingImages', { count: validFiles.length });
     }
     
     for (const file of validFiles) {
@@ -5246,16 +5246,16 @@ async function processFormFiles(files) {
             });
         } catch (error) {
             console.error('Error processing file:', error);
-            alert(`Failed to process ${file.name}. It may be corrupted or unsupported.`);
+            alert(t('project.failedToProcessFile', { name: file.name }));
         }
     }
     
     updateFormImagePreview();
     
     if (dropZone) {
-        dropZone.placeholder = currentFormImages.length >= 10 
-            ? 'Maximum 10 images reached' 
-            : `Drop or paste images here (${currentFormImages.length}/10)`;
+        dropZone.placeholder = currentFormImages.length >= 10
+            ? t('project.maxImagesReachedShort')
+            : t('project.dropOrPasteImagesCount', { count: currentFormImages.length });
         dropZone.classList.toggle('max-reached', currentFormImages.length >= 10);
     }
     
@@ -5303,7 +5303,7 @@ function removeFormImage(index) {
     
     const dropZone = document.getElementById('formDropZone');
     if (dropZone) {
-        dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+        dropZone.placeholder = t('project.dropOrPasteImages');
         dropZone.classList.remove('max-reached');
     }
 }
@@ -5382,20 +5382,20 @@ async function processEditFormFiles(files, index) {
     let validFiles = files.filter(file => file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic'));
     
     if (validFiles.length === 0) {
-        alert('Please select a valid image file.');
+        alert(t('project.pleaseSelectValidImages'));
         return;
     }
     
     const MAX_IMAGES = 10;
     
     if (currentEditFormImages.length >= MAX_IMAGES) {
-        alert(`Maximum ${MAX_IMAGES} images allowed. Please remove an existing image to add a new one.`);
+        alert(t('project.maxImagesAllowed', { max: MAX_IMAGES }));
         return;
     }
     
     const remainingSlots = MAX_IMAGES - currentEditFormImages.length;
     if (validFiles.length > remainingSlots) {
-        alert(`Only ${remainingSlots} more image(s) can be added.`);
+        alert(t('project.onlyMoreImagesCanBeAdded', { count: remainingSlots }));
         validFiles = validFiles.slice(0, remainingSlots);
     }
     
@@ -5429,7 +5429,7 @@ async function processEditFormFiles(files, index) {
             });
         } catch (error) {
             console.error('Error processing file:', error);
-            alert(`Failed to process ${file.name}. It may be corrupted or unsupported.`);
+            alert(t('project.failedToProcessFile', { name: file.name }));
         }
     }
     
@@ -5447,8 +5447,8 @@ function setEditFormDropZoneMessage(index, primaryText, secondaryText) {
     const primaryEl = message.querySelector('.drop-zone-primary');
     const secondaryEl = message.querySelector('.drop-zone-secondary');
 
-    const defaultPrimary = 'Drop image here or paste from clipboard';
-    const defaultSecondary = 'Or click the button above to select a file';
+    const defaultPrimary = t('project.dropImageHere');
+    const defaultSecondary = t('project.orClickButtonToSelect');
 
     if (primaryEl) {
         primaryEl.textContent = primaryText || defaultPrimary;
@@ -5488,17 +5488,17 @@ async function updateEditFormImagePreview(index) {
             // New image - use base64 data
             preview.classList.add('new-image');
             preview.innerHTML = `
-                <img src="${img.data}" alt="New image ${i + 1}">
-                <button type="button" class="image-remove" onclick="removeEditFormImage(${index}, ${i})" title="Remove">×</button>
-                <span class="image-badge success">NEW</span>
+                <img src="${img.data}" alt="${t('project.newImage')} ${i + 1}">
+                <button type="button" class="image-remove" onclick="removeEditFormImage(${index}, ${i})" title="${t('common.remove')}">×</button>
+                <span class="image-badge success">${t('project.newBadge')}</span>
             `;
         } else {
             // Existing image - need to fetch signed URL
             preview.classList.add('existing-image');
             preview.innerHTML = `
-                <img src="" alt="Image ${i + 1}" data-key="${img.key}" data-index="${i}">
-                <button type="button" class="image-remove" onclick="removeEditFormImage(${index}, ${i})" title="Remove">×</button>
-                <span class="image-badge muted">CURRENT</span>
+                <img src="" alt="${t('project.image')} ${i + 1}" data-key="${img.key}" data-index="${i}">
+                <button type="button" class="image-remove" onclick="removeEditFormImage(${index}, ${i})" title="${t('common.remove')}">×</button>
+                <span class="image-badge muted">${t('project.currentBadge')}</span>
             `;
             
             // Load signed URL async
@@ -5517,9 +5517,9 @@ async function updateEditFormImagePreview(index) {
     if (dropZone) {
         if (totalImages >= MAX_IMAGES) {
             dropZone.classList.add('max-reached');
-            setEditFormDropZoneMessage(index, `Maximum ${MAX_IMAGES} images reached`, 'Remove an image to add more.');
+            setEditFormDropZoneMessage(index, t('project.maxImagesReachedCount', { max: MAX_IMAGES }), t('project.removeImageToAddMore'));
         } else {
-            setEditFormDropZoneMessage(index, `${totalImages}/${MAX_IMAGES} images`, 'Drop or paste to add more images.');
+            setEditFormDropZoneMessage(index, `${totalImages}/${MAX_IMAGES} ${t('project.images')}`, t('project.dropOrPasteToAddMore'));
         }
     }
 }
@@ -5570,7 +5570,7 @@ async function loadEquipmentDetailImage(equipment, index) {
     if (!equipmentType || !installMethod) {
         placeholder.innerHTML = `
             <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-            Missing equipment or install method data
+            ${t('project.missingEquipmentOrInstallData')}
         `;
         return;
     }
@@ -5582,7 +5582,7 @@ async function loadEquipmentDetailImage(equipment, index) {
         if (!pipeTypeToUse) {
             placeholder.innerHTML = `
                 <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-                Missing pipe type data
+                ${t('project.missingPipeTypeData')}
             `;
             return;
         }
@@ -5621,7 +5621,7 @@ async function loadEquipmentDetailImage(equipment, index) {
                 console.log('❌ Detail image failed to load even after fallback check:', fullImageUrl);
                 placeholder.innerHTML = `
                     <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-                    Image not available
+                    ${t('project.imageNotAvailable')}
                 `;
             };
             
@@ -5631,14 +5631,14 @@ async function loadEquipmentDetailImage(equipment, index) {
             const imageName = getImageName(equipmentType, pipeType, installMethod, projectDomain);
             placeholder.innerHTML = `
                 <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-                Can't find ${imageName || 'image'}
+                ${t('project.cantFindImage', { name: imageName || t('project.image') })}
             `;
         }
     } catch (error) {
         console.error('Error in loadEquipmentDetailImage:', error);
         placeholder.innerHTML = `
             <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #ffc107; margin-bottom: 8px; display: block;"></i>
-            Error loading image
+            ${t('project.errorLoadingImage')}
         `;
     }
 }
@@ -5675,7 +5675,7 @@ function getEquipmentFormData() {
             const msg = document.createElement('div');
             msg.className = 'field-validation-msg';
             msg.style.cssText = 'color:#ff0000;font-size:12px;margin-top:4px;';
-            msg.textContent = 'Please enter or select equipment name';
+            msg.textContent = t('project.pleaseEnterEquipmentName');
             equipmentEl.parentNode.insertBefore(msg, equipmentEl.nextSibling);
             equipmentEl.focus();
         }
@@ -5688,7 +5688,7 @@ function getEquipmentFormData() {
             const msg = document.createElement('div');
             msg.className = 'field-validation-msg';
             msg.style.cssText = 'color:#ff0000;font-size:12px;margin-top:4px;';
-            msg.textContent = 'Please select a pipe type';
+            msg.textContent = t('project.pleaseSelectPipeType');
             pipeTypeEl.parentNode.insertBefore(msg, pipeTypeEl.nextSibling);
             if (!hasError) pipeTypeEl.focus();
         }
@@ -5856,13 +5856,13 @@ function clearEquipmentForm() {
         // Reset form title
         const formTitle = document.getElementById('equipmentFormTitle');
         if (formTitle) {
-            formTitle.textContent = 'New Equipment';
+            formTitle.textContent = t('project.newEquipment');
         }
         
         // Reset Calculate button
         const calculateBtn = document.getElementById('calculateEquipment');
         if (calculateBtn) {
-            calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
+            calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('common.calculate')}`;
             calculateBtn.style.background = '#17a2b8';
         }
 
@@ -5893,7 +5893,7 @@ function clearEquipmentForm() {
         updateFormImagePreview();
         const dropZone = document.getElementById('formDropZone');
         if (dropZone) {
-            dropZone.placeholder = 'Drop or paste images here (Ctrl+V)';
+            dropZone.placeholder = t('project.dropOrPasteImages');
             dropZone.classList.remove('max-reached');
         }
         
@@ -5939,75 +5939,75 @@ function generateEquipmentDetailsHTML(equipment, currentProject, cfsResult, late
         <div class="calculation-equipment-info">
             ${equipment.isPipe ? `
                 <!-- Pipe specific display in calculation results -->
-                ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
-                <p><strong>Pipe Type:</strong> ${equipment.pipeType || equipment.equipment}</p>
-                ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
-                ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
-                <p><strong>Pipe Weight per Foot:</strong> ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</p>
-                <p><strong>Pipe Diameter:</strong> ${equipment.pipeDiameter || 'N/A'}</p>
-                <p><strong>Support Type:</strong> ${equipment.supportType || 'N/A'} | <strong>Structure Type:</strong> ${equipment.structureType || 'N/A'}</p>
-                <p><strong>Level:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>Install Method:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
-                ${equipment.hn !== undefined ? `<p><strong>Building Height:</strong> ${equipment.hn} m</p>` : ''}
+                ${equipment.nbcCategory ? `<p><strong>${t('project.nbcCategory')}:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : t('common.unknown')}</p>` : ''}
+                <p><strong>${t('project.pipeType')}:</strong> ${equipment.pipeType || equipment.equipment}</p>
+                ${equipment.model ? `<p><strong>${t('project.model')}:</strong> ${equipment.model}</p>` : ''}
+                ${equipment.tag ? `<p><strong>${t('project.tag')}:</strong> ${equipment.tag}</p>` : ''}
+                <p><strong>${t('project.pipeWeightPerFoot')}:</strong> ${equipment.pipeWeightPerFoot || 'N/A'} lb/ft</p>
+                <p><strong>${t('project.pipeDiameter')}:</strong> ${equipment.pipeDiameter || 'N/A'}</p>
+                <p><strong>${t('project.supportType')}:</strong> ${equipment.supportType || 'N/A'} | <strong>${t('project.structureType')}:</strong> ${equipment.structureType || 'N/A'}</p>
+                <p><strong>${t('project.level')}:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>${t('project.installMethodLabel')}:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
+                ${equipment.hn !== undefined ? `<p><strong>${t('project.buildingHeight')}:</strong> ${equipment.hn} m</p>` : ''}
             ` : `
                 <!-- Traditional equipment display in calculation results -->
-                ${equipment.nbcCategory ? `<p><strong>NBC Category:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : 'Unknown'}</p>` : ''}
-                ${equipment.model ? `<p><strong>Model:</strong> ${equipment.model}</p>` : ''}
-                ${equipment.tag ? `<p><strong>Tag:</strong> ${equipment.tag}</p>` : ''}
-                <p><strong>Weight:</strong> ${equipment.weight || 'N/A'} ${equipment.weightUnit || 'kg'} | <strong>Dimensions:</strong> ${equipment.height}×${equipment.width}×${equipment.length} in</p>
-                <p><strong>Level:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>Install Method:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
-                ${equipment.mountingType ? `<p><strong>Mounting Type:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
-                ${equipment.anchorType ? `<p><strong>Anchor Type:</strong> ${getAnchorTypeText(equipment.anchorType)}</p>` : ''}
-                ${equipment.numberOfAnchors ? `<p><strong>Number of Anchors:</strong> ${equipment.numberOfAnchors}${equipment.anchorDiameter ? ` (⌀ ${equipment.anchorDiameter}")` : ''}</p>` : ''}
-                ${equipment.slabThickness ? `<p><strong>Slab Thickness:</strong> ${equipment.slabThickness}" | <strong>f'c:</strong> ${equipment.fc} psi</p>` : ''}
-                ${equipment.hx !== undefined && equipment.hn !== undefined ? `<p><strong>Height Above Base:</strong> ${equipment.hx} m | <strong>Building Height:</strong> ${equipment.hn} m</p>` : ''}
+                ${equipment.nbcCategory ? `<p><strong>${t('project.nbcCategory')}:</strong> ${equipment.nbcCategory} - ${categoryData ? categoryData.description : t('common.unknown')}</p>` : ''}
+                ${equipment.model ? `<p><strong>${t('project.model')}:</strong> ${equipment.model}</p>` : ''}
+                ${equipment.tag ? `<p><strong>${t('project.tag')}:</strong> ${equipment.tag}</p>` : ''}
+                <p><strong>${t('project.weight')}:</strong> ${equipment.weight || 'N/A'} ${equipment.weightUnit || 'kg'} | <strong>${t('project.dimensions')}:</strong> ${equipment.height}×${equipment.width}×${equipment.length} in</p>
+                <p><strong>${t('project.level')}:</strong> ${equipment.level}/${equipment.totalLevels} | <strong>${t('project.installMethodLabel')}:</strong> ${getInstallMethodText(equipment.installMethod)}</p>
+                ${equipment.mountingType ? `<p><strong>${t('project.mountingTypeLabel')}:</strong> ${getMountingTypeText(equipment.mountingType)}</p>` : ''}
+                ${equipment.anchorType ? `<p><strong>${t('project.anchorTypeLabel')}:</strong> ${getAnchorTypeText(equipment.anchorType)}</p>` : ''}
+                ${equipment.numberOfAnchors ? `<p><strong>${t('project.numberOfAnchors')}:</strong> ${equipment.numberOfAnchors}${equipment.anchorDiameter ? ` (⌀ ${equipment.anchorDiameter}")` : ''}</p>` : ''}
+                ${equipment.slabThickness ? `<p><strong>${t('project.slabThickness')}:</strong> ${equipment.slabThickness}" | <strong>f'c:</strong> ${equipment.fc} psi</p>` : ''}
+                ${equipment.hx !== undefined && equipment.hn !== undefined ? `<p><strong>${t('project.heightAboveBase')}:</strong> ${equipment.hx} m | <strong>${t('project.buildingHeight')}:</strong> ${equipment.hn} m</p>` : ''}
             `}
             
             <p>
-                <strong>CFS:</strong> <span class="calculation-value cfs-value" title="Click to see CFS calculation details">${cfsResult.cfs}</span> | 
-                <strong>Lateral Force:</strong> <span class="calculation-value force-value" title="Click to see lateral force calculation details">${lateralForce} N</span>
-                ${equipment.nbcCategory ? ` | <strong>NBC Vp:</strong> <span class="calculation-value vp-value" title="Click to see NBC Vp calculation details">${vpResult.vp} N</span>` : ''}
+                <strong>CFS:</strong> <span class="calculation-value cfs-value" title="${t('project.clickToSeeCFSDetails')}">${cfsResult.cfs}</span> |
+                <strong>${t('project.lateralForce')}:</strong> <span class="calculation-value force-value" title="${t('project.clickToSeeLateralForceDetails')}">${lateralForce} N</span>
+                ${equipment.nbcCategory ? ` | <strong>NBC Vp:</strong> <span class="calculation-value vp-value" title="${t('project.clickToSeeNBCVpDetails')}">${vpResult.vp} N</span>` : ''}
             </p>
-            
+
             ${overturningResult ? `
                 <div class="overturning-values">
-                    <p><strong>Overturning Analysis (${overturningResult.mountingType === 'no-isolators' ? 'No Isolators' : 'Vibration Isolated Equipment'}):</strong></p>
+                    <p><strong>${t('project.overturningAnalysis')} (${overturningResult.mountingType === 'no-isolators' ? t('project.noIsolators') : t('project.vibrationIsolatedEquipment')}):</strong></p>
                     ${overturningResult.mountingType === 'no-isolators' ? `
                         <p>
-                            <strong>OTM:</strong> <span class="calculation-value otm-value" title="Click to see OTM calculation details">${overturningResult.OTM} lb-in</span> | 
-                            <strong>RM:</strong> <span class="calculation-value rm-value" title="Click to see RM calculation details">${overturningResult.RM} lb-in</span> | 
-                            <strong>T:</strong> <span class="calculation-value tension-value" title="Click to see Tension calculation details">${overturningResult.T} lbs</span> | 
-                            <strong>V:</strong> <span class="calculation-value shear-value" title="Click to see Shear calculation details">${overturningResult.V} lbs</span>
+                            <strong>OTM:</strong> <span class="calculation-value otm-value" title="${t('project.clickToSeeOTMDetails')}">${overturningResult.OTM} lb-in</span> |
+                            <strong>RM:</strong> <span class="calculation-value rm-value" title="${t('project.clickToSeeRMDetails')}">${overturningResult.RM} lb-in</span> |
+                            <strong>T:</strong> <span class="calculation-value tension-value" title="${t('project.clickToSeeTensionDetails')}">${overturningResult.T} lbs</span> |
+                            <strong>V:</strong> <span class="calculation-value shear-value" title="${t('project.clickToSeeShearDetails')}">${overturningResult.V} lbs</span>
                         </p>
                     ` : `
                         <p>
-                            <strong>Pt:</strong> <span class="calculation-value pt-value" title="Click to see maximum tension calculation details">${overturningResult.Pt} lbs</span> | 
-                            <strong>Pc:</strong> <span class="calculation-value pc-value" title="Click to see maximum compression calculation details">${overturningResult.Pc} lbs</span> | 
-                            <strong>Ps:</strong> <span class="calculation-value ps-value" title="Click to see maximum shear calculation details">${overturningResult.Ps} lbs</span>
+                            <strong>Pt:</strong> <span class="calculation-value pt-value" title="${t('project.clickToSeeMaxTensionDetails')}">${overturningResult.Pt} lbs</span> |
+                            <strong>Pc:</strong> <span class="calculation-value pc-value" title="${t('project.clickToSeeMaxCompressionDetails')}">${overturningResult.Pc} lbs</span> |
+                            <strong>Ps:</strong> <span class="calculation-value ps-value" title="${t('project.clickToSeeMaxShearDetails')}">${overturningResult.Ps} lbs</span>
                         </p>
                     `}
                 </div>
             ` : ''}
-            
+
             ${(() => {
                 // Show piping bracing for pipes
                 if (equipment.isPipe && equipment.pipeWeightPerFoot) {
                     const suspendedPiping = calculateSuspendedPipingBracing(equipment, currentProject);
                     return `
                         <div class="suspended-piping-values" style="background: #f0f8ff; padding: 8px; border-radius: 4px; margin-top: 8px; border-left: 4px solid #8b5cf6;">
-                            <p><strong>Suspended Piping Bracing (ASHRAE Ch. 8):</strong></p>
+                            <p><strong>${t('project.suspendedPipingBracing')}:</strong></p>
                             <p style="font-size: 12px; margin: 4px 0;">
-                                <strong>Pipe Weight:</strong> ${suspendedPiping.pipeWeight} lb/ft | 
-                                <strong>Seismic Level:</strong> ${suspendedPiping.seismicLevel}
+                                <strong>${t('project.pipeWeightLabel')}:</strong> ${suspendedPiping.pipeWeight} lb/ft |
+                                <strong>${t('project.seismicLevel')}:</strong> ${suspendedPiping.seismicLevel}
                             </p>
                             <p style="font-size: 12px; margin: 4px 0;">
-                                <strong>Hanger Rod:</strong> <span class="calculation-value suspended-piping-value" title="Click to see complete specifications">${suspendedPiping.specifications.hangerRod.diameter}" dia. (${suspendedPiping.specifications.hangerRod.seismicLoad} lbs)</span> | 
-                                <strong>Max Unbraced:</strong> ${suspendedPiping.specifications.hangerRod.maxUnbraced}"
+                                <strong>${t('project.hangerRod')}:</strong> <span class="calculation-value suspended-piping-value" title="${t('project.clickToSeeCompleteSpecs')}">${suspendedPiping.specifications.hangerRod.diameter}" dia. (${suspendedPiping.specifications.hangerRod.seismicLoad} lbs)</span> |
+                                <strong>${t('project.maxUnbraced')}:</strong> ${suspendedPiping.specifications.hangerRod.maxUnbraced}"
                             </p>
                             <p style="font-size: 12px; margin: 4px 0;">
-                                <strong>Solid Brace:</strong> ${suspendedPiping.specifications.solidBrace.steelAngle} steel angle | 
-                                <strong>Cable Brace:</strong> ${suspendedPiping.specifications.cableBrace.prestretched} lbs
+                                <strong>${t('project.solidBrace')}:</strong> ${suspendedPiping.specifications.solidBrace.steelAngle} ${t('project.steelAngle')} |
+                                <strong>${t('project.cableBrace')}:</strong> ${suspendedPiping.specifications.cableBrace.prestretched} lbs
                             </p>
-                            ${suspendedPiping.exceedsTable ? '<p style="font-size: 11px; color: #ef4444;">⚠️ Pipe weight exceeds table limits</p>' : ''}
+                            ${suspendedPiping.exceedsTable ? `<p style="font-size: 11px; color: #ef4444;">${t('project.pipeWeightExceedsTableLimits')}</p>` : ''}
                         </div>
                     `;
                 }
@@ -6018,41 +6018,41 @@ function generateEquipmentDetailsHTML(equipment, currentProject, cfsResult, late
                 const ashraeResult = calculateASHRAEAnchorBolts(equipment, currentProject);
                 return ashraeResult ? `
                     <div class="ashrae-values" style="background: #f0f8ff; padding: 8px; border-radius: 4px; margin-top: 8px; border-left: 4px solid #0066cc;">
-                        <p><strong>ASHRAE Anchor Bolt Analysis (${ashraeResult.formulaType}):</strong></p>
+                        <p><strong>${t('project.ashraeAnchorBoltAnalysis')} (${ashraeResult.formulaType}):</strong></p>
                         <p>
-                            <strong>Tbolt:</strong> <span class="calculation-value ashrae-tbolt-value" title="Click to see ASHRAE Tbolt calculation details">${ashraeResult.Tbolt} lbs per bolt</span> | 
-                            <strong>Vbolt:</strong> <span class="calculation-value ashrae-vbolt-value" title="Click to see ASHRAE Vbolt calculation details">${ashraeResult.Vbolt} lbs per bolt</span>
+                            <strong>Tbolt:</strong> <span class="calculation-value ashrae-tbolt-value" title="${t('project.clickToSeeASHRAETboltDetails')}">${ashraeResult.Tbolt} ${t('project.lbsPerBolt')}</span> |
+                            <strong>Vbolt:</strong> <span class="calculation-value ashrae-vbolt-value" title="${t('project.clickToSeeASHRAEVboltDetails')}">${ashraeResult.Vbolt} ${t('project.lbsPerBolt')}</span>
                         </p>
                         ${ashraeResult.concreteAnalysis ? `
                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
-                                <p><strong>Structural Connection:</strong></p>
+                                <p><strong>${t('project.structuralConnection')}:</strong></p>
                                 <p style="font-size: 12px; margin: 4px 0;">
-                                    <strong>Formula 1:</strong> <span class="calculation-value concrete-formula1-value" title="Click to see Formula 1 calculation details" style="color: ${ashraeResult.concreteAnalysis.formula1.pass ? '#16a34a' : '#ef4444'};">${ashraeResult.concreteAnalysis.formula1.value} ${ashraeResult.concreteAnalysis.formula1.pass ? '✅' : '❌'}</span> | 
-                                    <strong>Formula 2:</strong> <span class="calculation-value concrete-formula2-value" title="Click to see Formula 2 calculation details" style="color: ${ashraeResult.concreteAnalysis.formula2.pass ? '#16a34a' : '#ef4444'};">${ashraeResult.concreteAnalysis.formula2.value} ${ashraeResult.concreteAnalysis.formula2.pass ? '✅' : '❌'}</span>
+                                    <strong>${t('project.formula1')}:</strong> <span class="calculation-value concrete-formula1-value" title="${t('project.clickToSeeFormula1Details')}" style="color: ${ashraeResult.concreteAnalysis.formula1.pass ? '#16a34a' : '#ef4444'};">${ashraeResult.concreteAnalysis.formula1.value} ${ashraeResult.concreteAnalysis.formula1.pass ? '✅' : '❌'}</span> |
+                                    <strong>${t('project.formula2')}:</strong> <span class="calculation-value concrete-formula2-value" title="${t('project.clickToSeeFormula2Details')}" style="color: ${ashraeResult.concreteAnalysis.formula2.pass ? '#16a34a' : '#ef4444'};">${ashraeResult.concreteAnalysis.formula2.value} ${ashraeResult.concreteAnalysis.formula2.pass ? '✅' : '❌'}</span>
                                 </p>
                                 <p style="font-size: 11px; margin: 2px 0; color: ${ashraeResult.concreteAnalysis.overallPass ? '#16a34a' : '#ef4444'};">
-                                    <strong>Overall Status:</strong> ${ashraeResult.concreteAnalysis.overallPass ? '✅ BOTH FORMULAS PASS' : '❌ ONE OR MORE FORMULAS FAIL'}
+                                    <strong>${t('project.overallStatus')}:</strong> ${ashraeResult.concreteAnalysis.overallPass ? '✅ ' + t('project.bothFormulasPass') : '❌ ' + t('project.oneOrMoreFormulasFail')}
                                 </p>
                             </div>
                         ` : ''}
 
                         ${ashraeResult.embedmentAnalysis ? `
                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
-                                <p><strong>Minimum Embedment Analysis (${ashraeResult.embedmentAnalysis.anchorType === 'screw' ? 'Screw Anchor' : 'Expansion Anchor'}):</strong></p>
+                                <p><strong>${t('project.minimumEmbedmentAnalysis')} (${ashraeResult.embedmentAnalysis.anchorType === 'screw' ? t('project.screwAnchor') : t('project.expansionAnchor')}):</strong></p>
                                 ${ashraeResult.embedmentAnalysis.recommendLargerDiameter ? `
                                     <p style="font-size: 12px; margin: 4px 0; color: #ef4444;">
-                                        <strong>⚠️ RECOMMENDATION:</strong> <span class="calculation-value embedment-recommendation-value" title="Click to see embedment analysis details">Use larger anchor diameter</span>
+                                        <strong>${t('project.recommendation')}:</strong> <span class="calculation-value embedment-recommendation-value" title="${t('project.clickToSeeEmbedmentDetails')}">${t('project.useLargerAnchorDiameter')}</span>
                                     </p>
                                     <p style="font-size: 11px; margin: 2px 0; color: #ef4444;">
-                                        Current ${ashraeResult.embedmentAnalysis.anchorDiameter}" diameter insufficient for loads
+                                        ${t('project.currentDiameterInsufficient', { diameter: ashraeResult.embedmentAnalysis.anchorDiameter })}
                                     </p>
                                 ` : `
                                     <p style="font-size: 12px; margin: 4px 0;">
-                                        <strong>Concrete:</strong> <span class="calculation-value concrete-embedment-value" title="Click to see concrete embedment details">${ashraeResult.embedmentAnalysis.minConcreteEmbedment}" min</span> | 
-                                        <strong>Steel:</strong> <span class="calculation-value steel-embedment-value" title="Click to see steel embedment details">${ashraeResult.embedmentAnalysis.minSteelEmbedment}" min</span>
+                                        <strong>${t('project.concrete')}:</strong> <span class="calculation-value concrete-embedment-value" title="${t('project.clickToSeeConcreteEmbedmentDetails')}">${ashraeResult.embedmentAnalysis.minConcreteEmbedment}" min</span> |
+                                        <strong>${t('project.steel')}:</strong> <span class="calculation-value steel-embedment-value" title="${t('project.clickToSeeSteelEmbedmentDetails')}">${ashraeResult.embedmentAnalysis.minSteelEmbedment}" min</span>
                                     </p>
                                     <p style="font-size: 11px; margin: 2px 0; color: #16a34a;">
-                                        <strong>Required Min Embedment:</strong> <span class="calculation-value final-embedment-value" title="Click to see final embedment calculation">${ashraeResult.embedmentAnalysis.finalMinEmbedment}"</span>
+                                        <strong>${t('project.requiredMinEmbedment')}:</strong> <span class="calculation-value final-embedment-value" title="${t('project.clickToSeeFinalEmbedmentCalc')}">${ashraeResult.embedmentAnalysis.finalMinEmbedment}"</span>
                                     </p>
                                 `}
                             </div>
@@ -6068,13 +6068,13 @@ function generateEquipmentDetailsHTML(equipment, currentProject, cfsResult, late
                     const aircraftCable = suspendedBracing.shoppingList.aircraftCableDetails;
                     return `
                         <div class="suspended-bracing-values" style="background: #f0f8ff; padding: 8px; border-radius: 4px; margin-top: 8px; border-left: 4px solid #6f42c1;">
-                            <p><strong>Suspended Equipment Bracing (ASHRAE Ch. 10):</strong></p>
+                            <p><strong>${t('project.suspendedEquipmentBracingASHRAE10')}:</strong></p>
                             <p style="font-size: 12px; margin: 4px 0;">
-                                <strong>Hanger Rod:</strong> <span class="calculation-value suspended-hanger-value" title="Click to see hanger rod specifications">${suspendedBracing.specifications.hangerRod.diameter}" dia. (${suspendedBracing.specifications.hangerRod.maxUnbracedLength}" max unbraced)</span> | 
-                                <strong>Aircraft Cable:</strong> <span class="calculation-value suspended-brace-value" title="Click to see complete bracing specifications">⌀ ${aircraftCable.diameter}" (${aircraftCable.breakingStrength} lbs)${aircraftCable.insufficient ? ' ⚠️' : ''}</span>
+                                <strong>${t('project.hangerRod')}:</strong> <span class="calculation-value suspended-hanger-value" title="${t('project.clickToSeeHangerRodSpecs')}">${suspendedBracing.specifications.hangerRod.diameter}" dia. (${suspendedBracing.specifications.hangerRod.maxUnbracedLength}" max unbraced)</span> |
+                                <strong>${t('project.aircraftCable')}:</strong> <span class="calculation-value suspended-brace-value" title="${t('project.clickToSeeBracingSpecs')}">⌀ ${aircraftCable.diameter}" (${aircraftCable.breakingStrength} lbs)${aircraftCable.insufficient ? ' ⚠️' : ''}</span>
                             </p>
                             <p style="font-size: 11px; margin: 2px 0; color: #6f42c1;">
-                                <strong>Seismic Level:</strong> ${suspendedBracing.seismicLevel} | <strong>Weight:</strong> ${suspendedBracing.weightLbs} lbs
+                                <strong>${t('project.seismicLevel')}:</strong> ${suspendedBracing.seismicLevel} | <strong>${t('project.weight')}:</strong> ${suspendedBracing.weightLbs} lbs
                             </p>
                         </div>
                     `;
@@ -6089,7 +6089,7 @@ function generateEquipmentDetailsHTML(equipment, currentProject, cfsResult, late
 
 async function duplicateEquipment(index) {
     if (!canModifyProject()) {
-        alert('You do not have permission to add equipment to this project.');
+        alert(t('project.noPermissionAddEquipment'));
         return;
     }
 
@@ -6130,7 +6130,7 @@ async function duplicateEquipment(index) {
         // Remove from array if save failed
         projectEquipment.pop();
         console.error('❌ Failed to duplicate equipment:', error);
-        alert('Failed to duplicate equipment: ' + error.message);
+        alert(t('project.failedDuplicateEquipment') + ': ' + error.message);
     }
 }
 
@@ -6297,7 +6297,7 @@ function addCalculationEventListeners(container, equipment, currentProject) {
 
 async function generateProjectReport() {
     if (!currentProjectId) {
-        alert('Error: No project selected');
+        alert(t('project.errorNoProjectSelected'));
         return;
     }
 
@@ -6305,7 +6305,7 @@ async function generateProjectReport() {
     
     try {
         generateButton.disabled = true;
-        generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF... (up to 30 seconds)';
+        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('project.generatingPDF')}`;
         
         // Calculate embedment for each equipment before sending to Lambda
         const equipmentWithEmbedment = await prepareEquipmentForReport();
@@ -6360,13 +6360,13 @@ async function generateProjectReport() {
     } catch (error) {
         console.error('❌ PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
-            alert('PDF generation timed out. Please try again in a few minutes.');
+            alert(t('project.pdfGenerationTimedOut'));
         } else {
-            alert('Error generating report: ' + error.message);
+            alert(t('project.errorGeneratingReport') + ': ' + error.message);
         }
     } finally {
         generateButton.disabled = false;
-        generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate Report';
+        generateButton.innerHTML = `<i class="fas fa-file-pdf"></i> ${t('project.generateReport')}`;
     }
 }
 
@@ -6456,12 +6456,12 @@ async function saveProjectStatus(newStatus) {
 // Function to request image for equipment (admin only)
 async function requestEquipmentImage(index) {
     if (!isAdmin) {
-        alert('Only admins can request images.');
+        alert(t('project.onlyAdminsCanRequestImages'));
         return;
     }
 
     if (!canModifyProject()) {
-        alert('You do not have permission to modify this project.');
+        alert(t('project.noPermissionModify'));
         return;
     }
 
@@ -6477,11 +6477,11 @@ async function requestEquipmentImage(index) {
         renderEquipmentList();
         
         const action = equipment.imageRequested ? 'sent' : 'cancelled';
-        alert(`Image request ${action} successfully.`);
+        alert(t('project.imageRequestSuccess', { action }));
         
     } catch (error) {
         console.error('Error updating image request:', error);
-        alert('Error updating image request: ' + error.message);
+        alert(t('project.errorUpdatingImageRequest') + ': ' + error.message);
     }
 }
 
@@ -6512,17 +6512,17 @@ function toggleSelectAll() {
 
 async function deleteSelectedEquipment() {
     if (selectedEquipmentIndices.size === 0) {
-        alert('No equipment selected.');
+        alert(t('project.noEquipmentSelected'));
         return;
     }
 
     if (!canModifyProject()) {
-        alert('You do not have permission to delete equipment from this project.');
+        alert(t('project.noPermissionDeleteEquipment'));
         return;
     }
 
     const count = selectedEquipmentIndices.size;
-    const confirmed = confirm(`Are you sure you want to delete ${count} selected equipment item${count > 1 ? 's' : ''}? This action cannot be undone.`);
+    const confirmed = confirm(t('project.deleteSelectedConfirm', { count }));
 
     if (!confirmed) {
         return;
@@ -6550,7 +6550,7 @@ async function deleteSelectedEquipment() {
         renderEquipmentList();
     } catch (error) {
         console.error('Error deleting selected equipment:', error);
-        alert('Error deleting equipment: ' + error.message);
+        alert(t('project.errorDeletingEquipment') + ': ' + error.message);
     }
 }
 
@@ -6579,7 +6579,7 @@ let isListening = false;
 function toggleVoiceInput() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        alert('Voice input is not supported in this browser.');
+        alert(t('project.voiceInputNotSupported'));
         return;
     }
 
@@ -6620,7 +6620,7 @@ function toggleVoiceInput() {
         micBtn.classList.remove('listening');
         speechRecognition = null;
         if (event.error === 'not-allowed') {
-            alert('Microphone access denied. Please allow microphone access in your browser settings.');
+            alert(t('project.microphoneAccessDenied'));
         }
     };
 

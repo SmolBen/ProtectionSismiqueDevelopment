@@ -121,19 +121,19 @@ async function loadDashboardStats() {
             <div class="stats-compact">
                 <div class="stat-item">
                     <span class="stat-value">${totalProjects}</span>
-                    <span>Total</span>
+                    <span>${t('dashboard.total')}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-value">${planningProjects}</span>
-                    <span>Planning</span>
+                    <span>${t('dashboard.planning')}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-value">${inProgressProjects}</span>
-                    <span>Active</span>
+                    <span>${t('dashboard.active')}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-value">${completedProjects}</span>
-                    <span>Done</span>
+                    <span>${t('dashboard.done')}</span>
                 </div>
             </div>
         `;
@@ -167,8 +167,8 @@ async function fetchProjects() {
         renderProjects(projects);
     } catch (error) {
         console.error('❌ Error fetching seismic projects:', error);
-        document.getElementById('projectList').innerHTML = 
-            `<p style="color: red;">Error loading seismic projects: ${error.message}</p>`;
+        document.getElementById('projectList').innerHTML =
+            `<p style="color: red;">${t('dashboard.errorLoadingProjects')}${error.message}</p>`;
     }
 }
 
@@ -179,39 +179,39 @@ function getDomainInfo(domain) {
     const domainMap = {
         'electricity': {
             badgeClass: 'electricity',
-            displayName: 'Electricity',
+            displayName: t('domains.electricity'),
             icon: 'fas fa-bolt'
         },
         'ventilation': {
             badgeClass: 'ventilation',
-            displayName: 'Ventilation',
+            displayName: t('domains.ventilation'),
             icon: 'fas fa-wind'
         },
         'plumbing': {
             badgeClass: 'plumbing',
-            displayName: 'Plumbing',
+            displayName: t('domains.plumbing'),
             icon: 'fas fa-faucet'
         },
         'sprinklers': {
             badgeClass: 'sprinklers',
-            displayName: 'Sprinklers',
+            displayName: t('domains.sprinklers'),
             icon: 'fas fa-fire-extinguisher'
         },
         'interior-design': {
             badgeClass: 'interior-design',
-            displayName: 'Interior Design',
+            displayName: t('domains.interiorDesign'),
             icon: 'fas fa-couch'
         },
         'exterior': {
             badgeClass: 'exterior',
-            displayName: 'Exterior',
+            displayName: t('domains.exterior'),
             icon: 'fas fa-building'
         }
     };
 
     return domainMap[domainLower] || {
         badgeClass: 'default',
-        displayName: domain || 'Unknown',
+        displayName: domain || t('common.unknown'),
         icon: 'fas fa-question-circle'
     };
 }
@@ -231,9 +231,9 @@ function renderProjects(filteredProjects) {
 
     if (filteredProjects.length === 0) {
         projectList.innerHTML = `
-            <div class="list-header">Projects (0)</div>
+            <div class="list-header">${t('dashboard.projects')} (0)</div>
             <div style="padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                No seismic projects found. Create your first seismic project to get started!
+                ${t('dashboard.noProjectsFound')}
             </div>
         `;
         return;
@@ -242,7 +242,7 @@ function renderProjects(filteredProjects) {
     // Add list header
     const listHeader = document.createElement('div');
     listHeader.className = 'list-header';
-    listHeader.textContent = `Projects (${filteredProjects.length})`;
+    listHeader.textContent = `${t('dashboard.projects')} (${filteredProjects.length})`;
     projectList.appendChild(listHeader);
 
     filteredProjects.forEach((project) => {
@@ -286,7 +286,7 @@ function renderProjects(filteredProjects) {
                     <p>${project.description}</p>
                     ${project.createdBy && authHelper.isAdmin() ? `
                         <div class="created-by-line">
-                            Created by: ${project.createdBy}
+                            ${t('common.createdBy')} ${project.createdBy}
                         </div>
                     ` : ''}
                 </div>
@@ -295,18 +295,18 @@ function renderProjects(filteredProjects) {
                     <span class="status-text">${project.status}</span>
                 </div>
                 <div class="project-actions">
-                    <button class="view-details" title="View Details">
+                    <button class="view-details" title="${t('common.view')}">
                         <i class="fas fa-eye"></i>
-                        View
+                        ${t('common.view')}
                     </button>
-                    <button class="duplicate-project" data-id="${project.id}" title="Duplicate">
+                    <button class="duplicate-project" data-id="${project.id}" title="${t('common.copy')}">
                         <i class="fas fa-copy"></i>
-                        Copy
+                        ${t('common.copy')}
                     </button>
                     ${canModify ? `
-                        <button class="delete-project" data-id="${project.id}" title="Delete">
+                        <button class="delete-project" data-id="${project.id}" title="${t('common.delete')}">
                             <i class="fas fa-trash"></i>
-                            Delete
+                            ${t('common.delete')}
                         </button>
                     ` : ''}
                 </div>
@@ -433,7 +433,7 @@ async function handleProjectSearch() {
 
 // Delete project function
 async function deleteProject(id) {
-    if (!confirm('Are you sure you want to delete this project?')) {
+    if (!confirm(t('project.deleteConfirm'))) {
         return;
     }
 
@@ -452,10 +452,10 @@ async function deleteProject(id) {
             loadDashboardStats()
         ]);
         
-        alert('Project deleted successfully!');
+        alert(t('project.projectDeleted'));
     } catch (error) {
         console.error('Error deleting project:', error);
-        alert('Error deleting project. Please try again.');
+        alert(t('project.errorDeleting'));
     }
 }
 
@@ -485,18 +485,18 @@ async function duplicateProject(id) {
             loadDashboardStats()
         ]);
         
-        alert('Project duplicated successfully!');
+        alert(t('project.projectDuplicated'));
         
     } catch (error) {
         console.error('Error duplicating project:', error);
-        alert('Error duplicating project: ' + error.message);
+        alert(t('project.errorDuplicating') + error.message);
     }
 }
 
 // Switch to CFSS dashboard
 function switchToCFSS() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
     window.location.href = 'cfss-dashboard.html';
@@ -505,7 +505,7 @@ function switchToCFSS() {
 // Admin functions
 function openUserManagement() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
     window.location.href = 'user-management.html';
@@ -513,11 +513,11 @@ function openUserManagement() {
 
 function viewAllProjects() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
     fetchProjects();
-    alert('Showing all projects in the system');
+    alert(t('admin.showingAllProjects'));
 }
 
 function openVerifyBulkProjects() {
@@ -528,7 +528,7 @@ function openVerifyBulkProjects() {
     const userEmail = (currentUser?.email || '').toLowerCase();
 
     if (!allowedEmails.includes(userEmail)) {
-        alert('Access restricted');
+        alert(t('admin.accessRestricted'));
         return;
     }
 
@@ -537,15 +537,15 @@ function openVerifyBulkProjects() {
 
 function exportData() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
-    alert('Data export feature coming soon!');
+    alert(t('dataExport.comingSoon'));
 }
 
 function openEmailClassifications() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
     
@@ -554,7 +554,7 @@ function openEmailClassifications() {
 
 function openNewProjectOverview() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
 
@@ -613,7 +613,7 @@ function updateSelectionUI() {
 async function deleteSelectedProjects() {
     const count = selectedProjectIds.size;
     if (count === 0) return;
-    if (!confirm(`Delete ${count} selected project${count > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    if (!confirm(t('bulk.deleteCount').replace('{count}', count))) return;
 
     const ids = [...selectedProjectIds];
     let successCount = 0;
@@ -653,7 +653,7 @@ async function deleteSelectedProjects() {
     ]);
 
     if (failCount > 0) {
-        alert(`Deleted ${successCount} project${successCount !== 1 ? 's' : ''}. ${failCount} failed.`);
+        alert(t('bulk.deletedCount').replace('{success}', successCount).replace('{fail}', failCount));
     }
 }
 

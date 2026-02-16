@@ -353,7 +353,7 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div>
             <div class="spinner"></div>
-            <p>Loading...</p>
+            <p data-i18n="common.loading">Loading...</p>
         </div>
     </div>
 
@@ -368,12 +368,12 @@
         <div class="page-header">
             <h1>
                 <i class="fas fa-folder-plus" style="color: var(--primary-color);"></i>
-                Create New Project
+                <span data-i18n="project.createNewProject">Create New Project</span>
             </h1>
             <div class="header-actions">
                 <button class="back-btn" onclick="window.location.href='dashboard.html'">
                     <i class="fas fa-arrow-left"></i>
-                    Back to Dashboard
+                    <span data-i18n="common.backToDashboard">Back to Dashboard</span>
                 </button>
             </div>
         </div>
@@ -381,40 +381,40 @@
         <div class="project-no-banner">
             <i class="fas fa-hashtag"></i>
             <div>
-                <div class="project-no-label">Next Project Number</div>
-                <div class="project-no-value" id="nextProjectNo">Loading...</div>
+                <div class="project-no-label" data-i18n="project.nextProjectNumber">Next Project Number</div>
+                <div class="project-no-value" id="nextProjectNo" data-i18n="common.loading">Loading...</div>
             </div>
         </div>
 
         <div class="form-card">
             <!-- Client & Contact -->
             <div class="form-section">
-                <h2 class="form-section-title"><i class="fas fa-user"></i> Client Information</h2>
+                <h2 class="form-section-title"><i class="fas fa-user"></i> <span data-i18n="project.clientInformation">Client Information</span></h2>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Client Name <span class="required">*</span></label>
+                        <label><span data-i18n="project.clientName">Client Name</span> <span class="required">*</span></label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" id="client" placeholder="Start typing client name..." autocomplete="off">
+                            <input type="text" id="client" placeholder="Start typing client name..." data-i18n-placeholder="project.startTypingClient" autocomplete="off">
                             <div class="autocomplete-list" id="clientAutocomplete"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Contact Email</label>
-                        <input type="email" id="contactEmail" placeholder="client@example.com">
+                        <label data-i18n="project.contactEmail">Contact Email</label>
+                        <input type="email" id="contactEmail" placeholder="client@example.com" data-i18n-placeholder="project.contactEmailPlaceholder">
                     </div>
                 </div>
             </div>
 
             <!-- Project Details -->
             <div class="form-section">
-                <h2 class="form-section-title"><i class="fas fa-building"></i> Project Details</h2>
+                <h2 class="form-section-title"><i class="fas fa-building"></i> <span data-i18n="project.projectDetails">Project Details</span></h2>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Project Name <span class="required">*</span></label>
-                        <input type="text" id="projectName" placeholder="Project name">
+                        <label><span data-i18n="project.projectName">Project Name</span> <span class="required">*</span></label>
+                        <input type="text" id="projectName" placeholder="Project name" data-i18n-placeholder="project.projectNamePlaceholder">
                     </div>
                     <div class="form-group">
-                        <label>Company Division</label>
+                        <label data-i18n="project.companyDivision">Company Division</label>
                         <select id="companyDivision">
                             <option value="Protection Sismique">Protection Sismique</option>
                             <option value="YUL Structure">YUL Structure</option>
@@ -423,19 +423,19 @@
                 </div>
                 <div class="form-row full-width">
                     <div class="form-group">
-                        <label>Project Address</label>
-                        <input type="text" id="projectAddress" placeholder="Full address">
+                        <label data-i18n="project.projectAddress">Project Address</label>
+                        <input type="text" id="projectAddress" placeholder="Full address" data-i18n-placeholder="project.fullAddressPlaceholder">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Opening Date</label>
+                        <label data-i18n="project.openingDate">Opening Date</label>
                         <input type="date" id="openingDate">
                     </div>
                     <div class="form-group">
-                        <label>Zone Distance</label>
+                        <label data-i18n="project.zoneDistance">Zone Distance</label>
                         <select id="zoneDistance">
-                            <option value="0">Select zone...</option>
+                            <option value="0" data-i18n="project.selectZone">Select zone...</option>
                             <option value="1">Zone 1: 0-50 km</option>
                             <option value="2">Zone 2: 51-100 km</option>
                             <option value="3">Zone 3: 101-200 km</option>
@@ -448,10 +448,10 @@
 
             <!-- Contract Type & Sous-Catégorie -->
             <div class="form-section">
-                <h2 class="form-section-title"><i class="fas fa-file-contract"></i> Contract Type</h2>
+                <h2 class="form-section-title"><i class="fas fa-file-contract"></i> <span data-i18n="project.contractType">Contract Type</span></h2>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Contract Type</label>
+                        <label data-i18n="project.contractType">Contract Type</label>
                         <div class="checkbox-group" id="contractTypeGroup">
                             <label class="checkbox-label"><input type="checkbox" value="Parasismique"> Parasismique</label>
                             <label class="checkbox-label"><input type="checkbox" value="Murs extérieurs/Parapet"> Murs extérieurs/Parapet</label>
@@ -460,7 +460,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Parasismique Sous-Catégorie</label>
+                        <label data-i18n="project.sousCategorie">Parasismique Sous-Catégorie</label>
                         <div class="checkbox-group" id="sousCategorieGroup">
                             <label class="checkbox-label"><input type="checkbox" value="1.1. Plomberie"> 1.1. Plomberie</label>
                             <label class="checkbox-label"><input type="checkbox" value="1.2. Électricité"> 1.2. Électricité</label>
@@ -475,12 +475,12 @@
 
             <!-- Classification -->
             <div class="form-section">
-                <h2 class="form-section-title"><i class="fas fa-tags"></i> Classification</h2>
+                <h2 class="form-section-title"><i class="fas fa-tags"></i> <span data-i18n="project.classification">Classification</span></h2>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Project Field</label>
+                        <label data-i18n="project.projectField">Project Field</label>
                         <select id="projectField">
-                            <option value="0">Select field...</option>
+                            <option value="0" data-i18n="project.selectField">Select field...</option>
                             <option value="1">01. Résidentiel</option>
                             <option value="2">02. Condo</option>
                             <option value="3">03. Commercial</option>
@@ -490,9 +490,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Entrepreneur</label>
+                        <label data-i18n="project.entrepreneur">Entrepreneur</label>
                         <select id="entrepreneur">
-                            <option value="0">Select entrepreneur...</option>
+                            <option value="0" data-i18n="project.selectEntrepreneur">Select entrepreneur...</option>
                             <option value="1">01. Électricité</option>
                             <option value="2">02. Plomberie</option>
                             <option value="3">03. Ventilation</option>
@@ -507,15 +507,15 @@
 
             <!-- Financial -->
             <div class="form-section">
-                <h2 class="form-section-title"><i class="fas fa-dollar-sign"></i> Financial</h2>
+                <h2 class="form-section-title"><i class="fas fa-dollar-sign"></i> <span data-i18n="project.financial">Financial</span></h2>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Estimation Amount</label>
+                        <label data-i18n="project.estimationAmount">Estimation Amount</label>
                         <input type="number" id="estimation" placeholder="0.00" step="0.01" min="0">
                     </div>
                     <div class="form-group">
-                        <label>Promo Code</label>
-                        <input type="text" id="promoCode" placeholder="Promo code (if any)">
+                        <label data-i18n="project.promoCode">Promo Code</label>
+                        <input type="text" id="promoCode" placeholder="Promo code (if any)" data-i18n-placeholder="project.promoCodePlaceholder">
                     </div>
                 </div>
             </div>
@@ -523,10 +523,10 @@
             <!-- Submit -->
             <div class="form-actions">
                 <button class="clear-btn" onclick="clearForm()">
-                    <i class="fas fa-eraser"></i> Clear Form
+                    <i class="fas fa-eraser"></i> <span data-i18n="project.clearForm">Clear Form</span>
                 </button>
                 <button class="submit-btn" id="submitBtn" onclick="createProject()">
-                    <i class="fas fa-plus"></i> Create Project
+                    <i class="fas fa-plus"></i> <span data-i18n="project.createProject">Create Project</span>
                 </button>
             </div>
         </div>
@@ -536,6 +536,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script>
         // IMPORTANT: After deploying the Projects Overview Apps Script as a web app, paste the URL here

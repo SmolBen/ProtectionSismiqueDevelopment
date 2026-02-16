@@ -59,7 +59,7 @@ async function initializeCreateProject() {
 
     } catch (error) {
         console.error('❌ Error initializing:', error);
-        alert('Error initializing page: ' + error.message);
+        alert(t('project.errorInitPage') + error.message);
         window.location.href = 'auth.html';
     }
 }
@@ -72,7 +72,7 @@ async function handleFormSubmit(e) {
     const description = document.getElementById('description').value.trim();
 
     if (!name) {
-        alert('Please enter a project name');
+        alert(t('project.enterProjectName'));
         return;
     }
 
@@ -124,12 +124,12 @@ async function handleFormSubmit(e) {
         const result = await response.json();
         console.log('✅ Project created:', result);
 
-        alert('CFSS Project created successfully!');
+        alert(t('project.cfssProjectCreatedSuccess'));
         window.location.href = `limited-cfss-project-details.html?id=${result.id}`;
 
     } catch (error) {
         console.error('❌ Error creating project:', error);
-        alert('Error creating project: ' + error.message);
+        alert(t('project.errorCreating') + error.message);
     }
 }
 

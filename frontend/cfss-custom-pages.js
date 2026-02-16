@@ -225,8 +225,8 @@ function createCanvasElement(type, x, y) {
             <i class="fas fa-grip-vertical"></i>
         </div>
         <div class="element-controls">
-            <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">Edit</button>
-            <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">Delete</button>
+            <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">${t('common.edit')}</button>
+            <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">${t('common.delete')}</button>
         </div>
         <div class="resize-handles">
             <div class="resize-handle corner top-left"></div>
@@ -241,8 +241,8 @@ function createCanvasElement(type, x, y) {
     `;
 
 if (type === 'heading') {
-    element.innerHTML = controls + '<div class="canvas-heading-element" contenteditable="true" data-default="true">New Heading</div>';
-    
+    element.innerHTML = controls + `<div class="canvas-heading-element" contenteditable="true" data-default="true">${t('customPages.newHeading')}</div>`;
+
     // Set default font size to 24px
     const headingEl = element.querySelector('.canvas-heading-element');
     headingEl.style.fontSize = '24px';
@@ -256,7 +256,7 @@ if (type === 'heading') {
         headingEl.removeEventListener('focus', clearDefaultOnce);
     });
 }    else if (type === 'text') {
-    element.innerHTML = controls + '<div class="canvas-text-element" contenteditable="true" data-default="true">Click to edit text.</div>';
+    element.innerHTML = controls + `<div class="canvas-text-element" contenteditable="true" data-default="true">${t('customPages.clickToEditText')}</div>`;
     
     // Clear default text on first focus
     const textEl = element.querySelector('.canvas-text-element');
@@ -276,13 +276,13 @@ if (type === 'heading') {
                     <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}" 
                             style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
                         <i class="fas fa-camera"></i>
-                        Browse
+                        ${t('common.browse')}
                     </button>
-                    
-                    <input 
-                        class="canvas-drop-zone" 
-                        id="dropZone_${uploadId}" 
-                        placeholder="Drop or paste here (Ctrl+V)"
+
+                    <input
+                        class="canvas-drop-zone"
+                        id="dropZone_${uploadId}"
+                        placeholder="${t('customPages.dropOrPasteHere')}"
                         readonly
                         tabindex="0"
                         style="flex: 1; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
@@ -538,7 +538,7 @@ function deselectAllCanvasElements() {
     selectedCanvasElement = null;
     document.getElementById('customPageProperties').innerHTML = `
         <p style="color: #6c757d; font-size: 13px; text-align: center; padding: 30px 10px;">
-            Select an element to edit its properties
+            ${t('customPages.selectElementToEdit')}
         </p>
     `;
 }
@@ -564,7 +564,7 @@ function showCanvasElementProperties(element) {
         content.innerHTML = `
             <div class="property-row" style="display: flex; gap: 10px; margin-bottom: 12px;">
                 <div class="property-group" style="flex: 1;">
-                    <label>Font</label>
+                    <label>${t('customPages.font')}</label>
                     <select onchange="updateCanvasElementFont(this.value)" style="width: 100%;">
                         <option value="Arial, sans-serif" ${currentFont.includes('Arial') || currentFont.includes('Helvetica') ? 'selected' : ''}>Arial</option>
                         <option value="'Times New Roman', serif" ${currentFont.includes('Times') ? 'selected' : ''}>Times New Roman</option>
@@ -573,7 +573,7 @@ function showCanvasElementProperties(element) {
                 </div>
                 
                 <div class="property-group" style="flex: 1;">
-                    <label>Typeface</label>
+                    <label>${t('customPages.typeface')}</label>
                     <div style="display: flex; gap: 5px;">
                         <button type="button" onclick="toggleCanvasElementBold()" 
                                 style="flex: 1; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; background: ${isBold ? '#007bff' : 'white'}; color: ${isBold ? 'white' : '#333'}; font-weight: bold; cursor: pointer;">
@@ -591,14 +591,14 @@ function showCanvasElementProperties(element) {
                 </div>
                 
                 <div class="property-group" style="flex: 0 0 80px;">
-                    <label>Color</label>
+                    <label>${t('customPages.color')}</label>
                     <input type="color" value="${rgbToHex(currentColor)}" oninput="updateCanvasElementColor(this.value)" style="width: 100%; height: 32px; cursor: pointer; border: 1px solid #dee2e6; border-radius: 4px;">
                 </div>
             </div>
             
             <div class="property-row">
                 <div class="property-group">
-                    <label>Font Size</label>
+                    <label>${t('customPages.fontSize')}</label>
                     <select onchange="updateCanvasElementFontSize(this.value)">
                         <option value="12px" ${currentFontSize === '12px' ? 'selected' : ''}>12px</option>
                         <option value="14px" ${currentFontSize === '14px' ? 'selected' : ''}>14px</option>
@@ -611,11 +611,11 @@ function showCanvasElementProperties(element) {
                     </select>
                 </div>
                 <div class="property-group">
-                    <label>Alignment</label>
+                    <label>${t('customPages.alignment')}</label>
                     <select onchange="updateCanvasElementAlignment(this.value)">
-                        <option value="left" ${currentAlignment === 'left' ? 'selected' : ''}>Left</option>
-                        <option value="center" ${currentAlignment === 'center' ? 'selected' : ''}>Center</option>
-                        <option value="right" ${currentAlignment === 'right' ? 'selected' : ''}>Right</option>
+                        <option value="left" ${currentAlignment === 'left' ? 'selected' : ''}>${t('customPages.alignLeft')}</option>
+                        <option value="center" ${currentAlignment === 'center' ? 'selected' : ''}>${t('customPages.alignCenter')}</option>
+                        <option value="right" ${currentAlignment === 'right' ? 'selected' : ''}>${t('customPages.alignRight')}</option>
                     </select>
                 </div>
             </div>
@@ -628,28 +628,28 @@ function showCanvasElementProperties(element) {
         content.innerHTML = `
             <div class="property-row">
                 <div class="property-group">
-                    <label>Position X</label>
+                    <label>${t('customPages.positionX')}</label>
                     <input type="number" value="${parseInt(element.style.left)}" onchange="updateCanvasElementPositionX(this.value)">
                 </div>
                 <div class="property-group">
-                    <label>Position Y</label>
+                    <label>${t('customPages.positionY')}</label>
                     <input type="number" value="${parseInt(element.style.top)}" onchange="updateCanvasElementPositionY(this.value)">
                 </div>
             </div>
             
             <div class="property-row">
                 <div class="property-group">
-                    <label>Width</label>
+                    <label>${t('customPages.width')}</label>
                     <input type="number" value="${element.offsetWidth}" onchange="updateCanvasElementWidth(this.value)">
                 </div>
                 <div class="property-group">
-                    <label>Height</label>
+                    <label>${t('customPages.height')}</label>
                     <input type="number" value="${element.offsetHeight}" onchange="updateCanvasElementHeight(this.value)">
                 </div>
             </div>
             
             <div style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px; color: #6c757d;">
-                <i class="fas fa-lock"></i> ${ratioText || 'Aspect ratio will be preserved'}
+                <i class="fas fa-lock"></i> ${ratioText || t('customPages.aspectRatioPreserved')}
             </div>
         `;
     }
@@ -918,9 +918,9 @@ function handleCanvasImagePaste(event, element) {
         const dropZone = element.querySelector('.canvas-drop-zone');
         if (dropZone) {
             dropZone.value = '';
-            dropZone.placeholder = 'Image pasted successfully!';
+            dropZone.placeholder = t('customPages.imagePastedSuccess');
             setTimeout(() => {
-                dropZone.placeholder = 'Drop or paste here (Ctrl+V)';
+                dropZone.placeholder = t('customPages.dropOrPasteHere');
             }, 2000);
         }
     }
@@ -937,7 +937,7 @@ async function processCanvasImageFiles(files, element) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert('Please select a valid image file.');
+        alert(t('customPages.selectValidImage'));
         return;
     }
 
@@ -945,7 +945,7 @@ async function processCanvasImageFiles(files, element) {
 
     const dropZone = element.querySelector('.canvas-drop-zone');
     if (dropZone) {
-        dropZone.placeholder = 'Uploading...';
+        dropZone.placeholder = t('common.uploading');
     }
 
     try {
@@ -989,10 +989,10 @@ async function processCanvasImageFiles(files, element) {
         
     } catch (err) {
         console.error('Error uploading canvas image:', err);
-        alert('Error uploading image: ' + err.message);
-        
+        alert(t('customPages.errorUploadingImage') + ': ' + err.message);
+
         if (dropZone) {
-            dropZone.placeholder = 'Drop or paste here (Ctrl+V)';
+            dropZone.placeholder = t('customPages.dropOrPasteHere');
         }
     }
 }
@@ -1000,7 +1000,7 @@ async function processCanvasImageFiles(files, element) {
 // Save custom page
 async function saveCustomPage() {
     const title = document.getElementById('customPageTitle').value.trim();
-    if (!title) { alert('Please enter a page title'); return; }
+    if (!title) { alert(t('customPages.enterPageTitle')); return; }
 
     const canvas = document.getElementById('customPageCanvas');
     currentCustomPage.canvasWidth  = canvas.clientWidth;   // 816
@@ -1098,10 +1098,10 @@ if (el.dataset.type === 'heading' || el.dataset.type === 'text') {
         renderCustomPagesList();
         updateCustomPagesSummary();
         
-        alert('Custom page saved successfully!');
+        alert(t('customPages.pageSavedSuccess'));
     } catch (error) {
         console.error('Error saving custom page:', error);
-        alert('Error saving custom page: ' + error.message);
+        alert(t('customPages.errorSavingPage') + ': ' + error.message);
     }
 }
 
@@ -1119,7 +1119,8 @@ function cancelCustomPageEdit() {
 }
 
 // Show an empty-state hint when the canvas has no elements
-function showCanvasEmptyState(msg = 'Drag and drop elements to customize this page') {
+function showCanvasEmptyState(msg = null) {
+    msg = msg || t('customPages.dragAndDropElements');
     const canvas = document.getElementById('customPageCanvas');
     if (!canvas || canvas.querySelector('.canvas-empty-state')) return;
 
@@ -1194,8 +1195,8 @@ async function loadCustomPageElements(elements) {
     const controls = `
       <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
       <div class="element-controls">
-        <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">Edit</button>
-        <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">Delete</button>
+        <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">${t('common.edit')}</button>
+        <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">${t('common.delete')}</button>
       </div>
       <div class="resize-handles">
         <div class="resize-handle corner top-left"></div>
@@ -1275,10 +1276,10 @@ async function loadCustomPageElements(elements) {
               <div class="canvas-image-upload-container">
                   <div class="upload-controls" style="display: flex; gap: 10px; margin-bottom: 10px;">
                       <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}">
-                          <i class="fas fa-camera"></i> Browse
+                          <i class="fas fa-camera"></i> ${t('common.browse')}
                       </button>
-                      <input class="canvas-drop-zone" id="dropZone_${uploadId}" 
-                          placeholder="Drop or paste here (Ctrl+V)" readonly tabindex="0">
+                      <input class="canvas-drop-zone" id="dropZone_${uploadId}"
+                          placeholder="${t('customPages.dropOrPasteHere')}" readonly tabindex="0">
                   </div>
                   <input type="file" id="fileInput_${uploadId}" accept="image/*" style="display: none;">
               </div>
@@ -1337,7 +1338,7 @@ function renderCustomPagesList() {
         container.innerHTML = `
             <div style="text-align: center; color: #6c757d; padding: 60px 20px; background: white; border-radius: 8px;">
                 <i class="fas fa-file-alt" style="font-size: 64px; color: #dee2e6; margin-bottom: 20px; display: block;"></i>
-                <p style="font-size: 16px;">No custom pages yet. Click "Add Custom Page" to create one.</p>
+                <p style="font-size: 16px;">${t('customPages.noCustomPagesYet')}</p>
             </div>
         `;
         return;
@@ -1347,14 +1348,14 @@ function renderCustomPagesList() {
         <div class="custom-page-card">
             <div>
                 <h3>${page.title}</h3>
-                <p>${page.elements.length} element${page.elements.length !== 1 ? 's' : ''} • Last modified: ${new Date(page.lastModified).toLocaleDateString()}</p>
+                <p>${page.elements.length} ${t('customPages.elements')} • ${t('customPages.lastModified')}: ${new Date(page.lastModified).toLocaleDateString()}</p>
             </div>
             <div class="custom-page-actions">
                 <button class="button primary" onclick="editCustomPage('${page.id}')">
-                    <i class="fas fa-edit"></i> Edit
+                    <i class="fas fa-edit"></i> ${t('common.edit')}
                 </button>
                 <button class="button secondary" onclick="deleteCustomPage('${page.id}')">
-                    <i class="fas fa-trash"></i> Delete
+                    <i class="fas fa-trash"></i> ${t('common.delete')}
                 </button>
             </div>
         </div>
@@ -1373,7 +1374,7 @@ function editCustomPage(pageId) {
 
 // Delete custom page
 async function deleteCustomPage(pageId) {
-    if (!confirm('Are you sure you want to delete this custom page?')) {
+    if (!confirm(t('customPages.confirmDeletePage'))) {
         return;
     }
     
@@ -1492,7 +1493,7 @@ function renderSoffitesPagesList() {
         container.innerHTML = `
             <div style="text-align: center; padding: 40px; color: #6c757d;">
                 <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
-                <p>No soffites pages yet. Click "Add Soffites Page" to create one.</p>
+                <p>${t('customPages.noSoffitesPagesYet')}</p>
             </div>
         `;
         updateSoffitesPagesSummary();
@@ -1502,15 +1503,15 @@ function renderSoffitesPagesList() {
     container.innerHTML = soffitesCustomPages.map(page => `
         <div class="custom-page-card" data-page-id="${page.id}">
             <div>
-                <h3>${page.title || 'Untitled Page'}</h3>
-                <p>${page.elements?.length || 0} element${page.elements?.length !== 1 ? 's' : ''} • Last modified: ${page.lastModified ? new Date(page.lastModified).toLocaleDateString() : 'N/A'}</p>
+                <h3>${page.title || t('customPages.untitledPage')}</h3>
+                <p>${page.elements?.length || 0} ${t('customPages.elements')} • ${t('customPages.lastModified')}: ${page.lastModified ? new Date(page.lastModified).toLocaleDateString() : 'N/A'}</p>
             </div>
             <div class="custom-page-actions">
                 <button class="button primary" onclick="editSoffitesPage('${page.id}')">
-                    <i class="fas fa-edit"></i> Edit
+                    <i class="fas fa-edit"></i> ${t('common.edit')}
                 </button>
                 <button class="button secondary" onclick="deleteSoffitesPage('${page.id}')" style="background: #6c757d;">
-                    <i class="fas fa-trash"></i> Delete
+                    <i class="fas fa-trash"></i> ${t('common.delete')}
                 </button>
             </div>
         </div>
@@ -1525,7 +1526,7 @@ function updateSoffitesPagesSummary() {
     if (!el) return;
     
     const count = soffitesCustomPages?.length || 0;
-    el.innerHTML = `<i class="fas fa-file-alt"></i> ${count} soffites page${count !== 1 ? 's' : ''} added`;
+    el.innerHTML = `<i class="fas fa-file-alt"></i> ${count} ${t('customPages.soffitesPagesAdded')}`;
 }
 
 // Edit existing soffites page
@@ -1543,7 +1544,7 @@ function editSoffitesPage(pageId) {
 
 // Delete soffites page
 async function deleteSoffitesPage(pageId) {
-    if (!confirm('Are you sure you want to delete this soffites page?')) return;
+    if (!confirm(t('customPages.confirmDeleteSoffitesPage'))) return;
     
     const index = soffitesCustomPages.findIndex(p => p.id === pageId || p.id === parseInt(pageId));
     if (index === -1) {
@@ -1559,7 +1560,7 @@ async function deleteSoffitesPage(pageId) {
         console.log('[SUCCESS] Soffites page deleted');
     } catch (error) {
         console.error('[ERROR] Failed to delete soffites page:', error);
-        alert('Error deleting soffites page: ' + error.message);
+        alert(t('customPages.errorDeletingSoffitesPage') + ': ' + error.message);
     }
 }
 
@@ -1744,8 +1745,8 @@ function createSoffitesCanvasElement(type, x, y) {
     const controls = `
         <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
         <div class="element-controls">
-            <button class="control-btn" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">Edit</button>
-            <button class="control-btn delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">Delete</button>
+            <button class="control-btn" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.edit')}</button>
+            <button class="control-btn delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.delete')}</button>
         </div>
         <div class="resize-handles">
             <div class="resize-handle corner top-left"></div>
@@ -1760,7 +1761,7 @@ function createSoffitesCanvasElement(type, x, y) {
     `;
 
     if (type === 'heading') {
-        element.innerHTML = controls + '<div class="canvas-heading-element" contenteditable="true" data-default="true">New Heading</div>';
+        element.innerHTML = controls + `<div class="canvas-heading-element" contenteditable="true" data-default="true">${t('customPages.newHeading')}</div>`;
         const headingEl = element.querySelector('.canvas-heading-element');
         headingEl.style.fontSize = '24px';
         headingEl.addEventListener('focus', function clearDefaultOnce() {
@@ -1771,7 +1772,7 @@ function createSoffitesCanvasElement(type, x, y) {
             headingEl.removeEventListener('focus', clearDefaultOnce);
         });
     } else if (type === 'text') {
-        element.innerHTML = controls + '<div class="canvas-text-element" contenteditable="true" data-default="true">Click to edit text.</div>';
+        element.innerHTML = controls + `<div class="canvas-text-element" contenteditable="true" data-default="true">${t('customPages.clickToEditText')}</div>`;
         const textEl = element.querySelector('.canvas-text-element');
         textEl.addEventListener('focus', function clearDefaultOnce() {
             if (this.getAttribute('data-default') === 'true') {
@@ -1786,12 +1787,12 @@ function createSoffitesCanvasElement(type, x, y) {
             <div class="canvas-image-element">
                 <div class="canvas-image-upload-container">
                     <div class="upload-controls" style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}" 
+                        <button type="button" class="canvas-camera-btn" id="cameraBtn_${uploadId}"
                                 style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                            <i class="fas fa-camera"></i> Browse
+                            <i class="fas fa-camera"></i> ${t('common.browse')}
                         </button>
-                        <input class="canvas-drop-zone" id="dropZone_${uploadId}" 
-                            placeholder="Drop or paste here (Ctrl+V)" readonly tabindex="0"
+                        <input class="canvas-drop-zone" id="dropZone_${uploadId}"
+                            placeholder="${t('customPages.dropOrPasteHere')}" readonly tabindex="0"
                             style="flex: 1; padding: 10px; border: 2px dashed #ccc; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
                     </div>
                     <input type="file" id="fileInput_${uploadId}" accept="image/*" style="display: none;">
@@ -1805,7 +1806,7 @@ function createSoffitesCanvasElement(type, x, y) {
             }
         }, 0);
     }
-    
+
     element.addEventListener('click', (e) => {
         if (!e.target.closest('.element-controls') && !e.target.closest('.drag-handle')) {
             selectSoffitesCanvasElement(element);
@@ -1842,7 +1843,7 @@ function showSoffitesElementProperties(element) {
     const id = element.dataset.id;
     
     let html = `<div class="property-group">
-        <label>Position</label>
+        <label>${t('customPages.position')}</label>
         <div style="display: flex; gap: 10px;">
             <input type="number" value="${parseInt(element.style.left)}" 
                    onchange="updateSoffitesElementPositionX(${id}, this.value)" 
@@ -1853,7 +1854,7 @@ function showSoffitesElementProperties(element) {
         </div>
     </div>
     <div class="property-group">
-        <label>Size</label>
+        <label>${t('customPages.size')}</label>
         <div style="display: flex; gap: 10px;">
             <input type="number" value="${element.offsetWidth}" 
                    onchange="updateSoffitesElementWidth(${id}, this.value)" 
@@ -1868,7 +1869,7 @@ function showSoffitesElementProperties(element) {
         const contentEl = element.querySelector('[contenteditable]');
         const fontSize = parseInt(contentEl?.style.fontSize) || (type === 'heading' ? 24 : 16);
         html += `<div class="property-group">
-            <label>Font Size</label>
+            <label>${t('customPages.fontSize')}</label>
             <input type="number" value="${fontSize}" 
                    onchange="updateSoffitesElementFontSize(${id}, this.value)" 
                    style="width: 70px; padding: 5px;">
@@ -1881,7 +1882,7 @@ function showSoffitesElementProperties(element) {
 function clearSoffitesElementProperties() {
     const props = document.getElementById('soffitesPageProperties');
     if (props) {
-        props.innerHTML = '<p style="color: #6c757d; font-size: 13px; text-align: center; padding: 20px 10px;">Select an element to edit its properties</p>';
+        props.innerHTML = `<p style="color: #6c757d; font-size: 13px; text-align: center; padding: 20px 10px;">${t('customPages.selectElementToEdit')}</p>`;
     }
 }
 
@@ -1984,8 +1985,8 @@ async function loadSoffitesPageElements(elements) {
         const controls = `
             <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
             <div class="element-controls">
-                <button class="control-btn" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">Edit</button>
-                <button class="control-btn delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">Delete</button>
+                <button class="control-btn" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.edit')}</button>
+                <button class="control-btn delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.delete')}</button>
             </div>
             <div class="resize-handles">
                 <div class="resize-handle corner top-left"></div>
@@ -2042,7 +2043,7 @@ async function loadSoffitesPageElements(elements) {
 // Save soffites page
 async function saveSoffitesPage() {
     const title = document.getElementById('soffitesPageTitle').value.trim();
-    if (!title) { alert('Please enter a page title'); return; }
+    if (!title) { alert(t('customPages.enterPageTitle')); return; }
 
     const canvas = document.getElementById('soffitesPageCanvas');
     
@@ -2104,10 +2105,10 @@ async function saveSoffitesPage() {
     try {
         await saveSoffitesPagesToDatabase();
         cancelSoffitesPageEdit();
-        alert('Soffites page saved successfully!');
+        alert(t('customPages.soffitesPageSavedSuccess'));
     } catch (error) {
         console.error('Error saving soffites page:', error);
-        alert('Error saving soffites page: ' + error.message);
+        alert(t('customPages.errorSavingSoffitesPage') + ': ' + error.message);
     }
 }
 

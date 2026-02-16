@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (!userData) {
                 console.log('❌ No user authenticated, redirecting to auth page');
-                alert('Please login to create CFSS projects');
+                alert(t('auth.pleaseLoginCFSS'));
                 window.location.href = 'auth.html';
                 return;
             }
@@ -104,11 +104,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const formContainer = document.querySelector('.form-container');
         
         if (loading) {
-            submitButton.innerHTML = '<span class="spinner-inline"></span>Creating CFSS Project...';
+            submitButton.innerHTML = '<span class="spinner-inline"></span>' + t('createProject.creatingCFSSProject');
             submitButton.disabled = true;
             formContainer.classList.add('loading-state');
         } else {
-            submitButton.textContent = 'Create CFSS Project';
+            submitButton.textContent = t('createProject.createCFSSProject');
             submitButton.disabled = false;
             formContainer.classList.remove('loading-state');
         }
@@ -121,13 +121,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const userData = await authHelper.checkAuthentication();
             if (!userData) {
-                alert('Session expired. Please login again.');
+                alert(t('auth.sessionExpired'));
                 window.location.href = 'auth.html';
                 return;
             }
         } catch (error) {
             console.error('Authentication check failed:', error);
-            alert('Authentication error. Please login again.');
+            alert(t('auth.authError'));
             window.location.href = 'auth.html';
             return;
         }
@@ -171,13 +171,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const createdProject = await response.json();
             console.log('✅ CFSS Project created successfully:', createdProject);
 
-            alert('CFSS Project created successfully!');
+            alert(t('createProject.cfssProjectCreated'));
             // Redirect directly to the new CFSS project's details page
             window.location.href = `cfss-project-details.html?id=${createdProject.id}`;
 
         } catch (error) {
             console.error('❌ Error creating CFSS project:', error);
-            alert('Error creating CFSS project: ' + error.message);
+            alert(t('createProject.errorCreatingCFSS') + error.message);
         } finally {
             // Reset loading state
             setFormLoading(false);

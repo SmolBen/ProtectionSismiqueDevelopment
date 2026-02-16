@@ -12,34 +12,34 @@
 <body>
     <div class="auth-container">
         <h1>Protection Sismique</h1>
-        
+
         <!-- Debug Info (remove in production) -->
         <div id="debugInfo" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 12px;"></div>
-        
+
         <!-- Loading indicator -->
         <div id="loadingIndicator" class="loading" style="display: none;">
-            <p>Loading authentication...</p>
+            <p data-i18n="common.loadingAuth">Loading authentication...</p>
         </div>
-        
+
         <!-- Error/Success messages -->
         <div id="messageContainer"></div>
-        
+
         <!-- Tab buttons -->
         <div class="tab-buttons">
-            <button class="tab-button active" onclick="switchTab('login')">Login</button>
-            <button class="tab-button" onclick="switchTab('signup')">Sign Up</button>
-            <button class="tab-button" onclick="switchTab('forgotPassword')">Reset Password</button>
+            <button class="tab-button active" onclick="switchTab('login')" data-i18n="auth.login">Login</button>
+            <button class="tab-button" onclick="switchTab('signup')" data-i18n="auth.signUp">Sign Up</button>
+            <button class="tab-button" onclick="switchTab('forgotPassword')" data-i18n="auth.resetPassword">Reset Password</button>
         </div>
-        
+
         <!-- Login Tab -->
         <div id="loginTab" class="tab-content active">
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="loginEmail">Email:</label>
+                    <label for="loginEmail" data-i18n="auth.email">Email:</label>
                     <input type="email" id="loginEmail" required>
                 </div>
                 <div class="form-group">
-                    <label for="loginPassword">Password:</label>
+                    <label for="loginPassword" data-i18n="auth.password">Password:</label>
                     <div class="password-input-container">
                         <input type="password" id="loginPassword" required>
                         <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">
@@ -47,22 +47,22 @@
                         </button>
                     </div>
                 </div>
-                <button type="submit" id="loginBtn">Login</button>
+                <button type="submit" id="loginBtn" data-i18n="auth.login">Login</button>
                 <div class="form-links">
-                    <a href="#" onclick="switchTab('forgotPassword'); return false;">Forgot Password?</a>
+                    <a href="#" onclick="switchTab('forgotPassword'); return false;" data-i18n="auth.forgotPassword">Forgot Password?</a>
                 </div>
             </form>
         </div>
-        
+
         <!-- Signup Tab -->
         <div id="signupTab" class="tab-content">
             <form id="signupForm">
                 <div class="form-group">
-                    <label for="signupEmail">Email:</label>
+                    <label for="signupEmail" data-i18n="auth.email">Email:</label>
                     <input type="email" id="signupEmail" required>
                 </div>
                 <div class="form-group">
-                    <label for="signupPassword">Password:</label>
+                    <label for="signupPassword" data-i18n="auth.password">Password:</label>
                     <div class="password-input-container">
                         <input type="password" id="signupPassword" required minlength="8">
                         <button type="button" class="password-toggle" onclick="togglePassword('signupPassword', this)">
@@ -71,7 +71,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="confirmPassword">Confirm Password:</label>
+                    <label for="confirmPassword" data-i18n="auth.confirmPassword">Confirm Password:</label>
                     <div class="password-input-container">
                         <input type="password" id="confirmPassword" required>
                         <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', this)">
@@ -80,64 +80,64 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="firstName">First Name:</label>
+                    <label for="firstName" data-i18n="auth.firstName">First Name:</label>
                     <input type="text" id="firstName" required>
                 </div>
                 <div class="form-group">
-                    <label for="lastName">Last Name:</label>
+                    <label for="lastName" data-i18n="auth.lastName">Last Name:</label>
                     <input type="text" id="lastName" required>
                 </div>
                 <div class="form-group">
-                    <label for="companyName">Company:</label>
+                    <label for="companyName" data-i18n="auth.company">Company:</label>
                     <input type="text" id="companyName" required>
                 </div>
                 <div class="form-group">
-                    <label for="phoneNumber">Phone Number:</label>
+                    <label for="phoneNumber" data-i18n="auth.phoneNumber">Phone Number:</label>
                     <input type="tel" id="phoneNumber" required>
                 </div>
                 <div class="form-group">
-                    <label for="domain">Domain:</label>
+                    <label for="domain" data-i18n="auth.domain">Domain:</label>
                     <select id="domain" required>
-                        <option value="">Select domain</option>
-                        <option value="plumbing">Plumbing</option>
-                        <option value="electricity">Electricity</option>
-                        <option value="interior-design">Interior Design</option>
-                        <option value="exterior">Exterior</option>
-                        <option value="sprinklers">Sprinklers</option>
-                        <option value="ventilation">Ventilation</option>
+                        <option value="" data-i18n="auth.selectDomain">Select domain</option>
+                        <option value="plumbing" data-i18n="domains.plumbing">Plumbing</option>
+                        <option value="electricity" data-i18n="domains.electricity">Electricity</option>
+                        <option value="interior-design" data-i18n="domains.interiorDesign">Interior Design</option>
+                        <option value="exterior" data-i18n="domains.exterior">Exterior</option>
+                        <option value="sprinklers" data-i18n="domains.sprinklers">Sprinklers</option>
+                        <option value="ventilation" data-i18n="domains.ventilation">Ventilation</option>
                     </select>
                 </div>
-                <button type="submit" id="signupBtn">Create Account</button>
+                <button type="submit" id="signupBtn" data-i18n="auth.createAccount">Create Account</button>
             </form>
         </div>
-        
+
         <!-- Forgot Password Tab -->
         <div id="forgotPasswordTab" class="tab-content">
             <div id="forgotPasswordStep1">
-                <h3>Reset Password</h3>
-                <p>Enter your email address and we'll send you a verification code to reset your password.</p>
+                <h3 data-i18n="auth.resetPassword">Reset Password</h3>
+                <p data-i18n="auth.resetPasswordDesc">Enter your email address and we'll send you a verification code to reset your password.</p>
                 <form id="forgotPasswordForm">
                     <div class="form-group">
-                        <label for="forgotEmail">Email:</label>
-                        <input type="email" id="forgotEmail" required placeholder="Enter your email">
+                        <label for="forgotEmail" data-i18n="auth.email">Email:</label>
+                        <input type="email" id="forgotEmail" required data-i18n-placeholder="auth.enterEmail" placeholder="Enter your email">
                     </div>
-                    <button type="submit">Send Reset Code</button>
+                    <button type="submit" data-i18n="auth.sendResetCode">Send Reset Code</button>
                 </form>
                 <div class="form-links">
-                    <a href="#" onclick="switchTab('login'); return false;">Back to Login</a>
+                    <a href="#" onclick="switchTab('login'); return false;" data-i18n="auth.backToLogin">Back to Login</a>
                 </div>
             </div>
-            
+
             <div id="forgotPasswordStep2" style="display: none;">
-                <h3>Enter New Password</h3>
-                <p>Enter the verification code sent to your email and choose a new password.</p>
+                <h3 data-i18n="auth.enterNewPassword">Enter New Password</h3>
+                <p data-i18n="auth.enterNewPasswordDesc">Enter the verification code sent to your email and choose a new password.</p>
                 <form id="resetPasswordForm">
                     <div class="form-group">
-                        <label for="resetCode">Verification Code:</label>
-                        <input type="text" id="resetCode" required placeholder="Enter 6-digit code" maxlength="6">
+                        <label for="resetCode" data-i18n="auth.verificationCode">Verification Code:</label>
+                        <input type="text" id="resetCode" required data-i18n-placeholder="auth.enterCode" placeholder="Enter 6-digit code" maxlength="6">
                     </div>
                     <div class="form-group">
-                        <label for="newPassword">New Password:</label>
+                        <label for="newPassword" data-i18n="auth.newPassword">New Password:</label>
                         <div class="password-input-container">
                             <input type="password" id="newPassword" required minlength="8">
                             <button type="button" class="password-toggle" onclick="togglePassword('newPassword', this)">
@@ -146,7 +146,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="confirmNewPassword">Confirm New Password:</label>
+                        <label for="confirmNewPassword" data-i18n="auth.confirmNewPassword">Confirm New Password:</label>
                         <div class="password-input-container">
                             <input type="password" id="confirmNewPassword" required minlength="8">
                             <button type="button" class="password-toggle" onclick="togglePassword('confirmNewPassword', this)">
@@ -154,27 +154,29 @@
                             </button>
                         </div>
                     </div>
-                    <button type="submit">Reset Password</button>
-                    <button type="button" onclick="resendResetCode()">Resend Code</button>
+                    <button type="submit" data-i18n="auth.resetPassword">Reset Password</button>
+                    <button type="button" onclick="resendResetCode()" data-i18n="auth.resendCode">Resend Code</button>
                 </form>
                 <div class="form-links">
-                    <a href="#" onclick="switchTab('login'); return false;">Back to Login</a>
+                    <a href="#" onclick="switchTab('login'); return false;" data-i18n="auth.backToLogin">Back to Login</a>
                 </div>
             </div>
         </div>
-        
+
         <!-- Verification Tab -->
         <div id="verificationTab" class="tab-content">
-            <h3>Verify Your Email</h3>
-            <p>Enter the verification code sent to your email:</p>
+            <h3 data-i18n="auth.verifyYourEmail">Verify Your Email</h3>
+            <p data-i18n="auth.enterVerificationCode">Enter the verification code sent to your email:</p>
             <div class="form-group">
-                <input type="text" id="verificationCode" placeholder="Verification code" maxlength="6">
+                <input type="text" id="verificationCode" data-i18n-placeholder="auth.verificationCodePlaceholder" placeholder="Verification code" maxlength="6">
             </div>
-            <button onclick="verifyEmail()">Verify</button>
-            <button onclick="resendVerificationCode()">Resend Code</button>
+            <button onclick="verifyEmail()" data-i18n="auth.verify">Verify</button>
+            <button onclick="resendVerificationCode()" data-i18n="auth.resendCode">Resend Code</button>
         </div>
     </div>
 
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script src="auth.js"></script>
 </body>

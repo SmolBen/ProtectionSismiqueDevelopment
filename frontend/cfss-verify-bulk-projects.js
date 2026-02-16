@@ -216,7 +216,7 @@ function handleFileSelection(event) {
 
 function addFilesToQueue(files) {
   if (!files.length) {
-    updateStatusMessage('Only PDF files are allowed for bulk verification.', 'error');
+    updateStatusMessage(t('bulkVerify.onlyPdfAllowed'), 'error');
     return;
   }
 
@@ -243,7 +243,7 @@ function addFilesToQueue(files) {
   });
 
   updateStatusMessage(
-    `${files.length} file${files.length > 1 ? 's' : ''} added to the queue.`,
+    t('bulkVerify.filesAddedToQueue', { count: files.length }),
     'success'
   );
   renderFileList();
@@ -253,7 +253,7 @@ function addFilesToQueue(files) {
 function handleClearList() {
   if (bulkVerifyState.isUploading || bulkVerifyState.isVerifying) {
     updateStatusMessage(
-      'Please wait for the current operation to finish before clearing the list.',
+      t('bulkVerify.waitForCurrentOperation'),
       'error'
     );
     return;
@@ -262,7 +262,7 @@ function handleClearList() {
   renderFileList();
   renderProcessedList();
   updateButtonStates();
-  updateStatusMessage('Cleared all queued files.', 'success');
+  updateStatusMessage(t('bulkVerify.clearedAllFiles'), 'success');
 }
 
 function handleUploadSelected() {
@@ -270,7 +270,7 @@ function handleUploadSelected() {
     (entry) => entry.status === 'pending'
   );
   if (!pendingEntries.length) {
-    updateStatusMessage('There are no new files to upload.', 'error');
+    updateStatusMessage(t('bulkVerify.noNewFilesToUpload'), 'error');
     return;
   }
 
@@ -280,13 +280,13 @@ function handleUploadSelected() {
     .then((result) => {
       if (result.uploadedCount) {
         updateStatusMessage(
-          `Uploaded ${result.uploadedCount} file${result.uploadedCount > 1 ? 's' : ''}.`,
+          t('bulkVerify.uploadedFiles', { count: result.uploadedCount }),
           'success'
         );
       }
       if (result.failed.length) {
         updateStatusMessage(
-          `Failed to upload ${result.failed.length} file${result.failed.length > 1 ? 's' : ''}.`,
+          t('bulkVerify.failedToUpload', { count: result.failed.length }),
           'error'
         );
       }
@@ -295,7 +295,7 @@ function handleUploadSelected() {
     })
     .catch((error) => {
       console.error('Bulk upload error:', error);
-      updateStatusMessage(error.message || 'Failed to upload files.', 'error');
+      updateStatusMessage(error.message || t('bulkVerify.failedToUploadFiles'), 'error');
     })
     .finally(() => {
       bulkVerifyState.isUploading = false;
@@ -394,7 +394,7 @@ async function uploadPendingEntries(entries) {
 function handleVerifyFiles() {
   const candidates = bulkVerifyState.entries.filter((e) => e.status === 'uploaded');
   if (!candidates.length) {
-    updateStatusMessage('Upload files before running bulk verification.', 'error');
+    updateStatusMessage(t('bulkVerify.uploadBeforeVerification'), 'error');
     return;
   }
 
@@ -407,13 +407,13 @@ function handleVerifyFiles() {
     .then(({ processed, errors }) => {
       if (processed.length) {
         updateStatusMessage(
-          `Successfully processed ${processed.length} file${processed.length > 1 ? 's' : ''}.`,
+          t('bulkVerify.successfullyProcessed', { count: processed.length }),
           'success'
         );
       }
       if (errors.length) {
         updateStatusMessage(
-          `Failed to process ${errors.length} file${errors.length > 1 ? 's' : ''}.`,
+          t('bulkVerify.failedToProcess', { count: errors.length }),
           'error'
         );
       }
@@ -423,7 +423,7 @@ function handleVerifyFiles() {
     })
     .catch((err) => {
       console.error('Bulk verification error:', err);
-      updateStatusMessage(err.message || 'Failed to verify files.', 'error');
+      updateStatusMessage(err.message || t('bulkVerify.failedToVerifyFiles'), 'error');
       renderFileList();
     })
     .finally(() => {
@@ -557,7 +557,7 @@ async function runBulkVerification(entries) {
             console.error(`[${entry.file.name}] S3 re-upload failed:`, uploadErr);
             // Don't overwrite existing errors, but log this specific failure
             if (!entry.error || !entry.error.includes('Flatten')) {
-              entry.error = `S3 upload failed: ${uploadErr.message}. File can still be downloaded to PC.`;
+              entry.error = t('bulkVerify.s3UploadFailed', { message: uploadErr.message });
             }
           }
         } else {
@@ -567,7 +567,7 @@ async function runBulkVerification(entries) {
         console.error(`[${entry.file.name}] Post-verify flatten failed:`, e);
         entry.error =
           entry.error ||
-          'Flatten after sign failed (you can still download the signed version).';
+          t('bulkVerify.flattenAfterSignFailed');
       }
     }
     // -----------------------------------------------------------
@@ -591,7 +591,7 @@ function handleDownloadAll() {
     (e) => e.status === 'verified' && (e.flattenedDownloadUrl || e.flattenedBlobUrl || e.downloadUrl)
   );
   if (!ready.length) {
-    updateStatusMessage('There are no processed files to download yet.', 'error');
+    updateStatusMessage(t('bulkVerify.noProcessedFilesToDownload'), 'error');
     return;
   }
 
@@ -608,9 +608,9 @@ function handleDownloadAll() {
   }
 
   if (hadFailure) {
-    updateStatusMessage('Unable to start one or more downloads automatically.', 'error');
+    updateStatusMessage(t('bulkVerify.unableToStartDownloads'), 'error');
   } else {
-    updateStatusMessage('Downloads started.', 'success');
+    updateStatusMessage(t('bulkVerify.downloadsStarted'), 'success');
   }
 }
 
@@ -621,7 +621,7 @@ function renderFileList() {
     bulkElements.fileList.innerHTML = `
       <div class="file-row" style="justify-content:center; text-align:center;">
         <div class="file-name" style="color: var(--text-secondary); font-weight:400;">
-          No files queued yet. Add PDF files to begin.
+          ${t('bulkVerify.noFilesQueuedYet')}
         </div>
       </div>`;
     return;
@@ -645,7 +645,7 @@ function renderFileList() {
             <button class="link-button" type="button"
               ${bulkVerifyState.isUploading || bulkVerifyState.isVerifying ? 'disabled' : ''}
               data-action="remove" data-id="${e.id}">
-              Remove
+              ${t('common.remove')}
             </button>
           </div>
         </div>`;
@@ -668,7 +668,7 @@ function renderProcessedList() {
     bulkElements.processedList.innerHTML = `
       <div class="processed-row" style="justify-content:center; text-align:center;">
         <div class="file-name" style="color: var(--text-secondary); font-weight:400;">
-          Processed files will appear here after verification.
+          ${t('bulkVerify.processedFilesWillAppear')}
         </div>
       </div>`;
     return;
@@ -679,14 +679,14 @@ function renderProcessedList() {
       const info = getDownloadInfo(e);
       const hrefValue = info?.url ? escapeHtml(info.url) : '#';
       const downloadMarkup = info
-        ? `<a class="download-link" href="${hrefValue}" data-action="download" data-id="${e.id}" download="${escapeHtml(info.filename)}"><i class="fas fa-file-download"></i> Download</a>`
+        ? `<a class="download-link" href="${hrefValue}" data-action="download" data-id="${e.id}" download="${escapeHtml(info.filename)}"><i class="fas fa-file-download"></i> ${t('common.download')}</a>`
         : '';
 
       return `
       <div class="processed-row">
         <div>
           <div class="file-name">${escapeHtml(e.file.name)}</div>
-          <div class="file-meta">Signed ${formatRelativeTime(e.verifiedAt)}</div>
+          <div class="file-meta">${t('bulkVerify.signed')} ${formatRelativeTime(e.verifiedAt)}</div>
         </div>
         ${downloadMarkup}
       </div>`;
@@ -705,7 +705,7 @@ function handleProcessedDownloadClick(event) {
 
   const info = getDownloadInfo(entry);
   if (!info) {
-    updateStatusMessage('This file is not ready for download yet.', 'error');
+    updateStatusMessage(t('bulkVerify.fileNotReadyForDownload'), 'error');
     return;
   }
 
@@ -713,7 +713,7 @@ function handleProcessedDownloadClick(event) {
     triggerDownload(info);
   } catch (err) {
     console.error('Download trigger failed', err);
-    updateStatusMessage('Unable to start the download automatically.', 'error');
+    updateStatusMessage(t('bulkVerify.unableToStartDownload'), 'error');
   }
 }
 
@@ -724,7 +724,7 @@ function handleRemoveEntry(event) {
 
   if (['uploading', 'verifying'].includes(entry.status)) {
     updateStatusMessage(
-      'Please wait for the current operation to finish before removing this file.',
+      t('bulkVerify.waitBeforeRemoving'),
       'error'
     );
     return;
@@ -778,12 +778,12 @@ function formatFileSize(bytes) {
 
 function statusLabelFor(status) {
   switch (status) {
-    case 'pending': return 'Pending upload';
-    case 'uploading': return 'Uploading…';
-    case 'uploaded': return 'Uploaded';
-    case 'verifying': return 'Verifying…';
-    case 'verified': return 'Verified';
-    case 'error': return 'Error';
+    case 'pending': return t('bulkVerify.statusPending');
+    case 'uploading': return t('bulkVerify.statusUploading');
+    case 'uploaded': return t('bulkVerify.statusUploaded');
+    case 'verifying': return t('bulkVerify.statusVerifying');
+    case 'verified': return t('bulkVerify.statusVerified');
+    case 'error': return t('bulkVerify.statusError');
     default: return status;
   }
 }
@@ -799,14 +799,14 @@ function formatRelativeTime(ts) {
   if (!ts) return '';
   const d = new Date(ts);
   const ms = Date.now() - d.getTime();
-  if (ms < 60 * 1000) return 'just now';
+  if (ms < 60 * 1000) return t('bulkVerify.justNow');
   if (ms < 60 * 60 * 1000) {
     const m = Math.floor(ms / (60 * 1000));
-    return `${m} minute${m !== 1 ? 's' : ''} ago`;
+    return t('bulkVerify.minutesAgo', { count: m });
   }
   if (ms < 24 * 60 * 60 * 1000) {
     const h = Math.floor(ms / (60 * 60 * 1000));
-    return `${h} hour${h !== 1 ? 's' : ''} ago`;
+    return t('bulkVerify.hoursAgo', { count: h });
   }
   return d.toLocaleString();
 }
@@ -860,7 +860,7 @@ async function handleDownloadToDrive() {
       const fileNames = withBlobOnly.map(e => e.file.name).join(', ');
       console.error('Files failed S3 re-upload:', withBlobOnly);
       updateStatusMessage(
-        `${withBlobOnly.length} file(s) failed to upload to cloud storage (required for Google Drive transfer): ${fileNames}. Check the console for details.`,
+        t('bulkVerify.filesFailedCloudUpload', { count: withBlobOnly.length, fileNames }),
         'error'
       );
       return;
@@ -868,14 +868,14 @@ async function handleDownloadToDrive() {
 
     // If no verified entries yet
     if (!verifiedEntries.length) {
-      updateStatusMessage('No verified files to send to Google Drive yet.', 'error');
+      updateStatusMessage(t('bulkVerify.noVerifiedFilesForDrive'), 'error');
       return;
     }
 
     // If still processing (no blob or download URLs yet)
     const stillProcessing = verifiedEntries.filter(e => !e.flattenedDownloadUrl && !e.flattenedBlobUrl);
     if (stillProcessing.length > 0) {
-      updateStatusMessage('Flattened versions are still processing. Try again once they finish.', 'error');
+      updateStatusMessage(t('bulkVerify.flattenedStillProcessing'), 'error');
       return;
     }
 
@@ -886,7 +886,7 @@ async function handleDownloadToDrive() {
     }));
 
     if (!files.length) {
-      updateStatusMessage('No files successfully uploaded to cloud storage for Google Drive transfer.', 'error');
+      updateStatusMessage(t('bulkVerify.noFilesForDriveTransfer'), 'error');
       return;
     }
 
@@ -897,10 +897,10 @@ async function handleDownloadToDrive() {
     });
 
     if (!res.ok) throw new Error(`n8n webhook failed (HTTP ${res.status})`);
-    updateStatusMessage(`Google Drive upload started for ${files.length} file(s). Files will appear in Drive shortly.`, 'success');
+    updateStatusMessage(t('bulkVerify.driveUploadStarted', { count: files.length }), 'success');
   } catch (err) {
     console.error('Drive upload error:', err);
-    updateStatusMessage(err.message || 'Failed to send files to Google Drive.', 'error');
+    updateStatusMessage(err.message || t('bulkVerify.failedToSendToDrive'), 'error');
   } finally {
     updateButtonStates();
   }

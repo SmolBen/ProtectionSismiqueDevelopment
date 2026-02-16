@@ -163,19 +163,19 @@ function updateCFSSStats(projects) {
         <div class="stats-compact">
             <div class="stat-item">
                 <span class="stat-value">${totalProjects}</span>
-                <span>Total CFSS</span>
+                <span>${t('dashboard.totalCFSS')}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-value">${planningProjects}</span>
-                <span>Planning</span>
+                <span>${t('dashboard.planning')}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-value">${inProgressProjects}</span>
-                <span>Active</span>
+                <span>${t('dashboard.active')}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-value">${completedProjects}</span>
-                <span>Done</span>
+                <span>${t('dashboard.done')}</span>
             </div>
         </div>
     `;
@@ -326,9 +326,9 @@ function renderCFSSProjects(filteredProjects) {
 
     if (filteredProjects.length === 0) {
         projectList.innerHTML = `
-            <div class="list-header">CFSS Projects (0)</div>
+            <div class="list-header">${t('dashboard.cfssProjects')} (0)</div>
             <div style="padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                No CFSS projects found. Create your first CFSS project to get started!
+                ${t('dashboard.noCFSSProjectsFound')}
             </div>
         `;
         return;
@@ -337,7 +337,7 @@ function renderCFSSProjects(filteredProjects) {
     // Add list header
     const listHeader = document.createElement('div');
     listHeader.className = 'list-header';
-    listHeader.textContent = `CFSS Projects (${filteredProjects.length})`;
+    listHeader.textContent = `${t('dashboard.cfssProjects')} (${filteredProjects.length})`;
     projectList.appendChild(listHeader);
 
     filteredProjects.forEach((project) => {
@@ -372,27 +372,27 @@ function renderCFSSProjects(filteredProjects) {
                     <p>${project.description || ''}</p>
                     ${project.createdBy && authHelper.isAdmin() ? `
                         <div class="created-by-line">
-                            Created by: ${project.createdBy}
+                            ${t('common.createdBy')} ${project.createdBy}
                         </div>
                     ` : ''}
                 </div>
                 <div class="project-status">
                     <div class="status-dot ${statusClass}"></div>
-                    <span class="status-text">${project.status || 'Planning'}</span>
+                    <span class="status-text">${project.status || t('status.planning')}</span>
                 </div>
                 <div class="project-actions">
-                    <button class="view-details" title="View Details">
+                    <button class="view-details" title="${t('common.view')}">
                         <i class="fas fa-eye"></i>
-                        View
+                        ${t('common.view')}
                     </button>
-                    <button class="duplicate-project" data-id="${project.id}" title="Duplicate">
+                    <button class="duplicate-project" data-id="${project.id}" title="${t('common.copy')}">
                         <i class="fas fa-copy"></i>
-                        Copy
+                        ${t('common.copy')}
                     </button>
                     ${canModify ? `
-                        <button class="delete-project" data-id="${project.id}" title="Delete">
+                        <button class="delete-project" data-id="${project.id}" title="${t('common.delete')}">
                             <i class="fas fa-trash"></i>
-                            Delete
+                            ${t('common.delete')}
                         </button>
                     ` : ''}
                 </div>
@@ -538,7 +538,7 @@ async function handleCFSSProjectSearch() {
 
 // Simplified delete CFSS project function
 async function deleteCFSSProject(id) {
-    if (!confirm('Are you sure you want to delete this CFSS project?')) {
+    if (!confirm(t('project.deleteCFSSConfirm'))) {
         return;
     }
 
@@ -565,7 +565,7 @@ async function deleteCFSSProject(id) {
         
     } catch (error) {
         console.error('Error deleting CFSS project:', error);
-        alert('Error deleting CFSS project: ' + error.message);
+        alert(t('project.errorDeleting'));
     }
 }
 
@@ -595,18 +595,18 @@ async function duplicateCFSSProject(id) {
             loadCFSSDashboardStats()  // This one was already correct
         ]);
         
-        alert('CFSS Project duplicated successfully!');
+        alert(t('project.cfssProjectDuplicated'));
         
     } catch (error) {
         console.error('Error duplicating CFSS project:', error);
-        alert('Error duplicating CFSS project: ' + error.message);
+        alert(t('project.errorDuplicating') + error.message);
     }
 }
 
 // Switch to Seismic dashboard
 function switchToSeismic() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
     window.location.href = 'dashboard.html';
@@ -615,7 +615,7 @@ function switchToSeismic() {
 // Admin functions
 function openUserManagement() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
     window.location.href = 'user-management.html';
@@ -623,11 +623,11 @@ function openUserManagement() {
 
 function viewAllProjects() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
     fetchCFSSProjects();
-    alert('Showing all CFSS projects in the system');
+    alert(t('admin.showingAllCFSS'));
 }
 
 function openVerifyBulkProjects() {
@@ -638,7 +638,7 @@ function openVerifyBulkProjects() {
     const userEmail = (currentUser?.email || '').toLowerCase();
 
     if (!allowedEmails.includes(userEmail)) {
-        alert('Access restricted');
+        alert(t('admin.accessRestricted'));
         return;
     }
 
@@ -647,7 +647,7 @@ function openVerifyBulkProjects() {
 
 function openEmailClassifications() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
 
@@ -656,7 +656,7 @@ function openEmailClassifications() {
 
 function openNewProjectOverview() {
     if (!authHelper.isAdmin()) {
-        alert('Admin access required');
+        alert(t('admin.adminRequired'));
         return;
     }
 
@@ -715,7 +715,7 @@ function updateSelectionUI() {
 async function deleteSelectedProjects() {
     const count = selectedProjectIds.size;
     if (count === 0) return;
-    if (!confirm(`Delete ${count} selected CFSS project${count > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    if (!confirm(t('bulk.deleteCFSSCount').replace('{count}', count))) return;
 
     const ids = [...selectedProjectIds];
     let successCount = 0;
@@ -758,7 +758,7 @@ async function deleteSelectedProjects() {
     ]);
 
     if (failCount > 0) {
-        alert(`Deleted ${successCount} project${successCount !== 1 ? 's' : ''}. ${failCount} failed.`);
+        alert(t('bulk.deletedCount').replace('{success}', successCount).replace('{fail}', failCount));
     }
 }
 

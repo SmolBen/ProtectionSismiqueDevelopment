@@ -222,7 +222,7 @@
                 <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique - CFSS</a>
                 <a href="cfss-dashboard.html" class="dashboard-btn">
                     <i class="fas fa-th-large"></i>
-                    Dashboard
+                    <span data-i18n="common.dashboard">Dashboard</span>
                 </a>
             </div>
             <div class="user-info" id="userInfo"></div>
@@ -234,8 +234,8 @@
             <div class="card-header">
                 <i class="fas fa-clipboard-check"></i>
                 <div>
-                    <h1>Verify Bulk Projects</h1>
-                    <p>Upload PDF packages, sign & flatten them in bulk, then download the processed set.</p>
+                    <h1 data-i18n="bulkVerify.title">Verify Bulk Projects</h1>
+                    <p data-i18n="bulkVerify.description">Upload PDF packages, sign & flatten them in bulk, then download the processed set.</p>
                 </div>
             </div>
 
@@ -244,23 +244,23 @@
                     <input type="file" id="bulkFileInput" multiple accept="application/pdf">
                     <div class="dropzone-content">
                         <i class="fas fa-file-upload"></i>
-                        <p>Drag & drop PDFs here or <span class="link-text">browse from your computer</span></p>
+                        <p data-i18n="bulkVerify.dropzoneDrag">Drag & drop PDFs here or <span class="link-text" data-i18n="bulkVerify.dropzoneBrowse">browse from your computer</span></p>
                     </div>
                 </div>
 
                 <div class="bulk-actions">
                     <button class="button secondary" id="bulkClearBtn" type="button">
                         <i class="fas fa-undo"></i>
-                        Clear List
+                        <span data-i18n="bulkVerify.clearList">Clear List</span>
                     </button>
                     <div class="action-buttons">
                         <button class="button primary" id="bulkUploadBtn" type="button" disabled>
                             <i class="fas fa-cloud-upload-alt"></i>
-                            Upload Selected
+                            <span data-i18n="bulkVerify.uploadSelected">Upload Selected</span>
                         </button>
                         <button class="button success" id="bulkVerifyBtn" type="button" disabled>
                             <i class="fas fa-check-double"></i>
-                            Sign & Flatten
+                            <span data-i18n="bulkVerify.signAndFlatten">Sign & Flatten</span>
                         </button>
                     </div>
                 </div>
@@ -275,18 +275,18 @@
             <div class="card-header">
                 <i class="fas fa-download"></i>
                 <div>
-                    <h2>Processed Files</h2>
-                    <p>Download the signed & flattened PDFs once verification is complete.</p>
+                    <h2 data-i18n="bulkVerify.processedFiles">Processed Files</h2>
+                    <p data-i18n="bulkVerify.processedDescription">Download the signed & flattened PDFs once verification is complete.</p>
                 </div>
             </div>
             <div class="bulk-results-action">
                 <button class="button primary" id="bulkDownloadAllBtn" type="button" disabled>
                     <i class="fas fa-file-download"></i>
-                    Download to PC
+                    <span data-i18n="bulkVerify.downloadToPC">Download to PC</span>
                 </button>
                 <button class="button secondary" id="bulkDownloadDriveBtn" type="button" disabled>
                     <i class="fas fa-cloud-download-alt"></i>
-                    Download to Google Drive
+                    <span data-i18n="bulkVerify.downloadToDrive">Download to Google Drive</span>
                 </button>
             </div>
             <div class="processed-list" id="bulkProcessedList" aria-live="polite"></div>
@@ -303,6 +303,8 @@
     <!-- AWS Cognito SDK -->
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script src="cfss-verify-bulk-projects.js" defer></script>
     <script>

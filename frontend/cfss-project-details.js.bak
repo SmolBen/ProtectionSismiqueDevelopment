@@ -318,7 +318,7 @@ function updateFloorSelection() {
 // Group selected floors
 async function groupSelectedFloors() {
     if (selectedFloorIndices.size < 2) {
-        alert(t('cfss.selectAtLeast2Floors'));
+        alert('Please select at least 2 floors to group.');
         return;
     }
     
@@ -330,7 +330,7 @@ async function groupSelectedFloors() {
     
     // Check if floors are consecutive
     if (!areFloorsConsecutive(indices)) {
-        alert(t('cfss.selectConsecutiveFloors'));
+        alert('Please select consecutive floors only.');
         return;
     }
     
@@ -342,7 +342,7 @@ async function groupSelectedFloors() {
     // Check for overlaps with existing groups
     for (const index of indices) {
         if (findGroupForFloor(cfssData.floorGroups, index)) {
-            alert(t('cfss.floorsAlreadyGrouped'));
+            alert('One or more selected floors are already in a group. Please ungroup them first.');
             return;
         }
     }
@@ -404,7 +404,7 @@ async function saveCFSSDataToBackend(cfssData) {
         
     } catch (error) {
         console.error('Error saving floor grouping:', error);
-        alert(t('cfss.failedSaveGrouping'));
+        alert('Failed to save floor grouping. Please try again.');
     }
 }
 // CFSS Wind Load Calculation - Lookup tables from Excel
@@ -533,7 +533,7 @@ function initializeProjectDetailsEditButton() {
         const editButtonHTML = `
             <div style="margin-top: 15px; display: flex; gap: 10px;">
                 <button id="editProjectDetailsBtn" class="edit-project-btn" onclick="toggleEditProjectDetails()">
-                    <i class="fas fa-edit"></i> ${t('project.editProjectDetails')}
+                    <i class="fas fa-edit"></i> Edit Project Details
                 </button>
             </div>
         `;
@@ -544,7 +544,7 @@ function initializeProjectDetailsEditButton() {
 // Function to toggle edit mode
 async function toggleEditProjectDetails() {
     if (!canModifyProject()) {
-        alert(t('project.noEditPermission'));
+        alert('You do not have permission to edit this project.');
         return;
     }
 
@@ -554,13 +554,13 @@ async function toggleEditProjectDetails() {
         // Switch to edit mode
         showEditForm();
         isEditingProjectDetails = true;
-        editBtn.innerHTML = `<i class="fas fa-times"></i> ${t('common.cancelEdit')}`;
+        editBtn.innerHTML = '<i class="fas fa-times"></i> Cancel Edit';
         editBtn.classList.add('cancel-mode');
     } else {
         // Cancel edit mode
         hideEditForm();
         isEditingProjectDetails = false;
-        editBtn.innerHTML = `<i class="fas fa-edit"></i> ${t('project.editProjectDetails')}`;
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Project Details';
         editBtn.classList.remove('cancel-mode');
     }
 }
@@ -658,33 +658,33 @@ const currentData = {
     const editFormHTML = `
         <div id="projectDetailsEditForm" class="project-edit-form">
             <div class="form-group">
-                <label><strong>${t('project.projectName')}:</strong></label>
+                <label><strong>Project Name:</strong></label>
                 <input type="text" id="edit_name" value="${currentData.name}" required>
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.projectNumber')}:</strong></label>
+                <label><strong>Project Number:</strong></label>
                 <input type="text" id="edit_projectNumber" value="${currentData.projectNumber}" required>
             </div>
 
             <div class="form-group">
-                <label><strong>${t('project.clientName')}:</strong></label>
+                <label><strong>Client Name:</strong></label>
                 <input type="text" id="edit_clientName" value="${currentData.clientName}">
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.clientEmails')}:</strong></label>
+                <label><strong>Client Email(s):</strong></label>
                 <input type="text" id="edit_clientEmails" value="${currentData.clientEmails}" required>
-                <small style="display: block; margin-top: 5px; color: #666;">${t('project.separateEmailsComma')}</small>
+                <small style="display: block; margin-top: 5px; color: #666;">Separate multiple emails with commas</small>
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.description')}:</strong></label>
+                <label><strong>Description:</strong></label>
                 <textarea id="edit_description" rows="3" required>${currentData.description}</textarea>
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.type')}:</strong></label>
+                <label><strong>Type:</strong></label>
                 <select id="edit_type" required>
                     <option value="condo" ${currentData.type === 'condo' ? 'selected' : ''}>Condo</option>
                     <option value="commercial" ${currentData.type === 'commercial' ? 'selected' : ''}>Commercial</option>
@@ -699,7 +699,7 @@ const currentData = {
             </div>
             
             <div class="form-group">
-                <label><strong>${t('project.status')}:</strong></label>
+                <label><strong>Status:</strong></label>
                 <select id="edit_status" required>
                     <option value="Planning" ${currentData.status === 'Planning' ? 'selected' : ''}>Planning</option>
                     <option value="In Progress" ${currentData.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
@@ -708,46 +708,46 @@ const currentData = {
             </div>
             
             <div class="form-group">
-                <label><strong>${t('project.addressLine1')}:</strong></label>
+                <label><strong>Address Line 1:</strong></label>
                 <input type="text" id="edit_addressLine1" value="${addressLine1}" required>
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.addressLine2')}:</strong></label>
+                <label><strong>Address Line 2:</strong></label>
                 <input type="text" id="edit_addressLine2" value="${addressLine2}">
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.city')}:</strong></label>
+                <label><strong>City:</strong></label>
                 <input type="text" id="edit_city" value="${city}" required>
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.province')}:</strong></label>
+                <label><strong>Province:</strong></label>
                 <input type="text" id="edit_province" value="${province}" required>
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.country')}:</strong></label>
+                <label><strong>Country:</strong></label>
                 <input type="text" id="edit_country" value="${country}" required>
             </div>
 
             <div class="form-group">
-                <label><strong>${t('project.designedBy')}:</strong></label>
+                <label><strong>Designed by:</strong></label>
                 <input type="text" id="edit_designedBy" value="${currentData.designedBy}">
             </div>
-
+            
             <div class="form-group">
-                <label><strong>${t('project.approvedBy')}:</strong></label>
+                <label><strong>Approved by:</strong></label>
                 <input type="text" id="edit_approvedBy" value="${currentData.approvedBy}">
             </div>
-
+            
             <div class="form-actions" style="margin-top: 20px; display: flex; gap: 10px;">
                 <button onclick="saveProjectDetails()" class="save-btn">
-                    <i class="fas fa-save"></i> ${t('common.saveChanges')}
+                    <i class="fas fa-save"></i> Save Changes
                 </button>
                 <button onclick="toggleEditProjectDetails()" class="cancel-btn">
-                    <i class="fas fa-times"></i> ${t('common.cancel')}
+                    <i class="fas fa-times"></i> Cancel
                 </button>
             </div>
         </div>
@@ -836,7 +836,7 @@ async function saveProjectDetails() {
         if (!updatedData.name || !updatedData.projectNumber || !updatedData.clientEmails || 
             !updatedData.description || !updatedData.addressLine1 || !updatedData.city || 
             !updatedData.province || !updatedData.country) {
-            alert(t('common.fillRequiredFields'));
+            alert('Please fill in all required fields.');
             return;
         }
         
@@ -846,7 +846,7 @@ async function saveProjectDetails() {
         const saveBtn = document.querySelector('.save-btn');
         const originalText = saveBtn.innerHTML;
         saveBtn.disabled = true;
-        saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('common.saving')}`;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
         
         // Send update request
         const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
@@ -893,23 +893,23 @@ async function saveProjectDetails() {
         hideEditForm();
         isEditingProjectDetails = false;
         const editBtn = document.getElementById('editProjectDetailsBtn');
-        editBtn.innerHTML = `<i class="fas fa-edit"></i> ${t('project.editProjectDetails')}`;
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Project Details';
         editBtn.classList.remove('cancel-mode');
         
-        alert(t('project.detailsUpdated'));
+        alert('Project details updated successfully!');
 
         // Reload project data from server to ensure fresh data
         await reloadProjectData();
         
     } catch (error) {
         console.error('âŒ Error saving project details:', error);
-        alert(t('project.errorSavingDetails') + ': ' + error.message);
+        alert('Error saving project details: ' + error.message);
         
         // Reset button
         const saveBtn = document.querySelector('.save-btn');
         if (saveBtn) {
             saveBtn.disabled = false;
-            saveBtn.innerHTML = `<i class="fas fa-save"></i> ${t('common.saveChanges')}`;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
         }
     }
 }
@@ -918,7 +918,7 @@ function addCompositionItem(containerId, hiddenInputId, existingValue = '') {
   const MAX_COMPOSITIONS = 5;
   
   if (compositionBuilderCounts[containerId] >= MAX_COMPOSITIONS) {
-    alert(t('cfss.maxCompositionsReached', { max: MAX_COMPOSITIONS }));
+    alert(`Maximum ${MAX_COMPOSITIONS} compositions reached`);
     return;
   }
 
@@ -1066,7 +1066,7 @@ function updateDimensionOptions(itemId) {
 
 function deleteCompositionItem(itemId, containerId, hiddenInputId) {
   if (compositionBuilderCounts[containerId] <= 1) {
-    alert(t('cfss.mustHaveOneComposition'));
+    alert('You must have at least one composition');
     return;
   }
 
@@ -1086,12 +1086,12 @@ function updateAddButton(containerId) {
 
   if (compositionBuilderCounts[containerId] >= MAX_COMPOSITIONS) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-check"></i> ${t('cfss.maxComps', { max: MAX_COMPOSITIONS })}`;
+    btn.innerHTML = `<i class="fas fa-check"></i> Max (${MAX_COMPOSITIONS})`;
     btn.style.opacity = '0.6';
     btn.style.cursor = 'not-allowed';
   } else {
     btn.disabled = false;
-    btn.innerHTML = `<i class="fas fa-plus"></i> ${t('common.add')}`;
+    btn.innerHTML = `<i class="fas fa-plus"></i> Add`;
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
   }
@@ -1377,7 +1377,7 @@ function getSeuilEditSection(window) {
 
 window.editWindow = function(windowId) {
   if (!canModifyProject()) {
-    alert(t('cfss.noPermissionEditWindows'));
+    alert('You do not have permission to edit windows in this project.');
     return;
   }
 
@@ -1481,7 +1481,7 @@ function initializeParapetHandlers() {
             if (parapetForm.style.display !== 'none') {
                 // Hide form
                 parapetForm.style.display = 'none';
-                addParapetButton.innerHTML = `<i class="fas fa-building"></i> ${t('cfss.addParapet')}`;
+                addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
             } else {
                 // Close all other forms first
                 hideAllForms();
@@ -1494,7 +1494,7 @@ function initializeParapetHandlers() {
                 populateParapetTypeDropdown();
                 
                 parapetForm.style.display = 'block';
-                addParapetButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+                addParapetButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
                 parapetForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
@@ -1612,7 +1612,7 @@ async function handleSaveParapet(e) {
     e.preventDefault();
     
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionAddParapets'));
+        alert('You do not have permission to add parapets to this project.');
         return;
     }
     
@@ -1627,12 +1627,12 @@ async function handleSaveParapet(e) {
         clearParapetForm();
         
         document.getElementById('parapetForm').classList.remove('show');
-        document.getElementById('addParapetButton').innerHTML = `<i class="fas fa-building"></i> ${t('cfss.addParapet')}`;
+        document.getElementById('addParapetButton').innerHTML = '<i class="fas fa-building"></i> Add Parapet';
         
-        alert(t('cfss.parapetSaved'));
+        alert('Parapet saved successfully!');
     } catch (error) {
         console.error('Error saving parapet:', error);
-        alert(t('cfss.errorSavingParapet') + ': ' + error.message);
+        alert('Error saving parapet: ' + error.message);
     }
 }
 
@@ -1662,39 +1662,39 @@ function getParapetFormData() {
     
     // Validation
     if (!parapetName) {
-        alert(t('cfss.enterParapetName'));
+        alert('Please enter a parapet name.');
         return null;
     }
     if (!parapetType) {
-        alert(t('cfss.selectParapetType'));
+        alert('Please select a parapet type.');
         return null;
     }
     if (!hauteurMax) {
-        alert(t('cfss.enterHauteurMax'));
+        alert('Please enter hauteur max.');
         return null;
     }
     if (!hauteurMaxUnit) {
-        alert(t('cfss.selectHauteurMaxUnit'));
+        alert('Please select a unit for hauteur max.');
         return null;
     }
     if (!montantMetallique) {
-        alert(t('cfss.selectMontantMetallique'));
+        alert('Please select montant métallique.');
         return null;
     }
     if (!espacement) {
-        alert(t('cfss.selectEspacement'));
+        alert('Please select espacement.');
         return null;
     }
     if (!lisseInferieure) {
-        alert(t('cfss.enterLisseInferieure'));
+        alert('Please enter lisse Inférieure.');
         return null;
     }
     if (!lisseSuperieure) {
-        alert(t('cfss.enterLisseSuperieure'));
+        alert('Please enter lisse Supérieure.');
         return null;
     }
     if (!entremise) {
-        alert(t('cfss.selectEntremise'));
+        alert('Please select entremise.');
         return null;
     }
     
@@ -1782,7 +1782,7 @@ function renderParapetList() {
         container.innerHTML = `
             <div style="text-align: center; color: #6c757d; padding: 40px;">
                 <i class="fas fa-building" style="font-size: 48px; margin-bottom: 10px;"></i>
-                <p>${t('cfss.noParapetsYet')}</p>
+                <p>No parapets added yet. Click "Add Parapet" to get started.</p>
             </div>
         `;
         return;
@@ -1808,7 +1808,7 @@ function renderParapetList() {
                         </div>
                     </div>
                     <div class="equipment-actions-compact">
-                        <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">${t('common.details')}</button>
+                        <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">Details</button>
                         <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateParapet('${parapet.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                             <i class="fas fa-copy"></i> Duplicate
                         </button>
@@ -2050,7 +2050,7 @@ function renderParapetList() {
                     <!-- Image Upload Section for Edit Mode -->
                     <div class="edit-image-section" style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; grid-column: 1 / -1;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h4 style="margin: 0; color: #333; font-size: 16px;">${t('cfss.parapetImage')}</h4>
+                            <h4 style="margin: 0; color: #333; font-size: 16px;">Parapet Image</h4>
                             <button type="button" class="camera-btn" onclick="triggerParapetEditImageUpload(${parapet.id}, event)"
                                     style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                                 <i class="fas fa-camera"></i> Add Image
@@ -2061,7 +2061,7 @@ function renderParapetList() {
                             style="border: 2px dashed #ddd; border-radius: 8px; padding: 30px; text-align: center; background: white; cursor: default; min-height: 120px;">
                             <p style="color: #666; margin: 0 0 10px 0;">
                                 <i class="fas fa-image" style="font-size: 32px; color: #ccc; margin-bottom: 8px;"></i><br>
-                                ${t('cfss.dropImageOrPaste')}<br>
+                                Drop image here or paste from clipboard<br>
                                 <small>Or click the button above to select file</small>
                             </p>
                             <div id="editParapetImagePreviewContainer${parapet.id}" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;"></div>
@@ -2100,10 +2100,10 @@ function toggleParapetDetails(id) {
     
     if (detailsDiv.classList.contains('show')) {
         detailsDiv.classList.remove('show');
-        if (btn) btn.textContent = t('common.details');
+        if (btn) btn.textContent = 'Details';
     } else {
         detailsDiv.classList.add('show');
-        if (btn) btn.textContent = t('common.hideDetails');
+        if (btn) btn.textContent = 'Hide Details';
     }
 }
 
@@ -2120,12 +2120,12 @@ function toggleWindowDetails(windowId) {
         // update button label
         const card = document.getElementById(`windowCard${windowId}`);
         const btn = card?.querySelector('.details-btn');
-        if (btn) btn.textContent = t('common.hide');
+        if (btn) btn.textContent = 'Hide';
     } else {
         details.classList.remove('show');
         const card = document.getElementById(`windowCard${windowId}`);
         const btn = card?.querySelector('.details-btn');
-        if (btn) btn.textContent = t('common.details');
+        if (btn) btn.textContent = 'Details';
     }
 }
 
@@ -2287,7 +2287,7 @@ async function processParapetEditFiles(files, parapetId) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert(t('cfss.selectValidImages'));
+        alert('Please select valid image files.');
         return;
     }
     
@@ -2295,12 +2295,12 @@ async function processParapetEditFiles(files, parapetId) {
     const remainingSlots = 1 - currentCount;
     
     if (remainingSlots <= 0) {
-        alert(t('cfss.maxOneImageParapet'));
+        alert('Maximum 1 image allowed per parapet. Please remove existing image to add a new one.');
         return;
     }
     
     if (validFiles.length > remainingSlots) {
-        alert(t('cfss.maxOneImageParapetShort'));
+        alert('Maximum 1 image allowed per parapet.');
         return;
     }
     
@@ -2320,7 +2320,7 @@ async function processParapetEditFiles(files, parapetId) {
             displayParapetEditImages(parapetId);
         } catch (error) {
             console.error('Error uploading parapet edit image:', error);
-            alert(t('cfss.errorUploadingImage', { name: file.name, error: error.message }));
+            alert(`Error uploading ${file.name}: ${error.message}`);
         }
     }
     
@@ -2465,10 +2465,10 @@ async function saveParapetEdit(id, event) {
         renderParapetList();
         updateParapetSummary();
         
-        alert(t('cfss.parapetUpdated'));
+        alert('Parapet updated successfully!');
     } catch (error) {
         console.error('Error updating parapet:', error);
-        alert(t('cfss.errorUpdatingParapet') + ': ' + error.message);
+        alert('Error updating parapet: ' + error.message);
     }
 }
 
@@ -2564,13 +2564,13 @@ function setupParapetEditAutoFill(parapetId) {
 // Duplicate parapet
 function duplicateParapet(id) {
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionAddParapets'));
+        alert('You do not have permission to add parapets to this project.');
         return;
     }
     
     const parapetToDuplicate = projectParapets.find(p => p.id === id);
     if (!parapetToDuplicate) {
-        alert(t('cfss.parapetNotFound'));
+        alert('Parapet not found.');
         return;
     }
     
@@ -2652,7 +2652,7 @@ function duplicateParapet(id) {
     
     if (parapetForm && addParapetButton) {
         parapetForm.style.display = 'block';
-        addParapetButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+        addParapetButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
         
         // Scroll to form
         parapetForm.scrollIntoView({ 
@@ -2678,12 +2678,12 @@ async function deleteParapet(id) {
     const parapet = projectParapets.find(p => String(p.id) === String(id));
     if (!parapet) return;
     
-    if (confirm(t('cfss.confirmDeleteParapet', { name: parapet.parapetName }))) {
+    if (confirm(`Are you sure you want to delete parapet "${parapet.parapetName}"?`)) {
         projectParapets = projectParapets.filter(p => p.id !== id);
         await saveParapetsToDatabase();
         renderParapetList();
         updateParapetSummary();
-        alert(t('cfss.parapetDeleted'));
+        alert('Parapet deleted successfully!');
     }
 }
 
@@ -2691,7 +2691,7 @@ function updateWallSummary() {
     const el = document.getElementById('wallSelectionSummary');
     if (!el) return;
     const n = Array.isArray(projectEquipment) ? projectEquipment.length : 0;
-    el.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.wallsAdded', { count: n })}`;
+    el.innerHTML = `<i class="fas fa-th-large"></i> ${n} wall${n === 1 ? '' : 's'} added`;
 }
 
 // Update parapet summary
@@ -2699,7 +2699,7 @@ function updateParapetSummary() {
     const summary = document.getElementById('parapetSelectionSummary');
     if (summary) {
         const count = projectParapets.length;
-        summary.innerHTML = `<i class="fas fa-building"></i> ${t('cfss.parapetsAdded', { count })}`;
+        summary.innerHTML = `<i class="fas fa-building"></i> ${count} parapet${count !== 1 ? 's' : ''} added`;
     }
 }
 
@@ -2709,7 +2709,7 @@ function updateCustomPagesSummary() {
     const count = (typeof projectCustomPages !== 'undefined' && Array.isArray(projectCustomPages))
         ? projectCustomPages.length
         : 0;
-    el.innerHTML = `<i class="fas fa-file-alt"></i> ${t('cfss.customPagesAdded', { count })}`;
+    el.innerHTML = `<i class="fas fa-file-alt"></i> ${count} custom page${count !== 1 ? 's' : ''} added`;
 }
 
 // Save parapets to database
@@ -2780,12 +2780,12 @@ function initializeSoffiteHandlers() {
         addSoffitesButton.addEventListener('click', function() {
             if (soffiteForm.style.display !== 'none') {
                 soffiteForm.style.display = 'none';
-                addSoffitesButton.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.addSoffites')}`;
+                addSoffitesButton.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
             } else {
                 hideAllForms();
                 clearSoffiteForm();
                 soffiteForm.style.display = 'block';
-                addSoffitesButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+                addSoffitesButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
                 soffiteForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
@@ -2798,7 +2798,7 @@ function initializeSoffiteHandlers() {
     if (cancelSoffite) {
         cancelSoffite.addEventListener('click', function() {
             soffiteForm.style.display = 'none';
-            addSoffitesButton.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.addSoffites')}`;
+            addSoffitesButton.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
             clearSoffiteForm();
         });
     }
@@ -2814,7 +2814,7 @@ async function handleSaveSoffite(e) {
     const name = nameInput ? nameInput.value.trim() : '';
     
     if (!name) {
-        alert(t('cfss.enterSoffiteName'));
+        alert('Please enter a soffite name.');
         return;
     }
     
@@ -2840,7 +2840,7 @@ async function handleSaveSoffite(e) {
     editingSoffiteId = null;
     clearSoffiteForm();
     document.getElementById('soffiteForm').style.display = 'none';
-    document.getElementById('addSoffitesButton').innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.addSoffites')}`;
+    document.getElementById('addSoffitesButton').innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
     
     renderSoffiteList();
     updateSoffiteSummary();
@@ -2887,7 +2887,7 @@ function renderSoffiteList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">${t('common.details')}</button>
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">Details</button>
                     <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateSoffite('${soffite.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                         <i class="fas fa-copy"></i> Duplicate
                     </button>
@@ -2932,7 +2932,7 @@ function renderSoffiteList() {
 function updateSoffiteSummary() {
     const summary = document.getElementById('soffiteSelectionSummary');
     if (summary) {
-        summary.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.soffitesAdded', { count: projectSoffites.length })}`;
+        summary.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${projectSoffites.length} soffites added`;
     }
 }
 
@@ -2957,7 +2957,7 @@ window.editSoffite = function(id) {
     renderSoffiteImagePreviews();
     
     document.getElementById('soffiteForm').style.display = 'block';
-    document.getElementById('addSoffitesButton').innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+    document.getElementById('addSoffitesButton').innerHTML = '<i class="fas fa-times"></i> Hide Form';
     document.getElementById('soffiteForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
@@ -2979,7 +2979,7 @@ window.duplicateSoffite = async function(id) {
 
 // Delete soffite
 window.deleteSoffite = async function(id) {
-    if (!confirm(t('cfss.confirmDeleteSoffite'))) return;
+    if (!confirm('Are you sure you want to delete this soffite?')) return;
     
     projectSoffites = projectSoffites.filter(s => s.id !== id);
     await saveSoffitesToProject();
@@ -3009,7 +3009,7 @@ async function saveSoffitesToProject() {
         console.log('✅ Soffites saved successfully');
     } catch (error) {
         console.error('❌ Error saving soffites:', error);
-        alert(t('cfss.errorSavingSoffites') + ': ' + error.message);
+        alert('Error saving soffites: ' + error.message);
     }
 }
 
@@ -3160,7 +3160,7 @@ function initializeFileHandlers() {
             modeLinkBtn.style.color = '#555';
             document.getElementById('uploadFileInput').style.display = 'block';
             document.getElementById('uploadLinkInput').style.display = 'none';
-            document.getElementById('uploadInputLabel').textContent = t('cfss.selectFileLabel');
+            document.getElementById('uploadInputLabel').textContent = 'Select File';
         });
         
         modeLinkBtn.addEventListener('click', () => {
@@ -3171,7 +3171,7 @@ function initializeFileHandlers() {
             modeFileBtn.style.color = '#555';
             document.getElementById('uploadFileInput').style.display = 'none';
             document.getElementById('uploadLinkInput').style.display = 'block';
-            document.getElementById('uploadInputLabel').textContent = t('cfss.pasteLinkLabel');
+            document.getElementById('uploadInputLabel').textContent = 'Paste Link';
         });
     }
 }
@@ -3181,19 +3181,19 @@ async function handleFileUpload() {
     const fileName = document.getElementById('uploadFileName').value.trim();
     
     if (!fileName) {
-        alert(t('cfss.enterFileName'));
+        alert('Please enter a file name');
         return;
     }
     
     const submitBtn = document.getElementById('uploadFileSubmitBtn');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('common.uploading')}`;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
     
     try {
         if (currentUploadMode === 'link') {
             const linkUrl = document.getElementById('uploadLinkInput').value.trim();
             if (!linkUrl) {
-                alert(t('cfss.enterLinkUrl'));
+                alert('Please enter a link URL');
                 return;
             }
             
@@ -3214,7 +3214,7 @@ async function handleFileUpload() {
             const file = fileInput.files[0];
             
             if (!file) {
-                alert(t('cfss.selectFile'));
+                alert('Please select a file');
                 return;
             }
             
@@ -3260,14 +3260,14 @@ async function handleFileUpload() {
         displayProjectFiles();
         document.getElementById('uploadFileRow').style.display = 'none';
         clearFileUploadForm();
-        alert(t('cfss.fileUploaded'));
+        alert('File uploaded successfully!');
         
     } catch (error) {
         console.error('Error uploading file:', error);
-        alert(t('cfss.errorUploadingFile') + ': ' + error.message);
+        alert('Error uploading file: ' + error.message);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fas fa-upload"></i> ${t('common.upload')}`;
+        submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
     }
 }
 
@@ -3363,7 +3363,7 @@ window.downloadProjectFile = async function(fileId) {
     try {
         const file = projectFiles.find(f => f.id === fileId);
         if (!file) {
-            alert(t('cfss.fileNotFound'));
+            alert('File not found');
             return;
         }
         
@@ -3383,18 +3383,18 @@ window.downloadProjectFile = async function(fileId) {
         
     } catch (error) {
         console.error('Error downloading file:', error);
-        alert(t('cfss.errorDownloadingFile') + ': ' + error.message);
+        alert('Error downloading file: ' + error.message);
     }
 };
 
 // Delete project file
 window.deleteProjectFile = async function(fileId) {
-    if (!confirm(t('cfss.confirmDeleteFile'))) return;
+    if (!confirm('Are you sure you want to delete this file?')) return;
     
     try {
         const file = projectFiles.find(f => f.id === fileId);
         if (!file) {
-            alert(t('cfss.fileNotFound'));
+            alert('File not found');
             return;
         }
         
@@ -3413,11 +3413,11 @@ window.deleteProjectFile = async function(fileId) {
         projectFiles = projectFiles.filter(f => f.id !== fileId);
         await saveFilesToProject();
         displayProjectFiles();
-        alert(t('cfss.fileDeleted'));
+        alert('File deleted successfully');
         
     } catch (error) {
         console.error('Error deleting file:', error);
-        alert(t('cfss.errorDeletingFile') + ': ' + error.message);
+        alert('Error deleting file: ' + error.message);
     }
 };
 
@@ -3492,35 +3492,35 @@ function showRevisionPopup(actionType, wallName = '', callback, isFirstRevision 
         // First revision modal - simpler, only asks for description
         modalContent = `
             <div style="background: white; padding: 25px; border-radius: 8px; min-width: 400px; max-width: 500px;">
-                <h3 style="margin: 0 0 15px 0; color: #333;">${t('cfss.createFirstRevision')}</h3>
+                <h3 style="margin: 0 0 15px 0; color: #333;">Create First Revision</h3>
                 <p style="margin-bottom: 20px; color: #555;">
-                    ${t('cfss.aboutToCreateFirstRevision', { action: actionText[actionType] })}
+                    You're about to ${actionText[actionType]} and create the first revision for this project.
                 </p>
-
+                
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #555; font-weight: 500;">
-                        ${t('cfss.revisionDescriptionOptional')}
+                        Revision description (optional):
                     </label>
                     <input type="text" id="revisionDescription" maxlength="100" 
                            placeholder="e.g., Initial wall layout, Preliminary design..."
                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                    <div style="font-size: 12px; color: #666; margin-top: 2px;">${t('cfss.max100Chars')}</div>
+                    <div style="font-size: 12px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
                 </div>
-
+                
                 <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-bottom: 20px; border-left: 3px solid #28a745;">
                     <div style="font-size: 13px; color: #495057;">
-                        <strong>${t('cfss.thisWillCreate')}</strong> ${t('cfss.revisionNumber', { number: 0 })}
+                        <strong>This will create:</strong> Revision 0
                     </div>
                 </div>
-
+                
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button onclick="closeRevisionModal()"
+                    <button onclick="closeRevisionModal()" 
                             style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                        ${t('common.cancel')}
+                        Cancel
                     </button>
-                    <button onclick="processRevisionChoice()"
+                    <button onclick="processRevisionChoice()" 
                             style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                        ${t('cfss.createRevision', { number: 0 })}
+                        Create Revision 0
                     </button>
                 </div>
             </div>
@@ -3528,46 +3528,46 @@ function showRevisionPopup(actionType, wallName = '', callback, isFirstRevision 
     } else {
         // Existing modal content for subsequent revisions
         const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
-        const currentRevInfo = currentRevision ?
-            `${t('cfss.revisionNumber', { number: currentRevision.number })}${currentRevision.description ? ': ' + currentRevision.description : ''}` :
-            t('cfss.noCurrentRevision');
+        const currentRevInfo = currentRevision ? 
+            `Revision ${currentRevision.number}${currentRevision.description ? ': ' + currentRevision.description : ''}` : 
+            'No current revision';
             
         modalContent = `
             <div style="background: white; padding: 25px; border-radius: 8px; min-width: 400px; max-width: 500px;">
-                <h3 style="margin: 0 0 15px 0; color: #333;">${t('cfss.saveWallChanges')}</h3>
+                <h3 style="margin: 0 0 15px 0; color: #333;">Save Wall Changes</h3>
                 <p style="margin-bottom: 20px; color: #555;">
-                    ${t('cfss.chooseHowTo', { action: actionText[actionType] })}
+                    Choose how to ${actionText[actionType]}:
                 </p>
-
+                
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 10px; cursor: pointer;">
                         <input type="radio" name="revisionChoice" value="current" checked style="margin-right: 8px;">
-                        <strong>${t('cfss.updateCurrentRevision')}</strong> (${currentRevInfo})
+                        <strong>Update current revision</strong> (${currentRevInfo})
                     </label>
-
+                    
                     <label style="display: block; cursor: pointer;">
                         <input type="radio" name="revisionChoice" value="new" style="margin-right: 8px;">
-                        <strong>${t('cfss.createNewRevision')}</strong>
+                        <strong>Create new revision</strong>
                     </label>
                 </div>
-
+                
                 <div id="newRevisionOptions" style="margin-left: 20px; margin-bottom: 20px; display: none;">
                     <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #555;">
-                        ${t('cfss.optionalDescription')}
+                        Optional description:
                     </label>
                     <input type="text" id="revisionDescription" maxlength="100" 
                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                    <div style="font-size: 12px; color: #666; margin-top: 2px;">${t('cfss.max100Chars')}</div>
+                    <div style="font-size: 12px; color: #666; margin-top: 2px;">Maximum 100 characters</div>
                 </div>
-
+                
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button onclick="closeRevisionModal()"
+                    <button onclick="closeRevisionModal()" 
                             style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                        ${t('common.cancel')}
+                        Cancel
                     </button>
-                    <button onclick="processRevisionChoice()"
+                    <button onclick="processRevisionChoice()" 
                             style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                        ${t('common.save')}
+                        Save
                     </button>
                 </div>
             </div>
@@ -3634,7 +3634,7 @@ function processRevisionChoice() {
         if (selectedChoice === 'new') {
             // Check if we're at max revisions
             if (projectRevisions.length >= 5) {
-                alert(t('cfss.maxRevisionsReached'));
+                alert('Maximum of 5 revisions allowed. Please delete an old revision first.');
                 return;
             }
             
@@ -3679,7 +3679,7 @@ async function createFirstRevision(description, callback) {
             projectEquipment.pop();
             projectRevisions.pop();
             currentRevisionId = null;
-            alert(t('cfss.failedSaveWall'));
+            alert('Failed to save wall. Please try again.');
             return;
         }
         
@@ -3706,14 +3706,14 @@ async function createFirstRevision(description, callback) {
         }
         currentRevisionId = null;
         
-        alert(t('cfss.errorCreatingRevision') + ': ' + error.message);
+        alert('Error creating first revision: ' + error.message);
     }
 }
 
 function showRevisionSelectionModal() {
     // Check if we have any revisions
     if (!projectRevisions || projectRevisions.length === 0) {
-        alert(t('cfss.noRevisionsFound'));
+        alert('No revisions found. Please add walls to create revisions first.');
         return;
     }
 
@@ -3738,15 +3738,15 @@ function showRevisionSelectionModal() {
             day: 'numeric'
         });
         
-        const description = revision.description || t('cfss.noDescription');
-        const latestBadge = isLatest ? `<span style="background: #28a745; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-left: 8px;">${t('cfss.current')}</span>` : '';
+        const description = revision.description || '(no description)';
+        const latestBadge = isLatest ? '<span style="background: #28a745; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-left: 8px;">CURRENT</span>' : '';
         
         revisionsHTML += `
             <label style="display: block; margin-bottom: 12px; cursor: pointer; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: ${isLatest ? '#f8fff8' : '#fff'}; transition: all 0.2s;">
                 <input type="radio" name="selectedRevision" value="${revision.id}" ${isLatest ? 'checked' : ''} style="margin-right: 12px;">
                 <div style="display: inline-block; vertical-align: top; width: calc(100% - 30px);">
                     <div style="font-weight: 500; color: #333; margin-bottom: 4px;">
-                        ${t('cfss.revisionNumber', { number: revision.number })}${latestBadge}
+                        Revision ${revision.number}${latestBadge}
                     </div>
                     <div class="revision-description-row" data-revision-id="${revision.id}" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                         <span class="revision-description-text" style="font-size: 13px; color: #666;">${description}</span>
@@ -3754,12 +3754,12 @@ function showRevisionSelectionModal() {
                             style="background: none; border: none; color: #999; cursor: pointer; padding: 2px 4px; border-radius: 3px; display: flex; align-items: center; transition: all 0.15s;"
                             onmouseover="this.style.backgroundColor='#e9ecef'; this.style.color='#495057';"
                             onmouseout="this.style.backgroundColor='transparent'; this.style.color='#999';"
-                            title="${t('cfss.editDescription')}">
+                            title="Edit description">
                             <i class="fas fa-pencil-alt" style="font-size: 11px;"></i>
                         </button>
                     </div>
                     <div style="font-size: 12px; color: #888;">
-                        ${createdDate} • ${t('cfss.wallCount', { count: wallCount })} • ${t('cfss.by')} ${revision.createdBy}
+                        ${createdDate} • ${wallCount} wall${wallCount !== 1 ? 's' : ''} • by ${revision.createdBy}
                     </div>
                 </div>
             </label>
@@ -3771,12 +3771,12 @@ function showRevisionSelectionModal() {
     const optionsSummary = optionsCount > 0 ? 
         `<div style="background: #e7f3ff; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 3px solid #007bff;">
             <div style="font-size: 13px; color: #495057;">
-                <strong>${t('cfss.selectedOptions')}</strong> ${t('cfss.optionsWillBeIncluded', { count: optionsCount })}
+                <strong>Selected Options:</strong> ${optionsCount} construction option${optionsCount !== 1 ? 's' : ''} will be included from the Option List tab.
             </div>
         </div>` : 
         `<div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 3px solid #ffc107;">
             <div style="font-size: 13px; color: #856404;">
-                <strong>${t('common.note')}</strong> ${t('cfss.noOptionsSelected')}
+                <strong>Note:</strong> No construction options selected. You can select options in the Option List tab before generating the report.
             </div>
         </div>`;
 
@@ -3784,18 +3784,18 @@ function showRevisionSelectionModal() {
         <div style="background: white; padding: 25px; border-radius: 8px; min-width: 500px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
             <h3 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center;">
                 <i class="fas fa-file-pdf" style="margin-right: 10px; color: #dc3545;"></i>
-                ${t('cfss.generateReport')}
+                Generate CFSS Report
             </h3>
-
+            
             <p style="margin-bottom: 20px; color: #555; line-height: 1.5;">
-                ${t('cfss.selectRevisionForReportDesc')}
+                Select which revision to generate the report for:
             </p>
             
             ${optionsSummary}
             
             <div style="margin-bottom: 25px; max-height: 300px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 15px;">
                 <div style="font-weight: 500; margin-bottom: 15px; color: #495057; border-bottom: 1px solid #e9ecef; padding-bottom: 8px;">
-                    ${t('cfss.availableRevisions', { count: sortedRevisions.length })}
+                    Available Revisions (${sortedRevisions.length})
                 </div>
                 ${revisionsHTML}
             </div>
@@ -3803,17 +3803,17 @@ function showRevisionSelectionModal() {
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="font-size: 12px; color: #6c757d;">
                     <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
-                    ${t('cfss.optionsFromTabIncluded')}
+                    Construction options from the Option List tab will be included
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="closeRevisionSelectionModal()"
+                    <button onclick="closeRevisionSelectionModal()" 
                             style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                        ${t('common.cancel')}
+                        Cancel
                     </button>
                     <button onclick="proceedToOptionsSelection()" 
                             style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-file-pdf"></i>
-                        ${t('cfss.generateReportBtn')}
+                        Generate Report
                     </button>
                 </div>
             </div>
@@ -3905,7 +3905,7 @@ async function saveRevisionDescription(revisionId, inputElement) {
             console.log('✓ Revision description updated:', newDescription);
         } catch (error) {
             console.error('Error saving revision description:', error);
-            alert(t('cfss.errorSavingDescription') + ': ' + error.message);
+            alert('Error saving description: ' + error.message);
         }
     }
     
@@ -3947,7 +3947,7 @@ function proceedToOptionsSelection() {
 
     const selectedRadio = modal.querySelector('input[name="selectedRevision"]:checked');
     if (!selectedRadio) {
-        alert(t('cfss.selectRevision'));
+        alert('Please select a revision.');
         return;
     }
 
@@ -3955,7 +3955,7 @@ function proceedToOptionsSelection() {
     const selectedRevision = projectRevisions.find(rev => rev.id === selectedRevisionId);
     
     if (!selectedRevision) {
-        alert(t('cfss.revisionNotFound'));
+        alert('Selected revision not found.');
         return;
     }
 
@@ -3980,7 +3980,7 @@ async function generateCFSSReportDirectlyWithTabOptions(selectedRevision) {
     const generateButton = document.getElementById('generateCFSSReportButton');
     if (generateButton) {
         generateButton.disabled = true;
-        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('cfss.generatingReport')}`;
+        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating CFSS Report...`;
     }
 
     try {
@@ -3989,11 +3989,11 @@ async function generateCFSSReportDirectlyWithTabOptions(selectedRevision) {
         
     } catch (error) {
         console.error('Error generating CFSS report:', error);
-        alert(t('cfss.errorGeneratingReport') + ': ' + error.message);
+        alert('Error generating CFSS report: ' + error.message);
     } finally {
         if (generateButton) {
             generateButton.disabled = false;
-            generateButton.innerHTML = `<i class="fas fa-file-pdf"></i> ${t('cfss.generateReport')}`;
+            generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
         }
     }
 }
@@ -4001,7 +4001,7 @@ async function generateCFSSReportDirectlyWithTabOptions(selectedRevision) {
 // Updated report generation function that includes options
 async function generateCFSSReportForRevisionWithOptions(selectedRevision, selectedOptions = []) {
     if (!currentProjectId) {
-        alert(t('cfss.noProjectSelected'));
+        alert('Error: No project selected');
         return;
     }
 
@@ -4026,14 +4026,14 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
             console.log('User Google Drive choice:', saveToGoogleDrive);
         } catch (error) {
             console.error('Error showing popups:', error);
-            alert(t('cfss.errorDisplayingOptions'));
+            alert('Error displaying options. Please try again.');
             return;
         }
     }
     
     try {
         generateButton.disabled = true;
-        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('cfss.generatingPDF')}`;
+        generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating CFSS PDF... (up to 30 seconds)';
         
         if (!selectedRevision || !selectedRevision.walls) {
             throw new Error('Invalid revision data');
@@ -4066,7 +4066,7 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
         });
         
         if (!cfssProjectData.walls || cfssProjectData.walls.length === 0) {
-            alert(t('cfss.revisionNoWalls', { number: selectedRevision.number }));
+            alert(`Revision ${selectedRevision.number} contains no walls. Please select a revision with walls.`);
             return;
         }
 
@@ -4110,7 +4110,7 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
         // Handle Google Drive upload based on user choice
         if (shouldShowPopups && saveToGoogleDrive) {
             await sendReportToMakeWebhook(result.downloadUrl);
-            alert(t('cfss.reportSentToDrive'));
+            alert('Report sent to Google Drive successfully!');
         } else {
             // Only download to browser if NOT saving to Google Drive
             window.location.href = result.downloadUrl;
@@ -4119,13 +4119,13 @@ async function generateCFSSReportForRevisionWithOptions(selectedRevision, select
     } catch (error) {
         console.error('âŒ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
-            alert(t('cfss.pdfTimedOut'));
+            alert('CFSS PDF generation timed out. Please try again in a few minutes.');
         } else {
-            alert(t('cfss.errorGeneratingReport') + ': ' + error.message);
+            alert('Error generating CFSS report: ' + error.message);
         }
     } finally {
         generateButton.disabled = false;
-        generateButton.innerHTML = `<i class="fas fa-file-pdf"></i> ${t('cfss.generateReport')}`;
+        generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
     }
 }
 
@@ -4144,7 +4144,7 @@ async function generateSelectedRevisionReport() {
 
     const selectedRadio = modal.querySelector('input[name="selectedRevision"]:checked');
     if (!selectedRadio) {
-        alert(t('cfss.selectRevisionForReport'));
+        alert('Please select a revision to generate the report for.');
         return;
     }
 
@@ -4152,7 +4152,7 @@ async function generateSelectedRevisionReport() {
     const selectedRevision = projectRevisions.find(rev => rev.id === selectedRevisionId);
     
     if (!selectedRevision) {
-        alert(t('cfss.revisionNotFound'));
+        alert('Selected revision not found.');
         return;
     }
 
@@ -4166,7 +4166,7 @@ async function generateSelectedRevisionReport() {
 // Main function to generate CFSS report for a specific revision
 async function generateCFSSReportForRevision(selectedRevision) {
     if (!currentProjectId) {
-        alert(t('cfss.noProjectSelected'));
+        alert('Error: No project selected');
         return;
     }
 
@@ -4174,7 +4174,7 @@ async function generateCFSSReportForRevision(selectedRevision) {
     
     try {
         generateButton.disabled = true;
-        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('cfss.generatingRevisionPDF', { number: selectedRevision.number })}`;
+        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating Revision ${selectedRevision.number} PDF...`;
         
         // Get all revisions up to and including the selected revision
         const revisionsUpToSelected = projectRevisions
@@ -4201,7 +4201,7 @@ async function generateCFSSReportForRevision(selectedRevision) {
         
         // Validate we have walls to report on
         if (!cfssProjectData.walls || cfssProjectData.walls.length === 0) {
-            alert(t('cfss.revisionNoWalls', { number: selectedRevision.number }));
+            alert(`Revision ${selectedRevision.number} contains no walls. Please select a revision with walls.`);
             return;
         }
 
@@ -4246,13 +4246,13 @@ async function generateCFSSReportForRevision(selectedRevision) {
     } catch (error) {
         console.error('âŒ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
-            alert(t('cfss.pdfTimedOut'));
+            alert('CFSS PDF generation timed out. Please try again in a few minutes.');
         } else {
-            alert(t('cfss.errorGeneratingReport') + ': ' + error.message);
+            alert('Error generating CFSS report: ' + error.message);
         }
     } finally {
         generateButton.disabled = false;
-        generateButton.innerHTML = `<i class="fas fa-file-pdf"></i> ${t('cfss.generateReport')}`;
+        generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
     }
 }
 
@@ -4508,7 +4508,7 @@ async function reloadProjectData() {
         
     } catch (error) {
         console.error('âŒ Error reloading project data:', error);
-        alert(t('cfss.errorReloadingData') + ': ' + error.message);
+        alert('Error reloading project data: ' + error.message);
     }
 }
 
@@ -4523,28 +4523,28 @@ async function forceSaveCurrentState() {
         
         if (revisionSaveResult && equipmentSaveResult !== false) {
             console.log('âœ… Force save completed successfully');
-            alert(t('cfss.stateSaved'));
+            alert('Current state saved successfully');
         } else {
             throw new Error('One or more save operations failed');
         }
         
     } catch (error) {
         console.error('âŒ Error force saving:', error);
-        alert(t('cfss.errorSavingState') + ': ' + error.message);
+        alert('Error saving current state: ' + error.message);
     }
 }
 
 async function handleSaveEquipmentWithRevisions(e) {
     if (isSavingEquipment) return;
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionAddWalls'));
+        alert('You do not have permission to add walls to this project.');
         return;
     }
 
     isSavingEquipment = true;
     const saveBtn = document.getElementById('saveEquipment');
     const saveBtnOriginal = saveBtn ? saveBtn.innerHTML : '';
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('common.saving')}`; }
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
 
     console.log('💾 Save button clicked for CFSS wall with revisions!');
 
@@ -4584,7 +4584,7 @@ async function handleSaveEquipmentWithRevisions(e) {
                 if (saveResult === false) {
                     // Save failed, revert changes
                     projectEquipment.pop();
-                    alert(t('cfss.failedSaveWall'));
+                    alert('Failed to save wall. Please try again.');
                     return;
                 }
                 
@@ -4605,7 +4605,7 @@ async function handleSaveEquipmentWithRevisions(e) {
             projectEquipment.pop();
         }
         
-        alert(t('cfss.errorSavingWall') + ': ' + error.message);
+        alert('Error saving wall: ' + error.message);
     } finally {
         isSavingEquipment = false;
         if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; saveBtn.style.cursor = 'pointer'; saveBtn.innerHTML = saveBtnOriginal; }
@@ -4618,7 +4618,7 @@ async function saveEquipmentEditWithRevisions(index, event) {
     if (isSavingEquipment) return;
 
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionEditWalls'));
+        alert('You do not have permission to edit walls in this project.');
         return;
     }
 
@@ -4684,75 +4684,75 @@ async function saveEquipmentEditWithRevisions(index, event) {
 
         // Validation - Set 1 (required)
         if (!equipment) {
-            alert(t('cfss.enterWallName'));
+            alert('Please enter a wall name.');
             return;
         }
 
         if (!floor) {
-            alert(t('cfss.enterFloor'));
+            alert('Please enter a floor.');
             return;
         }
 
         if (!hauteurMax && !hauteurMaxMinor) {
-            alert(t('cfss.enterHeightValue'));
+            alert('Please enter at least one height value.');
             return;
         }
 
         if (hauteurMax && !hauteurMaxCombined) {
-            alert(t('cfss.selectUnits'));
+            alert('Please select units.');
             return;
         }
 
         if (!deflexionMax) {
-            alert(t('cfss.selectDeflexionMax'));
+            alert('Please select a déflexion max.');
             return;
         }
 
         if (!montantMetallique) {
-            alert(t('cfss.selectMontantMetallique'));
+            alert('Please select montant métallique.');
             return;
         }
 
         if (!espacement) {
-            alert(t('cfss.selectAnEspacement'));
+            alert('Please select an espacement.');
             return;
         }
 
         if (!lisseSuperieure) {
-            alert(t('cfss.enterLisseSuperieure'));
+            alert('Please enter lisse Supérieure.');
             return;
         }
 
         if (!lisseInferieure) {
-            alert(t('cfss.enterLisseInferieure'));
+            alert('Please enter lisse Inférieure.');
             return;
         }
 
         if (!entremise) {
-            alert(t('cfss.selectEntremise'));
+            alert('Please select entremise.');
             return;
         }
 
         // Validation - Set 2 (if visible, all fields required)
         if (set2Visible) {
             if (!montantMetallique2) {
-                alert(t('cfss.selectMontantMetallique2'));
+                alert('Please select montant métallique 2.');
                 return;
             }
             if (!espacement2) {
-                alert(t('cfss.selectEspacement2'));
+                alert('Please select espacement 2.');
                 return;
             }
             if (!lisseSuperieure2) {
-                alert(t('cfss.enterLisseSuperieure2'));
+                alert('Please enter lisse Supérieure 2.');
                 return;
             }
             if (!lisseInferieure2) {
-                alert(t('cfss.enterLisseInferieure2'));
+                alert('Please enter lisse Inférieure 2.');
                 return;
             }
             if (!entremise2) {
-                alert(t('cfss.selectEntremise2'));
+                alert('Please select entremise 2.');
                 return;
             }
         }
@@ -4830,12 +4830,12 @@ async function saveEquipmentEditWithRevisions(index, event) {
             // Re-render the equipment list
             renderEquipmentList();
             
-            alert(t('cfss.wallUpdated'));
+            alert('Wall updated successfully!');
         });
         
     } catch (error) {
         console.error('Error saving wall edit:', error);
-        alert(t('cfss.errorSavingWallChanges') + ': ' + error.message);
+        alert('Error saving wall changes: ' + error.message);
     } finally {
         isSavingEquipment = false;
     }
@@ -4844,14 +4844,14 @@ async function saveEquipmentEditWithRevisions(index, event) {
 // Updated deleteEquipment with revision system
 async function deleteEquipmentWithRevisions(index) {
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionDeleteWalls'));
+        alert('You do not have permission to delete walls from this project.');
         return;
     }
 
     const wall = projectEquipment[index];
     const wallName = wall.equipment;
     
-    if (confirm(t('cfss.confirmDeleteWallNamed', { name: wallName }))) {
+    if (confirm(`Are you sure you want to delete wall "${wallName}" and all its images?`)) {
         
         showRevisionPopup('delete', wallName, async () => {
             // Delete associated images from S3 (existing code)
@@ -4886,7 +4886,7 @@ function hideForm() {
     const newCalcButton = document.getElementById('newCalculationButton');
     equipmentForm.classList.remove('show');
     if (newCalcButton) {
-        newCalcButton.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.addWall')}`;
+        newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
     }
 }
 
@@ -4911,7 +4911,7 @@ function showSuccessMessage() {
         }
     }, 100);
         
-    alert(t('cfss.wallSaved'));
+    alert('Wall saved successfully!');
 }
 
 // Function to check authentication
@@ -4968,7 +4968,7 @@ function handleAuthError(response) {
 }
 
 function logout() {
-    if (confirm(t('auth.confirmLogout'))) {
+    if (confirm('Are you sure you want to logout?')) {
         authHelper.logout();
         window.location.href = 'auth.html';
     }
@@ -4999,7 +4999,7 @@ function renderEquipmentList() {
         equipmentListDiv.className = 'equipment-list-container';
 
         if (projectEquipment.length === 0) {
-            equipmentListDiv.innerHTML += `<p>${t('cfss.noWallsYet')}</p>`;
+            equipmentListDiv.innerHTML += '<p>No walls added yet.</p>';
             updateWallSummary();   
             return;
         }
@@ -5079,7 +5079,7 @@ function renderEquipmentList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${originalIndex})">${t('common.details')}</button>
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${originalIndex})">Details</button>
                     ${canModifyProject() ? `
                         <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${originalIndex})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                             <i class="fas fa-copy"></i> Duplicate
@@ -5569,7 +5569,7 @@ function generateEditForm(wall, originalIndex) {
             <!-- Image Upload Section for Edit Mode -->
             <div class="edit-image-section" style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h4 style="margin: 0; color: #333; font-size: 16px;">${t('cfss.wallImages')}</h4>
+                    <h4 style="margin: 0; color: #333; font-size: 16px;">Wall Images</h4>
                     <button type="button" class="camera-btn" onclick="triggerEditImageUpload(${originalIndex}, event)"
                             style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                         <i class="fas fa-camera"></i> Add Images
@@ -5580,7 +5580,7 @@ function generateEditForm(wall, originalIndex) {
                     style="border: 2px dashed #ddd; border-radius: 8px; padding: 30px; text-align: center; background: white; cursor: default; min-height: 120px;">
                     <p style="color: #666; margin: 0 0 10px 0;">
                         <i class="fas fa-images" style="font-size: 32px; color: #ccc; margin-bottom: 8px;"></i><br>
-                        ${t('cfss.dropImagesOrPaste')}<br>
+                        Drop images here or paste from clipboard<br>
                         <small>Or click the button above to select files</small>
                     </p>
                     <div id="editImagePreviewContainer${originalIndex}" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;"></div>
@@ -5683,7 +5683,7 @@ function initializeSortable() {
 
 function duplicateEquipment(index) {
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionAddWalls'));
+        alert('You do not have permission to add walls to this project.');
         return;
     }
 
@@ -5791,7 +5791,7 @@ if (window.currentWallImages.length > 0) {
     
     if (equipmentForm && newCalcButton) {
         equipmentForm.classList.add('show');
-        newCalcButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+        newCalcButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
         
         // Scroll to form
         equipmentForm.scrollIntoView({ 
@@ -5896,7 +5896,7 @@ function toggleEquipmentDetails(index) {
     if (detailsDiv.classList.contains('show')) {
         detailsDiv.classList.remove('show');
         if (detailsButton) {
-            detailsButton.textContent = t('common.details');
+            detailsButton.textContent = 'Details';
         }
     } else {
         // Close all forms when opening details
@@ -5904,7 +5904,7 @@ function toggleEquipmentDetails(index) {
         
         detailsDiv.classList.add('show');
         if (detailsButton) {
-            detailsButton.textContent = t('common.hideDetails');
+            detailsButton.textContent = 'Hide Details';
         }
     }
 }
@@ -5912,7 +5912,7 @@ function toggleEquipmentDetails(index) {
 // Enhanced editEquipment function with better setup
 function editEquipment(index) {
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionEditWalls'));
+        alert('You do not have permission to edit walls in this project.');
         return;
     }
 
@@ -5930,7 +5930,7 @@ function editEquipment(index) {
     if (!detailsDiv.classList.contains('show')) {
         detailsDiv.classList.add('show');
         if (detailsButton) {
-            detailsButton.textContent = t('common.hideDetails');
+            detailsButton.textContent = 'Hide Details';
         }
     }
     
@@ -6083,7 +6083,7 @@ async function saveEquipmentEdit(index, event) {
     if (isSavingEquipment) return;
 
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionEditWalls'));
+        alert('You do not have permission to edit walls in this project.');
         return;
     }
 
@@ -6112,32 +6112,32 @@ async function saveEquipmentEdit(index, event) {
 
         // Validation
         if (!updatedWall.equipment) {
-            alert(t('cfss.enterWallName'));
+            alert('Please enter a wall name.');
             return;
         }
 
         if (!updatedWall.floor) {
-            alert(t('cfss.enterFloor'));
+            alert('Please enter a floor.');
             return;
         }
 
         if (!updatedWall.hauteurMax && !updatedWall.hauteurMaxMinor) {
-            alert(t('cfss.enterHeightValue'));
+            alert('Please enter at least one height value.');
             return;
         }
 
         if (updatedWall.hauteurMax && (!updatedWall.hauteurMaxUnit || !updatedWall.hauteurMaxMinorUnit)) {
-            alert(t('cfss.selectUnits'));
+            alert('Please select units.');
             return;
         }
 
         if (!updatedWall.deflexionMax) {
-            alert(t('cfss.selectDeflexionMax'));
+            alert('Please select a déflexion max.');
             return;
         }
 
         if (!updatedWall.espacement) {
-            alert(t('cfss.selectAnEspacement'));
+            alert('Please select an espacement.');
             return;
         }
 
@@ -6163,11 +6163,11 @@ async function saveEquipmentEdit(index, event) {
         // Re-render the equipment list to show updated data
         renderEquipmentList();
         
-        alert(t('cfss.wallUpdated'));
+        alert('Wall updated successfully!');
         
     } catch (error) {
         console.error('Error saving wall edit:', error);
-        alert(t('cfss.errorSavingWallChanges') + ': ' + error.message);
+        alert('Error saving wall changes: ' + error.message);
     } finally {
         isSavingEquipment = false;
     }
@@ -6176,11 +6176,11 @@ async function saveEquipmentEdit(index, event) {
 // Function to delete wall
 async function deleteEquipment(index) {
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionDeleteWalls'));
+        alert('You do not have permission to delete walls from this project.');
         return;
     }
 
-    if (confirm(t('cfss.confirmDeleteWallAndImages'))) {
+    if (confirm('Are you sure you want to delete this wall and all its images?')) {
         const wall = projectEquipment[index];
         
         // Delete associated images from S3
@@ -6255,7 +6255,7 @@ async function saveEquipmentToProject(options = {}) {
     } catch (error) {
         console.error('Error saving walls:', error);
         console.error('Error stack:', error.stack);
-        if (!silent) alert(t('cfss.errorSavingWalls') + ': ' + error.message);
+        if (!silent) alert('Error saving walls: ' + error.message);
     }
 }
 
@@ -6294,7 +6294,7 @@ function handleCalculateEquipment() {
         
     } catch (error) {
         console.error('Error displaying wall details:', error);
-        alert(t('cfss.errorDisplayingWallDetails') + ': ' + error.message);
+        alert('Error displaying wall details: ' + error.message);
     }
 }
 
@@ -6353,14 +6353,14 @@ function generateWallDetailsHTML(wallData) {
 async function handleSaveEquipment(e) {
     if (isSavingEquipment) return;
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionAddWalls'));
+        alert('You do not have permission to add walls to this project.');
         return;
     }
 
     isSavingEquipment = true;
     const saveBtn = document.getElementById('saveEquipment');
     const saveBtnOriginal = saveBtn ? saveBtn.innerHTML : '';
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('common.saving')}`; }
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.style.cursor = 'not-allowed'; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
 
     console.log('Save button clicked for CFSS wall!');
 
@@ -6386,7 +6386,7 @@ async function handleSaveEquipment(e) {
         const newCalcButton = document.getElementById('newCalculationButton');
         equipmentForm.classList.remove('show');
         if (newCalcButton) {
-            newCalcButton.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.addWall')}`;
+            newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
         }
         
         setTimeout(() => {
@@ -6408,11 +6408,11 @@ async function handleSaveEquipment(e) {
             }
         }, 100);
             
-        alert(t('cfss.wallSaved'));
+        alert('Wall saved successfully!');
 
     } catch (error) {
         console.error('Error saving wall:', error);
-        alert(t('cfss.errorSavingWall') + ': ' + error.message);
+        alert('Error saving wall: ' + error.message);
     } finally {
         isSavingEquipment = false;
         if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; saveBtn.style.cursor = 'pointer'; saveBtn.innerHTML = saveBtnOriginal; }
@@ -6438,20 +6438,20 @@ function setupNewCalculationButton() {
     if (newCalcButton && equipmentForm) {
         newCalcButton.addEventListener('click', function() {
             if (!canModifyProject()) {
-                alert(t('cfss.noPermissionAddWalls'));
+                alert('You do not have permission to add walls to this project.');
                 return;
             }
             
             if (equipmentForm.classList.contains('show')) {
                 equipmentForm.classList.remove('show');
-                newCalcButton.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.addWall')}`;
+                newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
             } else {
                 // Close all expanded details and other forms before showing form
                 closeAllExpandedDetails();
                 hideAllForms();
                 
                 equipmentForm.classList.add('show');
-                newCalcButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+                newCalcButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
                 
                 // Setup floor listener
                 setupFloorInputListener();
@@ -6596,7 +6596,7 @@ function setupCFSSDataButton() {
     if (cfssButton) {
         cfssButton.addEventListener('click', function() {
             if (!canModifyProject()) {
-                alert(t('cfss.noPermissionAddCFSSData'));
+                alert('You do not have permission to add CFSS data to this project.');
                 return;
             }
             
@@ -6607,7 +6607,7 @@ function setupCFSSDataButton() {
                 // Hide the CFSS form
                 cfssForm.classList.add('hidden');
                 cfssButton.classList.remove('expanded');
-                const buttonText = cfssWindData && cfssWindData.length > 0 ? t('cfss.editCFSSData') : t('cfss.addCFSSData');
+                const buttonText = cfssWindData && cfssWindData.length > 0 ? 'Edit CFSS Data' : 'Add CFSS Data';
                 cfssButton.innerHTML = `<i class="fas fa-wind"></i> ${buttonText}`;
             } else {
                 // Close all expanded details and other forms before showing CFSS form
@@ -6618,7 +6618,7 @@ function setupCFSSDataButton() {
                 if (cfssForm) {
                     cfssForm.classList.remove('hidden');
                     cfssButton.classList.add('expanded');
-                    cfssButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+                    cfssButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
                 }
             }
         });
@@ -6662,11 +6662,11 @@ function toggleCFSSForm() {
         // Reset other button texts
         const addWindowButton = document.getElementById('addWindowButton');
         if (addWindowButton) {
-            addWindowButton.innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.addWindow')}`;
+            addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
         }
         const newCalcButton = document.getElementById('newCalculationButton');
         if (newCalcButton) {
-            newCalcButton.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.addWall')}`;
+            newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
         }
         
         // Show CFSS form
@@ -6677,10 +6677,10 @@ function toggleCFSSForm() {
         // Check if we have existing CFSS data and populate form
         if (cfssWindData && (Array.isArray(cfssWindData) ? cfssWindData.length > 0 : cfssWindData.storeys)) {
             populateCFSSForm(cfssWindData);
-            btn.innerHTML = `<i class="fas fa-times"></i> <span id="cfss-btn-text">${t('cfss.hideCFSSData')}</span>`;
+            btn.innerHTML = '<i class="fas fa-times"></i> <span id="cfss-btn-text">Hide CFSS Data</span>';
         } else {
             setDefaultCFSSValues();
-            btn.innerHTML = `<i class="fas fa-times"></i> <span id="cfss-btn-text">${t('cfss.hideCFSSData')}</span>`;
+            btn.innerHTML = '<i class="fas fa-times"></i> <span id="cfss-btn-text">Hide CFSS Data</span>';
         }
     } else {
         form.classList.add('hidden');
@@ -6748,7 +6748,7 @@ function updateCFSSButtonText() {
         
         if (isNewStructure) {
             const storeyCount = cfssWindData.storeys?.length || 0;
-            btnText.textContent = t('cfss.editCFSSDataFloors', { count: storeyCount });
+            btnText.textContent = `Edit CFSS data (${storeyCount} floors)`;
         } else {
             // Old structure
             const floorCount = cfssWindData.length;
@@ -6761,15 +6761,15 @@ function updateCFSSButtonText() {
                 projectData.steelAnchor,
             ];
             const filledSpecs = specifications.filter(spec => spec && spec.trim() !== '').length;
-
+            
             if (filledSpecs > 0) {
-                btnText.textContent = t('cfss.editCFSSDataFloorsSpecs', { floors: floorCount, specs: filledSpecs });
+                btnText.textContent = `Edit CFSS Data (${floorCount} floors, ${filledSpecs} specs)`;
             } else {
-                btnText.textContent = t('cfss.editCFSSDataFloors', { count: floorCount });
+                btnText.textContent = `Edit CFSS Data (${floorCount} floors)`;
             }
         }
     } else {
-        btnText.textContent = t('cfss.addCFSSData');
+        btnText.textContent = 'Add CFSS Data';
     }
 }
 
@@ -6988,7 +6988,7 @@ function displayCFSSData(cfssData) {
 // Update the saveCFSSData function to refresh the display
 async function saveCFSSData() {
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionModifyCFSSData'));
+        alert('You do not have permission to modify CFSS data for this project.');
         return;
     }
     
@@ -7049,7 +7049,7 @@ async function saveCFSSData() {
         });
         
         if (storeys.length === 0) {
-            alert(t('cfss.addValidFloorData'));
+            alert('Add at least one floor with valid data (either calculated with H > 0, or manual ULS/SLS values).');
             return;
         }
         
@@ -7082,14 +7082,14 @@ async function saveCFSSData() {
         // Update the display
         displayCFSSData(cfssData);
         
-        alert(t('cfss.dataSaved'));
+        alert('CFSS Data Saved Successfully!');
         
         // Hide the form after saving
         toggleCFSSForm();
         
     } catch (error) {
         console.error('Error saving CFSS data:', error);
-        alert(t('cfss.errorSavingCFSSData') + ': ' + error.message);
+        alert('Error saving CFSS data: ' + error.message);
     }
 }
 
@@ -7456,7 +7456,7 @@ async function processFiles(files) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert(t('cfss.selectValidImages'));
+        alert('Please select valid image files.');
         return;
     }
     
@@ -7465,12 +7465,12 @@ async function processFiles(files) {
     const remainingSlots = 2 - currentImageCount;
     
     if (remainingSlots <= 0) {
-        alert(t('cfss.maxTwoImagesWall'));
+        alert('Maximum 2 images allowed per wall. Please remove existing images to add new ones.');
         return;
     }
     
     if (validFiles.length > remainingSlots) {
-        alert(t('cfss.remainingImageSlots', { remaining: remainingSlots }));
+        alert(`You can only add ${remainingSlots} more image(s). Maximum 2 images allowed per wall.`);
         return;
     }
     
@@ -7498,7 +7498,7 @@ async function processFiles(files) {
             
         } catch (error) {
             console.error('Error uploading image:', error);
-            alert(t('cfss.errorUploadingImage', { name: file.name, error: error.message }));
+            alert(`Error uploading ${file.name}: ${error.message}`);
         }
     }
     
@@ -7820,80 +7820,80 @@ function getWallFormDataWithImages() {
 
     // Validation for Set 1 (required)
     if (!equipment) {
-        alert(t('cfss.enterWallName'));
+        alert('Please enter a wall name.');
         return null;
     }
 
     if (!floor) {
-        alert(t('cfss.enterFloor'));
+        alert('Please enter a floor.');
         return null;
     }
 
     if (!hauteurMax && !hauteurMaxMinor) {
-        alert(t('cfss.enterHeightValue'));
+        alert('Please enter at least one height value.');
         return null;
     }
 
     if (hauteurMax && !hauteurMaxCombined) {
-        alert(t('cfss.selectUnits'));
+        alert('Please select units.');
         return null;
     }
 
     if (!deflexionMax) {
-        alert(t('cfss.selectDeflexionMax'));
+        alert('Please select a déflexion max.');
         return null;
     }
 
     if (!montantMetallique) {
-        alert(t('cfss.selectMontantMetallique'));
+        alert('Please select montant métallique.');
         return null;
     }
 
     if (!lisseSuperieure) {
-        alert(t('cfss.enterLisseSuperieure'));
+        alert('Please enter lisse Supérieure.');
         return null;
     }
 
     if (!lisseInferieure) {
-        alert(t('cfss.enterLisseInferieure'));
+        alert('Please enter lisse Inférieure.');
         return null;
     }
 
     if (!entremisePart1) {
-        alert(t('cfss.selectEntremise'));
+        alert('Please select entremise.');
         return null;
     }
     
     if (entremisePart1 !== 'N/A' && !entremisePart2) {
-        alert(t('cfss.selectEntremiseSpacing'));
+        alert('Please select entremise spacing.');
         return null;
     }
 
     if (!espacement) {
-        alert(t('cfss.selectAnEspacement'));
+        alert('Please select an espacement.');
         return null;
     }
 
     // Validation for Set 2 (if visible, all fields required)
     if (set2Visible) {
         if (!montantMetallique2) {
-            alert(t('cfss.selectMontantMetallique2'));
+            alert('Please select montant métallique 2.');
             return null;
         }
         if (!lisseSuperieure2) {
-            alert(t('cfss.enterLisseSuperieure2'));
+            alert('Please enter lisse Supérieure 2.');
             return null;
         }
         if (!lisseInferieure2) {
-            alert(t('cfss.enterLisseInferieure2'));
+            alert('Please enter lisse Inférieure 2.');
             return null;
         }
         if (!entremise2) {
-            alert(t('cfss.selectEntremise2'));
+            alert('Please select entremise 2.');
             return null;
         }
         if (!espacement2) {
-            alert(t('cfss.selectEspacement2'));
+            alert('Please select espacement 2.');
             return null;
         }
     }
@@ -8263,7 +8263,7 @@ async function processParapetFiles(files) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert(t('cfss.selectValidImages'));
+        alert('Please select valid image files.');
         return;
     }
     
@@ -8272,12 +8272,12 @@ async function processParapetFiles(files) {
     const remainingSlots = 1 - currentImageCount;
     
     if (remainingSlots <= 0) {
-        alert(t('cfss.maxOneImageParapet'));
+        alert('Maximum 1 image allowed per parapet. Please remove existing image to add a new one.');
         return;
     }
     
     if (validFiles.length > remainingSlots) {
-        alert(t('cfss.maxOneImageParapetShort'));
+        alert('Maximum 1 image allowed per parapet.');
         return;
     }
     
@@ -8305,7 +8305,7 @@ async function processParapetFiles(files) {
             
         } catch (error) {
             console.error('Error uploading parapet image:', error);
-            alert(t('cfss.errorUploadingImage', { name: file.name, error: error.message }));
+            alert(`Error uploading ${file.name}: ${error.message}`);
         }
     }
     
@@ -8667,7 +8667,7 @@ function formatPreviewDisplay(major, majorUnit, minor, minorUnit) {
 // CFSS Report Generation Function
 async function generateCFSSProjectReport() {
     if (!currentProjectId) {
-        alert(t('cfss.noProjectSelected'));
+        alert('Error: No project selected');
         return;
     }
 
@@ -8675,7 +8675,7 @@ async function generateCFSSProjectReport() {
     
     try {
         generateButton.disabled = true;
-        generateButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('cfss.generatingPDF')}`;
+        generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating CFSS PDF... (up to 30 seconds)';
         
         // Prepare CFSS project data including walls and wind data
         const cfssProjectData = {
@@ -8738,13 +8738,13 @@ async function generateCFSSProjectReport() {
     } catch (error) {
         console.error('âŒ CFSS PDF generation error:', error);
         if (error.name === 'AbortError' || error.message.includes('504')) {
-            alert(t('cfss.pdfTimedOut'));
+            alert('CFSS PDF generation timed out. Please try again in a few minutes.');
         } else {
-            alert(t('cfss.errorGeneratingReport') + ': ' + error.message);
+            alert('Error generating CFSS report: ' + error.message);
         }
     } finally {
         generateButton.disabled = false;
-        generateButton.innerHTML = `<i class="fas fa-file-pdf"></i> ${t('cfss.generateReport')}`;
+        generateButton.innerHTML = '<i class="fas fa-file-pdf"></i> Generate CFSS Report';
     }
 }
 
@@ -9026,7 +9026,7 @@ async function processEditFiles(files, wallIndex) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert(t('cfss.selectValidImages'));
+        alert('Please select valid image files.');
         return;
     }
     
@@ -9035,12 +9035,12 @@ async function processEditFiles(files, wallIndex) {
     const remainingSlots = 2 - currentEditImages.length;
     
     if (remainingSlots <= 0) {
-        alert(t('cfss.maxTwoImagesWall'));
+        alert('Maximum 2 images allowed per wall. Please remove existing images to add new ones.');
         return;
     }
     
     if (validFiles.length > remainingSlots) {
-        alert(t('cfss.remainingImageSlots', { remaining: remainingSlots }));
+        alert(`You can only add ${remainingSlots} more image(s). Maximum 2 images allowed per wall.`);
         return;
     }
     
@@ -9066,7 +9066,7 @@ async function processEditFiles(files, wallIndex) {
             
         } catch (error) {
             console.error('Error uploading image:', error);
-            alert(t('cfss.errorUploadingImage', { name: file.name, error: error.message }));
+            alert(`Error uploading ${file.name}: ${error.message}`);
         }
     }
     
@@ -9220,7 +9220,7 @@ function setupWindowHandlers() {
             if (isCurrentlyVisible) {
                 // Hide the form
                 windowForm.classList.remove('show');
-                this.innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.addWindow')}`;
+                this.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
             } else {
                 // Close all expanded details before showing form
                 closeAllExpandedDetails();
@@ -9229,7 +9229,7 @@ function setupWindowHandlers() {
                 hideAllForms();
                 // Show window form
                 windowForm.classList.add('show');
-                this.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+                this.innerHTML = '<i class="fas fa-times"></i> Hide Form';
                 windowForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
@@ -9256,7 +9256,7 @@ function toggleForm(formType) {
     if (formType === 'wall') {
         const form = document.getElementById('equipmentForm');
         form.classList.add('show');
-        document.getElementById('newCalculationButton').innerHTML = `<i class="fas fa-th-large"></i> ${t('common.cancel')}`;
+        document.getElementById('newCalculationButton').innerHTML = '<i class="fas fa-th-large"></i> Cancel';
     } else if (formType === 'window') {
         const form = document.getElementById('windowForm');
         form.classList.add('show');
@@ -9272,7 +9272,7 @@ function closeAllExpandedDetails() {
         const wallCard = detailsDiv.closest('.equipment-card');
         const detailsButton = wallCard?.querySelector('.details-btn');
         if (detailsButton) {
-            detailsButton.textContent = t('common.details');
+            detailsButton.textContent = 'Details';
         }
     });
 }
@@ -9315,22 +9315,22 @@ function hideAllForms() {
     // Reset button texts
     const exteriorWallCalcButton = document.getElementById('exteriorWallCalcButton');
     if (exteriorWallCalcButton) {
-        exteriorWallCalcButton.innerHTML = `<i class="fas fa-calculator"></i> ${t('cfss.exteriorWallCalc')}`;
+        exteriorWallCalcButton.innerHTML = '<i class="fas fa-calculator"></i> Exterior Wall Calculation';
     }
 
     const addWindowButton = document.getElementById('addWindowButton');
     if (addWindowButton) {
-        addWindowButton.innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.addWindow')}`;
+        addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
     }
 
     const newCalcButton = document.getElementById('newCalculationButton');
     if (newCalcButton) {
-        newCalcButton.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.addWall')}`;
+        newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
     }
     
     const addParapetButton = document.getElementById('addParapetButton');
     if (addParapetButton) {
-        addParapetButton.innerHTML = `<i class="fas fa-building"></i> ${t('cfss.addParapet')}`;
+        addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
     }
     
     // Reset CFSS button text
@@ -9395,7 +9395,7 @@ function handleWindowSubmit(e) {
     e.target.reset();
     hideAllForms();
     
-    alert(t('cfss.windowSaved'));
+    alert('Window saved successfully!');
 }
 
 // Function to render window list with edit capability
@@ -9408,7 +9408,7 @@ function renderWindowList() {
     container.innerHTML = `
       <div style="text-align:center;color:#6c757d;padding:40px;">
         <i class="fas fa-window-maximize" style="font-size:48px;margin-bottom:10px;"></i>
-        <p>${t('cfss.noWindowsYet')}</p>
+        <p>No windows added yet. Click "Add Window" to get started.</p>
       </div>`;
     return;
   }
@@ -9430,7 +9430,7 @@ function renderWindowList() {
             <div class="equipment-meta-compact">${win.floor ? `<span>Floor: ${win.floor}</span><span class="meta-separator">•</span>` : ''}<span>Dimensions: ${dims}</span></div>
           </div>
           <div class="equipment-actions-compact">
-            <button class="details-btn" onclick="event.stopPropagation(); toggleWindowDetails(${id})">${t('common.details')}</button>
+            <button class="details-btn" onclick="event.stopPropagation(); toggleWindowDetails(${id})">Details</button>
             <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateWindow(${id})" style="background:#17a2b8;color:#fff;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:13px;">
               <i class="fas fa-copy"></i> Duplicate
             </button>
@@ -9861,7 +9861,7 @@ function setupEditWindowDimensionPreviews(id, win) {
 // Function to enter edit mode for a window
 function editWindow(windowId) {
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionEditWindows'));
+        alert('You do not have permission to edit windows in this project.');
         return;
     }
 
@@ -9903,7 +9903,7 @@ async function saveWindowEdit(windowId, event) {
     event.preventDefault();
     
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionEditWindows'));
+        alert('You do not have permission to edit windows in this project.');
         return;
     }
 
@@ -9961,12 +9961,12 @@ async function saveWindowEdit(windowId, event) {
 
         // Validation
         if (!updatedWindow.type) {
-            alert(t('cfss.selectWindowType'));
+            alert('Please select a window type.');
             return;
         }
 
         if (!updatedWindow.largeurMax || !updatedWindow.hauteurMax) {
-            alert(t('cfss.enterValidDimensions'));
+            alert('Please enter valid dimensions.');
             return;
         }
 
@@ -9982,11 +9982,11 @@ async function saveWindowEdit(windowId, event) {
         renderWindowList();
         updateWindowSummary();
 
-        alert(t('cfss.windowUpdated'));
+        alert('Window updated successfully!');
 
     } catch (error) {
         console.error('Error updating window:', error);
-        alert(t('cfss.errorUpdatingWindow') + ': ' + error.message);
+        alert('Error updating window: ' + error.message);
     }
 }
 
@@ -10015,7 +10015,7 @@ async function saveWindowsToDatabase() {
 function updateWindowSummary() {
     const summary = document.getElementById('windowSelectionSummary');
     const count = projectWindows.length;
-    summary.innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.windowsAdded', { count })}`;
+    summary.innerHTML = `<i class="fas fa-window-maximize"></i> ${count} window${count !== 1 ? 's' : ''} added`;
 }
 
 function duplicateWindow(id) {
@@ -10025,7 +10025,7 @@ function duplicateWindow(id) {
     const windowToDuplicate = projectWindows.find(w => w.id == id);
     
     if (!windowToDuplicate) {
-        alert(t('cfss.windowNotFound'));
+        alert('Window not found.');
         return;
     }
     
@@ -10037,7 +10037,7 @@ function duplicateWindow(id) {
     const addWindowButton = document.getElementById('addWindowButton');
     
     if (!windowForm) {
-        alert(t('cfss.windowFormNotFound'));
+        alert('Window form not found.');
         return;
     }
     
@@ -10122,7 +10122,7 @@ document.getElementById('windowHauteurMaxUnit').value =
     // Show the form
     windowForm.classList.add('show');
     if (addWindowButton) {
-        addWindowButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
+        addWindowButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
     }
     
     // Scroll to the form
@@ -10145,7 +10145,7 @@ document.getElementById('windowHauteurMaxUnit').value =
 
 // Delete window function
 function deleteWindow(id) {
-    if (confirm(t('cfss.confirmDeleteWindow'))) {
+    if (confirm('Are you sure you want to delete this window?')) {
         projectWindows = projectWindows.filter(window => window.id !== id);
         renderWindowList();
         updateWindowSummary();
@@ -10530,7 +10530,7 @@ function updateSelectionSummary() {
 // Save CFSS options to database
 async function saveCFSSOptions() {
     if (!canModifyProject()) {
-        alert(t('cfss.noPermissionModifyOptions'));
+        alert('You do not have permission to modify options for this project.');
         return;
     }
 
@@ -10540,7 +10540,7 @@ async function saveCFSSOptions() {
         const saveButton = document.getElementById('saveOptionsBtn');
         if (saveButton) {
             saveButton.disabled = true;
-            saveButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('cfss.savingOptions')}`;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Options...';
         }
 
         // Save options as part of the project data
@@ -10564,7 +10564,7 @@ async function saveCFSSOptions() {
         }
 
         // Show success message
-        alert(t('cfss.optionsSaved', { count: selectedCFSSOptions.length }));
+        alert(`Successfully saved ${selectedCFSSOptions.length} CFSS construction options!`);
         console.log('âœ… CFSS options saved successfully to database');
 
         // NEW: Automatically switch back to wall list tab after successful save
@@ -10575,12 +10575,12 @@ async function saveCFSSOptions() {
         
     } catch (error) {
         console.error('âŒ Error saving CFSS options:', error);
-        alert(t('cfss.errorSavingOptions') + ': ' + error.message);
+        alert('Error saving CFSS options: ' + error.message);
     } finally {
         const saveButton = document.getElementById('saveOptionsBtn');
         if (saveButton) {
             saveButton.disabled = false;
-            saveButton.innerHTML = `<i class="fas fa-save"></i> ${t('cfss.saveOptions')}`;
+            saveButton.innerHTML = '<i class="fas fa-save"></i> Save Options';
         }
     }
 }
@@ -10647,7 +10647,7 @@ function getSelectedOptionsFromTabs() {
 async function generateCFSSReportFromTabs() {
     // Check if we have revisions
     if (!projectRevisions || projectRevisions.length === 0) {
-        alert(t('cfss.noRevisionsFound'));
+        alert('No revisions found. Please add walls to create revisions first.');
         return;
     }
 
@@ -10664,7 +10664,7 @@ async function generateCFSSReportFromTabs() {
         await generateCFSSReportForRevisionWithOptions(latestRevision, selectedOptions);
     } catch (error) {
         console.error('Error generating report from tabs:', error);
-        alert(t('cfss.errorGeneratingReport') + ': ' + error.message);
+        alert('Error generating CFSS report: ' + error.message);
     }
 }
 
@@ -10690,7 +10690,7 @@ async function saveWindowsToDatabase(immediate = false) {
       console.log(`âœ… Saved ${projectWindows.length} windows to database`);
     } catch (err) {
       console.error('âŒ Error saving windows:', err);
-      alert(t('cfss.errorSavingWindows') + ': ' + err.message);
+      alert('Error saving windows: ' + err.message);
     }
   };
 
@@ -10750,7 +10750,7 @@ function renderReviewWalls() {
     header.textContent = `Walls (${walls.length})`;
     
     if (walls.length === 0) {
-        container.innerHTML = `<div class="review-empty-state"><i class="fas fa-th-large"></i><p>${t('cfss.noWallsYet')}</p></div>`;
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-th-large"></i><p>No walls added yet.</p></div>';
         return;
     }
     
@@ -11006,7 +11006,7 @@ function renderReviewParapets() {
     header.textContent = `Parapets (${parapets.length})`;
     
     if (parapets.length === 0) {
-        container.innerHTML = `<div class="review-empty-state"><i class="fas fa-building"></i><p>${t('cfss.noParapetsAddedYet')}</p></div>`;
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-building"></i><p>No parapets added yet.</p></div>';
         return;
     }
     
@@ -11148,7 +11148,7 @@ function renderReviewWindows() {
     header.textContent = `Windows (${windows.length})`;
     
     if (windows.length === 0) {
-        container.innerHTML = `<div class="review-empty-state"><i class="fas fa-window-maximize"></i><p>${t('cfss.noWindowsAddedYet')}</p></div>`;
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-window-maximize"></i><p>No windows added yet.</p></div>';
         return;
     }
     
@@ -11245,7 +11245,7 @@ function renderReviewCustomPages() {
     header.textContent = `Custom Pages (${pages.length})`;
     
     if (pages.length === 0) {
-        container.innerHTML = `<div class="review-empty-state"><i class="fas fa-file-alt"></i><p>${t('cfss.noCustomPagesYet')}</p></div>`;
+        container.innerHTML = '<div class="review-empty-state"><i class="fas fa-file-alt"></i><p>No custom pages added yet.</p></div>';
         return;
     }
     
@@ -11677,7 +11677,7 @@ function calculateSingleStorey(row) {
 function showWindBreakdownModal(row, type) {
     const breakdown = row?.windBreakdown;
     if (!breakdown) {
-        alert(t('cfss.noBreakdownAvailable'));
+        alert('No breakdown available. Please ensure the calculation inputs are complete.');
         return;
     }
     
@@ -12203,7 +12203,7 @@ function calculateAllStoreyWindLoads() {
     
     // Validate global parameters
     if (!q50 || !importanceFactor || !terrainType || !category) {
-        alert(t('cfss.fillWindCalcFields'));
+        alert('Fill in all wind calculation fields.');
         return false;
     }
     
@@ -12310,7 +12310,7 @@ async function generateWallDataSheet() {
     const currentRevision = projectRevisions.find(rev => rev.id === currentRevisionId);
     
     if (!currentRevision || !currentRevision.walls || currentRevision.walls.length === 0) {
-        alert(t('cfss.noWallsInRevision'));
+        alert('No walls found in the current revision.');
         return;
     }
     

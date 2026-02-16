@@ -15,7 +15,7 @@
                 <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique</a>
                 <a href="dashboard.html" class="dashboard-btn">
                     <i class="fas fa-th-large"></i>
-                    Dashboard
+                    <span data-i18n="common.dashboard">Dashboard</span>
                 </a>
             </div>
             <div class="user-info" id="userInfo">
@@ -23,60 +23,60 @@
             </div>
         </div>
     </nav>
-    
+
     <main>
         <div class="form-container">
-            <h1>Create New Project</h1>
+            <h1 data-i18n="createProject.createNewProject">Create New Project</h1>
             <form id="createProjectForm">
                 <div class="form-group">
-                    <label for="name">Project Name:</label>
+                    <label for="name" data-i18n="createProject.projectName">Project Name:</label>
                     <input type="text" id="name" name="name" required>
                 </div>
                 <div class="form-group">
-            <label for="description">Description (optional):</label>
+            <label for="description" data-i18n="createProject.descriptionOptional">Description (optional):</label>
             <textarea id="description" name="description"></textarea>
         </div>
         <div class="form-group">
-            <label for="type">Type:</label>
+            <label for="type" data-i18n="createProject.type">Type:</label>
             <select id="type" name="type" required>
-                <option value="condo">Condo</option>
-                <option value="commercial">Commercial</option>
-                <option value="residential">Residential</option>
-                <option value="industrial">Industrial</option>
-                <option value="hospital">Hospital</option>
-                <option value="fire-station">Fire-station</option>
-                <option value="government">Government</option>
-                <option value="school">School</option>
-                <option value="other">Other</option>
+                <option value="condo" data-i18n="types.condo">Condo</option>
+                <option value="commercial" data-i18n="types.commercial">Commercial</option>
+                <option value="residential" data-i18n="types.residential">Residential</option>
+                <option value="industrial" data-i18n="types.industrial">Industrial</option>
+                <option value="hospital" data-i18n="types.hospital">Hospital</option>
+                <option value="fire-station" data-i18n="types.fireStation">Fire-station</option>
+                <option value="government" data-i18n="types.government">Government</option>
+                <option value="school" data-i18n="types.school">School</option>
+                <option value="other" data-i18n="types.other">Other</option>
             </select>
         </div>
-                
+
                 <!-- Address fields -->
                 <div class="form-group">
-                    <label for="address1">Address Line 1:</label>
+                    <label for="address1" data-i18n="createProject.addressLine1">Address Line 1:</label>
                     <input type="text" id="address1" name="address1" required>
                 </div>
                 <div class="form-group">
-                    <label for="address2">Address Line 2:</label>
+                    <label for="address2" data-i18n="createProject.addressLine2">Address Line 2:</label>
                     <input type="text" id="address2" name="address2">
                 </div>
                 <div class="form-group">
-                    <label for="city">City:</label>
+                    <label for="city" data-i18n="createProject.city">City:</label>
                     <input type="text" id="city" name="city" required>
                 </div>
                 <div class="form-group">
-                    <label for="province">Province:</label>
+                    <label for="province" data-i18n="createProject.province">Province:</label>
                     <input type="text" id="province" name="province" required>
                 </div>
                 <div class="form-group">
-                    <label for="country">Country:</label>
+                    <label for="country" data-i18n="createProject.country">Country:</label>
                     <input type="text" id="country" name="country" value="Canada" readonly>
                 </div>
                 <div class="form-group">
-                    <label for="numberOfFloors">Number of Floors (optional):</label>
+                    <label for="numberOfFloors" data-i18n="createProject.numberOfFloors">Number of Floors (optional):</label>
                     <input type="number" id="numberOfFloors" name="numberOfFloors">
                 </div>
-                <button type="submit" class="button primary">Create Project</button>
+                <button type="submit" class="button primary" data-i18n="createProject.createProject">Create Project</button>
             </form>
         </div>
     </main>
@@ -92,6 +92,8 @@
     <!-- AWS Cognito SDK -->
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script src="create-project.js"></script>
 </body>

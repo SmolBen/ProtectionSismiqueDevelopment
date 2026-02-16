@@ -12,7 +12,7 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div>
             <div class="spinner"></div>
-            <p>Loading users...</p>
+            <p data-i18n="common.loadingUsers">Loading users...</p>
         </div>
     </div>
 
@@ -22,7 +22,7 @@
                 <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique</a>
                 <a href="dashboard.html" class="dashboard-btn">
                     <i class="fas fa-th-large"></i>
-                    Dashboard
+                    <span data-i18n="common.dashboard">Dashboard</span>
                 </a>
             </div>
             <div class="user-info" id="userInfo">
@@ -30,13 +30,13 @@
             </div>
         </div>
     </nav>
-    
+
     <main>
         <div class="management-header">
-            <h1><i class="fas fa-users"></i> User Management</h1>
+            <h1 data-i18n="users.userManagement"><i class="fas fa-users"></i> User Management</h1>
             <a href="dashboard.html" class="back-btn">
                 <i class="fas fa-arrow-left"></i>
-                Back to Dashboard
+                <span data-i18n="nav.backToDashboard">Back to Dashboard</span>
             </a>
         </div>
 
@@ -59,22 +59,22 @@
 
         <!-- Search and Filter -->
         <div class="search-filter">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search users by name or email...">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search users by name or email..." data-i18n-placeholder="users.searchUsers">
             <select class="filter-select" id="roleFilter">
-                <option value="all">All Users</option>
-                <option value="admin">Admins Only</option>
-                <option value="user">Regular Users</option>
-                <option value="limited">Limited Users</option>
+                <option value="all" data-i18n="users.allUsers">All Users</option>
+                <option value="admin" data-i18n="users.adminsOnly">Admins Only</option>
+                <option value="user" data-i18n="users.regularUsers">Regular Users</option>
+                <option value="limited" data-i18n="users.limitedUsers">Limited Users</option>
             </select>
             <select class="filter-select" id="domainFilter">
-                <option value="all">All Domains</option>
-                <option value="plumbing">Plumbing</option>
-                <option value="electricity">Electricity</option>
-                <option value="interior-design">Interior Design</option>
-                <option value="sprinklers">Sprinklers</option>
-                <option value="ventilation">Ventilation</option>
+                <option value="all" data-i18n="users.allDomains">All Domains</option>
+                <option value="plumbing" data-i18n="domains.plumbing">Plumbing</option>
+                <option value="electricity" data-i18n="domains.electricity">Electricity</option>
+                <option value="interior-design" data-i18n="domains.interiorDesign">Interior Design</option>
+                <option value="sprinklers" data-i18n="domains.sprinklers">Sprinklers</option>
+                <option value="ventilation" data-i18n="domains.ventilation">Ventilation</option>
             </select>
-            <button class="debug-btn" onclick="toggleDebug()">
+            <button class="debug-btn" onclick="toggleDebug()" data-i18n="users.toggleDebug">
                 Toggle Debug
             </button>
         </div>
@@ -88,6 +88,8 @@
     <!-- AWS Cognito SDK -->
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script src="user-management.js"></script>
 </body>

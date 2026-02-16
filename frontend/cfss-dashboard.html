@@ -12,7 +12,7 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div>
             <div class="spinner"></div>
-            <p>Loading...</p>
+            <p data-i18n="common.loading">Loading...</p>
         </div>
     </div>
 
@@ -24,36 +24,36 @@
             </div>
         </div>
     </nav>
-    
+
     <main>
         <!-- Admin Panel (only visible to admins) -->
         <div class="admin-panel" id="adminPanel">
-            <h2>
+            <h2 data-i18n="admin.adminPanel">
                 <i class="fas fa-shield-alt"></i>
                 Admin Panel
             </h2>
             <div class="admin-controls">
-                <button class="admin-btn" onclick="switchToSeismic()">
+                <button class="admin-btn" onclick="switchToSeismic()" data-i18n="admin.seismicCalculation">
                     <i class="fas fa-exchange-alt"></i>
                     Seismic Calculation
                 </button>
-                <button class="admin-btn" onclick="openUserManagement()">
+                <button class="admin-btn" onclick="openUserManagement()" data-i18n="admin.manageUsers">
                     <i class="fas fa-users"></i>
                     Manage Users
                 </button>
-                <button class="admin-btn" onclick="viewAllProjects()">
+                <button class="admin-btn" onclick="viewAllProjects()" data-i18n="admin.viewAllProjects">
                     <i class="fas fa-project-diagram"></i>
                     View All Projects
                 </button>
-                <button class="admin-btn" id="verifyBulkProjectsButton" style="display: none;" onclick="openVerifyBulkProjects()">
+                <button class="admin-btn" id="verifyBulkProjectsButton" style="display: none;" onclick="openVerifyBulkProjects()" data-i18n="admin.verifyBulkProjects">
                     <i class="fas fa-clipboard-check"></i>
                     Verify Bulk Projects
                 </button>
-                <button class="admin-btn" onclick="openEmailClassifications()">
+                <button class="admin-btn" onclick="openEmailClassifications()" data-i18n="admin.emailClassifications">
                     <i class="fas fa-envelope"></i>
                     Email Classifications
                 </button>
-                <button class="admin-btn" id="newProjectOverviewButton" style="display: none;" onclick="openNewProjectOverview()">
+                <button class="admin-btn" id="newProjectOverviewButton" style="display: none;" onclick="openNewProjectOverview()" data-i18n="admin.newProjectSheets">
                     <i class="fas fa-folder-plus"></i>
                     New Project (Sheets)
                 </button>
@@ -68,39 +68,39 @@
         <div id="dashboard" class="page">
             <div class="header-section">
                 <div class="title-row">
-                    <h1 style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin: 0;">CFSS Projects</h1>
+                    <h1 data-i18n="dashboard.cfssProjects" style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin: 0;">CFSS Projects</h1>
                 </div>
-                
+
                 <div class="controls-row">
                     <div class="search">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="projectSearch" placeholder="Search projects...">
+                        <input type="text" id="projectSearch" placeholder="Search projects..." data-i18n-placeholder="dashboard.searchProjects">
                     </div>
                     <div class="filter">
                         <i class="fas fa-filter"></i>
                         <select id="projectFilter">
-                            <option value="all">All Status</option>
-                            <option value="Planning">Planning</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
+                            <option value="all" data-i18n="dashboard.allStatus">All Status</option>
+                            <option value="Planning" data-i18n="status.planning">Planning</option>
+                            <option value="In Progress" data-i18n="status.inProgress">In Progress</option>
+                            <option value="Completed" data-i18n="status.completed">Completed</option>
                         </select>
                     </div>
                     <div class="bulk-actions" id="bulkActions">
                         <label class="select-all-wrapper">
                             <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
-                            Select All
+                            <span data-i18n="common.selectAll">Select All</span>
                         </label>
                         <button class="delete-selected-btn" id="deleteSelectedBtn" onclick="deleteSelectedProjects()">
                             <i class="fas fa-trash"></i>
                             Delete Selected (<span id="selectedCount">0</span>)
                         </button>
                     </div>
-                    <button id="createProjectButton" class="button primary" style="margin-left: auto; padding: 6px 12px; font-size: 13px;">
+                    <button id="createProjectButton" class="button primary" style="margin-left: auto; padding: 6px 12px; font-size: 13px;" data-i18n="dashboard.newCFSSProject">
                         <i class="fas fa-plus"></i> New CFSS Project
                     </button>
                 </div>
             </div>
-            
+
             <div id="projectList" class="project-list"></div>
         </div>
     </main>
@@ -108,6 +108,8 @@
     <!-- AWS Cognito SDK -->
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script src="cfss-dashboard.js"></script>
 </body>

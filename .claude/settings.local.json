@@ -12,7 +12,11 @@
       "Bash(chcp:*)",
       "Bash(iconv:*)",
       "Bash(MSYS_NO_PATHCONV=1 PYTHONUTF8=1 aws logs filter-log-events:*)",
-      "Bash(MSYS_NO_PATHCONV=1 aws apigateway get-gateway-responses:*)"
+      "Bash(MSYS_NO_PATHCONV=1 aws apigateway get-gateway-responses:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)"
     ]
   }
 }

@@ -72,7 +72,7 @@ async function initializeLimitedCFSSDashboard() {
     } catch (error) {
         console.error('❌ Error initializing Limited CFSS dashboard:', error);
         document.getElementById('loadingOverlay').classList.remove('show');
-        alert('Error initializing dashboard: ' + error.message);
+        alert(t('dashboard.errorInitDashboard') + error.message);
         window.location.href = 'auth.html';
     }
 }
@@ -140,19 +140,19 @@ function updateCFSSStats(projects) {
         <div class="stats-compact">
             <div class="stat-item">
                 <span class="stat-value">${totalProjects}</span>
-                <span>Total CFSS</span>
+                <span>${t('dashboard.totalCFSS')}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-value">${planningProjects}</span>
-                <span>Planning</span>
+                <span>${t('dashboard.planning')}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-value">${inProgressProjects}</span>
-                <span>Active</span>
+                <span>${t('dashboard.active')}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-value">${completedProjects}</span>
-                <span>Done</span>
+                <span>${t('dashboard.done')}</span>
             </div>
         </div>
     `;
@@ -207,9 +207,9 @@ function renderCFSSProjects(filteredProjects) {
     
     if (filteredProjects.length === 0) {
         projectList.innerHTML = `
-            <div class="list-header">CFSS Projects (0)</div>
+            <div class="list-header">${t('dashboard.cfssProjects')} (0)</div>
             <div style="padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                No CFSS projects found. Create your first CFSS project to get started!
+                ${t('dashboard.noCFSSProjectsFound')}
             </div>
         `;
         return;
@@ -218,7 +218,7 @@ function renderCFSSProjects(filteredProjects) {
     // Add list header
     const listHeader = document.createElement('div');
     listHeader.className = 'list-header';
-    listHeader.textContent = `CFSS Projects (${filteredProjects.length})`;
+    listHeader.textContent = `${t('dashboard.cfssProjects')} (${filteredProjects.length})`;
     projectList.appendChild(listHeader);
     
     filteredProjects.forEach((project) => {
@@ -248,9 +248,9 @@ function renderCFSSProjects(filteredProjects) {
                 <div class="project-info">
                     <h2>${project.name}</h2>
                     <div class="project-meta">
-                        <span>${project.type || 'CFSS Project'}</span>
+                        <span>${project.type || t('project.cfssProject')}</span>
                         <span class="meta-separator">•</span>
-                        <span>${formattedAddress || 'No address'}</span>
+                        <span>${formattedAddress || t('project.noAddress')}</span>
                         <span class="meta-separator">•</span>
                         <span>${formattedDate}</span>
                     </div>
@@ -261,20 +261,20 @@ function renderCFSSProjects(filteredProjects) {
                     <span class="status-text">${project.status || 'Planning'}</span>
                 </div>
                 <div class="project-actions">
-                    <button class="view-details" title="View Details">
+                    <button class="view-details" title="${t('common.view')}">
                         <i class="fas fa-eye"></i>
-                        View
+                        ${t('common.view')}
                     </button>
-                    <button class="delete-project" data-id="${project.id}" title="Delete">
+                    <button class="delete-project" data-id="${project.id}" title="${t('common.delete')}">
                         <i class="fas fa-trash"></i>
-                        Delete
+                        ${t('common.delete')}
                     </button>
                 </div>
             </div>
             ${
                 project.createdBy
                     ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                           Created by: ${project.createdBy}
+                           ${t('project.createdBy')}: ${project.createdBy}
                        </div>`
                     : ''
             }
@@ -396,7 +396,7 @@ async function handleCFSSProjectSearch() {
 
 // Delete CFSS project function
 async function deleteCFSSProject(id) {
-    if (!confirm('Are you sure you want to delete this CFSS project?')) {
+    if (!confirm(t('project.deleteCFSSConfirm'))) {
         return;
     }
 
@@ -423,6 +423,6 @@ async function deleteCFSSProject(id) {
         
     } catch (error) {
         console.error('Error deleting CFSS project:', error);
-        alert('Error deleting CFSS project: ' + error.message);
+        alert(t('dashboard.errorDeletingCFSS') + error.message);
     }
 }

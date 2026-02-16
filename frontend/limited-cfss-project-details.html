@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CFSS Project Details</title>
+    <title data-i18n="project.cfssProjectDetails">CFSS Project Details</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="project-details.css">
     <link rel="stylesheet" href="cfss-project-details.css">
@@ -95,10 +95,10 @@
     <nav class="navbar">
         <div class="navbar-content">
             <div class="title-area">
-                <a href="https://www.protectionsismique2000.com/" class="title">Protection Sismique - CFSS</a>
+                <a href="https://www.protectionsismique2000.com/" class="title" data-i18n="nav.protectionSismiqueCFSS">Protection Sismique - CFSS</a>
                 <a href="limited-cfss-dashboard.html" class="dashboard-btn">
                     <i class="fas fa-th-large"></i>
-                    Dashboard
+                    <span data-i18n="common.dashboard">Dashboard</span>
                 </a>
             </div>
             <div class="user-info" id="userInfo">
@@ -108,42 +108,42 @@
     </nav>
     
     <div class="loading-project" id="loadingProject">
-        <h2>Loading CFSS Project...</h2>
-        <p>Please wait while we load the project details.</p>
+        <h2 data-i18n="common.loading">Loading CFSS Project...</h2>
+        <p data-i18n="project.pleaseWaitLoading">Please wait while we load the project details.</p>
     </div>
     
     <div class="auth-error" id="authError" style="display: none;">
-        <h2>Authentication Required</h2>
-        <p>Please log in to view CFSS project details.</p>
-        <button onclick="window.location.href='auth.html'">Go to Login</button>
+        <h2 data-i18n="auth.authenticationRequired">Authentication Required</h2>
+        <p data-i18n="auth.pleaseLoginCFSSDetails">Please log in to view CFSS project details.</p>
+        <button onclick="window.location.href='auth.html'" data-i18n="auth.goToLogin">Go to Login</button>
     </div>
     
     <div class="access-denied" id="accessDenied" style="display: none;">
-        <h2>Access Denied</h2>
-        <p>You don't have permission to view this CFSS project.</p>
-        <button onclick="window.location.href='limited-cfss-dashboard.html'">Back to Dashboard</button>
+        <h2 data-i18n="auth.accessDenied">Access Denied</h2>
+        <p data-i18n="auth.noPermissionCFSS">You don't have permission to view this CFSS project.</p>
+        <button onclick="window.location.href='limited-cfss-dashboard.html'" data-i18n="nav.backToDashboard">Back to Dashboard</button>
     </div>
     
     <div class="container" id="projectContainer" style="display: none;">
         <!-- Top Half split into two horizontal sections -->
         <div class="top-half">
             <div class="left-section">
-                <h1>CFSS Project Details</h1>
-                
+                <h1 data-i18n="project.cfssProjectDetails">CFSS Project Details</h1>
+
                 <!-- Basic Information (Always Visible) -->
                 <div class="basic-info">
-                    <p><strong>Project Name:</strong> <span id="projectName"></span></p>
-                        <p><strong>Company Name:</strong> <span id="companyName"></span></p>
-                        <p><strong>Client Name:</strong> <span id="clientName"></span></p>
-                        <p><strong>Description:</strong> <span id="projectDescription"></span></p>
-                        <p><strong>Address:</strong> <span id="projectAddress"></span></p>
-                        <p><strong>Deflection Max:</strong> <span id="projectDeflectionMax"></span></p>
-                        <p><strong>Thickness Min:</strong> <span id="projectThicknessMin"></span></p>
-                        <p><strong>Status:</strong> 
+                    <p><strong data-i18n="project.projectName">Project Name:</strong> <span id="projectName"></span></p>
+                        <p><strong data-i18n="project.companyName">Company Name:</strong> <span id="companyName"></span></p>
+                        <p><strong data-i18n="project.clientName">Client Name:</strong> <span id="clientName"></span></p>
+                        <p><strong data-i18n="project.description">Description:</strong> <span id="projectDescription"></span></p>
+                        <p><strong data-i18n="project.address">Address:</strong> <span id="projectAddress"></span></p>
+                        <p><strong data-i18n="cfss.deflectionMax">Deflection Max:</strong> <span id="projectDeflectionMax"></span></p>
+                        <p><strong data-i18n="cfss.thicknessMin">Thickness Min:</strong> <span id="projectThicknessMin"></span></p>
+                        <p><strong data-i18n="project.status">Status:</strong>
                             <select id="projectStatusDropdown">
-                                <option value="Planning">Planning</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
+                                <option value="Planning" data-i18n="status.planning">Planning</option>
+                                <option value="In Progress" data-i18n="status.inProgress">In Progress</option>
+                                <option value="Completed" data-i18n="status.completed">Completed</option>
                             </select>
                         </p>
                 </div>
@@ -151,12 +151,12 @@
                 <!-- Floor Table -->
                     <div class="floor-section" style="margin-top: 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #17a2b8; padding-bottom: 5px;">
-                            <h4 style="margin: 0; color: #17a2b8; font-size: 14px;">Calculs par étage</h4>
+                            <h4 style="margin: 0; color: #17a2b8; font-size: 14px;" data-i18n="cfss.floorCalculations">Calculs par étage</h4>
                         </div>
                         <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                             <thead>
                                 <tr style="background: #17a2b8; color: white;">
-                                    <th style="padding: 8px; text-align: left;">Étage</th>
+                                    <th style="padding: 8px; text-align: left;" data-i18n="cfss.floor">Étage</th>
                                     <th style="padding: 8px; text-align: center;">H (m)</th>
                                     <th style="padding: 8px; text-align: center; width: 50px;"></th>
                                 </tr>
@@ -165,32 +165,32 @@
                             </tbody>
                         </table>
                         <button type="button" id="addFloorBtn" style="margin-top: 10px; background-color: #17a2b8; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                            <i class="fas fa-plus"></i> Add Floor
+                            <i class="fas fa-plus"></i> <span data-i18n="cfss.addFloor">Add Floor</span>
                         </button>
                         <button type="button" id="saveFloorsBtn" style="margin-top: 10px; margin-left: 10px; background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                            <i class="fas fa-save"></i> Save
+                            <i class="fas fa-save"></i> <span data-i18n="common.save">Save</span>
                         </button>
                     </div>
 
                     <!-- Project Files Section -->
                 <div class="files-section" style="margin-top: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #17a2b8; padding-bottom: 5px;">
-                        <h4 style="margin: 0; color: #17a2b8; font-size: 14px;">Project Files</h4>
+                        <h4 style="margin: 0; color: #17a2b8; font-size: 14px;" data-i18n="cfss.projectFiles">Project Files</h4>
                         <button id="showUploadFileBtn" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px;">
                             <i class="fas fa-plus"></i>
-                            Upload File
+                            <span data-i18n="cfss.uploadFile">Upload File</span>
                         </button>
                     </div>
 
                     <div id="uploadFileRow" style="display: none; background: #e8f5f7; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 2px dashed #17a2b8;">
                         <!-- Toggle Pills -->
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                            <span style="font-size: 12px; font-weight: 500; color: #333;">Source:</span>
+                            <span style="font-size: 12px; font-weight: 500; color: #333;" data-i18n="cfss.source">Source:</span>
                             <div style="display: inline-flex; background: #d4d4d4; border-radius: 6px; padding: 3px;">
-                                <button type="button" id="uploadModeFile" class="upload-mode-btn active" style="padding: 6px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; background: #17a2b8; color: white; transition: all 0.2s;">
+                                <button type="button" id="uploadModeFile" class="upload-mode-btn active" style="padding: 6px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; background: #17a2b8; color: white; transition: all 0.2s;" data-i18n="cfss.uploadFile">
                                     Upload File
                                 </button>
-                                <button type="button" id="uploadModeLink" class="upload-mode-btn" style="padding: 6px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: #555; transition: all 0.2s;">
+                                <button type="button" id="uploadModeLink" class="upload-mode-btn" style="padding: 6px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: #555; transition: all 0.2s;" data-i18n="cfss.pasteLink">
                                     Paste Link
                                 </button>
                             </div>
@@ -198,13 +198,13 @@
                         <!-- Input Row -->
                         <div style="display: flex; gap: 15px; align-items: flex-end;">
                             <div style="flex: 2;">
-                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
+                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;" data-i18n="cfss.fileName">
                                     File Name <span style="color: red;">*</span>
                                 </label>
-                                <input type="text" id="uploadFileName" placeholder="Enter file name..." style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; height: 34px; box-sizing: border-box;">
+                                <input type="text" id="uploadFileName" placeholder="Enter file name..." data-i18n-placeholder="cfss.enterFileName" style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; height: 34px; box-sizing: border-box;">
                             </div>
                             <div style="flex: 3;">
-                                <label id="uploadInputLabel" style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;">
+                                <label id="uploadInputLabel" style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #333;" data-i18n="cfss.selectFile">
                                     Select File <span style="color: red;">*</span>
                                 </label>
                                 <!-- File Input (shown by default) -->
@@ -214,7 +214,7 @@
                             </div>
                             <div style="display: flex; gap: 8px; flex-shrink: 0;">
                                 <button id="uploadFileSubmitBtn" style="background: #28a745; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; height: 34px; min-width: 80px;">
-                                    <i class="fas fa-upload"></i> Upload
+                                    <i class="fas fa-upload"></i> <span data-i18n="common.upload">Upload</span>
                                 </button>
                                 <button id="uploadFileCancelBtn" style="background: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; height: 34px;">
                                     <i class="fas fa-times"></i>
@@ -226,10 +226,10 @@
                     <table style="width: 100%; border-collapse: collapse; font-size: 13px;" id="filesTable">
                         <thead>
                             <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
-                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 50%;">File Name</th>
-                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 20%;">Type</th>
-                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 20%;">Date</th>
-                                <th style="text-align: center; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 10%;">Actions</th>
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 50%;" data-i18n="cfss.fileName">File Name</th>
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 20%;" data-i18n="cfss.fileType">Type</th>
+                                <th style="text-align: left; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 20%;" data-i18n="cfss.fileDate">Date</th>
+                                <th style="text-align: center; padding: 10px; font-weight: 600; color: #333; font-size: 12px; text-transform: uppercase; width: 10%;" data-i18n="cfss.actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="filesTableBody">
@@ -239,7 +239,7 @@
 
                     <div id="filesEmptyState" style="display: none; text-align: center; padding: 50px; color: #999;">
                         <i class="fas fa-folder-open" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px;"></i>
-                        <p style="margin: 0;">No files uploaded yet. Click "Upload File" to add files.</p>
+                        <p style="margin: 0;" data-i18n="cfss.noFilesYet">No files uploaded yet. Click "Upload File" to add files.</p>
                     </div>
                 </div>
 
@@ -259,9 +259,9 @@
         ">
             <h4 style="margin: 0 0 6px 0; font-size: 15px; font-weight: 700; color: #111827;">
                 <i class="fas fa-paper-plane" style="margin-right: 8px; color: #0d6efd;"></i>
-                Submit Project to Admin
+                <span data-i18n="cfss.submitProjectToAdmin">Submit Project to Admin</span>
             </h4>
-            <p id="submitStatusText" style="margin: 0; font-size: 13px; color: #6b7280;">
+            <p id="submitStatusText" style="margin: 0; font-size: 13px; color: #6b7280;" data-i18n="cfss.sendForAdminReview">
                 Send this project for admin review and processing.
             </p>
         </div>
@@ -282,7 +282,7 @@
             white-space: nowrap;
         ">
             <i class="fas fa-paper-plane"></i>
-            <span id="submitBtnText">Submit</span>
+            <span id="submitBtnText" data-i18n="common.submit">Submit</span>
         </button>
     </div>
 
@@ -305,23 +305,23 @@
                 <div class="tab-header">
                     <button class="tab-button active" data-tab="option-list">
                         <i class="fas fa-cogs"></i>
-                        Option List
+                        <span data-i18n="cfss.optionList">Option List</span>
                     </button>
                     <button class="tab-button" data-tab="wall-list">
                         <i class="fas fa-th-large"></i>
-                        Wall List
+                        <span data-i18n="cfss.wallList">Wall List</span>
                     </button>
                     <button class="tab-button" data-tab="parapet-list">
                         <i class="fas fa-building"></i>
-                        Parapet List
+                        <span data-i18n="cfss.parapetList">Parapet List</span>
                     </button>
                     <button class="tab-button" data-tab="window-list">
                         <i class="fas fa-window-maximize"></i>
-                        Window List
+                        <span data-i18n="cfss.windowList">Window List</span>
                     </button>
                     <button class="tab-button" data-tab="soffite-list">
                         <i class="fas fa-grip-lines-vertical"></i>
-                        Soffites List
+                        <span data-i18n="cfss.soffitesList">Soffites List</span>
                     </button>
                 </div>
 
@@ -329,7 +329,7 @@
                     <!-- Wall List Tab Content - No report buttons -->
                     <div id="wall-list-content" class="tab-content-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h1 style="margin: 0;">Wall List</h1>
+                            <h1 style="margin: 0;" data-i18n="cfss.wallList">Wall List</h1>
                         </div>
                         <div class="selection-summary" id="wallSelectionSummary">
                             <i class="fas fa-th-large"></i> 0 walls added
@@ -340,7 +340,7 @@
                     <!-- Parapet List Tab Content - No report buttons -->
                     <div id="parapet-list-content" class="tab-content-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h1 style="margin: 0;">Parapet List</h1>
+                            <h1 style="margin: 0;" data-i18n="cfss.parapetList">Parapet List</h1>
                         </div>
                         <div class="selection-summary" id="parapetSelectionSummary">
                             <i class="fas fa-building"></i> 0 parapets added
@@ -353,7 +353,7 @@
                     <!-- Options List Tab Content - No report buttons -->
                     <div id="option-list-content" class="tab-content-section active">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h1 style="margin: 0;">Option List</h1>
+                            <h1 style="margin: 0;" data-i18n="cfss.optionList">Option List</h1>
                         </div>
                         
                         <div class="selection-summary" id="selectionSummary">
@@ -364,7 +364,7 @@
                         <div class="options-category">
                             <div class="category-header">
                                 <i class="fas fa-grip-lines"></i>
-                                Lisse Trouee
+                                <span data-i18n="cfss.lisseTrouee">Lisse Trouee</span>
                             </div>
                             <div id="lisse-trouee-options">
                                 <!-- Options will be populated by JavaScript -->
@@ -375,7 +375,7 @@
                         <div class="options-category">
                             <div class="category-header">
                                 <i class="fas fa-equals"></i>
-                                Double Lisse
+                                <span data-i18n="cfss.doubleLisse">Double Lisse</span>
                             </div>
                             <div id="double-lisse-options">
                                 <!-- Options will be populated by JavaScript -->
@@ -386,7 +386,7 @@
                         <div class="options-category">
                             <div class="category-header">
                                 <i class="fas fa-minus"></i>
-                                Lisse Basse
+                                <span data-i18n="cfss.lisseBasse">Lisse Basse</span>
                             </div>
                             <div id="lisse-basse-options">
                                 <!-- Options will be populated by JavaScript -->
@@ -397,7 +397,7 @@
                         <div class="options-category">
                             <div class="category-header">
                                 <i class="fas fa-building"></i>
-                                Parapet
+                                <span data-i18n="cfss.parapet">Parapet</span>
                             </div>
                             <div id="parapet-options">
                                 <!-- Options will be populated by JavaScript -->
@@ -408,7 +408,7 @@
                         <div class="options-category">
                             <div class="category-header">
                                 <i class="fas fa-window-restore"></i>
-                                Fenetre
+                                <span data-i18n="cfss.fenetre">Fenetre</span>
                             </div>
                             <div id="fenetre-options">
                                 <!-- Options will be populated by JavaScript -->
@@ -419,7 +419,7 @@
                         <div class="options-category">
                             <div class="category-header">
                                 <i class="fas fa-th-large"></i>
-                                Jambages, Linteaux & Seuils
+                                <span data-i18n="cfss.jambagesLinteauxSeuils">Jambages, Linteaux & Seuils</span>
                             </div>
                             <div id="jambages-linteaux-seuils-options">
                                 <!-- Options will be populated by JavaScript -->
@@ -430,7 +430,7 @@
                     <!-- Window List Tab Content - No report buttons -->
                     <div id="window-list-content" class="tab-content-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h1 style="margin: 0;">Window List</h1>
+                            <h1 style="margin: 0;" data-i18n="cfss.windowList">Window List</h1>
                         </div>
                         <div class="selection-summary" id="windowSelectionSummary">
                             <i class="fas fa-window-maximize"></i> 0 windows added
@@ -443,7 +443,7 @@
                     <!-- NEW: Soffites List Tab Content -->
                     <div id="soffite-list-content" class="tab-content-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h1 style="margin: 0;">Soffites List</h1>
+                            <h1 style="margin: 0;" data-i18n="cfss.soffitesList">Soffites List</h1>
                         </div>
                         <div class="selection-summary" id="soffiteSelectionSummary">
                             <i class="fas fa-grip-lines-vertical"></i> 0 soffites added
@@ -458,7 +458,7 @@
                 <div class="save-options-btn" id="saveOptionsBtnContainer" style="display: none;">
                     <button class="save-btn" id="saveOptionsBtn">
                         <i class="fas fa-save"></i>
-                        Save Options
+                        <span data-i18n="cfss.saveOptions">Save Options</span>
                     </button>
                 </div>
             </div>
@@ -468,19 +468,19 @@
         <div class="bottom-half" id="bottomHalf">
             <!-- Add Wall Button -->
             <button id="newCalculationButton" class="cfss-btn" style="display: block !important; margin: 20px 0;">
-                <i class="fas fa-th-large"></i> Add Wall
+                <i class="fas fa-th-large"></i> <span data-i18n="cfss.addWall">Add Wall</span>
             </button>
 
             <button id="addParapetButton" class="cfss-btn">
-                <i class="fas fa-building"></i> Add Parapet
+                <i class="fas fa-building"></i> <span data-i18n="cfss.addParapet">Add Parapet</span>
             </button>
 
             <button id="addWindowButton" class="cfss-btn">
-                <i class="fas fa-window-maximize"></i> Add Window
+                <i class="fas fa-window-maximize"></i> <span data-i18n="cfss.addWindow">Add Window</span>
             </button>
 
             <button id="addSoffitesButton" class="cfss-btn">
-                <i class="fas fa-grip-lines-vertical"></i> Add Soffites
+                <i class="fas fa-grip-lines-vertical"></i> <span data-i18n="cfss.addSoffites">Add Soffites</span>
             </button>
 
             <!-- Simplified Wall Form -->
@@ -488,20 +488,20 @@
                 <div class="calculation-sections">
                     <div class="equipment-form-section">
                         <div class="form-fields">
-                            <h2>New Wall</h2>
+                            <h2 data-i18n="cfss.newWall">New Wall</h2>
                             <form id="equipmentFormElement">
                                 <div class="form-group">
-                                    <label for="equipment">Wall Name: <span style="color: red;">*</span></label>
-                                    <input type="text" id="equipment" name="equipment" placeholder="Enter wall name..." required>
+                                    <label for="equipment" data-i18n="cfss.wallName">Wall Name: <span style="color: red;">*</span></label>
+                                    <input type="text" id="equipment" name="equipment" placeholder="Enter wall name..." data-i18n-placeholder="cfss.enterWallName" required>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="floor">Floor:</label>
-                                    <input type="text" id="floor" name="floor" placeholder="e.g., 2-5">
+                                    <label for="floor" data-i18n="cfss.floorLabel">Floor:</label>
+                                    <input type="text" id="floor" name="floor" placeholder="e.g., 2-5" data-i18n-placeholder="cfss.floorPlaceholder">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="hauteurMax">Hauteur Max:</label>
+                                    <label for="hauteurMax" data-i18n="cfss.hauteurMax">Hauteur Max:</label>
                                     <div style="display: flex; gap: 10px; align-items: center;">
                                         <input type="number" id="hauteurMax" name="hauteurMax" min="0" step="1" 
                                             style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -516,7 +516,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Colombage:</label>
+                                    <label data-i18n="cfss.colombage">Colombage:</label>
                                     <div style="display: flex; gap: 10px; align-items: center;">
                                         <select id="colombageSet1" name="colombageSet1" 
                                             style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -544,11 +544,11 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Déflexion Max:</label>
+                                    <label data-i18n="cfss.deflexionMax">Déflexion Max:</label>
                                     <div style="display: flex; gap: 10px; align-items: center;">
-                                        <select id="deflexionSet1" name="deflexionSet1" 
+                                        <select id="deflexionSet1" name="deflexionSet1"
                                             style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                                            <option value="">Select déflexion max...</option>
+                                            <option value="" data-i18n="cfss.selectDeflexionMax">Select déflexion max...</option>
                                             <option value="L/180">L/180</option>
                                             <option value="L/240">L/240</option>
                                             <option value="L/360">L/360</option>
@@ -557,9 +557,9 @@
                                             <option value="L/720">L/720</option>
                                             <option value="N/A">N/A</option>
                                         </select>
-                                        <select id="deflexionSet2" name="deflexionSet2" 
+                                        <select id="deflexionSet2" name="deflexionSet2"
                                             style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                                            <option value="">Select déflexion max...</option>
+                                            <option value="" data-i18n="cfss.selectDeflexionMax">Select déflexion max...</option>
                                             <option value="L/180">L/180</option>
                                             <option value="L/240">L/240</option>
                                             <option value="L/360">L/360</option>
@@ -572,15 +572,15 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="note">Note:</label>
-                                    <input type="text" id="note" name="note" maxlength="100" placeholder="Optional note (max 100 characters)...">
+                                    <label for="note" data-i18n="cfss.note">Note:</label>
+                                    <input type="text" id="note" name="note" maxlength="100" placeholder="Optional note (max 100 characters)..." data-i18n-placeholder="cfss.optionalNotePlaceholder">
                                 </div>
                                 
                                 <div style="display: flex; gap: 15px; margin-top: 20px;">
                                     <button type="submit" id="saveEquipment" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                        <i class="fas fa-save"></i> Save Wall
+                                        <i class="fas fa-save"></i> <span data-i18n="cfss.saveWall">Save Wall</span>
                                     </button>
-                                    <button type="button" id="cancelWall" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                    <button type="button" id="cancelWall" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;" data-i18n="common.cancel">
                                         Cancel
                                     </button>
                                 </div>
@@ -590,15 +590,16 @@
                         <!-- Image Upload Section -->
                         <div class="image-upload-section">
                             <div class="upload-controls">
-                                <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images">
+                                <button type="button" class="camera-btn" id="cameraBtn" title="Upload Images" data-i18n-title="cfss.uploadImages">
                                     <i class="fas fa-camera"></i>
-                                    Browse
+                                    <span data-i18n="cfss.browse">Browse</span>
                                 </button>
-                                
-                                <input 
-                                    class="drop-zone" 
-                                    id="dropZone" 
+
+                                <input
+                                    class="drop-zone"
+                                    id="dropZone"
                                     placeholder="Drop or paste images here (Ctrl+V)"
+                                    data-i18n-placeholder="cfss.dropOrPasteImages"
                                     readonly
                                     tabindex="0">
                             </div>
@@ -616,18 +617,18 @@
                 <div class="calculation-sections">
                     <div class="equipment-form-section">
                         <div class="form-fields">
-                            <h2>New Parapet</h2>
+                            <h2 data-i18n="cfss.newParapet">New Parapet</h2>
                             <form id="parapetFormElement">
                                 <div class="form-group">
-                                    <label for="parapetName">Parapet Name: <span style="color: red;">*</span></label>
-                                    <input type="text" id="parapetName" name="parapetName" placeholder="Enter parapet name..." required>
+                                    <label for="parapetName" data-i18n="cfss.parapetName">Parapet Name: <span style="color: red;">*</span></label>
+                                    <input type="text" id="parapetName" name="parapetName" placeholder="Enter parapet name..." data-i18n-placeholder="cfss.enterParapetName" required>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="parapetType">Parapet Type:</label>
+                                    <label for="parapetType" data-i18n="cfss.parapetType">Parapet Type:</label>
                                     <div style="display: flex; gap: 10px; align-items: flex-start;">
                                         <select id="parapetType" name="parapetType" style="flex: 1; max-width: 190px;">
-                                            <option value="">Select Parapet Type</option>
+                                            <option value="" data-i18n="cfss.selectParapetType">Select Parapet Type</option>
                                         </select>
                                         
                                         <div id="parapetTypeImagePreview" style="
@@ -641,18 +642,18 @@
                                             align-items: center;
                                             justify-content: center;
                                         ">
-                                            <span style="color: #999; font-size: 13px; text-align: center;">Select a type</span>
+                                            <span style="color: #999; font-size: 13px; text-align: center;" data-i18n="cfss.selectAType">Select a type</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="parapetFloor">Floor:</label>
-                                    <input type="text" id="parapetFloor" name="parapetFloor" placeholder="e.g., NV2 - NV3">
+                                    <label for="parapetFloor" data-i18n="cfss.floorLabel">Floor:</label>
+                                    <input type="text" id="parapetFloor" name="parapetFloor" placeholder="e.g., NV2 - NV3" data-i18n-placeholder="cfss.floorPlaceholderParapet">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="parapetHauteurMax">Hauteur Max:</label>
+                                    <label for="parapetHauteurMax" data-i18n="cfss.hauteurMax">Hauteur Max:</label>
                                     <div style="display: flex; gap: 10px; align-items: center;">
                                         <input type="number" id="parapetHauteurMax" name="parapetHauteurMax" min="0" step="1"
                                             style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -667,7 +668,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Colombage:</label>
+                                    <label data-i18n="cfss.colombage">Colombage:</label>
                                     <div style="display: flex; gap: 10px; align-items: center;">
                                         <select id="parapetColombageSet1" name="parapetColombageSet1" 
                                             style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -695,15 +696,15 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="parapetNote">Note:</label>
-                                    <input type="text" id="parapetNote" name="parapetNote" maxlength="100" placeholder="Optional note (max 100 characters)...">
+                                    <label for="parapetNote" data-i18n="cfss.note">Note:</label>
+                                    <input type="text" id="parapetNote" name="parapetNote" maxlength="100" placeholder="Optional note (max 100 characters)..." data-i18n-placeholder="cfss.optionalNotePlaceholder">
                                 </div>
 
                                 <div style="display: flex; gap: 15px; margin-top: 20px;">
                                     <button type="submit" id="saveParapet" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                        <i class="fas fa-save"></i> Save Parapet
+                                        <i class="fas fa-save"></i> <span data-i18n="cfss.saveParapet">Save Parapet</span>
                                     </button>
-                                    <button type="button" id="cancelParapet" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                    <button type="button" id="cancelParapet" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;" data-i18n="common.cancel">
                                         Cancel
                                     </button>
                                 </div>
@@ -713,15 +714,16 @@
                         <!-- Image Upload Section -->
                         <div class="image-upload-section">
                             <div class="upload-controls">
-                                <button type="button" class="camera-btn" id="parapetCameraBtn" title="Upload Images">
+                                <button type="button" class="camera-btn" id="parapetCameraBtn" title="Upload Images" data-i18n-title="cfss.uploadImages">
                                     <i class="fas fa-camera"></i>
-                                    Browse
+                                    <span data-i18n="cfss.browse">Browse</span>
                                 </button>
-                                
-                                <input 
-                                    class="drop-zone" 
-                                    id="parapetDropZone" 
+
+                                <input
+                                    class="drop-zone"
+                                    id="parapetDropZone"
                                     placeholder="Drop or paste images here (Ctrl+V)"
+                                    data-i18n-placeholder="cfss.dropOrPasteImages"
                                     readonly
                                     tabindex="0">
                             </div>
@@ -741,18 +743,18 @@
                         <div style="display: grid; grid-template-columns: 1fr auto; gap: 30px;">
                             <!-- Left side: Form -->
                             <div class="form-fields">
-                                <h2>New Window</h2>
+                                <h2 data-i18n="cfss.newWindow">New Window</h2>
                                 <form id="windowFormElement">
                                     <div style="display: flex; gap: 15px;">
                                     <div class="form-group" style="flex: 1;">
-                                        <label for="windowType">Window Type: <span style="color: red;">*</span></label>
-                                        <input type="text" id="windowType" name="windowType" placeholder="Enter window type..." required>
+                                        <label for="windowType" data-i18n="cfss.windowType">Window Type: <span style="color: red;">*</span></label>
+                                        <input type="text" id="windowType" name="windowType" placeholder="Enter window type..." data-i18n-placeholder="cfss.enterWindowType" required>
                                     </div>
                                     <div class="form-group" style="flex: 1;">
-                                        <label for="windowColombageSize">Colombage:</label>
-                                        <select id="windowColombageSize" name="windowColombageSize" 
+                                        <label for="windowColombageSize" data-i18n="cfss.colombage">Colombage:</label>
+                                        <select id="windowColombageSize" name="windowColombageSize"
                                             style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                                            <option value="">Select colombage...</option>
+                                            <option value="" data-i18n="cfss.selectColombage">Select colombage...</option>
                                             <option value="3-5/8">3-5/8</option>
                                             <option value="6">6"</option>
                                             <option value="8">8"</option>
@@ -763,12 +765,12 @@
                                 </div>
 
                                     <div class="form-group">
-                                        <label for="windowFloor">Floor:</label>
-                                        <input type="text" id="windowFloor" name="windowFloor" placeholder="e.g., 2-5">
+                                        <label for="windowFloor" data-i18n="cfss.floorLabel">Floor:</label>
+                                        <input type="text" id="windowFloor" name="windowFloor" placeholder="e.g., 2-5" data-i18n-placeholder="cfss.floorPlaceholder">
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="windowLargeurMax">Largeur Max:</label>
+                                        <label for="windowLargeurMax" data-i18n="cfss.largeurMax">Largeur Max:</label>
                                         <div style="display: flex; gap: 10px; align-items: center;">
                                             <input type="number" id="windowLargeurMax" name="windowLargeurMax" min="0" step="1"
                                                 style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -783,7 +785,7 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="windowHauteurMax">Hauteur Max:</label>
+                                        <label for="windowHauteurMax" data-i18n="cfss.hauteurMax">Hauteur Max:</label>
                                         <div style="display: flex; gap: 10px; align-items: center;">
                                             <input type="number" id="windowHauteurMax" name="windowHauteurMax" min="0" step="1"
                                                 style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -798,7 +800,7 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="windowL1">L1:</label>
+                                        <label for="windowL1" data-i18n="cfss.l1">L1:</label>
                                         <div style="display: flex; gap: 10px; align-items: center;">
                                             <input type="number" id="windowL1" name="windowL1" min="0" step="1"
                                                 style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -814,7 +816,7 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="windowL2">L2:</label>
+                                        <label for="windowL2" data-i18n="cfss.l2">L2:</label>
                                         <div style="display: flex; gap: 10px; align-items: center;">
                                             <input type="number" id="windowL2" name="windowL2" min="0" step="1"
                                                 style="flex: 2; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -831,9 +833,9 @@
 
                                     <div style="display: flex; gap: 15px; margin-top: 20px;">
                                         <button type="submit" id="saveWindow" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                            <i class="fas fa-save"></i> Save Window
+                                            <i class="fas fa-save"></i> <span data-i18n="cfss.saveWindow">Save Window</span>
                                         </button>
-                                        <button type="button" id="cancelWindow" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                        <button type="button" id="cancelWindow" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;" data-i18n="common.cancel">
                                             Cancel
                                         </button>
                                     </div>
@@ -864,7 +866,7 @@
                                             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                                         "
                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <span style="display: none; color: #999; font-size: 13px; text-align: center; padding: 20px;">Image not available</span>
+                                    <span style="display: none; color: #999; font-size: 13px; text-align: center; padding: 20px;" data-i18n="cfss.imageNotAvailable">Image not available</span>
                                 </div>
                             </div>
                         </div>
@@ -877,23 +879,24 @@
                 <div class="calculation-sections">
                     <div class="equipment-form-section">
                         <div class="form-fields">
-                            <h2>New Soffite</h2>
+                            <h2 data-i18n="cfss.newSoffite">New Soffite</h2>
                             <form id="soffiteFormElement">
                                 <!-- Soffite name -->
                                 <div class="form-group">
-                                    <label for="soffiteName">Soffite name: <span style="color: red;">*</span></label>
+                                    <label for="soffiteName" data-i18n="cfss.soffiteName">Soffite name: <span style="color: red;">*</span></label>
                                     <input
                                         type="text"
                                         id="soffiteName"
                                         name="soffiteName"
                                         placeholder="Enter soffite name..."
+                                        data-i18n-placeholder="cfss.enterSoffiteName"
                                         required>
                                 </div>
 
                                                                 <!-- Soffite images: side-by-side layout -->
                                 <div class="form-group">
-                                    <label>Soffite images:</label>
-                                    <small style="display:block; font-size:12px; color:#666; margin-bottom: 8px;">
+                                    <label data-i18n="cfss.soffiteImages">Soffite images:</label>
+                                    <small style="display:block; font-size:12px; color:#666; margin-bottom: 8px;" data-i18n="cfss.soffiteImagesHelp">
                                         Max 2 images. Drag &amp; drop, browse, or paste (Ctrl+V).
                                     </small>
 
@@ -905,9 +908,10 @@
                                                     type="button"
                                                     class="camera-btn"
                                                     id="soffiteCameraBtn"
-                                                    title="Upload Image">
+                                                    title="Upload Image"
+                                                    data-i18n-title="cfss.uploadImage">
                                                     <i class="fas fa-camera"></i>
-                                                    Browse
+                                                    <span data-i18n="cfss.browse">Browse</span>
                                                 </button>
                                             </div>
 
@@ -915,6 +919,7 @@
                                                 class="drop-zone"
                                                 id="soffiteDropZone"
                                                 placeholder="Drop or paste image here (Ctrl+V)"
+                                                data-i18n-placeholder="cfss.dropOrPasteImage"
                                                 readonly
                                                 tabindex="0">
 
@@ -931,22 +936,24 @@
                                         <!-- Right: Image descriptions -->
                                         <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
                                             <div>
-                                                <label for="soffiteImage1Desc" style="font-size: 13px;">Image description:</label>
+                                                <label for="soffiteImage1Desc" style="font-size: 13px;" data-i18n="cfss.imageDescription">Image description:</label>
                                                 <input
                                                     type="text"
                                                     id="soffiteImage1Desc"
                                                     name="soffiteImage1Desc"
                                                     placeholder="Description for image 1..."
+                                                    data-i18n-placeholder="cfss.descriptionForImage1"
                                                     maxlength="50"
                                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                                             </div>
                                             <div id="soffiteImage2DescContainer" style="display: none;">
-                                                <label for="soffiteImage2Desc" style="font-size: 13px;">Image 2 description:</label>
+                                                <label for="soffiteImage2Desc" style="font-size: 13px;" data-i18n="cfss.image2Description">Image 2 description:</label>
                                                 <input
                                                     type="text"
                                                     id="soffiteImage2Desc"
                                                     name="soffiteImage2Desc"
                                                     placeholder="Description for image 2..."
+                                                    data-i18n-placeholder="cfss.descriptionForImage2"
                                                     maxlength="50"
                                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                                             </div>
@@ -961,12 +968,13 @@
                                         type="submit"
                                         id="saveSoffite"
                                         style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                        <i class="fas fa-save"></i> Save Soffite
+                                        <i class="fas fa-save"></i> <span data-i18n="cfss.saveSoffite">Save Soffite</span>
                                     </button>
                                     <button
                                         type="button"
                                         id="cancelSoffite"
-                                        style="background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                        style="background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;"
+                                        data-i18n="common.cancel">
                                         Cancel
                                     </button>
                                 </div>
@@ -981,6 +989,8 @@
     <!-- AWS Cognito SDK -->
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
     <script src="limited-cfss-project-details.js"></script>
 </body>

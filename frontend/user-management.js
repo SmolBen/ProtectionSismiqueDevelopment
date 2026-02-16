@@ -63,7 +63,7 @@ async function initializeUserManagement() {
         // Check if user is admin
         if (!authHelper.isAdmin()) {
             addDebugInfo('User is not admin');
-            alert('Access denied. Admin privileges required.');
+            alert(t('users.accessDenied'));
             window.location.href = 'dashboard.html';
             return;
         }
@@ -236,7 +236,7 @@ async function loadAllUsers() {
         
         // Show a notification that we're using sample data
         setTimeout(() => {
-            alert('⚠️ Could not load real users from API. Showing sample data instead.\n\nThis is normal in demo mode. Click "Toggle Debug" to see technical details.');
+            alert(t('users.sampleDataWarning'));
         }, 1000);
     }
 }
@@ -310,7 +310,7 @@ function renderUsers() {
     usersGrid.innerHTML = '';
 
     if (filteredUsers.length === 0) {
-        usersGrid.innerHTML = '<p>No users found matching your criteria.</p>';
+        usersGrid.innerHTML = '<p>' + t('users.noUsersFound') + '</p>';
         return;
     }
 
@@ -363,14 +363,14 @@ function renderUsers() {
             </div>
             
             <div class="user-details">
-                <p><strong>Company:</strong> ${companyName}</p>
-                <p><strong>Domain:</strong> ${domain}</p>
-                <p><strong>Status:</strong> 
+                <p><strong>${t('users.company')}</strong> ${companyName}</p>
+                <p><strong>${t('users.domainLabel')}</strong> ${domain}</p>
+                <p><strong>${t('users.statusLabel')}</strong>
                     <span class="user-status ${isEnabled ? 'active' : 'disabled'}">
-                        ${isEnabled ? 'Active' : 'Disabled'}
+                        ${isEnabled ? t('users.statusActive') : t('users.statusDisabled')}
                     </span>
                 </p>
-                <p><strong>Joined:</strong> ${user.UserCreateDate.toLocaleDateString()}</p>
+                <p><strong>${t('users.joined')}</strong> ${user.UserCreateDate.toLocaleDateString()}</p>
             </div>
             
             <div class="user-actions">
@@ -378,37 +378,37 @@ function renderUsers() {
                     ${user.approvalStatus === 'pending' ? `
                         <button class="action-btn promote-btn" onclick="approveUserAccount('${email}')">
                             <i class="fas fa-check"></i>
-                            Approve
+                            ${t('users.approve')}
                         </button>
                     ` : ''}
                     
                     ${userRole === 'regular' ? `
                         <button class="action-btn promote-btn" onclick="promoteUser('${email}')">
                             <i class="fas fa-user-shield"></i>
-                            Promote to Admin
+                            ${t('users.promoteToAdmin')}
                         </button>
                         <button class="action-btn demote-btn" onclick="demoteToLimited('${email}')" style="background: #6c757d;">
                             <i class="fas fa-user-minus"></i>
-                            Demote to Limited
+                            ${t('users.demoteToLimited')}
                         </button>
                     ` : userRole === 'admin' ? `
                         <button class="action-btn demote-btn" onclick="demoteUser('${email}')">
                             <i class="fas fa-user-minus"></i>
-                            Demote to Regular
+                            ${t('users.demoteToRegular')}
                         </button>
                     ` : userRole === 'limited' ? `
                         <button class="action-btn promote-btn" onclick="promoteToRegular('${email}')" style="background: #28a745;">
                             <i class="fas fa-user-plus"></i>
-                            Promote to Regular
+                            ${t('users.promoteToRegular')}
                         </button>
                     ` : ''}
                     
                     <button class="action-btn delete-btn" onclick="deleteUser('${email}')">
                         <i class="fas fa-user-times"></i>
-                        Delete User
+                        ${t('users.deleteUser')}
                     </button>
                 ` : `
-                    <p style="text-align: center; color: #666; font-style: italic;">This is you</p>
+                    <p style="text-align: center; color: #666; font-style: italic;">${t('common.thisIsYou')}</p>
                 `}
             </div>
         `;
@@ -436,23 +436,23 @@ function updateStats() {
     statsBar.innerHTML = `
         <div class="stat-item">
             <div class="stat-number">${totalUsers}</div>
-            <div class="stat-label">Total Users</div>
+            <div class="stat-label">${t('users.totalUsers')}</div>
         </div>
         <div class="stat-item">
             <div class="stat-number">${adminUsers}</div>
-            <div class="stat-label">Admins</div>
+            <div class="stat-label">${t('users.admins')}</div>
         </div>
         <div class="stat-item">
             <div class="stat-number">${regularUsers}</div>
-            <div class="stat-label">Regular</div>
+            <div class="stat-label">${t('users.regular')}</div>
         </div>
         <div class="stat-item">
             <div class="stat-number">${limitedUsers}</div>
-            <div class="stat-label">Limited</div>
+            <div class="stat-label">${t('users.limited')}</div>
         </div>
         <div class="stat-item">
             <div class="stat-number">${activeUsers}</div>
-            <div class="stat-label">Active</div>
+            <div class="stat-label">${t('users.activeUsers')}</div>
         </div>
     `;
 }
@@ -502,7 +502,7 @@ function filterUsers() {
 }
 
 async function promoteUser(email) {
-    if (!confirm(`Are you sure you want to promote ${email} to admin?`)) {
+    if (!confirm(t('users.confirmPromote').replace('{email}', email))) {
         return;
     }
 
@@ -529,7 +529,7 @@ async function promoteUser(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} promoted successfully`);
-        alert(`${email} has been promoted to admin successfully!\n\nThe user will need to log out and log back in to see admin features.`);
+        alert(t('users.promotedSuccess').replace('{email}', email));
         
         // Refresh user list to show updated status
         await loadAllUsers();
@@ -538,7 +538,7 @@ async function promoteUser(email) {
         console.error('❌ Error promoting user:', error);
         addDebugInfo(`Error promoting user: ${error.message}`);
         document.getElementById('loadingOverlay').classList.remove('show');
-        alert('Error promoting user: ' + error.message);
+        alert(t('users.errorPromoting') + error.message);
     }
 }
 
@@ -546,11 +546,11 @@ async function demoteUser(email) {
     const currentUser = authHelper.getCurrentUser();
     
     if (email === currentUser.email) {
-        alert('You cannot demote yourself!');
+        alert(t('users.cannotDemoteSelf'));
         return;
     }
 
-    if (!confirm(`Are you sure you want to remove admin privileges from ${email}?`)) {
+    if (!confirm(t('users.confirmDemote').replace('{email}', email))) {
         return;
     }
 
@@ -577,7 +577,7 @@ async function demoteUser(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} demoted successfully`);
-        alert(`${email} has been demoted from admin successfully!\n\nThe user will need to log out and log back in for changes to take effect.`);
+        alert(t('users.demotedSuccess').replace('{email}', email));
         
         // Refresh user list to show updated status
         await loadAllUsers();
@@ -586,7 +586,7 @@ async function demoteUser(email) {
         console.error('❌ Error demoting user:', error);
         addDebugInfo(`Error demoting user: ${error.message}`);
         document.getElementById('loadingOverlay').classList.remove('show');
-        alert('Error demoting user: ' + error.message);
+        alert(t('users.errorDemoting') + error.message);
     }
 }
 
@@ -594,7 +594,7 @@ async function deleteUser(email) {
     const currentUser = authHelper.getCurrentUser();
     
     if (email === currentUser.email) {
-        alert('You cannot delete yourself!');
+        alert(t('users.cannotDeleteSelf'));
         return;
     }
 
@@ -603,7 +603,7 @@ async function deleteUser(email) {
     const isTargetAdmin = getUserAttribute(targetUser, 'custom:is_admin') === 'true';
     
     if (isTargetAdmin) {
-        const confirmDelete = confirm(`⚠️ ${email} is an ADMIN user.\n\nTo safely delete an admin:\n1. First demote them to regular user\n2. Then delete them\nWould you like to demote them first?`);
+        const confirmDelete = confirm(t('users.adminDeleteWarning').replace('{email}', email));
         
         if (confirmDelete) {
             // Call demote function instead
@@ -614,7 +614,7 @@ async function deleteUser(email) {
         }
     }
 
-    if (!confirm(`Are you sure you want to permanently delete ${email}?\n\nThis action cannot be undone.`)) {
+    if (!confirm(t('users.confirmDelete').replace('{email}', email))) {
         return;
     }
 
@@ -641,7 +641,7 @@ async function deleteUser(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} deleted successfully`);
-        alert(`${email} has been permanently deleted!`);
+        alert(t('users.deletedSuccess').replace('{email}', email));
         
         // Refresh user list to show updated data
         await loadAllUsers();
@@ -655,13 +655,13 @@ async function deleteUser(email) {
         if (error.message.includes('Cannot delete admin user')) {
             alert(`🚫 ${error.message}1. Click "Demote" to remove admin privileges\n2. Then click "Delete User"`);
         } else {
-            alert('Error deleting user: ' + error.message);
+            alert(t('users.errorDeleting') + error.message);
         }
     }
 }
 
 async function approveUserAccount(email) {
-    if (!confirm(`Approve account for ${email}?`)) {
+    if (!confirm(t('users.confirmApprove').replace('{email}', email))) {
         return;
     }
 
@@ -686,26 +686,26 @@ async function approveUserAccount(email) {
         console.log('✅ Approval response:', result);
         
         document.getElementById('loadingOverlay').classList.remove('show');
-        alert(`${email} has been approved and can now log in!`);
+        alert(t('users.approvedSuccess').replace('{email}', email));
         
         await loadAllUsers();
         
     } catch (error) {
         console.error('❌ Error approving user:', error);
         document.getElementById('loadingOverlay').classList.remove('show');
-        alert('Error approving user: ' + error.message);
+        alert(t('users.errorApproving') + error.message);
     }
 }
 
 async function demoteToLimited(email) {
     const currentUser = authHelper.getCurrentUser();
-    
+
     if (email === currentUser.email) {
-        alert('You cannot demote yourself!');
+        alert(t('users.cannotDemoteSelf'));
         return;
     }
 
-    if (!confirm(`Are you sure you want to demote ${email} to limited user?\n\nLimited users can only access CFSS projects with simplified features.`)) {
+    if (!confirm(t('users.confirmDemoteToLimited').replace('{email}', email))) {
         return;
     }
 
@@ -732,7 +732,7 @@ async function demoteToLimited(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} demoted to limited successfully`);
-        alert(`${email} has been demoted to limited user!\n\nThe user will need to log out and log back in for changes to take effect.`);
+        alert(t('users.demotedToLimitedSuccess').replace('{email}', email));
         
         await loadAllUsers();
         
@@ -740,12 +740,12 @@ async function demoteToLimited(email) {
         console.error('Error demoting user to limited:', error);
         addDebugInfo(`Error demoting user to limited: ${error.message}`);
         document.getElementById('loadingOverlay').classList.remove('show');
-        alert('Error demoting user to limited: ' + error.message);
+        alert(t('users.errorDemotingToLimited') + error.message);
     }
 }
 
 async function promoteToRegular(email) {
-    if (!confirm(`Are you sure you want to promote ${email} to regular user?`)) {
+    if (!confirm(t('users.confirmPromoteToRegular').replace('{email}', email))) {
         return;
     }
 
@@ -772,7 +772,7 @@ async function promoteToRegular(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} promoted to regular successfully`);
-        alert(`${email} has been promoted to regular user!\n\nThe user will need to log out and log back in for changes to take effect.`);
+        alert(t('users.promotedToRegularSuccess').replace('{email}', email));
         
         await loadAllUsers();
         
@@ -780,7 +780,7 @@ async function promoteToRegular(email) {
         console.error('Error promoting user to regular:', error);
         addDebugInfo(`Error promoting user to regular: ${error.message}`);
         document.getElementById('loadingOverlay').classList.remove('show');
-        alert('Error promoting user to regular: ' + error.message);
+        alert(t('users.errorPromotingToRegular') + error.message);
     }
 }
 

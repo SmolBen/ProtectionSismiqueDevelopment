@@ -66,8 +66,8 @@ function setupStudAutoFill() {
         const trackData = colombageData[selectedStud];
         if (trackData) {
             // Clear existing options (except the placeholder)
-            bottomTrackInput.innerHTML = '<option value="">Select Bottom Track...</option>';
-            deflectionTrackInput.innerHTML = '<option value="">Select Deflection Track...</option>';
+            bottomTrackInput.innerHTML = `<option value="">${t('cfss.selectBottomTrack')}</option>`;
+            deflectionTrackInput.innerHTML = `<option value="">${t('cfss.selectDeflectionTrack')}</option>`;
             
             // Add and select bottom track option
             if (trackData.lisseInferieure) {
@@ -104,14 +104,14 @@ function setupWallCalcButton() {
         
         if (isCurrentlyVisible) {
             form.classList.remove('show');
-            this.innerHTML = '<i class="fas fa-calculator"></i> Exterior Wall Calculation';
+            this.innerHTML = `<i class="fas fa-calculator"></i> ${t('cfss.exteriorWallCalculation')}`;
         } else {
             // Hide other forms (if you have a hideAllForms function)
             if (typeof hideAllForms === 'function') {
                 hideAllForms();
             }
             form.classList.add('show');
-            this.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+            this.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
             form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
             // Clear previous results
@@ -142,7 +142,7 @@ function setupWallCalcForm() {
             }
             const button = document.getElementById('exteriorWallCalcButton');
             if (button) {
-                button.innerHTML = '<i class="fas fa-calculator"></i> Exterior Wall Calculation';
+                button.innerHTML = `<i class="fas fa-calculator"></i> ${t('cfss.exteriorWallCalculation')}`;
             }
         });
     }
@@ -175,15 +175,15 @@ function handleWallCalcSubmit(event) {
 
     // Validate inputs
     if (!inputs.steelStud) {
-        alert('Please select a steel stud');
+        alert(t('cfss.selectSteelStud'));
         return;
     }
     if (!inputs.bottomTrack) {
-        alert('Please enter bottom track designation');
+        alert(t('cfss.enterBottomTrack'));
         return;
     }
     if (!inputs.deflectionTrack) {
-        alert('Please enter deflection track designation');
+        alert(t('cfss.enterDeflectionTrack'));
         return;
     }
 
@@ -199,7 +199,7 @@ function handleWallCalcSubmit(event) {
         // Display results
         displayResults(results);
     } catch (error) {
-        alert('Calculation error: ' + error.message);
+        alert(t('cfss.calculationError') + ': ' + error.message);
         console.error(error);
     }
 }
@@ -220,46 +220,46 @@ function displayResults(results) {
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                 <thead>
                     <tr style="background-color: #f5f5f5;">
-                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Component</th>
-                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Designation</th>
-                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Check</th>
-                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">Status</th>
-                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">Ratio (%)</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">${t('cfss.component')}</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">${t('cfss.designation')}</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">${t('cfss.check')}</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">${t('cfss.status')}</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">${t('cfss.ratioPercent')}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- Steel Stud Checks -->
                     <tr>
-                        <td rowspan="5" style="padding: 12px; border: 1px solid #ddd; font-weight: 600; vertical-align: middle;">Steel Stud</td>
+                        <td rowspan="5" style="padding: 12px; border: 1px solid #ddd; font-weight: 600; vertical-align: middle;">${t('cfss.steelStud')}</td>
                         <td rowspan="5" style="padding: 12px; border: 1px solid #ddd; font-weight: 600; vertical-align: middle;">${inputs.steelStud}</td>
-                        <td style="padding: 12px; border: 1px solid #ddd;">M check</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">${t('cfss.mCheck')}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-weight: 600; color: ${checks.moment.status === 'PASS' ? 'green' : 'red'};">${checks.moment.status}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${checks.moment.ratio}%</td>
                     </tr>
                     <tr>
-                        <td style="padding: 12px; border: 1px solid #ddd;">Shear check</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">${t('cfss.shearCheck')}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-weight: 600; color: ${checks.shear.status === 'PASS' ? 'green' : 'red'};">${checks.shear.status}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${checks.shear.ratio}%</td>
                     </tr>
                     <tr>
-                        <td style="padding: 12px; border: 1px solid #ddd;">Combination</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">${t('cfss.combination')}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-weight: 600; color: ${checks.combined.status === 'PASS' ? 'green' : 'red'};">${checks.combined.status}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${checks.combined.ratio}%</td>
                     </tr>
                     <tr>
-                        <td style="padding: 12px; border: 1px solid #ddd;">Deflection check</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">${t('cfss.deflectionCheck')}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-weight: 600; color: ${checks.deflection.status === 'PASS' ? 'green' : 'red'};">${checks.deflection.status}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${checks.deflection.ratio}%</td>
                     </tr>
                     <tr>
-                        <td style="padding: 12px; border: 1px solid #ddd;">Web crippling</td>
-                        <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-weight: 600;">${checks.webCrippling.stiffener} STIFFENER</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">${t('cfss.webCrippling')}</td>
+                        <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-weight: 600;">${checks.webCrippling.stiffener} ${t('cfss.stiffener')}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${checks.webCrippling.ratio}%</td>
                     </tr>
 
                     <!-- Deflection Track -->
                     <tr>
-                        <td style="padding: 12px; border: 1px solid #ddd; font-weight: 600;">Deflection track</td>
+                        <td style="padding: 12px; border: 1px solid #ddd; font-weight: 600;">${t('cfss.deflectionTrack')}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; font-weight: 600;">${inputs.deflectionTrack}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">-</td>
                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-weight: 600; color: ${checks.deflectionTrack.status === 'PASS' ? 'green' : 'red'};">${checks.deflectionTrack.status}</td>
@@ -268,7 +268,7 @@ function displayResults(results) {
 
                     <!-- Bottom Track -->
                     <tr>
-                        <td style="padding: 12px; border: 1px solid #ddd; font-weight: 600;">Bottom track</td>
+                        <td style="padding: 12px; border: 1px solid #ddd; font-weight: 600;">${t('cfss.bottomTrack')}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; font-weight: 600;">${inputs.bottomTrack}</td>
                         <td colspan="3" style="padding: 12px; border: 1px solid #ddd; text-align: center;">-</td>
                     </tr>
@@ -278,37 +278,37 @@ function displayResults(results) {
 
         <!-- Detailed Results -->
         <div style="margin-top: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 4px;">
-            <h4 style="margin-top: 0;">Detailed Results</h4>
+            <h4 style="margin-top: 0;">${t('cfss.detailedResults')}</h4>
             
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
                 <div>
-                    <h5>Moment Check</h5>
-                    <p>Required: ${checks.moment.required} kip·in<br>
-                    Allowable: ${checks.moment.allowable} kip·in</p>
+                    <h5>${t('cfss.momentCheck')}</h5>
+                    <p>${t('cfss.required')}: ${checks.moment.required} kip·in<br>
+                    ${t('cfss.allowable')}: ${checks.moment.allowable} kip·in</p>
                 </div>
                 
                 <div>
-                    <h5>Shear Check</h5>
-                    <p>Required: ${checks.shear.required} kip<br>
-                    Allowable: ${checks.shear.allowable} kip</p>
+                    <h5>${t('cfss.shearCheck')}</h5>
+                    <p>${t('cfss.required')}: ${checks.shear.required} kip<br>
+                    ${t('cfss.allowable')}: ${checks.shear.allowable} kip</p>
                 </div>
                 
                 <div>
-                    <h5>Deflection Check</h5>
-                    <p>Required: ${checks.deflection.required} in (${checks.deflection.requiredLimit})<br>
-                    Allowable: ${checks.deflection.allowable} in (${checks.deflection.allowableLimit})</p>
+                    <h5>${t('cfss.deflectionCheck')}</h5>
+                    <p>${t('cfss.required')}: ${checks.deflection.required} in (${checks.deflection.requiredLimit})<br>
+                    ${t('cfss.allowable')}: ${checks.deflection.allowable} in (${checks.deflection.allowableLimit})</p>
                 </div>
                 
                 <div>
-                    <h5>Web Crippling</h5>
-                    <p>Reaction: ${checks.webCrippling.reaction} lb<br>
-                    Capacity: ${checks.webCrippling.capacity} lb</p>
+                    <h5>${t('cfss.webCrippling')}</h5>
+                    <p>${t('cfss.reaction')}: ${checks.webCrippling.reaction} lb<br>
+                    ${t('cfss.capacity')}: ${checks.webCrippling.capacity} lb</p>
                 </div>
                 
                 <div>
-                    <h5>Deflection Track</h5>
-                    <p>Load: ${checks.deflectionTrack.load} lb<br>
-                    Capacity: ${checks.deflectionTrack.capacity} lb</p>
+                    <h5>${t('cfss.deflectionTrack')}</h5>
+                    <p>${t('cfss.load')}: ${checks.deflectionTrack.load} lb<br>
+                    ${t('cfss.capacity')}: ${checks.deflectionTrack.capacity} lb</p>
                 </div>
             </div>
         </div>

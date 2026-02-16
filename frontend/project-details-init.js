@@ -106,9 +106,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (isAdmin && project.createdBy) {
                     const ownerInfo = document.getElementById('projectOwnerInfo');
                     ownerInfo.innerHTML = `
-                        <p><strong>Created by:</strong> ${project.createdBy}</p>
-                        <p><strong>Created on:</strong> ${project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'N/A'}</p>
-                        <p><strong>Last updated:</strong> ${project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : 'N/A'}</p>
+                        <p><strong>${t('project.createdBy')}:</strong> ${project.createdBy}</p>
+                        <p><strong>${t('project.createdOn')}:</strong> ${project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'N/A'}</p>
+                        <p><strong>${t('project.lastUpdated')}:</strong> ${project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : 'N/A'}</p>
                     `;
                 }
 
@@ -161,12 +161,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         } catch (error) {
             console.error("Error fetching project details:", error);
             document.getElementById('loadingProject').style.display = 'none';
-            alert('Error loading project: ' + error.message);
+            alert(t('project.errorLoadingProject') + ': ' + error.message);
         }
     } else {
         console.error("No project ID specified in URL.");
         document.getElementById('loadingProject').style.display = 'none';
-        alert('No project ID specified');
+        alert(t('project.noProjectIdSpecified'));
         window.location.href = 'dashboard.html';
     }
 });

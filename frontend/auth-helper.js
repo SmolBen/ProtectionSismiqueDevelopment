@@ -163,8 +163,10 @@ class AuthHelper {
         }
         this.currentUserData = null;
         
-        // Clear any stored data
+        // Clear any stored data, but preserve language preference
+        const lang = localStorage.getItem('lang');
         localStorage.clear();
+        if (lang) localStorage.setItem('lang', lang);
         sessionStorage.clear();
     }
 
@@ -193,13 +195,13 @@ class AuthHelper {
         let badge = '';
         let avatarClass = '';
         if (this.isAdmin()) {
-            badge = '<span class="admin-badge">ADMIN</span>';
+            badge = `<span class="admin-badge">${typeof t === 'function' ? t('common.admin') : 'ADMIN'}</span>`;
             avatarClass = 'admin';
         } else if (this.isLimited()) {
-            badge = '<span class="admin-badge" style="background: #6c757d;">LIMITED</span>';
+            badge = `<span class="admin-badge" style="background: #6c757d;">${typeof t === 'function' ? t('common.limited') : 'LIMITED'}</span>`;
             avatarClass = 'limited';
         }
-        
+
         userInfo.innerHTML = `
             <div class="user-avatar ${avatarClass}">${initials}</div>
             <div class="user-details">

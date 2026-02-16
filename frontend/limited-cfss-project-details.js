@@ -97,7 +97,7 @@ async function initializeProjectDetails() {
         // Get project ID from URL
         const projectId = new URLSearchParams(window.location.search).get('id');
         if (!projectId) {
-            alert('No project ID provided');
+            alert(t('project.noProjectId'));
             window.location.href = 'limited-cfss-dashboard.html';
             return;
         }
@@ -119,7 +119,7 @@ async function initializeProjectDetails() {
     } catch (error) {
         console.error('Error initializing:', error);
         document.getElementById('loadingProject').style.display = 'none';
-        alert('Error loading project: ' + error.message);
+        alert(t('project.errorLoadingProject') + ': ' + error.message);
     }
 }
 
@@ -174,16 +174,16 @@ async function loadProject(projectId) {
     } catch (error) {
         console.error('Error loading project:', error);
         document.getElementById('loadingProject').style.display = 'none';
-        alert('Error loading project: ' + error.message);
+        alert(t('project.errorLoadingProject') + ': ' + error.message);
         window.location.href = 'limited-cfss-dashboard.html';
     }
 }
 
 function displayProjectInfo() {
     document.getElementById('projectName').textContent = currentProject.name || '';
-    document.getElementById('companyName').textContent = currentProject.companyName || 'Not specified';
-    document.getElementById('clientName').textContent = currentProject.clientName || 'Not specified';
-    document.getElementById('projectDescription').textContent = currentProject.description || 'No description';
+    document.getElementById('companyName').textContent = currentProject.companyName || t('common.notSpecified');
+    document.getElementById('clientName').textContent = currentProject.clientName || t('common.notSpecified');
+    document.getElementById('projectDescription').textContent = currentProject.description || t('common.noDescription');
     
     // Build address string
     const addressParts = [
@@ -193,10 +193,10 @@ function displayProjectInfo() {
         currentProject.province,
         currentProject.country
     ].filter(part => part && part.trim());
-    document.getElementById('projectAddress').textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Not specified';
+    document.getElementById('projectAddress').textContent = addressParts.length > 0 ? addressParts.join(', ') : t('common.notSpecified');
     
-    document.getElementById('projectDeflectionMax').textContent = currentProject.deflectionMax || 'Not specified';
-    document.getElementById('projectThicknessMin').textContent = currentProject.thicknessMin || 'Not specified';
+    document.getElementById('projectDeflectionMax').textContent = currentProject.deflectionMax || t('common.notSpecified');
+    document.getElementById('projectThicknessMin').textContent = currentProject.thicknessMin || t('common.notSpecified');
     
     document.getElementById('projectStatusDropdown').value = currentProject.status || 'Planning';
     
@@ -263,12 +263,12 @@ function setupEventListeners() {
             
             if (equipmentForm.classList.contains('show')) {
                 hideForm('equipmentForm');
-                newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
+                newCalcButton.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.addWall')}`;
                 newCalcButton.classList.remove('expanded');
             } else {
                 hideAllForms();
                 showForm('equipmentForm');
-                newCalcButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                newCalcButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
                 newCalcButton.classList.add('expanded');
                 editingEquipmentId = null;
                 const formElement = document.getElementById('equipmentFormElement');
@@ -289,12 +289,12 @@ function setupEventListeners() {
         console.log('Add Parapet button clicked');
         if (parapetForm.classList.contains('show')) {
             hideForm('parapetForm');
-            addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+            addParapetButton.innerHTML = `<i class="fas fa-building"></i> ${t('cfss.addParapet')}`;
             addParapetButton.classList.remove('expanded');
         } else {
             hideAllForms();
             showForm('parapetForm');
-            addParapetButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+            addParapetButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
             addParapetButton.classList.add('expanded');
             editingParapetId = null;
             const formElement = document.getElementById('parapetFormElement');
@@ -316,12 +316,12 @@ function setupEventListeners() {
             console.log('Add Window button clicked');
             if (windowForm.classList.contains('show')) {
                 hideForm('windowForm');
-                addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+                addWindowButton.innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.addWindow')}`;
                 addWindowButton.classList.remove('expanded');
             } else {
                 hideAllForms();
                 showForm('windowForm');
-                addWindowButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                addWindowButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
                 addWindowButton.classList.add('expanded');
                 editingWindowId = null;
                 const formElement = document.getElementById('windowFormElement');
@@ -339,12 +339,12 @@ function setupEventListeners() {
             console.log('Add Soffites button clicked');
             if (soffiteForm.classList.contains('show')) {
                 hideForm('soffiteForm');
-                addSoffitesButton.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
+                addSoffitesButton.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.addSoffites')}`;
                 addSoffitesButton.classList.remove('expanded');
             } else {
                 hideAllForms();
                 showForm('soffiteForm');
-                addSoffitesButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                addSoffitesButton.innerHTML = `<i class="fas fa-times"></i> ${t('common.hideForm')}`;
                 addSoffitesButton.classList.add('expanded');
                 editingSoffiteId = null;
 
@@ -433,19 +433,19 @@ function hideAllForms() {
     const addSoffitesButton = document.getElementById('addSoffitesButton');       // NEW
     
     if (newCalcButton) {
-        newCalcButton.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
+        newCalcButton.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.addWall')}`;
         newCalcButton.classList.remove('expanded');
     }
     if (addParapetButton) {
-        addParapetButton.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+        addParapetButton.innerHTML = `<i class="fas fa-building"></i> ${t('cfss.addParapet')}`;
         addParapetButton.classList.remove('expanded');
     }
     if (addWindowButton) {
-        addWindowButton.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+        addWindowButton.innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.addWindow')}`;
         addWindowButton.classList.remove('expanded');
     }
     if (addSoffitesButton) {                                                      // NEW
-        addSoffitesButton.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
+        addSoffitesButton.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.addSoffites')}`;
         addSoffitesButton.classList.remove('expanded');
     }
 }
@@ -475,25 +475,25 @@ function hideForm(formId) {
     if (formId === 'equipmentForm') {
         const btn = document.getElementById('newCalculationButton');
         if (btn) {
-            btn.innerHTML = '<i class="fas fa-th-large"></i> Add Wall';
+            btn.innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.addWall')}`;
             btn.classList.remove('expanded');
         }
     } else if (formId === 'parapetForm') {
         const btn = document.getElementById('addParapetButton');
         if (btn) {
-            btn.innerHTML = '<i class="fas fa-building"></i> Add Parapet';
+            btn.innerHTML = `<i class="fas fa-building"></i> ${t('cfss.addParapet')}`;
             btn.classList.remove('expanded');
         }
     } else if (formId === 'windowForm') {
         const btn = document.getElementById('addWindowButton');
         if (btn) {
-            btn.innerHTML = '<i class="fas fa-window-maximize"></i> Add Window';
+            btn.innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.addWindow')}`;
             btn.classList.remove('expanded');
         }
     } else if (formId === 'soffiteForm') {   // NEW
         const btn = document.getElementById('addSoffitesButton');
         if (btn) {
-            btn.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> Add Soffites';
+            btn.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.addSoffites')}`;
             btn.classList.remove('expanded');
         }
     }
@@ -563,7 +563,7 @@ function initializeOptionsSystem() {
                 console.log('Limited CFSS options saved via Save Options button');
             } catch (error) {
                 console.error('Error saving limited CFSS options via button:', error);
-                alert('Error saving options. Please try again.');
+                alert(t('cfss.errorSavingOptions'));
             }
         });
     }
@@ -961,7 +961,7 @@ function updateSelectionSummary() {
     const count = selectedCFSSOptions ? selectedCFSSOptions.length : 0;
     const summary = document.getElementById('selectionSummary');
     if (summary) {
-        summary.innerHTML = `<i class="fas fa-check-circle"></i> ${count} option${count !== 1 ? 's' : ''} selected`;
+        summary.innerHTML = `<i class="fas fa-check-circle"></i> ${t('cfss.optionsSelected', { count })}`;
     }
 }
 
@@ -1029,7 +1029,7 @@ async function handleWallSubmit(e) {
     };
 
     if (!wallData.name) {
-        alert('Please enter a wall name');
+        alert(t('cfss.enterWallName'));
         return;
     }
 
@@ -1056,12 +1056,12 @@ function displayEquipmentList() {
     container.innerHTML = '';
 
     if (!currentProject.equipment || currentProject.equipment.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666;">No walls added yet.</p>';
-        document.getElementById('wallSelectionSummary').innerHTML = '<i class="fas fa-th-large"></i> 0 walls added';
+        container.innerHTML = `<p style="text-align: center; color: #666;">${t('cfss.noWallsAddedYet')}</p>`;
+        document.getElementById('wallSelectionSummary').innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.wallsAdded', { count: 0 })}`;
         return;
     }
 
-    document.getElementById('wallSelectionSummary').innerHTML = `<i class="fas fa-th-large"></i> ${currentProject.equipment.length} walls added`;
+    document.getElementById('wallSelectionSummary').innerHTML = `<i class="fas fa-th-large"></i> ${t('cfss.wallsAdded', { count: currentProject.equipment.length })}`;
 
     currentProject.equipment.forEach((wall, index) => {
         const wallCard = document.createElement('div');
@@ -1073,40 +1073,40 @@ function displayEquipmentList() {
                 <div class="equipment-info-compact">
                     <h4>${wall.name}</h4>
                     <div class="equipment-meta-compact">
-                        <span>Floor: ${wall.floor || 'N/A'}</span>
+                        <span>${t('cfss.floor')}: ${wall.floor || 'N/A'}</span>
                         <span class="meta-separator">•</span>
-                        <span>Height: ${formatHeight(wall)}</span>
-                        ${wall.colombageSet1 ? `<span class="meta-separator">•</span><span>Set 1: ${wall.colombageSet1}</span>` : ''}
-                        ${wall.colombageSet2 ? `<span class="meta-separator">•</span><span>Set 2: ${wall.colombageSet2}</span>` : ''}
+                        <span>${t('cfss.height')}: ${formatHeight(wall)}</span>
+                        ${wall.colombageSet1 ? `<span class="meta-separator">•</span><span>${t('cfss.set1')}: ${wall.colombageSet1}</span>` : ''}
+                        ${wall.colombageSet2 ? `<span class="meta-separator">•</span><span>${t('cfss.set2')}: ${wall.colombageSet2}</span>` : ''}
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleWallDetails('${wall.id}')">Details</button>
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleWallDetails('${wall.id}')">${t('common.details')}</button>
                     <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateWall('${wall.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
-                        <i class="fas fa-copy"></i> Duplicate
+                        <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteWall('${wall.id}')">Delete</button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteWall('${wall.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="wallDetails${wall.id}">
                 <!-- View Mode -->
                 <div class="equipment-details-container" id="wallView${wall.id}">
                     <div class="equipment-info-section">
-                        <p><strong>Wall Name:</strong> ${wall.name}</p>
-                        <p><strong>Floor:</strong> ${wall.floor || 'N/A'}</p>
-                        <p><strong>Height:</strong> ${formatHeight(wall)}</p>
-                        <p><strong>Colombage Set 1:</strong> ${wall.colombageSet1 || 'N/A'}</p>
-                        <p><strong>Colombage Set 2:</strong> ${wall.colombageSet2 || 'N/A'}</p>
-                        <p><strong>Déflexion Set 1:</strong> ${wall.deflexionSet1 || 'N/A'}</p>
-                        <p><strong>Déflexion Set 2:</strong> ${wall.deflexionSet2 || 'N/A'}</p>
-                        ${wall.note ? `<p><strong>Note:</strong> ${wall.note}</p>` : ''}
+                        <p><strong>${t('cfss.wallName')}:</strong> ${wall.name}</p>
+                        <p><strong>${t('cfss.floor')}:</strong> ${wall.floor || 'N/A'}</p>
+                        <p><strong>${t('cfss.height')}:</strong> ${formatHeight(wall)}</p>
+                        <p><strong>${t('cfss.colombageSet1')}:</strong> ${wall.colombageSet1 || 'N/A'}</p>
+                        <p><strong>${t('cfss.colombageSet2')}:</strong> ${wall.colombageSet2 || 'N/A'}</p>
+                        <p><strong>${t('cfss.deflexionSet1')}:</strong> ${wall.deflexionSet1 || 'N/A'}</p>
+                        <p><strong>${t('cfss.deflexionSet2')}:</strong> ${wall.deflexionSet2 || 'N/A'}</p>
+                        ${wall.note ? `<p><strong>${t('cfss.note')}:</strong> ${wall.note}</p>` : ''}
                     </div>
                     <div class="equipment-images-section">
-                        <h4 style="margin: 10px 0 5px 0; font-size: 14px;">Images:</h4>
+                        <h4 style="margin: 10px 0 5px 0; font-size: 14px;">${t('cfss.images')}:</h4>
                         ${renderWallImages(wall, index)}
                     </div>
                     <button class="button primary" onclick="showWallEditForm('${wall.id}')" style="margin-top: 15px;">
-                        <i class="fas fa-edit"></i> Edit
+                        <i class="fas fa-edit"></i> ${t('common.edit')}
                     </button>
                 </div>
                 
@@ -1127,7 +1127,7 @@ function formatHeight(item) {
 }
 
 window.deleteWall = async function(id) {
-    if (!confirm('Are you sure you want to delete this wall?')) return;
+    if (!confirm(t('cfss.confirmDeleteWall'))) return;
 
     currentProject.equipment = currentProject.equipment.filter(e => e.id !== id);
     await saveProject();
@@ -1141,7 +1141,7 @@ window.toggleWallDetails = function(id) {
         details.classList.toggle('show');
         if (btn) {
             const isOpen = details.classList.contains('show');
-            btn.innerHTML = isOpen ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Details';
+            btn.innerHTML = isOpen ? `<i class="fas fa-chevron-up"></i> ${t('common.hide')}` : `<i class="fas fa-chevron-down"></i> ${t('common.details')}`;
         }
     }
 };
@@ -1182,7 +1182,7 @@ async function handleParapetSubmit(e) {
     };
 
     if (!parapetData.parapetName) {
-        alert('Please enter a parapet name');
+        alert(t('cfss.enterParapetName'));
         return;
     }
 
@@ -1207,12 +1207,12 @@ function displayParapetList() {
     container.innerHTML = '';
 
     if (!currentProject.parapets || currentProject.parapets.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666;">No parapets added yet.</p>';
-        document.getElementById('parapetSelectionSummary').innerHTML = '<i class="fas fa-building"></i> 0 parapets added';
+        container.innerHTML = `<p style="text-align: center; color: #666;">${t('cfss.noParapetsAddedYet')}</p>`;
+        document.getElementById('parapetSelectionSummary').innerHTML = `<i class="fas fa-building"></i> ${t('cfss.parapetsAdded', { count: 0 })}`;
         return;
     }
 
-    document.getElementById('parapetSelectionSummary').innerHTML = `<i class="fas fa-building"></i> ${currentProject.parapets.length} parapets added`;
+    document.getElementById('parapetSelectionSummary').innerHTML = `<i class="fas fa-building"></i> ${t('cfss.parapetsAdded', { count: currentProject.parapets.length })}`;
 
     currentProject.parapets.forEach((parapet, index) => {
         const parapetCard = document.createElement('div');
@@ -1227,39 +1227,39 @@ function displayParapetList() {
                 <div class="equipment-info-compact">
                     <h4>${title}</h4>
                     <div class="equipment-meta-compact">
-                        <span>Height: ${heightDisplay}</span>
+                        <span>${t('cfss.height')}: ${heightDisplay}</span>
                         <span class="meta-separator">•</span>
-                        <span>Montant: ${parapet.montantMetallique || 'N/A'}</span>
+                        <span>${t('cfss.montant')}: ${parapet.montantMetallique || 'N/A'}</span>
                         <span class="meta-separator">•</span>
-                        <span>Espacement: ${parapet.espacement || 'N/A'}</span>
+                        <span>${t('cfss.espacement')}: ${parapet.espacement || 'N/A'}</span>
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">Details</button>
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">${t('common.details')}</button>
                     <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateParapet('${parapet.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
-                        <i class="fas fa-copy"></i> Duplicate
+                        <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteParapet('${parapet.id}')">Delete</button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteParapet('${parapet.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="parapetDetails${parapet.id}">
                 <!-- View Mode -->
                 <div class="equipment-details-container" id="parapetView${parapet.id}">
                     <div class="equipment-info-section">
-                        <p><strong>Parapet Name:</strong> ${title}</p>
-                        <p><strong>Type:</strong> ${(parapet.parapetType || parapet.type) || 'N/A'}</p>
-                        <p><strong>Floor:</strong> ${parapet.floor || 'N/A'}</p>
-                        <p><strong>Height:</strong> ${formatHeight(parapet)}</p>
-                        <p><strong>Colombage Set 1:</strong> ${parapet.colombageSet1 || 'N/A'}</p>
-                        <p><strong>Colombage Set 2:</strong> ${parapet.colombageSet2 || 'N/A'}</p>
-                        ${parapet.note ? `<p><strong>Note:</strong> ${parapet.note}</p>` : ''}
+                        <p><strong>${t('cfss.parapetName')}:</strong> ${title}</p>
+                        <p><strong>${t('cfss.type')}:</strong> ${(parapet.parapetType || parapet.type) || 'N/A'}</p>
+                        <p><strong>${t('cfss.floor')}:</strong> ${parapet.floor || 'N/A'}</p>
+                        <p><strong>${t('cfss.height')}:</strong> ${formatHeight(parapet)}</p>
+                        <p><strong>${t('cfss.colombageSet1')}:</strong> ${parapet.colombageSet1 || 'N/A'}</p>
+                        <p><strong>${t('cfss.colombageSet2')}:</strong> ${parapet.colombageSet2 || 'N/A'}</p>
+                        ${parapet.note ? `<p><strong>${t('cfss.note')}:</strong> ${parapet.note}</p>` : ''}
                     </div>
                     <div class="equipment-images-section">
-                        <h4 style="margin: 10px 0 5px 0; font-size: 14px;">Images:</h4>
+                        <h4 style="margin: 10px 0 5px 0; font-size: 14px;">${t('cfss.images')}:</h4>
                         ${renderParapetImages(parapet, index)}
                     </div>
                     <button class="button primary" onclick="showParapetEditForm('${parapet.id}')" style="margin-top: 15px;">
-                        <i class="fas fa-edit"></i> Edit
+                        <i class="fas fa-edit"></i> ${t('common.edit')}
                     </button>
                 </div>
                 
@@ -1278,25 +1278,25 @@ function generateParapetEditForm(parapet) {
                 <!-- Left Column -->
                 <div>
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Parapet Name:</strong></label>
-                        <input type="text" id="editParapetName${parapet.id}" value="${(parapet.parapetName || parapet.name) || ''}" required 
+                        <label><strong>${t('cfss.parapetName')}:</strong></label>
+                        <input type="text" id="editParapetName${parapet.id}" value="${(parapet.parapetName || parapet.name) || ''}" required
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
-                    
+
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Type:</strong></label>
+                        <label><strong>${t('cfss.type')}:</strong></label>
                         <input type="text" id="editParapetType${parapet.id}" value="${(parapet.parapetType || parapet.type) || ''}" 
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Floor:</strong></label>
-                        <input type="text" id="editParapetFloor${parapet.id}" value="${parapet.floor || ''}" 
+                        <label><strong>${t('cfss.floor')}:</strong></label>
+                        <input type="text" id="editParapetFloor${parapet.id}" value="${parapet.floor || ''}"
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
-                    
+
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Hauteur Max:</strong></label>
+                        <label><strong>${t('cfss.hauteurMax')}:</strong></label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="number" id="editParapetHauteurMax${parapet.id}" value="${parapet.hauteurMax || ''}" min="0" step="1"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
@@ -1311,16 +1311,16 @@ function generateParapetEditForm(parapet) {
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Note:</strong></label>
+                        <label><strong>${t('cfss.note')}:</strong></label>
                         <input type="text" id="editParapetNote${parapet.id}" value="${parapet.note || ''}" maxlength="100"
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                 </div>
-                
+
                 <!-- Right Column -->
                 <div>
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Colombage Set 1:</strong></label>
+                        <label><strong>${t('cfss.colombageSet1')}:</strong></label>
                         <select id="editParapetColombageSet1${parapet.id}" 
                                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                             <option value="">Select...</option>
@@ -1335,7 +1335,7 @@ function generateParapetEditForm(parapet) {
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Colombage Set 2:</strong></label>
+                        <label><strong>${t('cfss.colombageSet2')}:</strong></label>
                         <select id="editParapetColombageSet2${parapet.id}" 
                                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                             <option value="">Select...</option>
@@ -1351,11 +1351,11 @@ function generateParapetEditForm(parapet) {
                     
                     <!-- Image Upload Section -->
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Images:</strong></label>
+                        <label><strong>${t('cfss.images')}:</strong></label>
                         <div class="edit-image-upload-section" id="editParapetImageSection${parapet.id}">
                             <div class="upload-controls">
-                                <button type="button" class="camera-btn" id="editParapetCameraBtn${parapet.id}" title="Upload Images">
-                                    <i class="fas fa-camera"></i> Browse
+                                <button type="button" class="camera-btn" id="editParapetCameraBtn${parapet.id}" title="${t('cfss.uploadImages')}">
+                                    <i class="fas fa-camera"></i> ${t('common.browse')}
                                 </button>
                                 <input class="drop-zone" id="editParapetDropZone${parapet.id}" placeholder="Drop or paste images here (Ctrl+V)" readonly tabindex="0">
                             </div>
@@ -1368,10 +1368,10 @@ function generateParapetEditForm(parapet) {
             
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    <i class="fas fa-save"></i> Save Changes
+                    <i class="fas fa-save"></i> ${t('common.saveChanges')}
                 </button>
                 <button type="button" onclick="cancelParapetEdit('${parapet.id}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    Cancel
+                    ${t('common.cancel')}
                 </button>
             </div>
         </form>
@@ -1447,11 +1447,11 @@ window.saveParapetEdit = async function(parapetId, event) {
     
     await saveProject();
     displayParapetList();
-    alert('Parapet updated successfully!');
+    alert(t('cfss.parapetUpdatedSuccessfully'));
 };
 
 window.deleteParapet = async function(id) {
-    if (!confirm('Are you sure you want to delete this parapet?')) return;
+    if (!confirm(t('cfss.confirmDeleteParapet'))) return;
 
     currentProject.parapets = currentProject.parapets.filter(p => p.id !== id);
     await saveProject();
@@ -1465,7 +1465,7 @@ window.toggleParapetDetails = function(id) {
         details.classList.toggle('show');
         if (btn) {
             const isOpen = details.classList.contains('show');
-            btn.innerHTML = isOpen ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Details';
+            btn.innerHTML = isOpen ? `<i class="fas fa-chevron-up"></i> ${t('common.hide')}` : `<i class="fas fa-chevron-down"></i> ${t('common.details')}`;
         }
     }
 };
@@ -1509,7 +1509,7 @@ async function handleWindowSubmit(e) {
     };
 
     if (!windowData.type) {
-        alert('Please enter a window type');
+        alert(t('cfss.enterWindowType'));
         return;
     }
 
@@ -1532,7 +1532,7 @@ async function handleSoffiteSubmit(e) {
     e.preventDefault();
 
     if (!currentProject) {
-        alert('Project not loaded');
+        alert(t('project.projectNotLoaded'));
         return;
     }
 
@@ -1540,7 +1540,7 @@ async function handleSoffiteSubmit(e) {
     const name = nameInput ? nameInput.value.trim() : '';
 
     if (!name) {
-        alert('Please enter a soffite name.');
+        alert(t('cfss.enterSoffiteName'));
         if (nameInput) nameInput.focus();
         return;
     }
@@ -1549,7 +1549,7 @@ async function handleSoffiteSubmit(e) {
 
     // Require at least one image?  (You can relax this if you want)
     if (images.length === 0) {
-        const proceed = confirm('No images have been added. Save this soffite anyway?');
+        const proceed = confirm(t('cfss.noImagesSaveSoffiteAnyway'));
         if (!proceed) return;
     }
 
@@ -1596,12 +1596,12 @@ function displayWindowList() {
     container.innerHTML = '';
 
     if (!currentProject.windows || currentProject.windows.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666;">No windows added yet.</p>';
-        document.getElementById('windowSelectionSummary').innerHTML = '<i class="fas fa-window-maximize"></i> 0 windows added';
+        container.innerHTML = `<p style="text-align: center; color: #666;">${t('cfss.noWindowsAddedYet')}</p>`;
+        document.getElementById('windowSelectionSummary').innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.windowsAdded', { count: 0 })}`;
         return;
     }
 
-    document.getElementById('windowSelectionSummary').innerHTML = `<i class="fas fa-window-maximize"></i> ${currentProject.windows.length} windows added`;
+    document.getElementById('windowSelectionSummary').innerHTML = `<i class="fas fa-window-maximize"></i> ${t('cfss.windowsAdded', { count: currentProject.windows.length })}`;
 
     currentProject.windows.forEach((win, index) => {
         const windowCard = document.createElement('div');
@@ -1618,31 +1618,31 @@ function displayWindowList() {
                 <div class="equipment-info-compact">
                     <h4>${title}</h4>
                     <div class="equipment-meta-compact">
-                        ${win.floor ? `<span>Floor: ${win.floor}</span><span style="margin: 0 6px; color: #aaa;">•</span>` : ''}<span>Dimensions: ${dims}</span>
+                        ${win.floor ? `<span>${t('cfss.floor')}: ${win.floor}</span><span style="margin: 0 6px; color: #aaa;">•</span>` : ''}<span>${t('cfss.dimensions')}: ${dims}</span>
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleWindowDetails('${win.id}')">Details</button>
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleWindowDetails('${win.id}')">${t('common.details')}</button>
                     <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateWindow('${win.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
-                        <i class="fas fa-copy"></i> Duplicate
+                        <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteWindow('${win.id}')">Delete</button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteWindow('${win.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="windowDetails${win.id}">
                 <!-- View Mode -->
                 <div class="equipment-details-container" id="windowView${win.id}">
                     <div class="equipment-info-section">
-                        <p><strong>Window Type:</strong> ${win.type}</p>
-                        <p><strong>Colombage:</strong> ${win.colombageSize || 'N/A'}</p>
-                        <p><strong>Floor:</strong> ${win.floor || 'N/A'}</p>
-                        <p><strong>Width (Largeur):</strong> ${formatDimension(win, 'largeur')}</p>
-                        <p><strong>Height (Hauteur):</strong> ${formatDimension(win, 'hauteur')}</p>
+                        <p><strong>${t('cfss.windowType')}:</strong> ${win.type}</p>
+                        <p><strong>${t('cfss.colombage')}:</strong> ${win.colombageSize || 'N/A'}</p>
+                        <p><strong>${t('cfss.floor')}:</strong> ${win.floor || 'N/A'}</p>
+                        <p><strong>${t('cfss.widthLargeur')}:</strong> ${formatDimension(win, 'largeur')}</p>
+                        <p><strong>${t('cfss.heightHauteur')}:</strong> ${formatDimension(win, 'hauteur')}</p>
                         <p><strong>L1:</strong> ${formatL(win, 'l1')}</p>
                         <p><strong>L2:</strong> ${formatL(win, 'l2')}</p>
                     </div>
                     <button class="button primary" onclick="showWindowEditForm('${win.id}')" style="margin-top: 15px;">
-                        <i class="fas fa-edit"></i> Edit
+                        <i class="fas fa-edit"></i> ${t('common.edit')}
                     </button>
                 </div>
                 
@@ -1662,10 +1662,10 @@ function displaySoffiteList() {
 
     // If no soffites yet
     if (!currentProject.soffites || currentProject.soffites.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666;">No soffites added yet.</p>';
+        container.innerHTML = `<p style="text-align: center; color: #666;">${t('cfss.noSoffitesAddedYet')}</p>`;
         const summary = document.getElementById('soffiteSelectionSummary');
         if (summary) {
-            summary.innerHTML = '<i class="fas fa-grip-lines-vertical"></i> 0 soffites added';
+            summary.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.soffitesAdded', { count: 0 })}`;
         }
         return;
     }
@@ -1673,7 +1673,7 @@ function displaySoffiteList() {
     // Update summary
     const summary = document.getElementById('soffiteSelectionSummary');
     if (summary) {
-        summary.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${currentProject.soffites.length} soffites added`;
+        summary.innerHTML = `<i class="fas fa-grip-lines-vertical"></i> ${t('cfss.soffitesAdded', { count: currentProject.soffites.length })}`;
     }
 
     // Render each soffite card
@@ -1691,23 +1691,23 @@ function displaySoffiteList() {
                 <div class="equipment-info-compact">
                     <h4>${name}</h4>
                     <div class="equipment-meta-compact">
-                        <span>Images: ${imageCount}</span>
+                        <span>${t('cfss.images')}: ${imageCount}</span>
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">Details</button>
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">${t('common.details')}</button>
                     <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateSoffite('${soffite.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
-                        <i class="fas fa-copy"></i> Duplicate
+                        <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteSoffite('${soffite.id}')">Delete</button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteSoffite('${soffite.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="soffiteDetails${soffite.id}">
                 <!-- View Mode -->
                 <div class="equipment-details-container" id="soffiteView${soffite.id}">
                     <div class="equipment-info-section">
-                        <p><strong>Soffite Name:</strong> ${name}</p>
-                        <p><strong>Images:</strong> ${imageCount}</p>
+                        <p><strong>${t('cfss.soffiteName')}:</strong> ${name}</p>
+                        <p><strong>${t('cfss.images')}:</strong> ${imageCount}</p>
                         ${imageCount > 0 ? `
                             <div class="soffite-images-preview" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
                                 ${images.map((img, imgIndex) => `
@@ -1728,7 +1728,7 @@ function displaySoffiteList() {
                         ` : ''}
                     </div>
                     <button class="button primary" onclick="showSoffiteEditForm('${soffite.id}')" style="margin-top: 15px;">
-                        <i class="fas fa-edit"></i> Edit
+                        <i class="fas fa-edit"></i> ${t('common.edit')}
                     </button>
                 </div>
                 
@@ -1748,20 +1748,20 @@ function generateSoffiteEditForm(soffite) {
     return `
         <form id="soffiteEditForm${soffite.id}" style="display: none; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px;" onsubmit="saveSoffiteEdit('${soffite.id}', event)">
             <div class="form-group" style="margin-bottom: 15px;">
-                <label><strong>Soffite Name:</strong></label>
-                <input type="text" id="editSoffiteName${soffite.id}" value="${soffite.name || ''}" required 
+                <label><strong>${t('cfss.soffiteName')}:</strong></label>
+                <input type="text" id="editSoffiteName${soffite.id}" value="${soffite.name || ''}" required
                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
             </div>
             
             <div style="display: flex; gap: 20px; align-items: flex-start;">
                 <!-- Left: Image Upload Section -->
                 <div style="flex-shrink: 0;">
-                    <label><strong>Images:</strong></label>
-                    <small style="display: block; font-size: 12px; color: #666; margin-bottom: 8px;">Max 2 images</small>
+                    <label><strong>${t('cfss.images')}:</strong></label>
+                    <small style="display: block; font-size: 12px; color: #666; margin-bottom: 8px;">${t('cfss.max2Images')}</small>
                     <div class="edit-image-upload-section" id="editSoffiteImageSection${soffite.id}">
                         <div class="upload-controls">
-                            <button type="button" class="camera-btn" id="editSoffiteCameraBtn${soffite.id}" title="Upload Images">
-                                <i class="fas fa-camera"></i> Browse
+                            <button type="button" class="camera-btn" id="editSoffiteCameraBtn${soffite.id}" title="${t('cfss.uploadImages')}">
+                                <i class="fas fa-camera"></i> ${t('common.browse')}
                             </button>
                             <input class="drop-zone" id="editSoffiteDropZone${soffite.id}" placeholder="Drop or paste images" readonly tabindex="0" style="width: 150px;">
                         </div>
@@ -1773,13 +1773,13 @@ function generateSoffiteEditForm(soffite) {
                 <!-- Right: Image Descriptions -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
                     <div>
-                        <label style="font-size: 13px;"><strong>Image description:</strong></label>
+                        <label style="font-size: 13px;"><strong>${t('cfss.imageDescription')}:</strong></label>
                         <input type="text" id="editSoffiteImage1Desc${soffite.id}" value="${soffite.image1Description || ''}" 
                                placeholder="Description for image 1..." maxlength="50"
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     <div id="editSoffiteImage2DescContainer${soffite.id}" style="display: ${images.length >= 2 ? 'block' : 'none'};">
-                        <label style="font-size: 13px;"><strong>Image 2 description:</strong></label>
+                        <label style="font-size: 13px;"><strong>${t('cfss.image2Description')}:</strong></label>
                         <input type="text" id="editSoffiteImage2Desc${soffite.id}" value="${soffite.image2Description || ''}" 
                                placeholder="Description for image 2..." maxlength="50"
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
@@ -1789,10 +1789,10 @@ function generateSoffiteEditForm(soffite) {
             
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    <i class="fas fa-save"></i> Save Changes
+                    <i class="fas fa-save"></i> ${t('common.saveChanges')}
                 </button>
                 <button type="button" onclick="cancelSoffiteEdit('${soffite.id}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    Cancel
+                    ${t('common.cancel')}
                 </button>
             </div>
         </form>
@@ -1848,10 +1848,10 @@ window.saveSoffiteEdit = async function(soffiteId, event) {
     const image2Description = document.getElementById(`editSoffiteImage2Desc${soffiteId}`).value.trim();
     
     if (!name) {
-        alert('Please enter a soffite name.');
+        alert(t('cfss.enterSoffiteName'));
         return;
     }
-    
+
     currentProject.soffites[soffiteIndex] = {
         ...currentProject.soffites[soffiteIndex],
         name,
@@ -1915,10 +1915,10 @@ function updateEditSoffiteDropZoneState(soffiteId) {
     const count = editingSoffiteImages[soffiteId]?.length || 0;
     if (dropZone) {
         if (count >= 2) {
-            dropZone.placeholder = 'Max images reached';
+            dropZone.placeholder = t('cfss.maxImagesReached');
             dropZone.style.opacity = '0.5';
         } else {
-            dropZone.placeholder = 'Drop or paste images';
+            dropZone.placeholder = t('cfss.dropOrPasteImages');
             dropZone.style.opacity = '1';
         }
     }
@@ -1977,7 +1977,7 @@ function setupEditSoffiteImageUploadHandlers(soffiteId) {
 async function processEditSoffiteFiles(soffiteId, files) {
     const validFiles = files.filter(f => f.type && f.type.startsWith('image/'));
     if (validFiles.length === 0) {
-        alert('Please select valid image files.');
+        alert(t('cfss.selectValidImageFiles'));
         return;
     }
     
@@ -1987,7 +1987,7 @@ async function processEditSoffiteFiles(soffiteId, files) {
     const remainingSlots = 2 - currentCount;
     
     if (remainingSlots <= 0) {
-        alert('Maximum 2 images allowed. Remove an image first.');
+        alert(t('cfss.max2ImagesRemoveFirst'));
         return;
     }
     
@@ -2041,13 +2041,13 @@ function generateWindowEditForm(win) {
                 <!-- Left Column -->
                 <div>
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Window Type:</strong></label>
-                        <input type="text" id="editWindowType${win.id}" value="${win.type || ''}" required 
+                        <label><strong>${t('cfss.windowType')}:</strong></label>
+                        <input type="text" id="editWindowType${win.id}" value="${win.type || ''}" required
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
-                    
+
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Colombage:</strong></label>
+                        <label><strong>${t('cfss.colombage')}:</strong></label>
                         <select id="editWindowColombageSize${win.id}" 
                                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                             <option value="">Select...</option>
@@ -2060,13 +2060,13 @@ function generateWindowEditForm(win) {
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Floor:</strong></label>
-                        <input type="text" id="editWindowFloor${win.id}" value="${win.floor || ''}" 
+                        <label><strong>${t('cfss.floor')}:</strong></label>
+                        <input type="text" id="editWindowFloor${win.id}" value="${win.floor || ''}"
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
-                    
+
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Largeur Max:</strong></label>
+                        <label><strong>${t('cfss.largeurMax')}:</strong></label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="number" id="editWindowLargeurMax${win.id}" value="${win.largeurMax || ''}" min="0" step="1"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
@@ -2081,7 +2081,7 @@ function generateWindowEditForm(win) {
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Hauteur Max:</strong></label>
+                        <label><strong>${t('cfss.hauteurMax')}:</strong></label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="number" id="editWindowHauteurMax${win.id}" value="${win.hauteurMax || ''}" min="0" step="1"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
@@ -2132,7 +2132,7 @@ function generateWindowEditForm(win) {
                     
                     <!-- Window Reference Image -->
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Reference:</strong></label>
+                        <label><strong>${t('cfss.reference')}:</strong></label>
                         <div style="
                             width: 100%;
                             padding: 10px;
@@ -2158,10 +2158,10 @@ function generateWindowEditForm(win) {
             
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    <i class="fas fa-save"></i> Save Changes
+                    <i class="fas fa-save"></i> ${t('common.saveChanges')}
                 </button>
                 <button type="button" onclick="cancelWindowEdit('${win.id}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    Cancel
+                    ${t('common.cancel')}
                 </button>
             </div>
         </form>
@@ -2213,11 +2213,11 @@ window.saveWindowEdit = async function(windowId, event) {
     
     await saveProject();
     displayWindowList();
-    alert('Window updated successfully!');
+    alert(t('cfss.windowUpdatedSuccessfully'));
 };
 
 window.deleteWindow = async function(id) {
-    if (!confirm('Are you sure you want to delete this window?')) return;
+    if (!confirm(t('cfss.confirmDeleteWindow'))) return;
 
     currentProject.windows = currentProject.windows.filter(w => w.id !== id);
     await saveProject();
@@ -2231,7 +2231,7 @@ window.toggleWindowDetails = function(id) {
         details.classList.toggle('show');
         if (btn) {
             const isOpen = details.classList.contains('show');
-            btn.innerHTML = isOpen ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Details';
+            btn.innerHTML = isOpen ? `<i class="fas fa-chevron-up"></i> ${t('common.hide')}` : `<i class="fas fa-chevron-down"></i> ${t('common.details')}`;
         }
     }
 };
@@ -2257,13 +2257,13 @@ window.toggleSoffiteDetails = function(id) {
         details.classList.toggle('show');
         if (btn) {
             const isOpen = details.classList.contains('show');
-            btn.innerHTML = isOpen ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Details';
+            btn.innerHTML = isOpen ? `<i class="fas fa-chevron-up"></i> ${t('common.hide')}` : `<i class="fas fa-chevron-down"></i> ${t('common.details')}`;
         }
     }
 };
 
 window.deleteSoffite = async function(id) {
-    if (!confirm('Are you sure you want to delete this soffite?')) return;
+    if (!confirm(t('cfss.confirmDeleteSoffite'))) return;
 
     currentProject.soffites = currentProject.soffites.filter(s => s.id !== id);
     await saveProject();
@@ -2498,7 +2498,7 @@ async function processSoffiteFiles(files) {
     const validFiles = files.filter(file => file.type && file.type.startsWith('image/'));
 
     if (validFiles.length === 0) {
-        alert('Please select valid image files.');
+        alert(t('cfss.selectValidImageFiles'));
         return;
     }
 
@@ -2510,7 +2510,7 @@ async function processSoffiteFiles(files) {
     const remainingSlots = 2 - currentCount;
 
     if (remainingSlots <= 0) {
-        alert('Maximum 2 images allowed per soffite. Please remove an image to add another one.');
+        alert(t('cfss.max2ImagesSoffite'));
         return;
     }
 
@@ -2639,7 +2639,7 @@ async function saveProject() {
         console.log('Project saved');
     } catch (error) {
         console.error('Error saving project:', error);
-        alert('Error saving project: ' + error.message);
+        alert(t('project.errorSavingProject') + ': ' + error.message);
     }
 }
 
@@ -2713,7 +2713,7 @@ function removeFloor(row) {
     const rows = tbody.querySelectorAll('tr');
     
     if (rows.length <= 1) {
-        alert('At least one floor is required.');
+        alert(t('cfss.atLeastOneFloorRequired'));
         return;
     }
     
@@ -2744,7 +2744,7 @@ async function saveFloors() {
     
     currentProject.floors = floors;
     await saveProject();
-    alert('Floors saved successfully!');
+    alert(t('cfss.floorsSavedSuccessfully'));
 }
 
 // Image Upload Functions
@@ -2835,7 +2835,7 @@ async function processFiles(files) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert('Please select valid image files.');
+        alert(t('cfss.selectValidImageFiles'));
         return;
     }
     
@@ -2843,7 +2843,7 @@ async function processFiles(files) {
     const remainingSlots = 2 - currentImageCount;
     
     if (remainingSlots <= 0) {
-        alert('Maximum 2 images allowed per wall. Please remove existing images to add new ones.');
+        alert(t('cfss.max2ImagesWall'));
         return;
     }
     
@@ -3079,7 +3079,7 @@ async function processParapetFiles(files) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert('Please select valid image files.');
+        alert(t('cfss.selectValidImageFiles'));
         return;
     }
     
@@ -3087,7 +3087,7 @@ async function processParapetFiles(files) {
     const remainingSlots = 2 - currentImageCount;
     
     if (remainingSlots <= 0) {
-        alert('Maximum 2 images allowed per parapet. Please remove existing images to add new ones.');
+        alert(t('cfss.max2ImagesParapet'));
         return;
     }
     
@@ -3186,7 +3186,7 @@ function clearParapetImages() {
 // Render wall images in the wall list
 function renderWallImages(wall, index) {
     if (!wall.images || wall.images.length === 0) {
-        return '<p style="color: #666; font-style: italic;">No images</p>';
+        return `<p style="color: #666; font-style: italic;">${t('cfss.noImages')}</p>`;
     }
     
     const imagesToShow = wall.images.slice(0, 2);
@@ -3312,7 +3312,7 @@ async function processEditParapetFiles(parapetId, files) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert('Please select valid image files.');
+        alert(t('cfss.selectValidImageFiles'));
         return;
     }
     
@@ -3324,7 +3324,7 @@ async function processEditParapetFiles(parapetId, files) {
     const remainingSlots = 2 - currentCount;
     
     if (remainingSlots <= 0) {
-        alert('Maximum 2 images allowed per parapet.');
+        alert(t('cfss.max2ImagesParapet'));
         return;
     }
     
@@ -3409,7 +3409,7 @@ function updateEditParapetDropZoneState(parapetId) {
 // Render parapet images in the parapet list
 function renderParapetImages(parapet, index) {
     if (!parapet.images || parapet.images.length === 0) {
-        return '<p style="color: #666; font-style: italic;">No images</p>';
+        return `<p style="color: #666; font-style: italic;">${t('cfss.noImages')}</p>`;
     }
     
     const imagesToShow = parapet.images.slice(0, 2);
@@ -3482,19 +3482,19 @@ function generateWallEditForm(wall) {
                 <!-- Left Column -->
                 <div>
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Wall Name:</strong></label>
-                        <input type="text" id="editName${wall.id}" value="${wall.name || ''}" required 
+                        <label><strong>${t('cfss.wallName')}:</strong></label>
+                        <input type="text" id="editName${wall.id}" value="${wall.name || ''}" required
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
-                    
+
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Floor:</strong></label>
-                        <input type="text" id="editFloor${wall.id}" value="${wall.floor || ''}" 
+                        <label><strong>${t('cfss.floor')}:</strong></label>
+                        <input type="text" id="editFloor${wall.id}" value="${wall.floor || ''}"
                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
-                    
+
                     <div class="form-group" style="margin-bottom: 15px;">
-                        <label><strong>Hauteur Max:</strong></label>
+                        <label><strong>${t('cfss.hauteurMax')}:</strong></label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="number" id="editHauteurMax${wall.id}" value="${wall.hauteurMax || ''}" min="0" step="1"
                                    style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
@@ -3673,7 +3673,7 @@ window.saveWallEdit = async function(wallId, event) {
     
     await saveProject();
     displayEquipmentList();
-    alert('Wall updated successfully!');
+    alert(t('cfss.wallUpdatedSuccessfully'));
 };
 
 function setupEditImageUploadHandlers(wallId) {
@@ -3740,7 +3740,7 @@ async function processEditFiles(wallId, files) {
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     
     if (validFiles.length === 0) {
-        alert('Please select valid image files.');
+        alert(t('cfss.selectValidImageFiles'));
         return;
     }
     
@@ -3752,7 +3752,7 @@ async function processEditFiles(wallId, files) {
     const remainingSlots = 2 - currentCount;
     
     if (remainingSlots <= 0) {
-        alert('Maximum 2 images allowed per wall.');
+        alert(t('cfss.max2ImagesWall'));
         return;
     }
     
@@ -3843,7 +3843,7 @@ function populateParapetTypeDropdown() {
     const selectedParapetOptions = selectedCFSSOptions.filter(opt => opt.startsWith('parapet-'));
     
     // Clear existing options
-    parapetTypeSelect.innerHTML = '<option value="">Select Parapet Type</option>';
+    parapetTypeSelect.innerHTML = `<option value="">${t('cfss.selectParapetType')}</option>`;
     
     if (selectedParapetOptions.length === 0) {
         // No parapet options selected - show all types (1-13)
@@ -3881,7 +3881,7 @@ function updateParapetTypeImage(selectedType) {
     if (!previewBox) return;
     
     if (!selectedType) {
-        previewBox.innerHTML = '<span style="color: #999; font-size: 13px; text-align: center;">Select a type</span>';
+        previewBox.innerHTML = `<span style="color: #999; font-size: 13px; text-align: center;">${t('cfss.selectAType')}</span>`;
         return;
     }
     
@@ -3917,7 +3917,7 @@ function setUploadMode(mode) {
         linkBtn.style.color = '#555';
         fileInput.style.display = 'block';
         linkInput.style.display = 'none';
-        inputLabel.innerHTML = 'Select File <span style="color: red;">*</span>';
+        inputLabel.innerHTML = `${t('project.selectFile')} <span style="color: red;">*</span>`;
     } else {
         linkBtn.style.background = '#17a2b8';
         linkBtn.style.color = 'white';
@@ -3925,7 +3925,7 @@ function setUploadMode(mode) {
         fileBtn.style.color = '#555';
         fileInput.style.display = 'none';
         linkInput.style.display = 'block';
-        inputLabel.innerHTML = 'Paste Link <span style="color: red;">*</span>';
+        inputLabel.innerHTML = `${t('project.pasteLink')} <span style="color: red;">*</span>`;
     }
 }
 
@@ -3934,7 +3934,7 @@ async function handleFileUpload() {
     const fileName = document.getElementById('uploadFileName').value.trim();
 
     if (!fileName) {
-        alert('Please enter a file name');
+        alert(t('project.enterFileName'));
         return;
     }
 
@@ -3943,7 +3943,7 @@ async function handleFileUpload() {
         const linkUrl = document.getElementById('uploadLinkInput').value.trim();
         
         if (!linkUrl) {
-            alert('Please paste a link');
+            alert(t('project.pasteLink'));
             return;
         }
 
@@ -3951,17 +3951,17 @@ async function handleFileUpload() {
         try {
             const urlObj = new URL(linkUrl);
             if (urlObj.protocol !== 'https:') {
-                alert('Only secure HTTPS links are allowed');
+                alert(t('project.onlyHttpsAllowed'));
                 return;
             }
         } catch {
-            alert('Please enter a valid URL');
+            alert(t('project.enterValidUrl'));
             return;
         }
 
         try {
             document.getElementById('uploadFileSubmitBtn').disabled = true;
-            document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            document.getElementById('uploadFileSubmitBtn').innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('common.adding')}`;
 
             // Save link metadata to project
             const fileMetadata = {
@@ -3982,14 +3982,14 @@ async function handleFileUpload() {
             document.getElementById('uploadFileRow').style.display = 'none';
             displayProjectFiles();
             
-            alert('Link added successfully!');
+            alert(t('project.linkAddedSuccessfully'));
 
         } catch (error) {
             console.error('Error adding link:', error);
-            alert('Error adding link: ' + error.message);
+            alert(t('project.errorAddingLink') + ': ' + error.message);
         } finally {
             document.getElementById('uploadFileSubmitBtn').disabled = false;
-            document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-upload"></i> Upload';
+            document.getElementById('uploadFileSubmitBtn').innerHTML = `<i class="fas fa-upload"></i> ${t('common.upload')}`;
         }
 
     } else {
@@ -3998,13 +3998,13 @@ async function handleFileUpload() {
         const file = fileInput.files[0];
 
         if (!file) {
-            alert('Please select a file');
+            alert(t('project.selectFile'));
             return;
         }
 
         try {
             document.getElementById('uploadFileSubmitBtn').disabled = true;
-            document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            document.getElementById('uploadFileSubmitBtn').innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('common.uploading')}`;
 
             // Get upload URL from backend
             const uploadUrlResponse = await fetch(`${apiUrl}/${currentProject.id}/file-upload-url`, {
@@ -4057,14 +4057,14 @@ async function handleFileUpload() {
             document.getElementById('uploadFileRow').style.display = 'none';
             displayProjectFiles();
             
-            alert('File uploaded successfully!');
+            alert(t('project.fileUploadedSuccessfully'));
 
         } catch (error) {
             console.error('Error uploading file:', error);
-            alert('Error uploading file: ' + error.message);
+            alert(t('project.errorUploadingFile') + ': ' + error.message);
         } finally {
             document.getElementById('uploadFileSubmitBtn').disabled = false;
-            document.getElementById('uploadFileSubmitBtn').innerHTML = '<i class="fas fa-upload"></i> Upload';
+            document.getElementById('uploadFileSubmitBtn').innerHTML = `<i class="fas fa-upload"></i> ${t('common.upload')}`;
         }
     }
 }
@@ -4184,7 +4184,7 @@ async function downloadProjectFile(fileId) {
     try {
         const file = currentProject.files.find(f => f.id === fileId);
         if (!file) {
-            alert('File not found');
+            alert(t('project.fileNotFound'));
             return;
         }
 
@@ -4205,20 +4205,20 @@ async function downloadProjectFile(fileId) {
 
     } catch (error) {
         console.error('Error downloading file:', error);
-        alert('Error downloading file: ' + error.message);
+        alert(t('project.errorDownloadingFile') + ': ' + error.message);
     }
 }
 
 // Delete project file
 async function deleteProjectFile(fileId) {
-    if (!confirm('Are you sure you want to delete this file?')) {
+    if (!confirm(t('project.confirmDeleteFile'))) {
         return;
     }
 
     try {
         const file = currentProject.files.find(f => f.id === fileId);
         if (!file) {
-            alert('File not found');
+            alert(t('project.fileNotFound'));
             return;
         }
 
@@ -4237,11 +4237,11 @@ async function deleteProjectFile(fileId) {
         await updateProject(currentProject.id, { files: currentProject.files });
 
         displayProjectFiles();
-        alert('File deleted successfully');
+        alert(t('project.fileDeletedSuccessfully'));
 
     } catch (error) {
         console.error('Error deleting file:', error);
-        alert('Error deleting file: ' + error.message);
+        alert(t('project.errorDeletingFile') + ': ' + error.message);
     }
 }
 
@@ -4462,17 +4462,17 @@ function convertProjectToRegular(limitedProject) {
 // Main submit to admin function
 async function submitToAdmin() {
     if (!currentProject) {
-        alert('No project loaded');
+        alert(t('project.projectNotLoaded'));
         return;
     }
-    
+
     const btn = document.getElementById('submitToAdminBtn');
     const btnText = document.getElementById('submitBtnText');
     
     try {
         // Disable button and show loading
         btn.disabled = true;
-        btnText.textContent = 'Submitting...';
+        btnText.textContent = t('cfss.submitting');
         btn.style.opacity = '0.7';
         
         // Check if already submitted
@@ -4520,7 +4520,7 @@ async function submitToAdmin() {
             
             currentProject.lastSubmittedAt = new Date().toISOString();
             
-            alert('Project updated successfully! Admin can now see your changes.');
+            alert(t('cfss.projectUpdatedSuccessfully'));
             
         } else {
             // Create new regular project
@@ -4573,7 +4573,7 @@ async function submitToAdmin() {
             currentProject.firstSubmittedAt = new Date().toISOString();
             currentProject.lastSubmittedAt = new Date().toISOString();
             
-            alert('Project submitted successfully! Admin can now review your project.');
+            alert(t('cfss.projectSubmittedSuccessfully'));
         }
         
         // Update UI to show submitted status
@@ -4581,7 +4581,7 @@ async function submitToAdmin() {
         
     } catch (error) {
         console.error('Error submitting to admin:', error);
-        alert('Error submitting project: ' + error.message);
+        alert(t('cfss.errorSubmittingProject') + ': ' + error.message);
     } finally {
         // Re-enable button
         btn.disabled = false;
@@ -4595,9 +4595,9 @@ function updateSubmitButtonText() {
     const btnText = document.getElementById('submitBtnText');
     if (btnText) {
         if (currentProject && currentProject.linkedRegularProjectId) {
-            btnText.textContent = 'Update Submission';
+            btnText.textContent = t('cfss.updateSubmission');
         } else {
-            btnText.textContent = 'Submit';
+            btnText.textContent = t('cfss.submit');
         }
     }
 }
@@ -4610,13 +4610,13 @@ function updateSubmitStatusUI() {
     
     if (currentProject && currentProject.linkedRegularProjectId) {
         if (statusText) {
-            statusText.textContent = 'Project has been submitted. You can update your submission anytime.';
+            statusText.textContent = t('cfss.projectHasBeenSubmitted');
         }
         if (submittedInfo && submittedDate) {
             const lastSubmitted = currentProject.lastSubmittedAt ? 
                 new Date(currentProject.lastSubmittedAt).toLocaleString() : 
                 'Unknown';
-            submittedDate.textContent = `Last submitted: ${lastSubmitted}`;
+            submittedDate.textContent = `${t('cfss.lastSubmitted')}: ${lastSubmitted}`;
             submittedInfo.style.display = 'block';
         }
         updateSubmitButtonText();
