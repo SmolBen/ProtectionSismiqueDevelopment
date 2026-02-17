@@ -177,5 +177,8 @@ function setupReportButton() {
     const generateReportButton = document.getElementById('generateReportButton');
     if (generateReportButton) {
         generateReportButton.addEventListener('click', generateProjectReport);
+        if (authHelper.isAdmin()) {
+            generateReportButton.style.display = '';
+        }
     }
 }
