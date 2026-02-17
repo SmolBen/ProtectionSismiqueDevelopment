@@ -6592,7 +6592,8 @@ function toggleVoiceInput() {
     }
 
     speechRecognition = new SpeechRecognition();
-    speechRecognition.lang = navigator.language || navigator.userLanguage || 'en-US';
+    const lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'fr';
+    speechRecognition.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
     speechRecognition.interimResults = true;
     speechRecognition.maxAlternatives = 1;
 
