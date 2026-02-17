@@ -75,10 +75,14 @@ function deleteRow(sheet, rowIndex, emailLink, matchColumn, matchValue) {
     for (var i = 1; i < data.length; i++) {
       if (data[i][linkColIndex] === emailLink) {
         sheet.deleteRow(i + 1);
+        // Cascade: delete same email from all other sheets
+        var deleteSet = {};
+        deleteSet[emailLink] = true;
+        cascadeDeleteByEmailLink(sheet.getName(), deleteSet);
         return jsonResponse({ success: true, deletedRow: i + 1 });
       }
     }
-    
+
     return jsonResponse({ error: 'Row not found' }, 404);
   }
   
@@ -152,6 +156,11 @@ function bulkDelete(sheet, emailLinks, matchColumn, matchValues) {
     sheet.getRange(1, 1, rowsToKeep.length, rowsToKeep[0].length).setValues(rowsToKeep);
   }
 
+  // Cascade: delete matching emails from all other email sheets
+  if (emailLinks.length > 0 && deletedCount > 0) {
+    cascadeDeleteByEmailLink(sheet.getName(), deleteSet);
+  }
+
   return jsonResponse({ success: true, deletedCount: deletedCount });
 }
 
@@ -167,6 +176,118 @@ function columnLetterToIndex(letter) {
     index = index * 26 + letter.charCodeAt(i) - 64;
   }
   return index;
+}
+
+function cascadeDeleteByEmailLink(sourceSheetName, deleteSet) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var emailSheets = [
+    'Review', 'Engineering - Existing Projects', 'Engineering - Unknown Projects',
+    'New Projects', 'Price Requests', 'Existing Projects - Certificate Requests',
+    'Other', 'Spam'
+  ];
+
+  for (var s = 0; s < emailSheets.length; s++) {
+    if (emailSheets[s] === sourceSheetName) continue;
+    var otherSheet = ss.getSheetByName(emailSheets[s]);
+    if (!otherSheet || otherSheet.getLastRow() < 2) continue;
+
+    var otherData = otherSheet.getDataRange().getValues();
+    var otherLinkCol = otherData[0].indexOf('Email Link');
+    if (otherLinkCol === -1) continue;
+
+    var keep = [otherData[0]];
+    var hadDeletions = false;
+    for (var i = 1; i < otherData.length; i++) {
+      if (deleteSet[otherData[i][otherLinkCol]]) {
+        hadDeletions = true;
+      } else {
+        keep.push(otherData[i]);
+      }
+    }
+
+    if (hadDeletions) {
+      otherSheet.clearContents();
+      if (keep.length > 0) {
+        otherSheet.getRange(1, 1, keep.length, keep[0].length).setValues(keep);
+      }
+    }
+  }
+}
+
+/**
+ * One-time function: run from Apps Script editor to backfill Review
+ * with any emails that exist in category tabs but not in Review.
+ */
+function backfillReview() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var reviewSheet = ss.getSheetByName('Review');
+  if (!reviewSheet) { Logger.log('Review sheet not found'); return; }
+
+  var reviewData = reviewSheet.getDataRange().getValues();
+  var reviewHeaders = reviewData[0];
+
+  // Build set of existing Email Links in Review
+  var reviewLinkCol = reviewHeaders.indexOf('Email Link');
+  if (reviewLinkCol === -1) { Logger.log('Email Link column not found in Review'); return; }
+
+  var existingLinks = {};
+  for (var i = 1; i < reviewData.length; i++) {
+    var link = reviewData[i][reviewLinkCol];
+    if (link) existingLinks[link] = true;
+  }
+
+  // Column indices in Review for mapping
+  var reviewColMap = {};
+  for (var j = 0; j < reviewHeaders.length; j++) {
+    reviewColMap[reviewHeaders[j]] = j;
+  }
+
+  var categorySheets = [
+    'Engineering - Existing Projects', 'Engineering - Unknown Projects',
+    'New Projects', 'Price Requests', 'Existing Projects - Certificate Requests',
+    'Other', 'Spam'
+  ];
+
+  var newRows = [];
+
+  for (var s = 0; s < categorySheets.length; s++) {
+    var catSheet = ss.getSheetByName(categorySheets[s]);
+    if (!catSheet || catSheet.getLastRow() < 2) continue;
+
+    var catData = catSheet.getDataRange().getValues();
+    var catHeaders = catData[0];
+    var catLinkCol = catHeaders.indexOf('Email Link');
+    if (catLinkCol === -1) continue;
+
+    for (var i = 1; i < catData.length; i++) {
+      var emailLink = catData[i][catLinkCol];
+      if (!emailLink || existingLinks[emailLink]) continue;
+
+      // Build a new Review row
+      var newRow = new Array(reviewHeaders.length).fill('');
+      for (var c = 0; c < catHeaders.length; c++) {
+        var headerName = catHeaders[c];
+        if (reviewColMap[headerName] !== undefined) {
+          newRow[reviewColMap[headerName]] = catData[i][c];
+        }
+      }
+      // Set AI Category to the source sheet name
+      if (reviewColMap['AI Category'] !== undefined) {
+        newRow[reviewColMap['AI Category']] = categorySheets[s];
+      }
+
+      newRows.push(newRow);
+      existingLinks[emailLink] = true; // prevent duplicates across sheets
+    }
+  }
+
+  if (newRows.length > 0) {
+    var startRow = reviewSheet.getLastRow() + 1;
+    reviewSheet.getRange(startRow, 1, newRows.length, reviewHeaders.length).setValues(newRows);
+    Logger.log('Backfilled ' + newRows.length + ' rows into Review');
+  } else {
+    Logger.log('No new rows to backfill — Review already has all emails');
+  }
 }
 
 function jsonResponse(data, code) {

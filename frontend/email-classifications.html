@@ -1274,6 +1274,11 @@ async function deleteSelected() {
             const match = allData.rows.find(a => a['Email Link'] === r['Email Link'] || a === r);
             if (match) r._rowIndex = match._rowIndex;
         });
+
+        // Invalidate other sheet caches (cascade delete happened server-side)
+        Object.keys(sheetCache).forEach(key => {
+            if (key !== currentSheet) delete sheetCache[key];
+        });
     } catch (error) {
         console.error('Error bulk deleting rows:', error);
     }
