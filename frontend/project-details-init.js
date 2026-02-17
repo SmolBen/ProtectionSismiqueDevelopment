@@ -139,7 +139,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setupNewCalculationButton();
                 setupReportButton();
                 setupEquipmentFormHandler();
-                
+                VoiceInputManager.initFieldListeners();
+
                 // Initialize equipment mode as null (user must select)
                 currentEquipmentMode = null;
 

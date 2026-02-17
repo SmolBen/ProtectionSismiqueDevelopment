@@ -582,6 +582,77 @@
     50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
 }
 
+/* Voice Mode Toggle */
+.voice-mode-toggle {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    background: white;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .voice-mode-toggle {
+        display: inline-flex;
+    }
+}
+
+.voice-mode-toggle:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.voice-mode-toggle.active {
+    background: #fee2e2;
+    border-color: #dc2626;
+    color: #dc2626;
+    animation: mic-pulse 1.5s ease-in-out infinite;
+}
+
+.voice-mode-banner {
+    display: none;
+    padding: 6px 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #dc2626;
+    font-size: 12px;
+    margin-bottom: 12px;
+    align-items: center;
+    gap: 6px;
+}
+
+.voice-mode-banner.visible {
+    display: flex;
+}
+
+/* Field highlight when listening via voice mode */
+.voice-active-field {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15) !important;
+    animation: mic-pulse 1s ease-in-out infinite;
+}
+
+.voice-match-success {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2) !important;
+    transition: all 0.3s ease;
+}
+
+.voice-match-fail {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2) !important;
+    transition: all 0.3s ease;
+}
+
 .dimension-fields {
     display: flex;
     gap: 5px;

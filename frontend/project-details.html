@@ -110,17 +110,20 @@
                     <!-- Section 1: Equipment Form -->
                     <div class="equipment-form-section">
                         <h2 id="equipmentFormTitle" data-i18n="project.newEquipment">New Equipment</h2>
-                        
+
+                        <button type="button" class="voice-mode-toggle" id="voiceModeToggle">
+                            <i class="fas fa-microphone"></i> <span data-i18n="project.voiceMode">Voice Mode</span>
+                        </button>
+                        <div class="voice-mode-banner" id="voiceModeBanner">
+                            <i class="fas fa-info-circle"></i>
+                            <span data-i18n="project.voiceModeActive">Voice mode active — tap any field to speak</span>
+                        </div>
+
                         <form id="equipmentFormElement" novalidate>
                             <!-- 1. Equipment Selection -->
                             <div class="form-group">
                                 <label for="equipment" data-i18n="project.equipment">Equipment:</label>
-                                <div class="input-with-mic">
-                                    <input type="text" id="equipment" name="equipment" list="equipmentOptions" placeholder="Select or type equipment..." data-i18n-placeholder="project.selectOrTypeEquipment" required>
-                                    <button type="button" class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" title="Voice input" data-i18n-title="project.voiceInput">
-                                        <i class="fas fa-microphone"></i>
-                                    </button>
-                                </div>
+                                <input type="text" id="equipment" name="equipment" list="equipmentOptions" placeholder="Select or type equipment..." data-i18n-placeholder="project.selectOrTypeEquipment" required>
                                 <datalist id="equipmentOptions">
                                     <!-- Options will be populated dynamically based on the selected domain -->
                                 </datalist>
