@@ -6777,11 +6777,14 @@ const VoiceInputManager = {
             toggleBtn.addEventListener('click', () => this.toggle());
         }
 
-        // Listen for focus on text and number inputs within the form (not dropdowns)
+        // Listen for click on text and number inputs within the form (not dropdowns)
+        // Using click instead of focus so tapping an already-focused field still triggers voice
         const fields = form.querySelectorAll('input[type="text"], input[type="number"]');
         fields.forEach(field => {
-            field.addEventListener('focus', () => {
+            field.addEventListener('click', () => {
                 if (!this.active) return;
+                // Don't restart if already listening on this field
+                if (this.activeField === field && this.recognition) return;
                 // Check field is visible
                 const group = field.closest('.form-group');
                 if (group && (group.style.display === 'none' || window.getComputedStyle(group).display === 'none')) return;
