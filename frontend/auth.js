@@ -843,7 +843,7 @@ function verifyEmail() {
             }
             
             showLoading(false);
-            alert('Email verified! Waiting for admins to authorize your account. You will receive an email once approved.');
+            alert(t('auth.emailVerified'));
             switchTab('login');
         });
     });
