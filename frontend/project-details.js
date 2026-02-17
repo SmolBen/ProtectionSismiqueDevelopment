@@ -6657,42 +6657,6 @@ const VoiceInputManager = {
         return hasDecimal && decimalPart ? result + '.' + decimalPart : String(result);
     },
 
-    matchDropdownOption(text, selectEl) {
-        const spoken = this.normalizeText(text);
-        const options = Array.from(selectEl.options).filter(o => o.value !== '');
-
-        // Priority 1: Exact match on option text
-        for (const opt of options) {
-            if (this.normalizeText(opt.textContent) === spoken) return opt.value;
-        }
-
-        // Priority 2: Exact match on option value
-        for (const opt of options) {
-            if (this.normalizeText(opt.value) === spoken) return opt.value;
-        }
-
-        // Priority 3: Starts-with
-        for (const opt of options) {
-            if (this.normalizeText(opt.textContent).startsWith(spoken)) return opt.value;
-        }
-
-        // Priority 4: Contains
-        for (const opt of options) {
-            if (this.normalizeText(opt.textContent).includes(spoken)) return opt.value;
-        }
-
-        // Priority 5: Numeric match (user says "three thousand" for f'c "3000")
-        const lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'fr';
-        const numericValue = this.convertSpokenNumber(text, lang);
-        if (numericValue) {
-            for (const opt of options) {
-                if (opt.value === numericValue || opt.textContent.includes(numericValue)) return opt.value;
-            }
-        }
-
-        return null;
-    },
-
     toggle() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
@@ -6740,13 +6704,12 @@ const VoiceInputManager = {
         // Stop any existing recognition
         this.stop();
 
-        const isSelect = field.tagName === 'SELECT';
         const isNumber = field.type === 'number' || (field.type === 'text' && field.closest('#weightGroup, #dimensionGroup'));
 
         this.recognition = new SpeechRecognition();
         const lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'fr';
         this.recognition.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
-        this.recognition.interimResults = !isSelect; // No interim for dropdowns
+        this.recognition.interimResults = true;
         this.recognition.maxAlternatives = 1;
 
         this.activeField = field;
@@ -6754,30 +6717,13 @@ const VoiceInputManager = {
 
         this.recognition.onstart = () => {
             field.classList.add('voice-active-field');
-            // Also update the standalone mic button if this is the equipment field
-            if (field.id === 'equipment') {
-                const micBtn = document.getElementById('micBtn');
-                if (micBtn) micBtn.classList.add('listening');
-            }
         };
 
         this.recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             const isFinal = event.results[0].isFinal;
 
-            if (isSelect) {
-                if (!isFinal) return;
-                const matched = this.matchDropdownOption(transcript, field);
-                if (matched) {
-                    field.value = matched;
-                    field.dispatchEvent(new Event('change'));
-                    field.classList.add('voice-match-success');
-                    setTimeout(() => field.classList.remove('voice-match-success'), 1500);
-                } else {
-                    field.classList.add('voice-match-fail');
-                    setTimeout(() => field.classList.remove('voice-match-fail'), 1500);
-                }
-            } else if (isNumber) {
+            if (isNumber) {
                 if (!isFinal) return;
                 const converted = this.convertSpokenNumber(transcript, lang);
                 if (converted !== null) {
@@ -6804,10 +6750,6 @@ const VoiceInputManager = {
 
         this.recognition.onend = () => {
             field.classList.remove('voice-active-field');
-            if (field.id === 'equipment') {
-                const micBtn = document.getElementById('micBtn');
-                if (micBtn) micBtn.classList.remove('listening');
-            }
             this.recognition = null;
             this.activeField = null;
         };
@@ -6815,10 +6757,6 @@ const VoiceInputManager = {
         this.recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
             field.classList.remove('voice-active-field');
-            if (field.id === 'equipment') {
-                const micBtn = document.getElementById('micBtn');
-                if (micBtn) micBtn.classList.remove('listening');
-            }
             this.recognition = null;
             this.activeField = null;
             if (event.error === 'not-allowed') {
@@ -6839,8 +6777,8 @@ const VoiceInputManager = {
             toggleBtn.addEventListener('click', () => this.toggle());
         }
 
-        // Listen for focus on all inputs and selects within the form
-        const fields = form.querySelectorAll('input[type="text"], input[type="number"], select');
+        // Listen for focus on text and number inputs within the form (not dropdowns)
+        const fields = form.querySelectorAll('input[type="text"], input[type="number"]');
         fields.forEach(field => {
             field.addEventListener('focus', () => {
                 if (!this.active) return;
