@@ -503,6 +503,200 @@
             padding: 0 12px;
         }
 
+        /* Analytics Panel */
+        .analytics-panel {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .analytics-header:hover {
+            background: var(--background-color);
+        }
+
+        .analytics-header h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analytics-toggle-icon {
+            color: var(--text-muted);
+            transition: transform 0.2s;
+            font-size: 12px;
+        }
+
+        .analytics-toggle-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .analytics-body {
+            padding: 0 16px 16px;
+        }
+
+        .analytics-body.collapsed {
+            display: none;
+        }
+
+        .analytics-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .analytics-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .analytics-control-group label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .analytics-control-group select {
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            background: white;
+            min-width: 130px;
+        }
+
+        .analytics-chart-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            margin-bottom: 12px;
+        }
+
+        .analytics-year-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .analytics-year-row label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-right: 2px;
+        }
+
+        .analytics-year-chip {
+            padding: 4px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            background: white;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .analytics-year-chip:hover {
+            border-color: var(--primary-color);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .analytics-year-chip.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .analytics-year-chip.all-chip {
+            font-weight: 600;
+        }
+
+        .analytics-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: var(--surface-color);
+            z-index: 5;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .analytics-loading i {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+
+        .analytics-loading.hidden {
+            display: none;
+        }
+
+        .analytics-summary {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .analytics-summary table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .analytics-summary th {
+            background: var(--background-color);
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+        }
+
+        .analytics-summary td {
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .analytics-summary tr:hover {
+            background: var(--background-color);
+        }
+
+        .analytics-summary .count-cell {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .analytics-summary .pct-cell {
+            color: var(--text-muted);
+            text-align: right;
+            font-size: 11px;
+        }
+
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
@@ -611,6 +805,67 @@
 
     <div class="sheet-tabs" id="sheetTabs"></div>
 
+    <!-- Analytics Panel (Projects Overview only) -->
+    <div class="analytics-panel" id="analyticsPanel" style="display: none;">
+        <div class="analytics-header" onclick="toggleAnalyticsPanel()">
+            <h3><i class="fas fa-chart-bar"></i> Analytics</h3>
+            <i class="fas fa-chevron-down analytics-toggle-icon" id="analyticsToggleIcon"></i>
+        </div>
+        <div class="analytics-body" id="analyticsBody">
+            <div class="analytics-year-row" id="analyticsYearRow">
+                <label>Years:</label>
+            </div>
+            <div class="analytics-controls">
+                <div class="analytics-control-group">
+                    <label>Group by</label>
+                    <select id="analyticsGroupBy" onchange="updateAnalytics()">
+                    </select>
+                </div>
+                <div class="analytics-control-group">
+                    <label>Split by</label>
+                    <select id="analyticsSplitBy" onchange="updateAnalytics()">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div class="analytics-control-group">
+                    <label>Chart type</label>
+                    <select id="analyticsChartType" onchange="updateAnalytics()">
+                        <option value="bar">Bar</option>
+                        <option value="horizontalBar">Horizontal Bar</option>
+                        <option value="pie">Pie</option>
+                        <option value="doughnut">Doughnut</option>
+                    </select>
+                </div>
+                <div class="analytics-control-group">
+                    <label>Show top</label>
+                    <select id="analyticsLimit" onchange="updateAnalytics()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="0">All</option>
+                    </select>
+                </div>
+                <div class="analytics-control-group">
+                    <label>Sort</label>
+                    <select id="analyticsSort" onchange="updateAnalytics()">
+                        <option value="desc">Highest first</option>
+                        <option value="asc">Lowest first</option>
+                        <option value="alpha">A-Z</option>
+                    </select>
+                </div>
+            </div>
+            <div class="analytics-chart-container">
+                <div class="analytics-loading" id="analyticsLoading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Loading chart data...</span>
+                </div>
+                <canvas id="analyticsChart"></canvas>
+            </div>
+            <div class="analytics-summary" id="analyticsSummary"></div>
+        </div>
+    </div>
+
     <div class="filter-section">
             <div class="filter-group" id="yearFilterGroup" style="display: none;">
                 <label>Year</label>
@@ -662,6 +917,7 @@
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
     <script src="translations.js"></script>
@@ -687,7 +943,7 @@
         ];
         const PROJECTS_SHEET_NAME = 'Projects Overview';
         let currentSheet = 'Review';
-        let projectsYear = new Date().getFullYear();
+        let projectsYear = new Date().getFullYear(); // number or 'all'
         let sheetCache = {};
         let allData = { headers: [], rows: [] };
         let dateSortOrder = 'desc'; // 'asc' or 'desc'
@@ -775,6 +1031,11 @@
                 if (y === projectsYear) opt.selected = true;
                 select.appendChild(opt);
             }
+            const allOpt = document.createElement('option');
+            allOpt.value = 'all';
+            allOpt.textContent = 'All Years';
+            if (projectsYear === 'all') allOpt.selected = true;
+            select.appendChild(allOpt);
         }
 
         function updateYearFilterVisibility() {
@@ -782,7 +1043,8 @@
         }
 
         async function onProjectsYearChange(year) {
-            projectsYear = parseInt(year);
+            projectsYear = year === 'all' ? 'all' : parseInt(year);
+            setAnalyticsLoading(true);
             const cacheKey = getProjectsCacheKey();
             if (sheetCache[cacheKey]) {
                 sheetCache[PROJECTS_SHEET_NAME] = sheetCache[cacheKey];
@@ -791,6 +1053,7 @@
             }
             await loadData();
             renderSheetTabs();
+            showAnalyticsPanel();
         }
 
         function renderSheetTabs() {
@@ -818,7 +1081,10 @@
         async function switchSheet(sheetName) {
             currentSheet = sheetName;
             updateYearFilterVisibility();
+            // Show/hide analytics panel immediately with loading state
+            document.getElementById('analyticsPanel').style.display = sheetName === PROJECTS_SHEET_NAME ? '' : 'none';
             if (sheetName === PROJECTS_SHEET_NAME) {
+                setAnalyticsLoading(true);
                 const cacheKey = getProjectsCacheKey();
                 if (sheetCache[cacheKey]) {
                     sheetCache[PROJECTS_SHEET_NAME] = sheetCache[cacheKey];
@@ -826,6 +1092,7 @@
             }
             renderSheetTabs();
             await loadData();
+            showAnalyticsPanel();
         }
 
         function toggleDateSort() {
@@ -852,7 +1119,7 @@
                     const scriptUrl = getScriptUrlForSheet(sheetName);
                     const remoteSheet = getRemoteSheetName(sheetName);
                     let url = `${scriptUrl}?action=getData&sheet=${encodeURIComponent(remoteSheet)}`;
-                    if (sheetName === PROJECTS_SHEET_NAME) {
+                    if (sheetName === PROJECTS_SHEET_NAME && projectsYear !== 'all') {
                         url += `&year=${projectsYear}`;
                     }
                     const response = await fetch(url);
@@ -918,7 +1185,7 @@
                 const scriptUrl = getScriptUrlForSheet(currentSheet);
                 const remoteSheet = getRemoteSheetName(currentSheet);
                 let fetchUrl = `${scriptUrl}?action=getData&sheet=${encodeURIComponent(remoteSheet)}`;
-                if (currentSheet === PROJECTS_SHEET_NAME) {
+                if (currentSheet === PROJECTS_SHEET_NAME && projectsYear !== 'all') {
                     fetchUrl += `&year=${projectsYear}`;
                 }
                 const response = await fetch(fetchUrl);
@@ -1393,6 +1660,360 @@ async function deleteSelected() {
     renderSheetTabs();
     renderTable();
 }
+// ===================== Analytics =====================
+
+        let analyticsChart = null;
+        let analyticsCollapsed = false;
+        let analyticsSelectedYears = new Set([new Date().getFullYear()]);
+        let analyticsRows = []; // combined rows from all selected years
+
+        // Columns that are useful to group/split by (exclude free-text fields)
+        const ANALYTICS_SKIP_HEADERS = ['Project No', 'Project Name', 'Addresse of Project', 'Email contact', 'Promotion Code Used', 'Opening contract Date', 'Contract END?', 'Direction from Office', 'Zone Distance'];
+
+        function renderAnalyticsYearChips() {
+            const container = document.getElementById('analyticsYearRow');
+            const currentYear = new Date().getFullYear();
+            let html = '<label>Years:</label>';
+
+            // "All" chip
+            const allSelected = analyticsSelectedYears.size === (currentYear - 2019 + 1);
+            html += `<span class="analytics-year-chip all-chip ${allSelected ? 'selected' : ''}" onclick="toggleAnalyticsYear('all')">All</span>`;
+
+            // Individual year chips
+            for (let y = currentYear; y >= 2019; y--) {
+                const sel = analyticsSelectedYears.has(y);
+                html += `<span class="analytics-year-chip ${sel ? 'selected' : ''}" onclick="toggleAnalyticsYear(${y})">${y}</span>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function toggleAnalyticsYear(year) {
+            const currentYear = new Date().getFullYear();
+            const allYears = [];
+            for (let y = currentYear; y >= 2019; y--) allYears.push(y);
+
+            if (year === 'all') {
+                // Toggle all: if all selected, deselect all (select current year as fallback); else select all
+                if (analyticsSelectedYears.size === allYears.length) {
+                    analyticsSelectedYears = new Set([currentYear]);
+                } else {
+                    analyticsSelectedYears = new Set(allYears);
+                }
+            } else {
+                if (analyticsSelectedYears.has(year)) {
+                    analyticsSelectedYears.delete(year);
+                    // Must have at least one year selected
+                    if (analyticsSelectedYears.size === 0) {
+                        analyticsSelectedYears.add(year);
+                        return;
+                    }
+                } else {
+                    analyticsSelectedYears.add(year);
+                }
+            }
+            renderAnalyticsYearChips();
+            fetchAndUpdateAnalytics();
+        }
+
+        async function fetchAnalyticsData() {
+            const years = [...analyticsSelectedYears];
+            const currentYear = new Date().getFullYear();
+            const allYears = [];
+            for (let y = currentYear; y >= 2019; y--) allYears.push(y);
+            const isAll = years.length === allYears.length;
+
+            // If all years selected, fetch without year param
+            if (isAll) {
+                const cacheKey = PROJECTS_SHEET_NAME + '_all';
+                if (sheetCache[cacheKey]) {
+                    return sheetCache[cacheKey].rows;
+                }
+                const url = `${PROJECTS_SCRIPT_URL}?action=getData&sheet=Sheet1`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (!data.error) {
+                    sheetCache[cacheKey] = data;
+                    if (data.headers && data.headers.length && !allData.headers.length) {
+                        allData.headers = data.headers;
+                    }
+                    return data.rows;
+                }
+                return [];
+            }
+
+            // Fetch each year individually, using cache where possible
+            const fetches = years.map(async (y) => {
+                const cacheKey = PROJECTS_SHEET_NAME + '_' + y;
+                if (sheetCache[cacheKey]) return sheetCache[cacheKey].rows;
+
+                const url = `${PROJECTS_SCRIPT_URL}?action=getData&sheet=Sheet1&year=${y}`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (!data.error) {
+                    sheetCache[cacheKey] = data;
+                    // Also update headers if we don't have them
+                    if (data.headers && data.headers.length && !allData.headers.length) {
+                        allData.headers = data.headers;
+                    }
+                    return data.rows;
+                }
+                return [];
+            });
+
+            const results = await Promise.all(fetches);
+            return results.flat();
+        }
+
+        async function fetchAndUpdateAnalytics() {
+            setAnalyticsLoading(true);
+            try {
+                analyticsRows = await fetchAnalyticsData();
+                populateAnalyticsDropdowns();
+                updateAnalytics();
+            } catch (err) {
+                console.error('Error fetching analytics data:', err);
+                setAnalyticsLoading(false);
+            }
+        }
+
+        function getAnalyticsHeaders() {
+            // Use allData.headers as the source of column names
+            const hdrs = allData.headers.length ? allData.headers : [];
+            if (!hdrs.length) return [];
+            const headers = hdrs.filter(h => h && h.trim() && !ANALYTICS_SKIP_HEADERS.includes(h));
+            if (hdrs.some(h => h === 'Opening contract Date') && !headers.includes('Year')) {
+                headers.unshift('Year');
+            }
+            return headers;
+        }
+
+        function populateAnalyticsDropdowns() {
+            const groupBy = document.getElementById('analyticsGroupBy');
+            const splitBy = document.getElementById('analyticsSplitBy');
+            const headers = getAnalyticsHeaders();
+
+            const prevGroup = groupBy.value;
+            const prevSplit = splitBy.value;
+
+            groupBy.innerHTML = headers.map(h =>
+                `<option value="${escapeHtml(h)}">${escapeHtml(h)}</option>`
+            ).join('');
+
+            splitBy.innerHTML = '<option value="">None</option>' + headers.map(h =>
+                `<option value="${escapeHtml(h)}">${escapeHtml(h)}</option>`
+            ).join('');
+
+            // Restore previous selections if still valid
+            if (headers.includes(prevGroup)) groupBy.value = prevGroup;
+            else if (headers.includes('Company')) groupBy.value = 'Company';
+
+            if (prevSplit && headers.includes(prevSplit)) splitBy.value = prevSplit;
+        }
+
+        function getRowValue(row, column) {
+            if (column === 'Year') {
+                const dateVal = row['Opening contract Date'];
+                if (!dateVal) return '';
+                const d = new Date(dateVal + 'T12:00:00');
+                return isNaN(d) ? '' : d.getFullYear().toString();
+            }
+            return (row[column] || '').toString().trim() || '(empty)';
+        }
+
+        function aggregateData() {
+            const groupBy = document.getElementById('analyticsGroupBy').value;
+            const splitBy = document.getElementById('analyticsSplitBy').value;
+            const limit = parseInt(document.getElementById('analyticsLimit').value) || 0;
+            const sortOrder = document.getElementById('analyticsSort').value;
+            const rows = analyticsRows.length ? analyticsRows : allData.rows;
+
+            if (!groupBy || !rows.length) return { labels: [], datasets: [], tableRows: [] };
+
+            // Aggregate counts
+            const counts = {}; // { groupKey: { total, splits: { splitVal: count } } }
+            const splitValues = new Set();
+
+            rows.forEach(row => {
+                const groupVal = getRowValue(row, groupBy);
+                if (!counts[groupVal]) counts[groupVal] = { total: 0, splits: {} };
+                counts[groupVal].total++;
+
+                if (splitBy && splitBy !== groupBy) {
+                    const splitVal = getRowValue(row, splitBy);
+                    splitValues.add(splitVal);
+                    counts[groupVal].splits[splitVal] = (counts[groupVal].splits[splitVal] || 0) + 1;
+                }
+            });
+
+            // Sort entries
+            let entries = Object.entries(counts);
+            if (sortOrder === 'desc') {
+                entries.sort((a, b) => b[1].total - a[1].total);
+            } else if (sortOrder === 'asc') {
+                entries.sort((a, b) => a[1].total - b[1].total);
+            } else {
+                entries.sort((a, b) => a[0].localeCompare(b[0]));
+            }
+
+            // Apply limit
+            if (limit > 0 && entries.length > limit) {
+                entries = entries.slice(0, limit);
+            }
+
+            const labels = entries.map(e => e[0]);
+            const totalCount = rows.length;
+
+            // Build datasets
+            let datasets;
+            if (splitBy && splitBy !== groupBy) {
+                const sortedSplits = [...splitValues].sort();
+                datasets = sortedSplits.map((splitVal, i) => ({
+                    label: splitVal,
+                    data: entries.map(e => e[1].splits[splitVal] || 0),
+                    backgroundColor: getColor(i, sortedSplits.length, 0.7),
+                    borderColor: getColor(i, sortedSplits.length, 1),
+                    borderWidth: 1
+                }));
+            } else {
+                datasets = [{
+                    label: 'Count',
+                    data: entries.map(e => e[1].total),
+                    backgroundColor: entries.map((_, i) => getColor(i, entries.length, 0.7)),
+                    borderColor: entries.map((_, i) => getColor(i, entries.length, 1)),
+                    borderWidth: 1
+                }];
+            }
+
+            // Build summary table rows
+            const tableRows = entries.map(e => ({
+                group: e[0],
+                count: e[1].total,
+                pct: ((e[1].total / totalCount) * 100).toFixed(1)
+            }));
+
+            return { labels, datasets, tableRows, totalCount };
+        }
+
+        function getColor(index, total, alpha) {
+            const colors = [
+                `rgba(59,130,246,${alpha})`,   // blue
+                `rgba(16,185,129,${alpha})`,   // green
+                `rgba(245,158,11,${alpha})`,   // amber
+                `rgba(239,68,68,${alpha})`,    // red
+                `rgba(139,92,246,${alpha})`,   // purple
+                `rgba(236,72,153,${alpha})`,   // pink
+                `rgba(20,184,166,${alpha})`,   // teal
+                `rgba(249,115,22,${alpha})`,   // orange
+                `rgba(99,102,241,${alpha})`,   // indigo
+                `rgba(168,85,247,${alpha})`,   // violet
+                `rgba(34,197,94,${alpha})`,    // emerald
+                `rgba(14,165,233,${alpha})`,   // sky
+                `rgba(244,63,94,${alpha})`,    // rose
+                `rgba(234,179,8,${alpha})`,    // yellow
+                `rgba(100,116,139,${alpha})`,  // slate
+            ];
+            return colors[index % colors.length];
+        }
+
+        function updateAnalytics() {
+            const rows = analyticsRows.length ? analyticsRows : allData.rows;
+            if (!isProjectsSheet() || !rows.length) return;
+
+            const chartType = document.getElementById('analyticsChartType').value;
+            const { labels, datasets, tableRows, totalCount } = aggregateData();
+
+            // Destroy old chart
+            if (analyticsChart) {
+                analyticsChart.destroy();
+                analyticsChart = null;
+            }
+
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            const isPie = chartType === 'pie' || chartType === 'doughnut';
+            const isHorizontal = chartType === 'horizontalBar';
+            const actualType = isHorizontal ? 'bar' : chartType;
+
+            analyticsChart = new Chart(ctx, {
+                type: actualType,
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: isHorizontal ? 'y' : 'x',
+                    plugins: {
+                        legend: {
+                            display: isPie || datasets.length > 1,
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.parsed !== undefined
+                                        ? (typeof context.parsed === 'object' ? (isHorizontal ? context.parsed.x : context.parsed.y) : context.parsed)
+                                        : context.raw;
+                                    const pct = totalCount ? ((val / totalCount) * 100).toFixed(1) : 0;
+                                    const prefix = datasets.length > 1 ? context.dataset.label + ': ' : '';
+                                    return `${prefix}${val} (${pct}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: isPie ? {} : {
+                        x: { stacked: datasets.length > 1, ticks: { maxRotation: 45 } },
+                        y: { stacked: datasets.length > 1, beginAtZero: true }
+                    }
+                }
+            });
+
+            // Render summary table
+            const groupByLabel = document.getElementById('analyticsGroupBy').value;
+            const summaryHtml = `
+                <table>
+                    <thead><tr>
+                        <th>${escapeHtml(groupByLabel)}</th>
+                        <th style="text-align:right;">Count</th>
+                        <th style="text-align:right;">%</th>
+                    </tr></thead>
+                    <tbody>
+                        ${tableRows.map(r => `
+                            <tr>
+                                <td>${escapeHtml(r.group)}</td>
+                                <td class="count-cell">${r.count}</td>
+                                <td class="pct-cell">${r.pct}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('analyticsSummary').innerHTML = summaryHtml;
+            setAnalyticsLoading(false);
+        }
+
+        function toggleAnalyticsPanel() {
+            analyticsCollapsed = !analyticsCollapsed;
+            document.getElementById('analyticsBody').classList.toggle('collapsed', analyticsCollapsed);
+            document.getElementById('analyticsToggleIcon').classList.toggle('collapsed', analyticsCollapsed);
+        }
+
+        function setAnalyticsLoading(loading) {
+            const el = document.getElementById('analyticsLoading');
+            if (el) el.classList.toggle('hidden', !loading);
+        }
+
+        function showAnalyticsPanel() {
+            const panel = document.getElementById('analyticsPanel');
+            if (isProjectsSheet()) {
+                panel.style.display = '';
+                renderAnalyticsYearChips();
+                // Seed analyticsRows from current table data, then fetch for selected years
+                analyticsRows = allData.rows.length ? [...allData.rows] : [];
+                populateAnalyticsDropdowns();
+                fetchAndUpdateAnalytics();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
 function createProjectFromRow(rowIndex) {
     const row = allData.rows.find(r => r._rowIndex === rowIndex);
     if (!row) return;
