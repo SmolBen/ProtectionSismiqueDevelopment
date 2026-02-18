@@ -252,16 +252,16 @@
             white-space: nowrap;
         }
 
-        .data-table th:nth-child(1),
-        .data-table td:nth-child(1) { 
-            width: 20px; 
+        .data-table.has-checkboxes th:nth-child(1),
+        .data-table.has-checkboxes td:nth-child(1) {
+            width: 20px;
             min-width: 20px;
             max-width: 20px;
         }
 
-        .data-table th:nth-child(2),
-        .data-table td:nth-child(2) { 
-            width: 70px; 
+        .data-table.has-checkboxes th:nth-child(2),
+        .data-table.has-checkboxes td:nth-child(2) {
+            width: 70px;
             min-width: 70px;
             max-width: 70px;
         }
@@ -612,6 +612,11 @@
     <div class="sheet-tabs" id="sheetTabs"></div>
 
     <div class="filter-section">
+            <div class="filter-group" id="yearFilterGroup" style="display: none;">
+                <label>Year</label>
+                <select id="projectsYearSelect" onchange="onProjectsYearChange(this.value)">
+                </select>
+            </div>
             <div class="filter-group">
                 <label data-i18n="email.filterByColumn">Filter by Column</label>
                 <select id="filterColumn">
@@ -664,6 +669,7 @@
     <script src="auth-helper.js"></script>
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyn5LmnIGFtdegivHImdSWYm2ArzGm2HTqV9dsCB7ubxbwaD0yyB-uKNgr2-3J4A9DVKw/exec';
+        const PROJECTS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0CMMqh-p2cjyFRObFwDgAg0ocbdMIEnAY_c5JzQ4Tam_KDgwmT6n2xDe9eCCsW3guuA/exec';
         const ROWS_PER_PAGE = 50;
 
         let authHelper;
@@ -679,7 +685,9 @@
             'Spam',
             'Client'
         ];
+        const PROJECTS_SHEET_NAME = 'Projects Overview';
         let currentSheet = 'Review';
+        let projectsYear = new Date().getFullYear();
         let sheetCache = {};
         let allData = { headers: [], rows: [] };
         let dateSortOrder = 'desc'; // 'asc' or 'desc'
@@ -720,6 +728,7 @@
                 isSpecialUser = BULK_VERIFY_ALLOWED_EMAILS.includes(userEmail);
 
                 // Render tabs and load all data
+                populateYearSelector();
                 renderSheetTabs();
                 await loadAllSheets();
 
@@ -737,20 +746,84 @@
             document.getElementById('loadingOverlay').classList.remove('show');
         });
 
+        function isProjectsSheet() {
+            return currentSheet === PROJECTS_SHEET_NAME;
+        }
+
+        function getScriptUrlForSheet(sheetName) {
+            if (sheetName === PROJECTS_SHEET_NAME) return PROJECTS_SCRIPT_URL;
+            return APPS_SCRIPT_URL;
+        }
+
+        function getRemoteSheetName(sheetName) {
+            if (sheetName === PROJECTS_SHEET_NAME) return 'Sheet1';
+            return sheetName;
+        }
+
+        function getProjectsCacheKey() {
+            return PROJECTS_SHEET_NAME + '_' + projectsYear;
+        }
+
+        function populateYearSelector() {
+            const select = document.getElementById('projectsYearSelect');
+            const currentYear = new Date().getFullYear();
+            select.innerHTML = '';
+            for (let y = currentYear; y >= 2019; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === projectsYear) opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+
+        function updateYearFilterVisibility() {
+            document.getElementById('yearFilterGroup').style.display = isProjectsSheet() ? '' : 'none';
+        }
+
+        async function onProjectsYearChange(year) {
+            projectsYear = parseInt(year);
+            const cacheKey = getProjectsCacheKey();
+            if (sheetCache[cacheKey]) {
+                sheetCache[PROJECTS_SHEET_NAME] = sheetCache[cacheKey];
+            } else {
+                delete sheetCache[PROJECTS_SHEET_NAME];
+            }
+            await loadData();
+            renderSheetTabs();
+        }
+
         function renderSheetTabs() {
             const container = document.getElementById('sheetTabs');
-            container.innerHTML = SHEET_NAMES.map(name => {
+            const emailTabs = SHEET_NAMES.map(name => {
                 const count = sheetCache[name] ? sheetCache[name].rows.length : '...';
                 const isActive = name === currentSheet;
                 return `<button class="sheet-tab ${isActive ? 'active' : ''}" onclick="switchSheet('${name}')">
-                    ${name}
+                    ${escapeHtml(name)}
                     <span class="tab-count ${isActive ? 'active' : ''}">${count}</span>
                 </button>`;
             }).join('');
+
+            const projectsCount = sheetCache[PROJECTS_SHEET_NAME] ? sheetCache[PROJECTS_SHEET_NAME].rows.length : '...';
+            const isProjectsActive = currentSheet === PROJECTS_SHEET_NAME;
+            const projectsTab = `<span style="border-left: 2px solid var(--border-color); margin: 0 4px;"></span>
+                <button class="sheet-tab ${isProjectsActive ? 'active' : ''}" onclick="switchSheet('${PROJECTS_SHEET_NAME}')" style="font-weight: 600;">
+                    <i class="fas fa-folder-open" style="margin-right: 4px;"></i>Projects Overview
+                    <span class="tab-count ${isProjectsActive ? 'active' : ''}">${projectsCount}</span>
+                </button>`;
+
+            container.innerHTML = emailTabs + projectsTab;
         }
 
         async function switchSheet(sheetName) {
             currentSheet = sheetName;
+            updateYearFilterVisibility();
+            if (sheetName === PROJECTS_SHEET_NAME) {
+                const cacheKey = getProjectsCacheKey();
+                if (sheetCache[cacheKey]) {
+                    sheetCache[PROJECTS_SHEET_NAME] = sheetCache[cacheKey];
+                }
+            }
             renderSheetTabs();
             await loadData();
         }
@@ -762,6 +835,9 @@
 
         async function refreshData() {
             delete sheetCache[currentSheet];
+            if (currentSheet === PROJECTS_SHEET_NAME) {
+                delete sheetCache[getProjectsCacheKey()];
+            }
             await loadData();
         }
 
@@ -770,12 +846,22 @@
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Loading all...';
 
-            const promises = SHEET_NAMES.map(async (sheetName) => {
+            const allSheets = [...SHEET_NAMES, PROJECTS_SHEET_NAME];
+            const promises = allSheets.map(async (sheetName) => {
                 try {
-                    const response = await fetch(`${APPS_SCRIPT_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
+                    const scriptUrl = getScriptUrlForSheet(sheetName);
+                    const remoteSheet = getRemoteSheetName(sheetName);
+                    let url = `${scriptUrl}?action=getData&sheet=${encodeURIComponent(remoteSheet)}`;
+                    if (sheetName === PROJECTS_SHEET_NAME) {
+                        url += `&year=${projectsYear}`;
+                    }
+                    const response = await fetch(url);
                     const data = await response.json();
                     if (!data.error) {
                         sheetCache[sheetName] = data;
+                        if (sheetName === PROJECTS_SHEET_NAME) {
+                            sheetCache[getProjectsCacheKey()] = data;
+                        }
                     }
                 } catch (err) {
                     console.error(`Error loading ${sheetName}:`, err);
@@ -829,7 +915,13 @@
                     return;
                 }
 
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=getData&sheet=${encodeURIComponent(currentSheet)}`);
+                const scriptUrl = getScriptUrlForSheet(currentSheet);
+                const remoteSheet = getRemoteSheetName(currentSheet);
+                let fetchUrl = `${scriptUrl}?action=getData&sheet=${encodeURIComponent(remoteSheet)}`;
+                if (currentSheet === PROJECTS_SHEET_NAME) {
+                    fetchUrl += `&year=${projectsYear}`;
+                }
+                const response = await fetch(fetchUrl);
                 const data = await response.json();
 
                 if (data.error) {
@@ -838,6 +930,9 @@
 
                 allData = data;
                 sheetCache[currentSheet] = data;
+                if (currentSheet === PROJECTS_SHEET_NAME) {
+                    sheetCache[getProjectsCacheKey()] = data;
+                }
                 console.log('Headers:', allData.headers);
                 console.log('First row keys:', allData.rows[0] ? Object.keys(allData.rows[0]) : 'no rows');
                 filteredRows = [...allData.rows];
@@ -965,14 +1060,21 @@
     const thead = document.getElementById('tableHead');
     const tbody = document.getElementById('tableBody');
 
+    const readOnly = isProjectsSheet();
     const showCreateProject = currentSheet === 'New Projects' && isSpecialUser;
 
-    // Render headers with select-all checkbox
+    // Toggle checkbox column class and hide delete button for read-only sheets
+    document.getElementById('dataTable').classList.toggle('has-checkboxes', !readOnly);
+    if (readOnly) {
+        document.getElementById('deleteSelectedBtn').classList.remove('visible');
+    }
+
+    // Render headers — no checkbox column for read-only
     thead.innerHTML = `
         <tr>
-            <th style="width: 40px;"><input type="checkbox" class="row-checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+            ${!readOnly ? '<th style="width: 40px;"><input type="checkbox" class="row-checkbox" id="selectAll" onchange="toggleSelectAll()"></th>' : ''}
             ${allData.headers.map(h => {
-                if (h === 'Date') {
+                if (h === 'Date' || h === 'Opening contract Date') {
                     const icon = dateSortOrder === 'desc' ? '↓' : '↑';
                     return `<th class="sortable-header" onclick="toggleDateSort()">${escapeHtml(h)}<span class="sort-icon">${icon}</span></th>`;
                 }
@@ -982,10 +1084,11 @@
         </tr>
     `;
 
-    // Sort by date
+    // Sort by date (use 'Opening contract Date' for projects, 'Date' for emails)
+    const dateColumn = readOnly ? 'Opening contract Date' : 'Date';
     const sortedRows = [...filteredRows].sort((a, b) => {
-        const dateA = new Date(a['Date'] || 0);
-        const dateB = new Date(b['Date'] || 0);
+        const dateA = new Date(a[dateColumn] || 0);
+        const dateB = new Date(b[dateColumn] || 0);
         return dateSortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
@@ -998,10 +1101,11 @@
     // Update showing count
     document.getElementById('showingCount').textContent = filteredRows.length;
 
+    const colSpan = allData.headers.length + (readOnly ? 0 : 1) + (showCreateProject ? 1 : 0);
     if (pageRows.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="${allData.headers.length + 1 + (showCreateProject ? 1 : 0)}" class="empty-state">
+                <td colspan="${colSpan}" class="empty-state">
                     <i class="fas fa-inbox"></i>
                     <p>No data found</p>
                 </td>
@@ -1009,8 +1113,8 @@
         `;
     } else {
         tbody.innerHTML = pageRows.map(row => `
-            <tr data-row-index="${row._rowIndex}" class="${row._selected ? 'selected' : ''}">
-                <td><input type="checkbox" class="row-checkbox" ${row._selected ? 'checked' : ''} onchange="toggleRowSelect(${row._rowIndex})"></td>
+            <tr data-row-index="${row._rowIndex}" class="${row._selected && !readOnly ? 'selected' : ''}">
+                ${!readOnly ? `<td><input type="checkbox" class="row-checkbox" ${row._selected ? 'checked' : ''} onchange="toggleRowSelect(${row._rowIndex})"></td>` : ''}
                 ${allData.headers.map(h => `<td>${formatCell(h, row[h], row._rowIndex)}</td>`).join('')}
                 ${showCreateProject ? `<td><button class="create-project-btn" onclick="createProjectFromRow(${row._rowIndex})"><i class="fas fa-plus"></i> Create Project</button></td>` : ''}
             </tr>
@@ -1053,7 +1157,7 @@
             }
 
     // Format date columns
-        if (header === 'Date' && value) {
+        if ((header === 'Date' || header === 'Opening contract Date') && value) {
         try {
             const date = new Date(value + 'T12:00:00');
             if (!isNaN(date)) {
@@ -1213,6 +1317,7 @@ function toggleSelectAll() {
 }
 
 function updateSelectAllCheckbox() {
+    if (isProjectsSheet()) return;
     const selectAll = document.getElementById('selectAll');
     if (!selectAll) return;
 

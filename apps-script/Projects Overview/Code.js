@@ -332,6 +332,10 @@ function handleWebRequest(e) {
       return getNextProjectNo();
     } else if (action === 'getClientList') {
       return getClientList();
+    } else if (action === 'getData') {
+      var sheetName = e.parameter.sheet || 'Sheet1';
+      var year = e.parameter.year || '';
+      return jsonResponse(getSheetData(sheetName, year));
     } else {
       return jsonResponse({ error: 'Invalid action' }, 400);
     }
@@ -466,6 +470,68 @@ function createProjectFromWeb(params) {
     folderName: newProjectFolder,
     folderId: newfolderID
   });
+}
+
+function getSheetData(sheetName, year) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName || 'Sheet1');
+  if (!sheet) {
+    return { error: 'Sheet not found: ' + sheetName };
+  }
+
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+
+  if (lastRow < 2 || lastCol < 1) {
+    return { headers: [], rows: [] };
+  }
+
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) {
+    return h.toString().trim();
+  });
+
+  // Find date column index for year filtering
+  var dateColIndex = -1;
+  if (year) {
+    for (var c = 0; c < headers.length; c++) {
+      var h = headers[c].toLowerCase();
+      if (h.indexOf('date') > -1) {
+        dateColIndex = c;
+        break;
+      }
+    }
+  }
+
+  var data = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  var targetYear = year ? parseInt(year) : 0;
+
+  var rows = [];
+  for (var i = 0; i < data.length; i++) {
+    // Year filter: skip rows that don't match the target year
+    if (targetYear && dateColIndex > -1) {
+      var dateVal = data[i][dateColIndex];
+      var rowYear = 0;
+      if (dateVal instanceof Date) {
+        rowYear = dateVal.getFullYear();
+      } else if (dateVal) {
+        var parsed = new Date(dateVal);
+        if (!isNaN(parsed)) rowYear = parsed.getFullYear();
+      }
+      if (rowYear !== targetYear) continue;
+    }
+
+    var row = { _rowIndex: i + 2 };
+    for (var j = 0; j < headers.length; j++) {
+      var val = data[i][j];
+      if (val instanceof Date) {
+        val = Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+      }
+      row[headers[j]] = val !== null && val !== undefined ? val.toString() : '';
+    }
+    rows.push(row);
+  }
+
+  return { headers: headers, rows: rows };
 }
 
 function jsonResponse(data, code) {
