@@ -233,6 +233,11 @@
             overflow-y: auto;
         }
 
+        .table-wrapper.dragging {
+            cursor: grabbing;
+            user-select: none;
+        }
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -2136,6 +2141,35 @@ function createProjectFromRow(rowIndex) {
     });
     window.open('create-project-overview.html?' + params.toString(), '_blank');
 }
+
+// Drag-to-scroll for table wrapper
+(function() {
+    const wrapper = document.querySelector('.table-wrapper');
+    let isDown = false;
+    let startX, startY, scrollLeft, scrollTop;
+
+    wrapper.addEventListener('mousedown', (e) => {
+        if (e.target.closest('select, input, button, a')) return;
+        isDown = true;
+        wrapper.classList.add('dragging');
+        startX = e.pageX;
+        startY = e.pageY;
+        scrollLeft = wrapper.scrollLeft;
+        scrollTop = wrapper.scrollTop;
+    });
+
+    window.addEventListener('mouseup', () => {
+        isDown = false;
+        wrapper.classList.remove('dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        wrapper.scrollLeft = scrollLeft - (e.pageX - startX);
+        wrapper.scrollTop = scrollTop - (e.pageY - startY);
+    });
+})();
     </script>
 </body>
 </html>
