@@ -652,7 +652,17 @@ function setupLoginHandler() {
                     if (err.code === 'NotAuthorizedException') {
                         errorMessage = 'Invalid email or password';
                     } else if (err.code === 'UserNotConfirmedException') {
-                        errorMessage = 'Please verify your email first';
+                        window.currentUser = cognitoUser;
+                        window.currentUserEmail = email;
+                        cognitoUser.resendConfirmationCode(function(resendErr) {
+                            if (resendErr) {
+                                console.error('Failed to resend verification code:', resendErr);
+                            }
+                        });
+                        showMessage('Email not verified. A new verification code has been sent to your email.', 'error');
+                        switchTab('verification');
+                        showLoading(false);
+                        return;
                     } else if (err.code === 'UserNotFoundException') {
                         errorMessage = 'User not found';
                     } else {
@@ -706,10 +716,13 @@ function setupSignupHandler() {
             return;
         }
 
-        const formattedPhone = phoneNumber.replace(/\s/g, '');
+        let formattedPhone = phoneNumber.replace(/[\s\-\(\)]/g, '');
+        if (/^\d{10}$/.test(formattedPhone)) {
+            formattedPhone = '+1' + formattedPhone;
+        }
         const phoneRegex = /^\+[1-9]\d{6,14}$/;
         if (!phoneRegex.test(formattedPhone)) {
-            showMessage('Phone number must be in E.164 format (e.g., +15551234567)', 'error');
+            showMessage('Phone number must be a 10-digit number or E.164 format', 'error');
             return;
         }
 
@@ -753,6 +766,7 @@ function setupSignupHandler() {
                 }
 
                 window.currentUser = result.user;
+                window.currentUserEmail = email;
                 updateDebugInfo('✅ Signup successful');
                 showMessage('Account created! Please check your email for verification code.', 'success');
                 switchTab('verification');
@@ -823,7 +837,7 @@ function verifyEmail() {
             
             // Notify admins regardless of attribute update success
             try {
-                const userEmail = window.currentUser.getUsername();
+                const userEmail = window.currentUserEmail || window.currentUser.getUsername();
                 const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/users/notify-admins', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
