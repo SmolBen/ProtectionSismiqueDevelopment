@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("projectName").textContent = project.name;
                 document.getElementById("projectDescription").textContent = project.description;
                 document.getElementById("projectType").textContent = project.type;
-                document.getElementById("projectDomain").textContent = project.domain || "N/A";
+                document.getElementById("projectDomain").textContent = project.domain ? project.domain.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "N/A";
                 document.getElementById("projectStatusDropdown").value = project.status;
                 document.getElementById("projectFloors").textContent = project.numberOfFloors || "N/A";
                 
