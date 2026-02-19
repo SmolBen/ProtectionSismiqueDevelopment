@@ -197,15 +197,10 @@ function getDomainInfo(domain) {
             displayName: t('domains.sprinklers'),
             icon: 'fas fa-fire-extinguisher'
         },
-        'interior-design': {
-            badgeClass: 'interior-design',
-            displayName: t('domains.interiorDesign'),
+        'interior-system': {
+            badgeClass: 'interior-system',
+            displayName: t('domains.interiorSystem'),
             icon: 'fas fa-couch'
-        },
-        'exterior': {
-            badgeClass: 'exterior',
-            displayName: t('domains.exterior'),
-            icon: 'fas fa-building'
         }
     };
 

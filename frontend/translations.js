@@ -228,8 +228,7 @@ window.translations = {
     domains: {
       plumbing: 'Plumbing',
       electricity: 'Electricity',
-      interiorDesign: 'Interior Design',
-      exterior: 'Exterior',
+      interiorSystem: 'Interior System',
       sprinklers: 'Sprinklers',
       ventilation: 'Ventilation',
     },
@@ -1662,8 +1661,7 @@ window.translations = {
     domains: {
       plumbing: 'Plomberie',
       electricity: 'Électricité',
-      interiorDesign: 'Design intérieur',
-      exterior: 'Extérieur',
+      interiorSystem: 'Système intérieur',
       sprinklers: 'Gicleurs',
       ventilation: 'Ventilation',
     },
