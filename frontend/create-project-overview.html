@@ -586,6 +586,9 @@
                 // Setup client autocomplete
                 setupAutocomplete();
 
+                // Autofill from email data if passed via URL params
+                autofillFromEmail();
+
             } catch (error) {
                 console.error('Error initializing:', error);
                 alert('Error initializing: ' + error.message);
@@ -616,6 +619,26 @@
             } catch (error) {
                 console.error('Error loading client list:', error);
             }
+        }
+
+        function autofillFromEmail() {
+            const params = new URLSearchParams(window.location.search);
+            console.log('[AUTOFILL] URL params:', Object.fromEntries(params.entries()));
+            if (!params.has('From')) return;
+
+            // Contact Email — use the "From" email
+            const from = params.get('From') || '';
+            if (from) {
+                document.getElementById('contactEmail').value = from;
+            }
+
+            // Client Name — use the "Client" column if available
+            const client = params.get('Client') || '';
+            console.log('[AUTOFILL] Client param:', client);
+            if (client) {
+                document.getElementById('client').value = client;
+            }
+
         }
 
         // Autocomplete

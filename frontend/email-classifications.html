@@ -2151,6 +2151,22 @@ function createProjectFromRow(rowIndex) {
     allData.headers.forEach(h => {
         if (row[h]) params.set(h, row[h]);
     });
+
+    // Look up company name from Client sheet using the email domain
+    const fromEmail = row['From'] || '';
+    if (fromEmail && sheetCache['Client']) {
+        const domain = fromEmail.split('@')[1]?.toLowerCase();
+        if (domain) {
+            const clientRow = sheetCache['Client'].rows.find(r =>
+                (r['Email Domain'] || '').toLowerCase() === '@' + domain
+            );
+            console.log('[CREATE] Domain:', domain, 'Match:', clientRow ? clientRow['Company Name'] : 'none');
+            if (clientRow && clientRow['Company Name']) {
+                params.set('Client', clientRow['Company Name']);
+            }
+        }
+    }
+
     window.open('create-project-overview.html?' + params.toString(), '_blank');
 }
 
