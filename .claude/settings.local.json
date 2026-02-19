@@ -20,7 +20,8 @@
       "Bash(cd:*)",
       "Bash(sort:*)",
       "Bash(python3:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(dir:*)"
     ]
   }
 }

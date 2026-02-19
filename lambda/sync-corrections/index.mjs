@@ -11,8 +11,8 @@ export const handler = async (event) => {
         const token = await getGoogleToken(credentials);
         console.log('✓ Got Google token');
 
-        // 2. Read Review tab
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Review!A2:J1000`;
+        // 2. Read Review tab (A-L to include Project Number found in column L)
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Review!A2:L1000`;
         const response = await fetch(url, {
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -23,7 +23,7 @@ export const handler = async (event) => {
         // 3. Find corrections (where Correct Category differs from AI Category)
         let newCorrections = 0;
         for (let i = 0; i < rows.length; i++) {
-            const [date, from, subject, content, vietnamese, link, summary, aiCategory, correctCategory, processed] = rows[i];
+            const [date, from, subject, content, vietnamese, link, summary, aiCategory, correctCategory, processed, client, projectNumber] = rows[i];
             
             // Skip if no correction, already processed, or same category
             if (!correctCategory || correctCategory === aiCategory || correctCategory === '' || processed === 'Yes') continue;
@@ -38,6 +38,9 @@ export const handler = async (event) => {
                 correctCategory: { S: correctCategory },
                 createdAt: { S: new Date().toISOString() }
             };
+            if (projectNumber) {
+                correction.projectNumber = { S: projectNumber };
+            }
 
             // Save to DynamoDB
             await dynamodb.send(new PutItemCommand({

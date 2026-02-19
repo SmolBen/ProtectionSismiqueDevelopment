@@ -469,6 +469,22 @@
             font-weight: 500;
         }
 
+        /* Project Number Input */
+        .project-number-input {
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            background: white;
+            min-width: 100px;
+            width: 100px;
+        }
+
+        .project-number-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
         /* Pagination */
         .pagination {
             display: flex;
@@ -952,18 +968,22 @@
 
         // Initialize
         window.addEventListener('load', async function() {
+            console.log('[INIT] Starting initialization...');
             document.getElementById('loadingOverlay').classList.add('show');
 
             try {
                 // Wait for AWS libraries
+                console.log('[INIT] Waiting for AWS libraries...');
                 let retries = 0;
                 while ((typeof AWS === 'undefined' || typeof AmazonCognitoIdentity === 'undefined') && retries < 10) {
                     await new Promise(resolve => setTimeout(resolve, 100));
                     retries++;
                 }
+                console.log('[INIT] AWS libraries loaded after', retries, 'retries');
 
                 authHelper = new AuthHelper();
                 const userData = await authHelper.checkAuthentication();
+                console.log('[INIT] Auth check done, userData:', !!userData);
 
                 if (!userData) {
                     window.location.href = 'auth.html';
@@ -978,27 +998,33 @@
                 }
 
                 authHelper.updateUserInterface();
+                console.log('[INIT] UI updated, isAdmin:', authHelper.isAdmin());
 
                 // Check if user is in the special emails list
                 const userEmail = (authHelper.getCurrentUser()?.email || '').toLowerCase();
                 isSpecialUser = BULK_VERIFY_ALLOWED_EMAILS.includes(userEmail);
 
                 // Render tabs and load all data
+                console.log('[INIT] Populating year selector and tabs...');
                 populateYearSelector();
                 renderSheetTabs();
+                console.log('[INIT] Starting loadAllSheets...');
                 await loadAllSheets();
+                console.log('[INIT] loadAllSheets complete');
 
                 // Setup event listeners
                 document.getElementById('filterColumn').addEventListener('change', onFilterColumnChange);
                 document.getElementById('filterValue').addEventListener('input', debounce(applyFilters, 300));
                 document.getElementById('filterDateRange').addEventListener('change', applyFilters);
+                console.log('[INIT] Event listeners set up');
 
             } catch (error) {
-                console.error('Error initializing:', error);
+                console.error('[INIT] Error initializing:', error);
                 alert('Error initializing: ' + error.message);
                 window.location.href = 'dashboard.html';
             }
 
+            console.log('[INIT] Removing loading overlay');
             document.getElementById('loadingOverlay').classList.remove('show');
         });
 
@@ -1114,6 +1140,7 @@
             refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Loading all...';
 
             const allSheets = [...SHEET_NAMES, PROJECTS_SHEET_NAME];
+            console.log('[LOAD] Sheets to fetch:', allSheets);
             const promises = allSheets.map(async (sheetName) => {
                 try {
                     const scriptUrl = getScriptUrlForSheet(sheetName);
@@ -1122,8 +1149,11 @@
                     if (sheetName === PROJECTS_SHEET_NAME && projectsYear !== 'all') {
                         url += `&year=${projectsYear}`;
                     }
+                    console.log(`[LOAD] Fetching "${sheetName}"...`);
                     const response = await fetch(url);
+                    console.log(`[LOAD] "${sheetName}" response status:`, response.status);
                     const data = await response.json();
+                    console.log(`[LOAD] "${sheetName}" loaded, rows:`, data.rows?.length || 0);
                     if (!data.error) {
                         sheetCache[sheetName] = data;
                         if (sheetName === PROJECTS_SHEET_NAME) {
@@ -1131,20 +1161,27 @@
                         }
                     }
                 } catch (err) {
-                    console.error(`Error loading ${sheetName}:`, err);
+                    console.error(`[LOAD] Error loading ${sheetName}:`, err);
                 }
             });
 
+            console.log('[LOAD] Waiting for all sheet fetches...');
             await Promise.all(promises);
+            console.log('[LOAD] All sheets fetched. Cache keys:', Object.keys(sheetCache));
 
             // Now display the current sheet
             if (sheetCache[currentSheet]) {
+                console.log('[LOAD] Displaying sheet:', currentSheet, 'rows:', sheetCache[currentSheet].rows?.length);
                 allData = sheetCache[currentSheet];
                 filteredRows = [...allData.rows];
                 populateFilterDropdown();
                 document.getElementById('totalCount').textContent = allData.rows.length;
                 currentPage = 1;
+                console.log('[LOAD] About to renderTable...');
                 renderTable();
+                console.log('[LOAD] renderTable complete');
+            } else {
+                console.warn('[LOAD] No cache for currentSheet:', currentSheet);
             }
 
             // Update tab counts now that all data is loaded
@@ -1152,6 +1189,7 @@
 
             refreshBtn.disabled = false;
             refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+            console.log('[LOAD] loadAllSheets done');
         }
 
         async function loadData() {
@@ -1403,20 +1441,44 @@
             'Spam'
         ];
 
+        function isEngineeringExisting(val) {
+            return val && val.toLowerCase().replace(/\s+/g, ' ').includes('engineering') && val.toLowerCase().includes('existing');
+        }
+
         function formatCell(header, value, rowIndex) {
             // Correct Category dropdown (only on Review tab)
             if (header === 'Correct Category' && currentSheet === 'Review') {
                 const currentValue = value || '';
                 const hasValue = currentValue !== '';
                 return `
-                    <select class="correct-category-select ${hasValue ? 'has-value' : ''}" 
+                    <select class="correct-category-select ${hasValue ? 'has-value' : ''}"
                             onchange="updateCorrectCategory(${rowIndex}, this.value)">
                         <option value="">Select...</option>
-                        ${CATEGORY_OPTIONS.map(opt => 
+                        ${CATEGORY_OPTIONS.map(opt =>
                             `<option value="${opt}" ${currentValue === opt ? 'selected' : ''}>${opt}</option>`
                         ).join('')}
                     </select>
                 `;
+            }
+
+            // Project Number found - editable input when category is Engineering - Existing Projects
+            if (header === 'Project Number found' && currentSheet === 'Review') {
+                const row = allData.rows.find(r => r._rowIndex === rowIndex);
+                const aiCat = row ? row['AI Category'] : '';
+                const correctCat = row ? row['Correct Category'] : '';
+                if (isEngineeringExisting(aiCat) || isEngineeringExisting(correctCat)) {
+                    const currentValue = value || '';
+                    const hasValue = currentValue !== '';
+                    return `
+                        <input type="text" class="project-number-input"
+                               value="${escapeHtml(currentValue)}"
+                               placeholder="Project #"
+                               onfocus="if(this.value==='N/A'){this.value='';}"
+                               onblur="if(!this.value.trim()){this.value='N/A';updateProjectNumber(${rowIndex},'N/A');}"
+                               onchange="updateProjectNumber(${rowIndex}, this.value)"
+                               onkeydown="if(event.key==='Enter'){this.blur();}">
+                    `;
+                }
             }
 
             if (value === null || value === undefined || value === '') {
@@ -1536,9 +1598,60 @@
                     select.classList.toggle('has-value', value !== '');
                 }
 
+                // Re-render the Project Number cell (input may need to appear or disappear)
+                const row2 = allData.rows.find(r => r._rowIndex === rowIndex);
+                const projNumValue = row2 ? row2['Project Number found'] : '';
+                const projNumHtml = formatCell('Project Number found', projNumValue, rowIndex);
+                const tr = document.querySelector(`tr[data-row-index="${rowIndex}"]`);
+                if (tr) {
+                    const headerIdx = allData.headers.indexOf('Project Number found');
+                    if (headerIdx !== -1) {
+                        // Account for checkbox column offset
+                        const readOnly = currentSheet !== 'Review';
+                        const tdIdx = headerIdx + (readOnly ? 0 : 1);
+                        const td = tr.children[tdIdx];
+                        if (td) td.innerHTML = projNumHtml;
+                    }
+                }
+
             } catch (error) {
                 console.error('Error updating category:', error);
                 alert('Failed to update: ' + error.message);
+            }
+        }
+
+        async function updateProjectNumber(rowIndex, value) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateCell',
+                    sheet: 'Review',
+                    rowIndex: rowIndex,
+                    column: 'L',
+                    value: value
+                });
+
+                const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                // Update local cache
+                const row = allData.rows.find(r => r._rowIndex === rowIndex);
+                if (row) {
+                    row['Project Number found'] = value;
+                }
+                if (sheetCache['Review']) {
+                    const cachedRow = sheetCache['Review'].rows.find(r => r._rowIndex === rowIndex);
+                    if (cachedRow) {
+                        cachedRow['Project Number found'] = value;
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error updating project number:', error);
+                alert('Failed to update project number: ' + error.message);
             }
         }
 
