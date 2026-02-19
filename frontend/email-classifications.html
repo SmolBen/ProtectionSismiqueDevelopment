@@ -1451,8 +1451,8 @@
         }
 
         function formatCell(header, value, rowIndex) {
-            // Correct Category dropdown (only on Review tab)
-            if (header === 'Correct Category' && currentSheet === 'Review') {
+            // Correct Category dropdown
+            if (header === 'Correct Category' && (currentSheet === 'Review' || currentSheet === 'Engineering - Unknown Projects')) {
                 const currentValue = value || '';
                 const hasValue = currentValue !== '';
                 return `
@@ -1467,7 +1467,7 @@
             }
 
             // Project Number found - editable input
-            if (header === 'Project Number found' && (currentSheet === 'Review' || currentSheet === 'Engineering - Existing Projects')) {
+            if (header === 'Project Number found' && (currentSheet === 'Review' || currentSheet === 'Engineering - Existing Projects' || currentSheet === 'Engineering - Unknown Projects')) {
                 const isExistingTab = currentSheet === 'Engineering - Existing Projects';
                 let showInput = isExistingTab;
                 if (!isExistingTab) {
@@ -1574,17 +1574,21 @@
 
         async function updateCorrectCategory(rowIndex, value) {
             try {
+                const isUnknownTab = currentSheet === 'Engineering - Unknown Projects';
+                const sheet = isUnknownTab ? 'Engineering - Unknown Projects' : 'Review';
+                const column = isUnknownTab ? 'H' : 'I';
+
                 const params = new URLSearchParams({
                     action: 'updateCell',
-                    sheet: 'Review',
+                    sheet: sheet,
                     rowIndex: rowIndex,
-                    column: 'I',
+                    column: column,
                     value: value
                 });
-                
+
                 const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
                 const result = await response.json();
-                
+
                 if (result.error) {
                     throw new Error(result.error);
                 }
@@ -1594,8 +1598,8 @@
                 if (row) {
                     row['Correct Category'] = value;
                 }
-                if (sheetCache['Review']) {
-                    const cachedRow = sheetCache['Review'].rows.find(r => r._rowIndex === rowIndex);
+                if (sheetCache[currentSheet]) {
+                    const cachedRow = sheetCache[currentSheet].rows.find(r => r._rowIndex === rowIndex);
                     if (cachedRow) {
                         cachedRow['Correct Category'] = value;
                     }
@@ -1615,9 +1619,8 @@
                 if (tr) {
                     const headerIdx = allData.headers.indexOf('Project Number found');
                     if (headerIdx !== -1) {
-                        // Account for checkbox column offset
-                        const readOnly = currentSheet !== 'Review';
-                        const tdIdx = headerIdx + (readOnly ? 0 : 1);
+                        const hasCheckbox = currentSheet === 'Review' || currentSheet === 'Engineering - Unknown Projects';
+                        const tdIdx = headerIdx + (hasCheckbox ? 1 : 0);
                         const td = tr.children[tdIdx];
                         if (td) td.innerHTML = projNumHtml;
                     }
@@ -1632,8 +1635,9 @@
         async function updateProjectNumber(rowIndex, value) {
             try {
                 const isExistingTab = currentSheet === 'Engineering - Existing Projects';
-                const sheet = isExistingTab ? 'Engineering - Existing Projects' : 'Review';
-                const column = isExistingTab ? 'D' : 'L';
+                const isUnknownTab = currentSheet === 'Engineering - Unknown Projects';
+                const sheet = currentSheet;
+                const column = isExistingTab ? 'D' : isUnknownTab ? 'I' : 'L';
 
                 const params = new URLSearchParams({
                     action: 'updateCell',
