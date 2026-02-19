@@ -1466,21 +1466,25 @@
                 `;
             }
 
-            // Project Number found - editable input when category is Engineering - Existing Projects
-            if (header === 'Project Number found' && currentSheet === 'Review') {
-                const row = allData.rows.find(r => r._rowIndex === rowIndex);
-                const aiCat = row ? row['AI Category'] : '';
-                const correctCat = row ? row['Correct Category'] : '';
-                if (isEngineeringExisting(aiCat) || isEngineeringExisting(correctCat)) {
+            // Project Number found - editable input
+            if (header === 'Project Number found' && (currentSheet === 'Review' || currentSheet === 'Engineering - Existing Projects')) {
+                const isExistingTab = currentSheet === 'Engineering - Existing Projects';
+                let showInput = isExistingTab;
+                if (!isExistingTab) {
+                    const row = allData.rows.find(r => r._rowIndex === rowIndex);
+                    const aiCat = row ? row['AI Category'] : '';
+                    const correctCat = row ? row['Correct Category'] : '';
+                    showInput = isEngineeringExisting(aiCat) || isEngineeringExisting(correctCat);
+                }
+                if (showInput) {
                     const currentValue = value || '';
                     const hasValue = currentValue !== '';
                     return `
                         <input type="text" class="project-number-input"
                                value="${escapeHtml(currentValue)}"
                                placeholder="Project #"
-                               onfocus="if(this.value==='N/A'){this.value='';}"
-                               onblur="if(!this.value.trim()){this.value='N/A';updateProjectNumber(${rowIndex},'N/A');}"
-                               onchange="updateProjectNumber(${rowIndex}, this.value)"
+                               onfocus="this.dataset.prev=this.value;if(this.value==='N/A'){this.value='';}"
+                               onblur="if(!this.value.trim()){this.value='N/A';}if(this.value!==this.dataset.prev){updateProjectNumber(${rowIndex},this.value);this.dataset.prev=this.value;}"
                                onkeydown="if(event.key==='Enter'){this.blur();}">
                     `;
                 }
@@ -1627,11 +1631,15 @@
 
         async function updateProjectNumber(rowIndex, value) {
             try {
+                const isExistingTab = currentSheet === 'Engineering - Existing Projects';
+                const sheet = isExistingTab ? 'Engineering - Existing Projects' : 'Review';
+                const column = isExistingTab ? 'D' : 'L';
+
                 const params = new URLSearchParams({
                     action: 'updateCell',
-                    sheet: 'Review',
+                    sheet: sheet,
                     rowIndex: rowIndex,
-                    column: 'L',
+                    column: column,
                     value: value
                 });
 
@@ -1647,8 +1655,8 @@
                 if (row) {
                     row['Project Number found'] = value;
                 }
-                if (sheetCache['Review']) {
-                    const cachedRow = sheetCache['Review'].rows.find(r => r._rowIndex === rowIndex);
+                if (sheetCache[currentSheet]) {
+                    const cachedRow = sheetCache[currentSheet].rows.find(r => r._rowIndex === rowIndex);
                     if (cachedRow) {
                         cachedRow['Project Number found'] = value;
                     }
