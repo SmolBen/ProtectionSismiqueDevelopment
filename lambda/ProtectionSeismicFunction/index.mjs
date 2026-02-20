@@ -719,7 +719,7 @@ async function forceFlattenWithChromium(pdfBuffer) {
   
     try {
       const page = await browser.newPage();
-      const base64 = pdfBuffer.toString('base64');
+      const base64 = Buffer.from(pdfBuffer).toString('base64');
       await page.goto(`data:application/pdf;base64,${base64}`, { waitUntil: 'load' });
   
       // A single print pass produces a fully flattened PDF
@@ -733,6 +733,82 @@ async function forceFlattenWithChromium(pdfBuffer) {
       await browser.close();
     }
   }
+
+// Flatten a PDF via the PDF4me cloud API
+async function flattenWithPdf4me(pdfBuffer) {
+  const apiKey = process.env.PDF4ME_API_KEY;
+  if (!apiKey) throw new Error('PDF4ME_API_KEY environment variable is not configured');
+
+  const response = await fetch('https://api.pdf4me.com/api/v2/FlattenPdf', {
+    method: 'POST',
+    headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      docContent: Buffer.from(pdfBuffer).toString('base64'),
+      docName: 'document.pdf',
+      IsAsync: true,
+      flattenForms: true,
+      flattenAnnotations: true,
+      flattenLayers: true,
+      flattenSignatures: true,
+      flattenInteractive: true,
+    }),
+  });
+
+  if (response.status === 202) {
+    const locationUrl = response.headers.get('Location');
+    if (!locationUrl) throw new Error('PDF4me returned 202 but no Location header for polling');
+    return await pollPdf4meResult(locationUrl, apiKey);
+  }
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => '');
+    throw new Error(`PDF4me flatten failed (HTTP ${response.status}): ${errText}`);
+  }
+
+  // Status 200 — read as arrayBuffer to avoid UTF-8 corruption of binary data
+  const responseBuffer = Buffer.from(await response.arrayBuffer());
+  // Try JSON first (base64 encoded result)
+  try {
+    const json = JSON.parse(responseBuffer.toString('utf-8'));
+    const b64 = json.document?.docData || json.docData || json.docContent || json.data;
+    if (b64) return Buffer.from(b64, 'base64');
+  } catch (_) { /* not JSON */ }
+
+  // Raw binary fallback
+  if (responseBuffer.length > 4 && responseBuffer.toString('ascii', 0, 4) === '%PDF') {
+    return responseBuffer;
+  }
+
+  throw new Error('PDF4me response did not contain a valid PDF');
+}
+
+async function pollPdf4meResult(locationUrl, apiKey, maxRetries = 20, delayMs = 3000) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    await new Promise(r => setTimeout(r, delayMs));
+    const resp = await fetch(locationUrl, {
+      headers: { 'Authorization': apiKey },
+    });
+    if (resp.status === 200) {
+      const responseBuffer = Buffer.from(await resp.arrayBuffer());
+      try {
+        const json = JSON.parse(responseBuffer.toString('utf-8'));
+        const b64 = json.document?.docData || json.docData || json.docContent || json.data;
+        if (b64) return Buffer.from(b64, 'base64');
+      } catch (_) { /* not JSON */ }
+      // Raw binary fallback
+      if (responseBuffer.length > 4 && responseBuffer.toString('ascii', 0, 4) === '%PDF') {
+        return responseBuffer;
+      }
+      throw new Error('PDF4me polling returned 200 but no valid PDF data');
+    }
+    if (resp.status !== 202) {
+      const errText = await resp.text().catch(() => '');
+      throw new Error(`PDF4me polling failed (HTTP ${resp.status}): ${errText}`);
+    }
+    console.log(`PDF4me still processing (attempt ${attempt}/${maxRetries})...`);
+  }
+  throw new Error('PDF4me flatten timed out after polling');
+}
 
 // Function to update project wall revisions
 async function updateProjectWallRevisions(projectId, wallRevisions, currentWallRevisionId, userInfo) {
@@ -10458,12 +10534,14 @@ const BULK_VERIFY_ALLOWED_EMAILS = new Set([
         }
   
         const signedPdf = await insertSignature(sourcePdf, signatureBuffer); // uses the injected signer
+        console.log(`[PDF4me DEBUG] About to flatten PDF (${signedPdf.length} bytes). API key present: ${!!process.env.PDF4ME_API_KEY}, key length: ${(process.env.PDF4ME_API_KEY || '').length}`);
         let finalPdf;
         try {
-        finalPdf = await forceFlattenWithChromium(signedPdf);
+          finalPdf = await flattenWithPdf4me(signedPdf);
+          console.log(`[PDF4me DEBUG] Flatten succeeded, output size: ${finalPdf.length} bytes`);
         } catch (e) {
-        console.error('Chromium flatten failed, returning signed PDF as-is:', e?.message);
-        finalPdf = signedPdf; // graceful fallback
+          console.error('[PDF4me DEBUG] Flatten FAILED:', e?.message, e?.stack);
+          throw new Error(`PDF flatten failed: ${e?.message}`);
         }
   
         const processedKey = key.replace('bulk-verify/uploads/', 'bulk-verify/processed/');

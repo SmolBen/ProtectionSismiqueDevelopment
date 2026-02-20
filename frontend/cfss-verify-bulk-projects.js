@@ -3,9 +3,6 @@
 const BULK_VERIFY_API_BASE =
   'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/bulk-verify';
 
-// Toggle this ON if you also want to re-upload flattened PDFs to S3 after verify
-const REUPLOAD_FLATTENED_TO_S3 = true;
-
 const N8N_WEBHOOK_URL = 'https://protectionsismique.app.n8n.cloud/webhook/cda3660d-ddda-4331-a206-16557bdc060f';
 
 const bulkVerifyState = {
@@ -18,116 +15,31 @@ const bulkVerifyState = {
 
 const bulkElements = {};
 
-/* --------------------------- Flattening helpers --------------------------- */
+async function triggerDownload(info) {
+  if (!info || !info.url) return;
 
-// Render each page to canvas (PDF.js) and rebuild a PDF (pdf-lib).
-// Pages are created at original PDF-point size and rotation so server-side
-// signing coordinates remain correct.
-async function flattenPdfInBrowser(file, scale = 3.75) {
-  // Ensure libs exist (defensive in case of script-order issues)
-  if (!window.pdfjsLib) throw new Error('pdfjs-dist not loaded');
-  if (!window.PDFLib?.PDFDocument) throw new Error('pdf-lib not loaded');
+  try {
+    const response = await fetch(info.url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
 
-  const { PDFDocument, degrees } = window.PDFLib;
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    if (info.filename) link.download = info.filename;
+    link.style.display = 'none';
 
-  const arrayBuf = await file.arrayBuffer();
-  const loadingTask = pdfjsLib.getDocument({ data: arrayBuf });
-  const src = await loadingTask.promise;
-
-  const out = await PDFDocument.create();
-
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
-
-  for (let i = 1; i <= src.numPages; i++) {
-    const page = await src.getPage(i);
-    const rotation = page.rotate || 0;
-
-    const baseViewport = page.getViewport({ scale: 1, rotation: 0 });
-    const renderViewport = page.getViewport({ scale, rotation });
-
-    const CSS_TO_PT = 72 / 96;
-    const widthPts = Math.round(baseViewport.width * CSS_TO_PT);
-    const heightPts = Math.round(baseViewport.height * CSS_TO_PT);
-
-    canvas.width = Math.ceil(renderViewport.width);
-    canvas.height = Math.ceil(renderViewport.height);
-    await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
-
-    const dataUrl = canvas.toDataURL('image/png');
-    const pngBytes = await (await fetch(dataUrl)).arrayBuffer();
-
-    const img      = await out.embedPng(pngBytes);
-    const outPage = out.addPage([widthPts, heightPts]);
-    if (rotation) outPage.setRotation(degrees(rotation));
-    outPage.drawImage(img, { x: 0, y: 0, width: widthPts, height: heightPts });
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const parent = document.body || document.documentElement;
+    parent.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      try { link.remove(); } catch (err) { /* ignore */ }
+      try { URL.revokeObjectURL(blobUrl); } catch (err) { /* ignore */ }
+    }, 100);
+  } catch (err) {
+    console.error('Download failed, falling back to window.open:', err);
+    window.open(info.url, '_blank');
   }
-
-  const outBytes = await out.save();
-  return new File(
-    [outBytes],
-    file.name.replace(/\.pdf$/i, '') + '-flattened.pdf',
-    { type: 'application/pdf', lastModified: Date.now() }
-  );
-}
-
-// Download a URL to a File object (for post-verify flatten)
-async function fetchAsFile(url, filename = 'signed.pdf') {
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) throw new Error(`Fetch ${url} failed (${res.status})`);
-  const blob = await res.blob();
-  return new File([blob], filename, {
-    type: 'application/pdf',
-    lastModified: Date.now(),
-  });
-}
-
-// Create a blob URL for user download
-function makeBlobDownloadUrl(file) {
-  return URL.createObjectURL(file);
-}
-
-function triggerDownload(info) {
-  if (!info) return;
-
-  let href = info.url || null;
-  let shouldRevoke = false;
-
-  if (info.file instanceof Blob) {
-    if (info.blobUrl) {
-      href = info.blobUrl;
-    } else {
-      href = URL.createObjectURL(info.file);
-      shouldRevoke = true;
-    }
-  }
-
-  if (!href) return;
-
-  const link = document.createElement('a');
-  link.href = href;
-  if (info.filename) link.download = info.filename;
-  link.style.display = 'none';
-
-  const parent = document.body || document.documentElement;
-  parent.appendChild(link);
-  link.click();
-  setTimeout(() => {
-    try {
-      link.remove();
-    } catch (err) {
-      console.warn('Failed to clean up download link', err);
-    }
-    if (shouldRevoke) {
-      try {
-        URL.revokeObjectURL(href);
-      } catch (revokeErr) {
-        console.warn('Failed to revoke object URL', revokeErr);
-      }
-    }
-  }, 0);
 }
 
 /* ------------------------------ Page wiring ------------------------------ */
@@ -231,12 +143,7 @@ function addFilesToQueue(files) {
       verifiedAt: null,
       s3Key: null,
       processedKey: null,
-      downloadUrl: null,           // signed (server) url after verify
-      flattenedBlobUrl: null,      // browser-generated url (no backend)
-      flattenedFile: null,         // File object for flattened version
-      signedFile: null,            // File object for signed version
-      flattenedS3Key: null,        // optional re-uploaded key
-      flattenedDownloadUrl: null,  // optional S3 presigned link for flattened
+      downloadUrl: null,           // presigned S3 url after verify (flattened by PDF4me)
       error: null,
     };
     bulkVerifyState.entries.push(entry);
@@ -473,105 +380,6 @@ async function runBulkVerification(entries) {
       entry.error = item.message || 'Failed to verify';
     });
 
-    // -------- NEW: post-verify flatten pass (browser) ----------
-    // For each verified item: download signed → flatten → (A) blob link, (B) optional S3 re-upload.
-    for (const item of processed) {
-      const entry = bulkVerifyState.entries.find((e) => e.id === item.clientId);
-      if (!entry || !entry.downloadUrl) continue;
-
-      try {
-        // A) download the SIGNED PDF returned by server
-        const signedFile = await fetchAsFile(
-          entry.downloadUrl,
-          entry.file.name.replace(/\.pdf$/i, '') + '-signed.pdf'
-        );
-        entry.signedFile = signedFile;
-
-        // B) flatten it client-side
-        const flatFile = await flattenPdfInBrowser(signedFile, 3.75); // tune scale if needed
-
-        // C) Offer immediate client download
-        entry.flattenedFile = flatFile;
-        entry.flattenedBlobUrl = makeBlobDownloadUrl(flatFile);
-
-        // D) (optional) also re-upload flattened to S3
-        if (REUPLOAD_FLATTENED_TO_S3) {
-          try {
-            console.log(`[${entry.file.name}] Starting S3 re-upload of flattened file...`);
-            const res = await fetch(`${BULK_VERIFY_API_BASE}/upload-url`, {
-              method: 'POST',
-              headers: { ...authHeaders, 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                files: [
-                  {
-                    clientId: entry.id + ':flat',
-                    filename:
-                      flatFile.name.replace(/-signed/i, '').replace(/\.pdf$/i, '') +
-                      '-final.pdf',
-                    contentType: flatFile.type || 'application/pdf',
-                    size: flatFile.size,
-                  },
-                ],
-              }),
-            });
-            if (!res.ok) {
-              const errText = await res.text();
-              throw new Error(`Upload-URL request failed (${res.status}): ${errText}`);
-            }
-            const { success, uploads } = await res.json();
-            if (!success || !uploads?.length) throw new Error('No upload URL returned for flattened file');
-
-            const { uploadUrl, key } = uploads[0];
-            console.log(`[${entry.file.name}] Got upload URL, uploading to S3 key: ${key}`);
-            
-            const put = await fetch(uploadUrl, {
-              method: 'PUT',
-              headers: { 'Content-Type': flatFile.type || 'application/pdf' },
-              body: flatFile,
-            });
-            if (!put.ok) {
-              const errText = await put.text();
-              throw new Error(`S3 PUT failed (${put.status}): ${errText}`);
-            }
-
-            console.log(`[${entry.file.name}] S3 upload successful, getting download URL...`);
-            
-            // Optional: get a presigned GET for the flattened file
-            const dlRes = await fetch(
-              `${BULK_VERIFY_API_BASE}/download?key=${encodeURIComponent(key)}`,
-              { headers: authHeaders }
-            );
-            if (!dlRes.ok) {
-              const errText = await dlRes.text();
-              throw new Error(`Download URL request failed (${dlRes.status}): ${errText}`);
-            }
-            const dlData = await dlRes.json();
-            if (dlData?.downloadUrl) {
-              entry.flattenedS3Key = key;
-              entry.flattenedDownloadUrl = dlData.downloadUrl;
-              console.log(`[${entry.file.name}] ✓ Flattened file successfully uploaded to S3 with download URL`);
-            } else {
-              throw new Error('Download URL not returned in response');
-            }
-          } catch (uploadErr) {
-            console.error(`[${entry.file.name}] S3 re-upload failed:`, uploadErr);
-            // Don't overwrite existing errors, but log this specific failure
-            if (!entry.error || !entry.error.includes('Flatten')) {
-              entry.error = t('bulkVerify.s3UploadFailed', { message: uploadErr.message });
-            }
-          }
-        } else {
-          console.log(`[${entry.file.name}] S3 re-upload skipped (REUPLOAD_FLATTENED_TO_S3 = false)`);
-        }
-      } catch (e) {
-        console.error(`[${entry.file.name}] Post-verify flatten failed:`, e);
-        entry.error =
-          entry.error ||
-          t('bulkVerify.flattenAfterSignFailed');
-      }
-    }
-    // -----------------------------------------------------------
-
     return { processed, errors };
   } catch (error) {
     entries.forEach((e) => {
@@ -586,9 +394,9 @@ async function runBulkVerification(entries) {
 
 /* --------------------------------- UI ------------------------------------ */
 
-function handleDownloadAll() {
+async function handleDownloadAll() {
   const ready = bulkVerifyState.entries.filter(
-    (e) => e.status === 'verified' && (e.flattenedDownloadUrl || e.flattenedBlobUrl || e.downloadUrl)
+    (e) => e.status === 'verified' && e.downloadUrl
   );
   if (!ready.length) {
     updateStatusMessage(t('bulkVerify.noProcessedFilesToDownload'), 'error');
@@ -600,7 +408,7 @@ function handleDownloadAll() {
     const info = getDownloadInfo(entry);
     if (!info) continue;
     try {
-      triggerDownload(info);
+      await triggerDownload(info);
     } catch (err) {
       console.error('Download trigger failed', err);
       hadFailure = true;
@@ -661,7 +469,7 @@ function renderProcessedList() {
   if (!bulkElements.processedList) return;
 
   const processedEntries = bulkVerifyState.entries.filter(
-    (e) => e.status === 'verified' && (e.flattenedDownloadUrl || e.flattenedBlobUrl || e.downloadUrl)
+    (e) => e.status === 'verified' && e.downloadUrl
   );
 
   if (!processedEntries.length) {
@@ -694,7 +502,7 @@ function renderProcessedList() {
     .join('');
 }
 
-function handleProcessedDownloadClick(event) {
+async function handleProcessedDownloadClick(event) {
   const downloadTarget = event.target.closest('[data-action="download"]');
   if (!downloadTarget) return;
 
@@ -710,7 +518,7 @@ function handleProcessedDownloadClick(event) {
   }
 
   try {
-    triggerDownload(info);
+    await triggerDownload(info);
   } catch (err) {
     console.error('Download trigger failed', err);
     updateStatusMessage(t('bulkVerify.unableToStartDownload'), 'error');
@@ -730,11 +538,6 @@ function handleRemoveEntry(event) {
     return;
   }
 
-  // Revoke blob URL if any
-  if (entry.flattenedBlobUrl) {
-    try { URL.revokeObjectURL(entry.flattenedBlobUrl); } catch {}
-  }
-
   bulkVerifyState.entries = bulkVerifyState.entries.filter((x) => x.id !== id);
   renderFileList();
   renderProcessedList();
@@ -747,7 +550,7 @@ function updateButtonStates() {
   const hasPending = bulkVerifyState.entries.some((e) => e.status === 'pending');
   const hasUploaded = bulkVerifyState.entries.some((e) => e.status === 'uploaded');
   const hasVerified = bulkVerifyState.entries.some(
-    (e) => e.status === 'verified' && (e.flattenedDownloadUrl || e.flattenedBlobUrl || e.downloadUrl)
+    (e) => e.status === 'verified' && e.downloadUrl
   );
   bulkElements.downloadAllBtn.disabled = !hasVerified;
   if (bulkElements.downloadDriveBtn) bulkElements.downloadDriveBtn.disabled = !hasVerified;
@@ -817,28 +620,6 @@ function getDownloadInfo(entry) {
   const originalName = entry.file?.name || 'report.pdf';
   const baseName = originalName.replace(/\.pdf$/i, '');
 
-  if (entry.flattenedFile) {
-    return {
-      file: entry.flattenedFile,
-      filename: entry.flattenedFile.name || `${baseName}-flattened.pdf`,
-      blobUrl: entry.flattenedBlobUrl || null,
-    };
-  }
-
-  if (entry.flattenedBlobUrl) {
-    return {
-      url: entry.flattenedBlobUrl,
-      filename: `${baseName}-flattened.pdf`,
-    };
-  }
-
-  if (entry.signedFile) {
-    return {
-      file: entry.signedFile,
-      filename: entry.signedFile.name || `${baseName}-signed.pdf`,
-    };
-  }
-
   if (entry.downloadUrl) {
     return {
       url: entry.downloadUrl,
@@ -851,44 +632,19 @@ function getDownloadInfo(entry) {
 
 async function handleDownloadToDrive() {
   try {
-    const verifiedEntries = bulkVerifyState.entries.filter(e => e.status === 'verified');
-    const withFlattenedUrl = verifiedEntries.filter(e => !!e.flattenedDownloadUrl);
-    const withBlobOnly = verifiedEntries.filter(e => e.flattenedBlobUrl && !e.flattenedDownloadUrl);
+    const verifiedEntries = bulkVerifyState.entries.filter(
+      (e) => e.status === 'verified' && e.downloadUrl
+    );
 
-    // If some files only have blob URLs, they failed S3 re-upload
-    if (withBlobOnly.length > 0) {
-      const fileNames = withBlobOnly.map(e => e.file.name).join(', ');
-      console.error('Files failed S3 re-upload:', withBlobOnly);
-      updateStatusMessage(
-        t('bulkVerify.filesFailedCloudUpload', { count: withBlobOnly.length, fileNames }),
-        'error'
-      );
-      return;
-    }
-
-    // If no verified entries yet
     if (!verifiedEntries.length) {
       updateStatusMessage(t('bulkVerify.noVerifiedFilesForDrive'), 'error');
       return;
     }
 
-    // If still processing (no blob or download URLs yet)
-    const stillProcessing = verifiedEntries.filter(e => !e.flattenedDownloadUrl && !e.flattenedBlobUrl);
-    if (stillProcessing.length > 0) {
-      updateStatusMessage(t('bulkVerify.flattenedStillProcessing'), 'error');
-      return;
-    }
-
-    // Build payload; n8n must be able to GET the URL (skip blob:)
-    const files = withFlattenedUrl.map(e => ({
+    const files = verifiedEntries.map((e) => ({
       fileName: (e.file?.name || 'report').replace(/\.pdf$/i, '') + '-signed.pdf',
-      sourceUrl: e.flattenedDownloadUrl
+      sourceUrl: e.downloadUrl,
     }));
-
-    if (!files.length) {
-      updateStatusMessage(t('bulkVerify.noFilesForDriveTransfer'), 'error');
-      return;
-    }
 
     const res = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',

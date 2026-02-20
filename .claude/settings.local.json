@@ -21,7 +21,15 @@
       "Bash(sort:*)",
       "Bash(python3:*)",
       "Bash(node:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(echo:*)",
+      "WebFetch(domain:dev.pdf4me.com)",
+      "WebFetch(domain:docs.pdf4me.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:api.pdf4me.com)",
+      "WebFetch(domain:developer.pdf4me.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }
