@@ -10515,70 +10515,72 @@ const BULK_VERIFY_ALLOWED_EMAILS = new Set([
     const signatureBuffer = await fetchSignatureBuffer();
     const processed = [];
     const errors = [];
-  
-    for (const file of files) {
-      const { key, clientId, originalName } = file;
-      if (!key || !key.startsWith('bulk-verify/uploads/')) {
-        errors.push({
-          clientId,
-          key,
-          message: 'Invalid upload key provided.',
-        });
-        continue;
-      }
-  
-      try {
-        const sourcePdf = await fetchObjectBuffer(key);
-        if (!sourcePdf || !sourcePdf.length) {
-          throw new Error('Uploaded file is empty.');
+    const CONCURRENCY = 3;
+
+    // Process files in parallel batches
+    for (let i = 0; i < files.length; i += CONCURRENCY) {
+      const batch = files.slice(i, i + CONCURRENCY);
+
+      const results = await Promise.allSettled(
+        batch.map(async (file) => {
+          const { key, clientId, originalName } = file;
+          if (!key || !key.startsWith('bulk-verify/uploads/')) {
+            throw Object.assign(new Error('Invalid upload key provided.'), { clientId, key });
+          }
+
+          const sourcePdf = await fetchObjectBuffer(key);
+          if (!sourcePdf || !sourcePdf.length) {
+            throw Object.assign(new Error('Uploaded file is empty.'), { clientId, key });
+          }
+
+          const signedPdf = await insertSignature(sourcePdf, signatureBuffer);
+          console.log(`[PDF4me DEBUG] About to flatten PDF (${signedPdf.length} bytes). API key present: ${!!process.env.PDF4ME_API_KEY}, key length: ${(process.env.PDF4ME_API_KEY || '').length}`);
+          let finalPdf;
+          try {
+            finalPdf = await flattenWithPdf4me(signedPdf);
+            console.log(`[PDF4me DEBUG] Flatten succeeded, output size: ${finalPdf.length} bytes`);
+          } catch (e) {
+            console.error('[PDF4me DEBUG] Flatten FAILED:', e?.message, e?.stack);
+            throw Object.assign(new Error(`PDF flatten failed: ${e?.message}`), { clientId, key });
+          }
+
+          const processedKey = key.replace('bulk-verify/uploads/', 'bulk-verify/processed/');
+
+          await s3Client.send(new PutObjectCommand({
+            Bucket: bucket,
+            Key: processedKey,
+            Body: finalPdf,
+            ContentType: 'application/pdf',
+            Metadata: {
+              'processed-by': userInfo.email || 'unknown',
+              'source-key': key,
+            },
+          }));
+
+          const downloadCommand = new GetObjectCommand({
+            Bucket: bucket,
+            Key: processedKey,
+          });
+          const downloadUrl = await getSignedUrl(s3Client, downloadCommand, { expiresIn: 3600 });
+
+          return { clientId, originalKey: key, processedKey, downloadUrl, originalName };
+        })
+      );
+
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          processed.push(result.value);
+        } else {
+          const err = result.reason;
+          errors.push({
+            clientId: err.clientId,
+            key: err.key,
+            message: err.message || 'Failed to process file.',
+          });
         }
-  
-        const signedPdf = await insertSignature(sourcePdf, signatureBuffer); // uses the injected signer
-        console.log(`[PDF4me DEBUG] About to flatten PDF (${signedPdf.length} bytes). API key present: ${!!process.env.PDF4ME_API_KEY}, key length: ${(process.env.PDF4ME_API_KEY || '').length}`);
-        let finalPdf;
-        try {
-          finalPdf = await flattenWithPdf4me(signedPdf);
-          console.log(`[PDF4me DEBUG] Flatten succeeded, output size: ${finalPdf.length} bytes`);
-        } catch (e) {
-          console.error('[PDF4me DEBUG] Flatten FAILED:', e?.message, e?.stack);
-          throw new Error(`PDF flatten failed: ${e?.message}`);
-        }
-  
-        const processedKey = key.replace('bulk-verify/uploads/', 'bulk-verify/processed/');
-  
-        await s3Client.send(new PutObjectCommand({
-          Bucket: bucket,
-          Key: processedKey,
-          Body: finalPdf, 
-          ContentType: 'application/pdf',
-          Metadata: {
-            'processed-by': userInfo.email || 'unknown',
-            'source-key': key,
-          },
-        }));
-  
-        const downloadCommand = new GetObjectCommand({
-          Bucket: bucket,
-          Key: processedKey,
-        });
-        const downloadUrl = await getSignedUrl(s3Client, downloadCommand, { expiresIn: 3600 });
-  
-        processed.push({
-          clientId,
-          originalKey: key,
-          processedKey,
-          downloadUrl,
-          originalName,
-        });
-      } catch (error) {
-        errors.push({
-          clientId,
-          key,
-          message: error.message || 'Failed to process file.',
-        });
       }
     }
-  
+
     return { processed, errors };
   }
   

@@ -209,39 +209,53 @@ async function uploadPendingEntries(entries) {
 
     let uploadedCount = 0;
     const failed = [];
+    const CONCURRENCY = 3;
 
-    for (const entry of entries) {
-      const uploadInfo = uploadsById.get(entry.id);
-      if (!uploadInfo) {
-        entry.status = 'error';
-        entry.error = 'No upload URL returned';
-        failed.push(entry);
-        continue;
+    // Upload in parallel batches
+    for (let i = 0; i < entries.length; i += CONCURRENCY) {
+      const batch = entries.slice(i, i + CONCURRENCY);
+
+      // Mark batch as uploading
+      for (const entry of batch) {
+        const uploadInfo = uploadsById.get(entry.id);
+        if (!uploadInfo) {
+          entry.status = 'error';
+          entry.error = 'No upload URL returned';
+          failed.push(entry);
+          continue;
+        }
+        entry.status = 'uploading';
+        entry._uploadInfo = uploadInfo;
       }
-
-      entry.status = 'uploading';
       renderFileList();
 
-      try {
-        const put = await fetch(uploadInfo.uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': entry.file.type || 'application/pdf' },
-          body: entry.file,
-        });
-        if (!put.ok) throw new Error(`Upload failed (${put.status})`);
+      // Upload batch concurrently
+      await Promise.all(
+        batch
+          .filter((entry) => entry.status === 'uploading')
+          .map(async (entry) => {
+            try {
+              const put = await fetch(entry._uploadInfo.uploadUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': entry.file.type || 'application/pdf' },
+                body: entry.file,
+              });
+              if (!put.ok) throw new Error(`Upload failed (${put.status})`);
 
-        entry.status = 'uploaded';
-        entry.s3Key = uploadInfo.key;
-        entry.uploadedAt = new Date().toISOString();
-        entry.error = null;
-        uploadedCount += 1;
-      } catch (e) {
-        console.error(`Upload failed for ${entry.file.name}:`, e);
-        entry.status = 'error';
-        entry.error = e.message || 'Upload failed';
-        failed.push(entry);
-      }
-
+              entry.status = 'uploaded';
+              entry.s3Key = entry._uploadInfo.key;
+              entry.uploadedAt = new Date().toISOString();
+              entry.error = null;
+              uploadedCount += 1;
+            } catch (e) {
+              console.error(`Upload failed for ${entry.file.name}:`, e);
+              entry.status = 'error';
+              entry.error = e.message || 'Upload failed';
+              failed.push(entry);
+            }
+            delete entry._uploadInfo;
+          })
+      );
       renderFileList();
     }
 
