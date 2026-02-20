@@ -59,7 +59,6 @@ function cacheDomElements() {
   bulkElements.dropzone = document.getElementById('bulkDropzone');
   bulkElements.fileInput = document.getElementById('bulkFileInput');
   bulkElements.clearBtn = document.getElementById('bulkClearBtn');
-  bulkElements.uploadBtn = document.getElementById('bulkUploadBtn');
   bulkElements.verifyBtn = document.getElementById('bulkVerifyBtn');
   bulkElements.downloadAllBtn = document.getElementById('bulkDownloadAllBtn');
   bulkElements.downloadDriveBtn = document.getElementById('bulkDownloadDriveBtn');
@@ -82,7 +81,6 @@ function bindEventListeners() {
   bulkElements.dropzone.addEventListener('drop', handleFileDrop, false);
 
   bulkElements.clearBtn.addEventListener('click', handleClearList);
-  bulkElements.uploadBtn.addEventListener('click', handleUploadSelected);
   bulkElements.verifyBtn.addEventListener('click', handleVerifyFiles);
   bulkElements.downloadAllBtn.addEventListener('click', handleDownloadAll);
     if (bulkElements.downloadDriveBtn) {
@@ -170,44 +168,6 @@ function handleClearList() {
   renderProcessedList();
   updateButtonStates();
   updateStatusMessage(t('bulkVerify.clearedAllFiles'), 'success');
-}
-
-function handleUploadSelected() {
-  const pendingEntries = bulkVerifyState.entries.filter(
-    (entry) => entry.status === 'pending'
-  );
-  if (!pendingEntries.length) {
-    updateStatusMessage(t('bulkVerify.noNewFilesToUpload'), 'error');
-    return;
-  }
-
-  bulkVerifyState.isUploading = true;
-  updateButtonStates();
-  uploadPendingEntries(pendingEntries)
-    .then((result) => {
-      if (result.uploadedCount) {
-        updateStatusMessage(
-          t('bulkVerify.uploadedFiles', { count: result.uploadedCount }),
-          'success'
-        );
-      }
-      if (result.failed.length) {
-        updateStatusMessage(
-          t('bulkVerify.failedToUpload', { count: result.failed.length }),
-          'error'
-        );
-      }
-      renderFileList();
-      updateButtonStates();
-    })
-    .catch((error) => {
-      console.error('Bulk upload error:', error);
-      updateStatusMessage(error.message || t('bulkVerify.failedToUploadFiles'), 'error');
-    })
-    .finally(() => {
-      bulkVerifyState.isUploading = false;
-      updateButtonStates();
-    });
 }
 
 /* ------------------------------ Networking ------------------------------- */
@@ -298,45 +258,73 @@ async function uploadPendingEntries(entries) {
   }
 }
 
-function handleVerifyFiles() {
-  const candidates = bulkVerifyState.entries.filter((e) => e.status === 'uploaded');
-  if (!candidates.length) {
-    updateStatusMessage(t('bulkVerify.uploadBeforeVerification'), 'error');
+async function handleVerifyFiles() {
+  const pendingEntries = bulkVerifyState.entries.filter((e) => e.status === 'pending');
+  const alreadyUploaded = bulkVerifyState.entries.filter((e) => e.status === 'uploaded');
+
+  if (!pendingEntries.length && !alreadyUploaded.length) {
+    updateStatusMessage(t('bulkVerify.noFilesToProcess'), 'error');
     return;
   }
 
   bulkVerifyState.isVerifying = true;
-  candidates.forEach((e) => (e.status = 'verifying'));
-  renderFileList();
   updateButtonStates();
 
-  runBulkVerification(candidates)
-    .then(({ processed, errors }) => {
-      if (processed.length) {
+  try {
+    // Step 1: Upload any pending files first
+    if (pendingEntries.length) {
+      bulkVerifyState.isUploading = true;
+      updateButtonStates();
+
+      const uploadResult = await uploadPendingEntries(pendingEntries);
+
+      bulkVerifyState.isUploading = false;
+
+      if (uploadResult.failed.length) {
         updateStatusMessage(
-          t('bulkVerify.successfullyProcessed', { count: processed.length }),
-          'success'
-        );
-      }
-      if (errors.length) {
-        updateStatusMessage(
-          t('bulkVerify.failedToProcess', { count: errors.length }),
+          t('bulkVerify.failedToUpload', { count: uploadResult.failed.length }),
           'error'
         );
       }
       renderFileList();
-      renderProcessedList();
-      updateButtonStates();
-    })
-    .catch((err) => {
-      console.error('Bulk verification error:', err);
-      updateStatusMessage(err.message || t('bulkVerify.failedToVerifyFiles'), 'error');
-      renderFileList();
-    })
-    .finally(() => {
-      bulkVerifyState.isVerifying = false;
-      updateButtonStates();
-    });
+    }
+
+    // Step 2: Verify all uploaded files (including freshly uploaded ones)
+    const candidates = bulkVerifyState.entries.filter((e) => e.status === 'uploaded');
+    if (!candidates.length) {
+      updateStatusMessage(t('bulkVerify.noFilesUploadedSuccessfully'), 'error');
+      return;
+    }
+
+    candidates.forEach((e) => (e.status = 'verifying'));
+    renderFileList();
+
+    const { processed, errors } = await runBulkVerification(candidates);
+
+    if (processed.length) {
+      updateStatusMessage(
+        t('bulkVerify.successfullyProcessed', { count: processed.length }),
+        'success'
+      );
+    }
+    if (errors.length) {
+      updateStatusMessage(
+        t('bulkVerify.failedToProcess', { count: errors.length }),
+        'error'
+      );
+    }
+    renderFileList();
+    renderProcessedList();
+    updateButtonStates();
+  } catch (err) {
+    console.error('Bulk verification error:', err);
+    updateStatusMessage(err.message || t('bulkVerify.failedToVerifyFiles'), 'error');
+    renderFileList();
+  } finally {
+    bulkVerifyState.isUploading = false;
+    bulkVerifyState.isVerifying = false;
+    updateButtonStates();
+  }
 }
 
 async function runBulkVerification(entries) {
@@ -545,21 +533,18 @@ function handleRemoveEntry(event) {
 }
 
 function updateButtonStates() {
-  if (!bulkElements.uploadBtn || !bulkElements.verifyBtn) return;
+  if (!bulkElements.verifyBtn) return;
 
   const hasPending = bulkVerifyState.entries.some((e) => e.status === 'pending');
   const hasUploaded = bulkVerifyState.entries.some((e) => e.status === 'uploaded');
   const hasVerified = bulkVerifyState.entries.some(
     (e) => e.status === 'verified' && e.downloadUrl
   );
+
+  bulkElements.verifyBtn.disabled =
+    bulkVerifyState.isUploading || bulkVerifyState.isVerifying || (!hasPending && !hasUploaded);
   bulkElements.downloadAllBtn.disabled = !hasVerified;
   if (bulkElements.downloadDriveBtn) bulkElements.downloadDriveBtn.disabled = !hasVerified;
-
-  bulkElements.uploadBtn.disabled =
-    bulkVerifyState.isUploading || bulkVerifyState.isVerifying || !hasPending;
-  bulkElements.verifyBtn.disabled =
-    bulkVerifyState.isUploading || bulkVerifyState.isVerifying || !hasUploaded;
-  bulkElements.downloadAllBtn.disabled = !hasVerified;
 }
 
 function updateStatusMessage(message, type = '') {

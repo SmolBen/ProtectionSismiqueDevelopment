@@ -14,10 +14,16 @@
     }
 
     // Translate a key like 'section.key' or 'section.nested.key'
-    function t(key) {
+    // Optional params object replaces {placeholder} tokens in the string.
+    function t(key, params) {
         const lang = getCurrentLanguage();
         const dict = window.translations && window.translations[lang];
         if (!dict) return key;
+
+        function interpolate(str) {
+            if (!params || typeof str !== 'string') return str;
+            return str.replace(/\{(\w+)\}/g, (_, k) => (k in params ? params[k] : `{${k}}`));
+        }
 
         const parts = key.split('.');
         let val = dict;
@@ -35,12 +41,12 @@
                             return key;
                         }
                     }
-                    return typeof fallback === 'string' ? fallback : key;
+                    return typeof fallback === 'string' ? interpolate(fallback) : key;
                 }
                 return key;
             }
         }
-        return typeof val === 'string' ? val : key;
+        return typeof val === 'string' ? interpolate(val) : key;
     }
 
     // Apply translations to all DOM elements with data-i18n attributes
