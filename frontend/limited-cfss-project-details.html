@@ -130,36 +130,6 @@
         display: block;
     }
 
-    /* Seismic Ceiling tab styles */
-    .seismic-header-strip {
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 16px 20px;
-        margin-bottom: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px 30px;
-        align-items: center;
-    }
-    .seismic-header-strip .info-item {
-        font-size: 13px;
-        color: #555;
-    }
-    .seismic-header-strip .info-item strong {
-        color: #111;
-        margin-right: 4px;
-    }
-    .seismic-header-strip .project-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: #111;
-        width: 100%;
-        margin: 0;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #eee;
-    }
-
     .room-images-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
@@ -1109,71 +1079,148 @@
 
         <!-- Page Tab 2: Seismic Ceiling (only shown for interior-system users) -->
         <div id="page-tab-seismic-ceiling" class="page-tab-content">
-            <!-- Header Strip -->
-            <div class="seismic-header-strip">
-                <h3 class="project-title" id="seismicProjectName"></h3>
-                <div class="info-item"><strong>Company:</strong> <span id="seismicCompanyName"></span></div>
-                <div class="info-item"><strong>Client:</strong> <span id="seismicClientName"></span></div>
-                <div class="info-item"><strong>Address:</strong> <span id="seismicAddress"></span></div>
-            </div>
+            <!-- Top Half split into two horizontal sections -->
+            <div class="top-half">
+                <div class="left-section">
+                    <h1 data-i18n="project.seismicCeilingDetails">Seismic Ceiling Details</h1>
 
-            <!-- Add Room Button -->
-            <button id="addRoomButton" class="cfss-btn" style="display: block !important; margin: 20px 0;">
-                <i class="fas fa-plus-circle"></i> Add Room
-            </button>
+                    <!-- Basic Information -->
+                    <div class="basic-info">
+                        <p><strong data-i18n="project.projectName">Project Name:</strong> <span id="seismicProjectName"></span></p>
+                        <p><strong data-i18n="project.companyName">Company Name:</strong> <span id="seismicCompanyName"></span></p>
+                        <p><strong data-i18n="project.clientName">Client Name:</strong> <span id="seismicClientName"></span></p>
+                        <p><strong data-i18n="project.address">Address:</strong> <span id="seismicAddress"></span></p>
+                        <p><strong data-i18n="project.status">Status:</strong>
+                            <select id="seismicStatusDropdown">
+                                <option value="Planning" data-i18n="status.planning">Planning</option>
+                                <option value="In Progress" data-i18n="status.inProgress">In Progress</option>
+                                <option value="Completed" data-i18n="status.completed">Completed</option>
+                            </select>
+                        </p>
+                    </div>
 
-            <!-- Room Form (hidden by default) -->
-            <div id="roomForm" style="display: none;">
-                <div class="calculation-sections">
-                    <div class="equipment-form-section">
-                        <div class="form-fields">
-                            <h2>New Room</h2>
-                            <form id="roomFormElement">
-                                <div class="form-group">
-                                    <label for="roomNumber">Room Number: <span style="color: red;">*</span></label>
-                                    <input type="text" id="roomNumber" name="roomNumber" placeholder="Enter room number..." required>
-                                </div>
-
-                                <div style="display: flex; gap: 15px; margin-top: 20px;">
-                                    <button type="submit" id="saveRoom" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                        <i class="fas fa-save"></i> Save Room
-                                    </button>
-                                    <button type="button" id="cancelRoom" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Room Image Upload Section -->
-                        <div class="image-upload-section">
-                            <div class="upload-controls">
-                                <button type="button" class="camera-btn" id="roomCameraBtn" title="Upload Images">
-                                    <i class="fas fa-camera"></i>
-                                    <span>Browse</span>
-                                </button>
-
-                                <input
-                                    class="drop-zone"
-                                    id="roomDropZone"
-                                    placeholder="Drop or paste images here (Ctrl+V) — max 10 images"
-                                    readonly
-                                    tabindex="0">
+                    <!-- Submit to Admin Section -->
+                    <div class="submit-admin-section" style="
+                        margin-top: 25px;
+                        padding: 16px;
+                        background: #ffffff;
+                        border: 1px solid #e6e9ef;
+                        border-radius: 8px;
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                            <div style="
+                                flex: 1;
+                                padding-left: 12px;
+                                border-left: 4px solid #0d6efd;
+                            ">
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; font-weight: 700; color: #111827;">
+                                    <i class="fas fa-paper-plane" style="margin-right: 8px; color: #0d6efd;"></i>
+                                    <span data-i18n="cfss.submitProjectToAdmin">Submit Project to Admin</span>
+                                </h4>
+                                <p id="seismicSubmitStatusText" style="margin: 0; font-size: 13px; color: #6b7280;" data-i18n="cfss.sendForAdminReview">
+                                    Send this project for admin review and processing.
+                                </p>
                             </div>
 
-                            <div class="image-preview-container" id="roomImagePreviewContainer"></div>
+                            <button id="seismicSubmitToAdminBtn" onclick="submitToAdmin()" style="
+                                background: #0d6efd;
+                                color: #ffffff;
+                                border: 1px solid #0d6efd;
+                                padding: 10px 16px;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-size: 13px;
+                                font-weight: 700;
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                                transition: background 0.2s, border-color 0.2s;
+                                white-space: nowrap;
+                            ">
+                                <i class="fas fa-paper-plane"></i>
+                                <span id="seismicSubmitBtnText" data-i18n="common.submit">Submit</span>
+                            </button>
                         </div>
-                        <input type="file" id="roomImageFileInput" multiple accept="image/*,.heic,.heif" style="display: none;">
+
+                        <div id="seismicSubmittedInfo" style="
+                            display: none;
+                            margin-top: 10px;
+                            padding-top: 10px;
+                            border-top: 1px solid #eef1f6;
+                        ">
+                            <p style="margin: 0; color: #111827; font-size: 12px;">
+                                <i class="fas fa-check-circle" style="margin-right: 6px; color: #16a34a;"></i>
+                                <span id="seismicSubmittedDate"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-section">
+                    <!-- Room count summary -->
+                    <div class="selection-summary" id="roomSelectionSummary">
+                        <i class="fas fa-door-open"></i> 0 rooms added
+                    </div>
+                    <!-- Room list -->
+                    <div class="tab-content" style="flex: 1; overflow-y: auto;">
+                        <div id="roomList" class="equipment-list">
+                            <!-- Rooms will be rendered here -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Room List -->
-            <div class="selection-summary" id="roomSelectionSummary">
-                <i class="fas fa-door-open"></i> 0 rooms added
-            </div>
-            <div id="roomList" class="equipment-list">
-                <!-- Rooms will be rendered here -->
+            <!-- Bottom Half: Add Room button + Room form -->
+            <div class="bottom-half">
+                <button id="addRoomButton" class="cfss-btn" style="display: block !important; margin: 20px 0;">
+                    <i class="fas fa-plus-circle"></i> Add Room
+                </button>
+
+                <!-- Room Form (hidden by default) -->
+                <div id="roomForm" style="display: none;">
+                    <div class="calculation-sections">
+                        <div class="equipment-form-section">
+                            <div class="form-fields">
+                                <h2>New Room</h2>
+                                <form id="roomFormElement">
+                                    <div class="form-group">
+                                        <label for="roomNumber">Room Number: <span style="color: red;">*</span></label>
+                                        <input type="text" id="roomNumber" name="roomNumber" placeholder="Enter room number..." required>
+                                    </div>
+
+                                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                                        <button type="submit" id="saveRoom" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                            <i class="fas fa-save"></i> Save Room
+                                        </button>
+                                        <button type="button" id="cancelRoom" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Room Image Upload Section -->
+                            <div class="image-upload-section">
+                                <div class="upload-controls">
+                                    <button type="button" class="camera-btn" id="roomCameraBtn" title="Upload Images">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Browse</span>
+                                    </button>
+
+                                    <input
+                                        class="drop-zone"
+                                        id="roomDropZone"
+                                        placeholder="Drop or paste images here (Ctrl+V) — max 10 images"
+                                        readonly
+                                        tabindex="0">
+                                </div>
+
+                                <div class="image-preview-container" id="roomImagePreviewContainer"></div>
+                            </div>
+                            <input type="file" id="roomImageFileInput" multiple accept="image/*,.heic,.heif" style="display: none;">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div><!-- end page-tab-seismic-ceiling -->
 

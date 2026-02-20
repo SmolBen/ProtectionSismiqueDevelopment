@@ -240,6 +240,9 @@ function setupEventListeners() {
     if (statusDropdown) {
         statusDropdown.addEventListener('change', async (e) => {
             currentProject.status = e.target.value;
+            // Sync to seismic tab's status dropdown
+            const seismicStatusDropdown = document.getElementById('seismicStatusDropdown');
+            if (seismicStatusDropdown) seismicStatusDropdown.value = e.target.value;
             await saveProject();
         });
     }
@@ -4546,9 +4549,11 @@ async function submitToAdmin() {
         return;
     }
 
-    const btn = document.getElementById('submitToAdminBtn');
-    const btnText = document.getElementById('submitBtnText');
-    
+    // Determine which tab is active to use correct button IDs
+    const seismicTabActive = document.getElementById('page-tab-seismic-ceiling')?.classList.contains('active');
+    const btn = document.getElementById(seismicTabActive ? 'seismicSubmitToAdminBtn' : 'submitToAdminBtn');
+    const btnText = document.getElementById(seismicTabActive ? 'seismicSubmitBtnText' : 'submitBtnText');
+
     try {
         // Disable button and show loading
         btn.disabled = true;
@@ -4656,9 +4661,10 @@ async function submitToAdmin() {
             alert(t('cfss.projectSubmittedSuccessfully'));
         }
         
-        // Update UI to show submitted status
+        // Update UI to show submitted status (both tabs)
         updateSubmitStatusUI();
-        
+        updateSeismicSubmitStatusUI();
+
     } catch (error) {
         console.error('Error submitting to admin:', error);
         alert(t('cfss.errorSubmittingProject') + ': ' + error.message);
@@ -4667,6 +4673,7 @@ async function submitToAdmin() {
         btn.disabled = false;
         btn.style.opacity = '1';
         updateSubmitButtonText();
+        updateSeismicSubmitButtonText();
     }
 }
 
@@ -4709,11 +4716,54 @@ function initializeSubmitUI() {
     updateSubmitButtonText();
 }
 
+// Seismic tab submit UI (mirrors CFSS tab but targets seismic-prefixed IDs)
+function updateSeismicSubmitButtonText() {
+    const btnText = document.getElementById('seismicSubmitBtnText');
+    if (btnText) {
+        if (currentProject && currentProject.linkedRegularProjectId) {
+            btnText.textContent = t('cfss.updateSubmission');
+        } else {
+            btnText.textContent = t('cfss.submit');
+        }
+    }
+}
+
+function updateSeismicSubmitStatusUI() {
+    const statusText = document.getElementById('seismicSubmitStatusText');
+    const submittedInfo = document.getElementById('seismicSubmittedInfo');
+    const submittedDate = document.getElementById('seismicSubmittedDate');
+
+    if (currentProject && currentProject.linkedRegularProjectId) {
+        if (statusText) {
+            statusText.textContent = t('cfss.projectHasBeenSubmitted');
+        }
+        if (submittedInfo && submittedDate) {
+            const lastSubmitted = currentProject.lastSubmittedAt ?
+                new Date(currentProject.lastSubmittedAt).toLocaleString() :
+                'Unknown';
+            submittedDate.textContent = `${t('cfss.lastSubmitted')}: ${lastSubmitted}`;
+            submittedInfo.style.display = 'block';
+        }
+        updateSeismicSubmitButtonText();
+    }
+}
+
+function initializeSeismicSubmitUI() {
+    updateSeismicSubmitStatusUI();
+    updateSeismicSubmitButtonText();
+}
+
 // Add to displayProjectInfo to initialize submit UI
 const originalDisplayProjectInfo = displayProjectInfo;
 displayProjectInfo = function() {
     originalDisplayProjectInfo();
     initializeSubmitUI();
+    initializeSeismicSubmitUI();
+    // Sync seismic status dropdown
+    const seismicStatusDropdown = document.getElementById('seismicStatusDropdown');
+    if (seismicStatusDropdown) {
+        seismicStatusDropdown.value = currentProject.status || 'Planning';
+    }
 };
 
 // ===================================================================
@@ -4747,12 +4797,22 @@ function initializePageTabs() {
             if (tabContent) {
                 tabContent.classList.add('active');
             }
+
+            // Persist active tab
+            localStorage.setItem('limitedCfssActivePageTab', tabName);
         });
     });
+
+    // Restore persisted tab
+    const savedTab = localStorage.getItem('limitedCfssActivePageTab');
+    if (savedTab) {
+        const savedBtn = pageTabs.querySelector(`.page-tab-btn[data-page-tab="${savedTab}"]`);
+        if (savedBtn) savedBtn.click();
+    }
 }
 
 function initializeRoomSystem() {
-    // Populate the seismic ceiling header strip
+    // Populate the seismic ceiling header/info
     populateSeismicHeader();
 
     // Display room list
@@ -4760,6 +4820,21 @@ function initializeRoomSystem() {
 
     // Setup room event listeners
     setupRoomEventListeners();
+
+    // Setup seismic status dropdown listener
+    const seismicStatusDropdown = document.getElementById('seismicStatusDropdown');
+    if (seismicStatusDropdown) {
+        seismicStatusDropdown.addEventListener('change', async (e) => {
+            currentProject.status = e.target.value;
+            // Sync to CFSS tab's status dropdown
+            const cfssStatusDropdown = document.getElementById('projectStatusDropdown');
+            if (cfssStatusDropdown) cfssStatusDropdown.value = e.target.value;
+            await saveProject();
+        });
+    }
+
+    // Initialize seismic submit UI
+    initializeSeismicSubmitUI();
 }
 
 function populateSeismicHeader() {
@@ -4782,6 +4857,12 @@ function populateSeismicHeader() {
             currentProject.country
         ].filter(p => p && p.trim());
         addressEl.textContent = parts.length > 0 ? parts.join(', ') : 'N/A';
+    }
+
+    // Populate seismic status dropdown
+    const seismicStatusDropdown = document.getElementById('seismicStatusDropdown');
+    if (seismicStatusDropdown) {
+        seismicStatusDropdown.value = currentProject.status || 'Planning';
     }
 }
 
