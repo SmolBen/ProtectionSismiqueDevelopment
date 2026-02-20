@@ -736,6 +736,9 @@ function setupSignupHandler() {
             showLoading(true);
             updateDebugInfo('Attempting signup...');
 
+            // Auto-assign limited role for interior-system domain
+            const userRole = domain === 'interior-system' ? 'limited' : 'regular';
+
             const attributeList = [
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'email', Value: email}),
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'given_name', Value: firstName}),
@@ -743,7 +746,8 @@ function setupSignupHandler() {
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'custom:company_name', Value: companyName}),
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'phone_number', Value: formattedPhone}),
                 new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'custom:domain', Value: domain}),
-                new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'custom:is_admin', Value: 'false'})
+                new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'custom:is_admin', Value: 'false'}),
+                new AmazonCognitoIdentity.CognitoUserAttribute({Name: 'custom:user_role', Value: userRole})
             ];
 
             window.userPool.signUp(email, password, attributeList, null, function(err, result) {

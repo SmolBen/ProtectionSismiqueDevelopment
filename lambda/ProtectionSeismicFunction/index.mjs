@@ -6886,23 +6886,36 @@ async function approveUser(email, userInfo) {
 
     console.log(`✅ Approving user ${email} by admin ${userInfo.email}`);
 
-    const command = new AdminUpdateUserAttributesCommand({
-        UserPoolId: USER_POOL_ID,
-        Username: email,
-        UserAttributes: [
-            {
-                Name: 'custom:approval_status',
-                Value: 'approved'
-            }
-        ]
-    });
-
     try {
+        // Fetch user to check domain for auto-role assignment
+        const getUserCmd = new AdminGetUserCommand({
+            UserPoolId: USER_POOL_ID,
+            Username: email
+        });
+        const userResponse = await cognitoClient.send(getUserCmd);
+        const userDomain = userResponse.UserAttributes.find(a => a.Name === 'custom:domain')?.Value || '';
+
+        const attributesToUpdate = [
+            { Name: 'custom:approval_status', Value: 'approved' }
+        ];
+
+        // Auto-assign limited role for interior-system domain
+        if (userDomain === 'interior-system') {
+            attributesToUpdate.push({ Name: 'custom:user_role', Value: 'limited' });
+            console.log(`🔒 Auto-assigning limited role for interior-system user ${email}`);
+        }
+
+        const command = new AdminUpdateUserAttributesCommand({
+            UserPoolId: USER_POOL_ID,
+            Username: email,
+            UserAttributes: attributesToUpdate
+        });
+
         await cognitoClient.send(command);
-        
+
         // Send approval email to user
         await sendApprovalEmail(email, true);
-        
+
         console.log(`✅ User ${email} approved successfully`);
         return { success: true, message: `User ${email} approved successfully` };
     } catch (error) {
@@ -6976,23 +6989,35 @@ async function processEmailApproval(token) {
             // Continue with approval if we can't check status
         }
         
+        // Check user domain for auto-role assignment
+        let userDomain = '';
+        try {
+            const domainAttr = userResponse.UserAttributes.find(a => a.Name === 'custom:domain');
+            userDomain = domainAttr?.Value || '';
+        } catch (_) { /* userResponse may not be available if getUserCommand failed above */ }
+
+        const attributesToUpdate = [
+            { Name: 'custom:approval_status', Value: 'approved' }
+        ];
+
+        // Auto-assign limited role for interior-system domain
+        if (userDomain === 'interior-system') {
+            attributesToUpdate.push({ Name: 'custom:user_role', Value: 'limited' });
+            console.log(`🔒 Auto-assigning limited role for interior-system user ${email}`);
+        }
+
         // Approve the user DIRECTLY - no admin check needed
         const command = new AdminUpdateUserAttributesCommand({
             UserPoolId: USER_POOL_ID,
             Username: email,
-            UserAttributes: [
-                {
-                    Name: 'custom:approval_status',
-                    Value: 'approved'
-                }
-            ]
+            UserAttributes: attributesToUpdate
         });
 
         await cognitoClient.send(command);
-        
+
         // Send approval email to user
         await sendApprovalEmail(email, true);
-        
+
         console.log(`User ${email} approved via email token`);
         
         // Return HTML success page
