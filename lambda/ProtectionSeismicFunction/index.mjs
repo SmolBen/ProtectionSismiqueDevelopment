@@ -6019,6 +6019,7 @@ async function createProject(project, userInfo) {
             windows: Array.isArray(project.windows) ? project.windows : [],
             parapets: Array.isArray(project.parapets) ? project.parapets : [],
             soffites: Array.isArray(project.soffites) ? project.soffites : [],
+            rooms: Array.isArray(project.rooms) ? project.rooms : [],
             floors: Array.isArray(project.floors) ? project.floors : [],
             customPages: Array.isArray(project.customPages) ? project.customPages : [],
             files: Array.isArray(project.files) ? project.files : [],
@@ -6297,6 +6298,12 @@ if (project.approvedBy !== undefined) {
         updateExpression += ', soffites = :soffites';
         expressionAttributeValues[':soffites'] = project.soffites;
         console.log('Adding soffites update:', Array.isArray(project.soffites) ? project.soffites.length : 'not-array');
+    }
+
+    if (project.rooms !== undefined) {
+        updateExpression += ', rooms = :rooms';
+        expressionAttributeValues[':rooms'] = project.rooms;
+        console.log('Adding rooms update:', Array.isArray(project.rooms) ? project.rooms.length : 'not-array');
     }
 
     if (project.floors !== undefined) {

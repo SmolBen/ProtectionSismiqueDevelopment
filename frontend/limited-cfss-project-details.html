@@ -88,6 +88,115 @@
         font-size: 12px;
         line-height: 1;
     }
+
+    /* Page-level tabs (interior-system users only) */
+    .page-tabs {
+        display: flex;
+        gap: 0;
+        margin-bottom: 0;
+        border-bottom: 3px solid #e0e0e0;
+        background: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+        overflow: hidden;
+    }
+    .page-tab-btn {
+        padding: 14px 28px;
+        border: none;
+        background: #f0f0f0;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+        color: #666;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: -3px;
+    }
+    .page-tab-btn:hover {
+        background: #e8e8e8;
+        color: #333;
+    }
+    .page-tab-btn.active {
+        background: white;
+        color: #17a2b8;
+        border-bottom-color: #17a2b8;
+    }
+    .page-tab-content {
+        display: none;
+    }
+    .page-tab-content.active {
+        display: block;
+    }
+
+    /* Seismic Ceiling tab styles */
+    .seismic-header-strip {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 30px;
+        align-items: center;
+    }
+    .seismic-header-strip .info-item {
+        font-size: 13px;
+        color: #555;
+    }
+    .seismic-header-strip .info-item strong {
+        color: #111;
+        margin-right: 4px;
+    }
+    .seismic-header-strip .project-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #111;
+        width: 100%;
+        margin: 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .room-images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .room-image-thumb {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+    .room-edit-images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .room-edit-image-wrapper {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+    }
+    .room-edit-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    .room-edit-image-wrapper .image-remove {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+    }
 </style>
 
 </head>
@@ -125,6 +234,18 @@
     </div>
     
     <div class="container" id="projectContainer" style="display: none;">
+        <!-- Page-level tabs (only shown for interior-system users via JS) -->
+        <div class="page-tabs" id="pageTabs" style="display: none;">
+            <button class="page-tab-btn active" data-page-tab="cfss">
+                <i class="fas fa-th-large"></i> CFSS
+            </button>
+            <button class="page-tab-btn" data-page-tab="seismic-ceiling">
+                <i class="fas fa-building"></i> Seismic Ceiling
+            </button>
+        </div>
+
+        <!-- Page Tab 1: CFSS (existing content) -->
+        <div id="page-tab-cfss" class="page-tab-content active">
         <!-- Top Half split into two horizontal sections -->
         <div class="top-half">
             <div class="left-section">
@@ -984,13 +1105,86 @@
                 </div>
             </div>
         </div>
+        </div><!-- end page-tab-cfss -->
+
+        <!-- Page Tab 2: Seismic Ceiling (only shown for interior-system users) -->
+        <div id="page-tab-seismic-ceiling" class="page-tab-content">
+            <!-- Header Strip -->
+            <div class="seismic-header-strip">
+                <h3 class="project-title" id="seismicProjectName"></h3>
+                <div class="info-item"><strong>Company:</strong> <span id="seismicCompanyName"></span></div>
+                <div class="info-item"><strong>Client:</strong> <span id="seismicClientName"></span></div>
+                <div class="info-item"><strong>Address:</strong> <span id="seismicAddress"></span></div>
+            </div>
+
+            <!-- Add Room Button -->
+            <button id="addRoomButton" class="cfss-btn" style="display: block !important; margin: 20px 0;">
+                <i class="fas fa-plus-circle"></i> Add Room
+            </button>
+
+            <!-- Room Form (hidden by default) -->
+            <div id="roomForm" style="display: none;">
+                <div class="calculation-sections">
+                    <div class="equipment-form-section">
+                        <div class="form-fields">
+                            <h2>New Room</h2>
+                            <form id="roomFormElement">
+                                <div class="form-group">
+                                    <label for="roomNumber">Room Number: <span style="color: red;">*</span></label>
+                                    <input type="text" id="roomNumber" name="roomNumber" placeholder="Enter room number..." required>
+                                </div>
+
+                                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                                    <button type="submit" id="saveRoom" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                        <i class="fas fa-save"></i> Save Room
+                                    </button>
+                                    <button type="button" id="cancelRoom" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Room Image Upload Section -->
+                        <div class="image-upload-section">
+                            <div class="upload-controls">
+                                <button type="button" class="camera-btn" id="roomCameraBtn" title="Upload Images">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Browse</span>
+                                </button>
+
+                                <input
+                                    class="drop-zone"
+                                    id="roomDropZone"
+                                    placeholder="Drop or paste images here (Ctrl+V) — max 10 images"
+                                    readonly
+                                    tabindex="0">
+                            </div>
+
+                            <div class="image-preview-container" id="roomImagePreviewContainer"></div>
+                        </div>
+                        <input type="file" id="roomImageFileInput" multiple accept="image/*,.heic,.heif" style="display: none;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Room List -->
+            <div class="selection-summary" id="roomSelectionSummary">
+                <i class="fas fa-door-open"></i> 0 rooms added
+            </div>
+            <div id="roomList" class="equipment-list">
+                <!-- Rooms will be rendered here -->
+            </div>
+        </div><!-- end page-tab-seismic-ceiling -->
+
     </div>
-    
+
     <!-- AWS Cognito SDK -->
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
     <script src="translations.js"></script>
     <script src="i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
     <script src="auth-helper.js"></script>
     <script src="limited-cfss-project-details.js"></script>
 </body>
