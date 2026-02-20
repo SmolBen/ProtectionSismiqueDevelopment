@@ -280,8 +280,9 @@ function renderProjects(filteredProjects) {
                     </div>
                     <p>${project.description}</p>
                     ${project.createdBy && authHelper.isAdmin() ? `
-                        <div class="created-by-line">
-                            ${t('common.createdBy')} ${project.createdBy}
+                        <div class="created-by-line reassign-trigger" data-project-id="${project.id}" data-owner-email="${project.createdBy}">
+                            <i class="fas fa-user-edit" style="margin-right:3px;font-size:9px;"></i>
+                            ${t('common.createdBy')} ${project.createdBy}${Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? ` · ${t('reassign.assignedTo')} ${project.assignedToDetails ? project.assignedToDetails.map(u => u.name || u.email).join(', ') : project.assignedTo.join(', ')}` : ''}
                         </div>
                     ` : ''}
                 </div>
@@ -324,7 +325,7 @@ function renderProjects(filteredProjects) {
 
         // Add click event to entire card for navigation
         projectCard.addEventListener('click', (e) => {
-            if (e.target.closest('button') || e.target.closest('.project-checkbox')) {
+            if (e.target.closest('button') || e.target.closest('.project-checkbox') || e.target.closest('.reassign-trigger')) {
                 return;
             }
             window.location.href = `project-details.html?id=${project.id}`;
@@ -349,6 +350,17 @@ function renderProjects(filteredProjects) {
             deleteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 deleteProject(project.id);
+            });
+        }
+
+        const reassignTrigger = projectCard.querySelector('.reassign-trigger');
+        if (reassignTrigger) {
+            reassignTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openReassignModal(project.id, project.createdBy, authHelper, () => {
+                    fetchProjects();
+                    loadDashboardStats();
+                });
             });
         }
     });

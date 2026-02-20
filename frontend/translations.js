@@ -1440,6 +1440,23 @@ window.translations = {
       untitledPage: 'Untitled Page',
       width: 'Width',
     },
+
+    reassign: {
+      title: 'Assign Project',
+      currentOwner: 'Current Owner',
+      searchPlaceholder: 'Search by name, email, or company...',
+      searchPrompt: 'Type to search for users',
+      noUsersFound: 'No users found matching your search.',
+      noCompany: 'No company',
+      assignBtn: 'Assign Selected',
+      assigning: 'Assigning...',
+      assignedTo: 'Assigned to:',
+      confirmMessage: 'Assign this project to {count} user(s): {names}?',
+      differentCompanyWarning: 'Warning: Some selected users are from a different company than the current owner. Are you sure you want to proceed?',
+      success: 'Project assigned successfully. All assigned users have been notified by email.',
+      error: 'Failed to assign project: {error}',
+      loading: 'Loading users...',
+    },
   },
 
   fr: {
@@ -2835,6 +2852,23 @@ window.translations = {
       checkConsole: 'Vérifiez la console pour les détails',
       errorLoadingStats: 'Erreur de chargement des statistiques : HTTP ',
       statsUnavailable: 'Statistiques non disponibles',
+    },
+
+    reassign: {
+      title: 'Assigner le projet',
+      currentOwner: 'Propriétaire actuel',
+      searchPlaceholder: 'Rechercher par nom, courriel ou entreprise...',
+      searchPrompt: 'Tapez pour rechercher des utilisateurs',
+      noUsersFound: 'Aucun utilisateur trouvé correspondant à votre recherche.',
+      noCompany: 'Aucune entreprise',
+      assignBtn: 'Assigner la sélection',
+      assigning: 'Assignation...',
+      assignedTo: 'Assigné à :',
+      confirmMessage: 'Assigner ce projet à {count} utilisateur(s) : {names} ?',
+      differentCompanyWarning: 'Attention : Certains utilisateurs sélectionnés sont d\'une entreprise différente du propriétaire actuel. Êtes-vous sûr de vouloir continuer ?',
+      success: 'Projet assigné avec succès. Tous les utilisateurs assignés ont été notifiés par courriel.',
+      error: 'Échec de l\'assignation du projet : {error}',
+      loading: 'Chargement des utilisateurs...',
     },
   }
 };

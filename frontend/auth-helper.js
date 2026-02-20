@@ -181,7 +181,11 @@ class AuthHelper {
 
     // Check if user can modify a project
     canModifyProject(project) {
-        return this.isAdmin() || (project && project.createdBy === this.currentUserData.email);
+        if (this.isAdmin()) return true;
+        if (!project) return false;
+        if (project.createdBy === this.currentUserData.email) return true;
+        if (Array.isArray(project.assignedTo) && project.assignedTo.includes(this.currentUserData.email)) return true;
+        return false;
     }
 
     // Update user interface with current user info

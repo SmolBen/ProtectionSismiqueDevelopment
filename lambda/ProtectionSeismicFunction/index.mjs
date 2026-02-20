@@ -524,6 +524,23 @@ export const handler = async (event) => {
                 }
             }
 
+            else if (path.includes('/reassign') && method === 'PUT') {
+                const pathParts = path.split('/');
+                const projectId = pathParts[2];
+
+                if (!projectId) {
+                    throw new Error('Project ID is required for reassignment');
+                }
+
+                console.log('🔄 Route: PUT reassign project', projectId);
+                let bodyData = event.body || '{}';
+                if (event.isBase64Encoded) {
+                    bodyData = Buffer.from(bodyData, 'base64').toString('utf-8');
+                }
+                const reassignData = JSON.parse(bodyData);
+                body = await reassignProject(projectId, reassignData, userInfo);
+            }
+
             else if (path.includes('/duplicate')) {
                 if (method === 'POST') {
                     const pathParts = path.split('/');
@@ -810,6 +827,13 @@ async function pollPdf4meResult(locationUrl, apiKey, maxRetries = 20, delayMs = 
   throw new Error('PDF4me flatten timed out after polling');
 }
 
+// Helper: check if a non-admin user can access a project
+function canAccessProject(project, userEmail) {
+    if (project.createdBy === userEmail) return true;
+    if (Array.isArray(project.assignedTo) && project.assignedTo.includes(userEmail)) return true;
+    return false;
+}
+
 // Function to update project wall revisions
 async function updateProjectWallRevisions(projectId, wallRevisions, currentWallRevisionId, userInfo) {
     // Check project access first
@@ -823,7 +847,7 @@ async function updateProjectWallRevisions(projectId, wallRevisions, currentWallR
         throw new Error('Project not found');
     }
     
-    if (!userInfo.isAdmin && existingProject.Item.createdBy !== userInfo.email) {
+    if (!userInfo.isAdmin && !canAccessProject(existingProject.Item, userInfo.email)) {
         throw new Error('Access denied: You can only update wall revisions for your own projects');
     }
 
@@ -893,7 +917,7 @@ async function getProjectWallRevisions(projectId, userInfo) {
         throw new Error('Project not found');
     }
     
-    if (!userInfo.isAdmin && result.Item.createdBy !== userInfo.email) {
+    if (!userInfo.isAdmin && !canAccessProject(result.Item, userInfo.email)) {
         throw new Error('Access denied: You can only view wall revisions for your own projects');
     }
     
@@ -1356,7 +1380,7 @@ async function updateProjectCFSSData(projectId, cfssWindData, userInfo) {
         throw new Error('Project not found');
     }
     
-    if (!userInfo.isAdmin && existingProject.Item.createdBy !== userInfo.email) {
+    if (!userInfo.isAdmin && !canAccessProject(existingProject.Item, userInfo.email)) {
         throw new Error('Access denied: You can only update CFSS data for your own projects');
     }
 
@@ -1396,7 +1420,7 @@ async function getProjectCFSSData(projectId, userInfo) {
         throw new Error('Project not found');
     }
     
-    if (!userInfo.isAdmin && result.Item.createdBy !== userInfo.email) {
+    if (!userInfo.isAdmin && !canAccessProject(result.Item, userInfo.email)) {
         throw new Error('Access denied: You can only view CFSS data for your own projects');
     }
     
@@ -5928,8 +5952,8 @@ async function getProjects(id, userInfo) {
             return [];
         }
 
-        // Access control: non-admins can only access their own projects
-        if (!userInfo.isAdmin && result.Item.createdBy !== userInfo.email) {
+        // Access control: non-admins can only access their own or assigned projects
+        if (!userInfo.isAdmin && !canAccessProject(result.Item, userInfo.email)) {
             console.log(`🚫 Access denied: ${userInfo.email} tried to access project owned by ${result.Item.createdBy}`);
             return [];
         }
@@ -5949,9 +5973,9 @@ async function getProjects(id, userInfo) {
             console.log(`🔑 Admin ${userInfo.email} accessing all ${data.Items?.length || 0} projects`);
             return data.Items || [];
         } else {
-            // Non-admins: only their own projects, and never admin copies
+            // Non-admins: only their own or assigned projects, and never admin copies
             const userProjects = (data.Items || []).filter(project =>
-                project.createdBy === userInfo.email &&
+                canAccessProject(project, userInfo.email) &&
                 project.isAdminCopy !== true &&
                 !project.linkedLimitedProjectId
             );
@@ -6124,8 +6148,8 @@ async function updateProject(id, project, userInfo) {
         throw new Error('Project not found');
     }
     
-    // Access control: admins can update any project, users only their own
-    if (!userInfo.isAdmin && existingProject.Item.createdBy !== userInfo.email) {
+    // Access control: admins can update any project, users only their own or assigned
+    if (!userInfo.isAdmin && !canAccessProject(existingProject.Item, userInfo.email)) {
         throw new Error(`Access denied: You can only update your own projects`);
     }
 
@@ -6367,6 +6391,72 @@ if (project.approvedBy !== undefined) {
     return data.Attributes;
 }
 
+async function reassignProject(projectId, reassignData, userInfo) {
+    if (!userInfo.isAdmin) {
+        throw new Error('Access denied: Only admins can reassign projects');
+    }
+
+    const { assignedUsers } = reassignData;
+
+    if (!Array.isArray(assignedUsers) || assignedUsers.length === 0) {
+        throw new Error('At least one user is required for assignment');
+    }
+
+    const getParams = {
+        TableName: TABLE_NAME,
+        Key: { id: projectId }
+    };
+    const existingProject = await dynamodb.get(getParams);
+
+    if (!existingProject.Item) {
+        throw new Error('Project not found');
+    }
+
+    const projectName = existingProject.Item.name || 'Untitled Project';
+    const assignedToEmails = assignedUsers.map(u => u.email);
+    const assignedToDetails = assignedUsers.map(u => ({
+        email: u.email,
+        userId: u.userId || 'unknown',
+        name: u.name || 'Unknown User',
+        company: u.company || 'Unknown Company'
+    }));
+
+    const updateParams = {
+        TableName: TABLE_NAME,
+        Key: { id: projectId },
+        UpdateExpression: 'set assignedTo = :assignedTo, assignedToDetails = :assignedToDetails, #updatedAt = :updatedAt, #updatedBy = :updatedBy, assignedAt = :assignedAt, assignedBy = :assignedBy',
+        ExpressionAttributeNames: {
+            '#updatedAt': 'updatedAt',
+            '#updatedBy': 'updatedBy'
+        },
+        ExpressionAttributeValues: {
+            ':assignedTo': assignedToEmails,
+            ':assignedToDetails': assignedToDetails,
+            ':updatedAt': new Date().toISOString(),
+            ':updatedBy': userInfo.email,
+            ':assignedAt': new Date().toISOString(),
+            ':assignedBy': userInfo.email
+        },
+        ReturnValues: 'ALL_NEW'
+    };
+
+    const result = await dynamodb.update(updateParams);
+    console.log(`✅ Assigned project ${projectId} to [${assignedToEmails.join(', ')}] by admin ${userInfo.email}`);
+
+    // Send email notification to all assigned users (non-blocking)
+    const emailPromises = assignedUsers.map(user =>
+        sendReassignmentEmail(user.email, projectName, projectId, userInfo.email)
+            .catch(err => console.error(`⚠️ Failed to send email to ${user.email}:`, err))
+    );
+    await Promise.allSettled(emailPromises);
+
+    return {
+        success: true,
+        message: `Project assigned to ${assignedToEmails.join(', ')}`,
+        project: result.Attributes
+    };
+}
+
 async function deleteProject(projectId, requestData, userInfo) {
     // Just verify project exists
     const getParams = {
@@ -6405,7 +6495,7 @@ async function updateProjectEquipment(projectId, equipment, userInfo) {
         throw new Error('Project not found');
     }
     
-    if (!userInfo.isAdmin && existingProject.Item.createdBy !== userInfo.email) {
+    if (!userInfo.isAdmin && !canAccessProject(existingProject.Item, userInfo.email)) {
         throw new Error('Access denied: You can only update equipment for your own projects');
     }
 
@@ -6445,7 +6535,7 @@ async function getProjectEquipment(projectId, userInfo) {
         throw new Error('Project not found');
     }
     
-    if (!userInfo.isAdmin && result.Item.createdBy !== userInfo.email) {
+    if (!userInfo.isAdmin && !canAccessProject(result.Item, userInfo.email)) {
         throw new Error('Access denied: You can only view equipment for your own projects');
     }
     
@@ -7143,6 +7233,45 @@ async function sendApprovalEmail(userEmail, isApproved, isExistingUser = false) 
         console.error('❌ Email sending completely failed:', error);
         return { success: false, error: error.message };
     }
+}
+
+async function sendReassignmentEmail(newOwnerEmail, projectName, projectId, adminEmail) {
+    const subject = `Project Assigned to You: ${projectName}`;
+
+    const htmlBody = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #007bff, #0056b3); padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+                <h1 style="color: white; margin: 0; font-size: 20px;">Protection Sismique</h1>
+            </div>
+            <div style="padding: 30px; background: #ffffff; border: 1px solid #e2e8f0;">
+                <h2 style="color: #0f172a; margin-top: 0;">Project Assigned to You</h2>
+                <p style="color: #475569;">An admin has assigned the following project to you:</p>
+                <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                    <p style="margin: 4px 0;"><strong>Project:</strong> ${projectName}</p>
+                    <p style="margin: 4px 0;"><strong>Assigned by:</strong> ${adminEmail}</p>
+                </div>
+                <p style="color: #475569;">You can now view and manage this project from your dashboard.</p>
+            </div>
+        </div>
+    `;
+
+    const textBody = `Project Assigned to You\n\nProject: ${projectName}\nAssigned by: ${adminEmail}\n\nYou can now view and manage this project from your dashboard.`;
+
+    const params = {
+        Source: 'info@protectionsismique2000.com',
+        Destination: { ToAddresses: [newOwnerEmail] },
+        Message: {
+            Subject: { Data: subject },
+            Body: {
+                Html: { Data: htmlBody },
+                Text: { Data: textBody }
+            }
+        }
+    };
+
+    const result = await sesClient.send(new SendEmailCommand(params));
+    console.log(`📧 Reassignment email sent to ${newOwnerEmail}. MessageId: ${result.MessageId}`);
+    return result;
 }
 
 async function notifyAdminsOfNewUser(userEmail, userData) {

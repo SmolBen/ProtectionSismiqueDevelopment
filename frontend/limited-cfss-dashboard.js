@@ -111,16 +111,14 @@ async function loadCFSSDashboardStats() {
         }
 
         const allProjects = await response.json();
-        // Filter for CFSS projects (projects without domain field) that belong to this user
+        // Filter for projects that belong to or are assigned to this user
         const currentUser = authHelper.getCurrentUser();
         const projects = allProjects.filter(p =>
-    !p.domain &&
-    p.createdBy === currentUser.email &&
-    p.isAdminCopy !== true &&
-    !p.linkedLimitedProjectId &&
-    (p.isLimitedProject === true || p.isLimitedProject === undefined)
-);
-        console.log('📊 CFSS Projects loaded for stats:', projects.length);
+            (p.createdBy === currentUser.email || (Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUser.email))) &&
+            p.isAdminCopy !== true &&
+            !p.linkedLimitedProjectId
+        );
+        console.log('📊 Projects loaded for stats:', projects.length);
 
         updateCFSSStats(projects);
         
@@ -158,10 +156,10 @@ function updateCFSSStats(projects) {
     `;
 }
 
-// Fetch CFSS projects from AWS
+// Fetch projects from AWS (CFSS + assigned seismic)
 async function fetchCFSSProjects() {
     try {
-        console.log('📄 Fetching CFSS projects...');
+        console.log('📄 Fetching projects...');
         
         const authHeaders = authHelper.getAuthHeaders();
         
@@ -178,20 +176,18 @@ async function fetchCFSSProjects() {
         }
 
         const allProjects = await response.json();
-        // Filter for CFSS projects that belong to this user
+        // Filter for projects that belong to or are assigned to this user (includes seismic)
         const currentUser = authHelper.getCurrentUser();
         const projects = allProjects.filter(p =>
-    !p.domain &&
-    p.createdBy === currentUser.email &&
-    p.isAdminCopy !== true &&
-    !p.linkedLimitedProjectId &&
-    (p.isLimitedProject === true || p.isLimitedProject === undefined)
-);
+            (p.createdBy === currentUser.email || (Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUser.email))) &&
+            p.isAdminCopy !== true &&
+            !p.linkedLimitedProjectId
+        );
 
         // Sort by newest first
         projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-        
-        console.log('✅ CFSS Projects fetched:', projects.length);
+
+        console.log('✅ Projects fetched:', projects.length);
         renderCFSSProjects(projects);
     } catch (error) {
         console.error('❌ Error fetching CFSS projects:', error);
@@ -227,7 +223,7 @@ function renderCFSSProjects(filteredProjects) {
         }${project.province ? ', ' + project.province : ''}${
             project.country ? ', ' + project.country : ''
         }`;
-        
+
         const formattedDate = project.createdAt
             ? new Date(project.createdAt).toLocaleDateString('en-US', {
                   month: 'short',
@@ -235,12 +231,23 @@ function renderCFSSProjects(filteredProjects) {
                   year: 'numeric'
               })
             : 'N/A';
-        
+
         // Get status dot class (planning / in-progress / completed)
         const statusClass = project.status
             ? project.status.toLowerCase().replace(' ', '-')
             : 'planning';
-        
+
+        // Determine if this is a seismic project (has domain) or CFSS project
+        const isSeismic = !!project.domain;
+        const detailsUrl = isSeismic
+            ? `project-details.html?id=${project.id}`
+            : `limited-cfss-project-details.html?id=${project.id}`;
+
+        // Show project type with domain for seismic projects
+        const projectTypeLabel = isSeismic
+            ? `${project.domain.charAt(0).toUpperCase() + project.domain.slice(1)} (Seismic)`
+            : (project.type || t('project.cfssProject'));
+
         const projectCard = document.createElement('div');
         projectCard.className = 'project-card';
         projectCard.innerHTML = `
@@ -248,7 +255,7 @@ function renderCFSSProjects(filteredProjects) {
                 <div class="project-info">
                     <h2>${project.name}</h2>
                     <div class="project-meta">
-                        <span>${project.type || t('project.cfssProject')}</span>
+                        <span>${projectTypeLabel}</span>
                         <span class="meta-separator">•</span>
                         <span>${formattedAddress || t('project.noAddress')}</span>
                         <span class="meta-separator">•</span>
@@ -284,7 +291,7 @@ function renderCFSSProjects(filteredProjects) {
 
         // Click anywhere on the card to open details
         projectCard.addEventListener('click', () => {
-            window.location.href = `limited-cfss-project-details.html?id=${project.id}`;
+            window.location.href = detailsUrl;
         });
 
         // View button
@@ -292,7 +299,7 @@ function renderCFSSProjects(filteredProjects) {
         if (viewButton) {
             viewButton.addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.location.href = `limited-cfss-project-details.html?id=${project.id}`;
+                window.location.href = detailsUrl;
             });
         }
 
@@ -328,12 +335,10 @@ async function handleCFSSProjectFilter(e) {
         const allProjects = await response.json();
         const currentUser = authHelper.getCurrentUser();
         const projects = allProjects.filter(p =>
-    !p.domain &&
-    p.createdBy === currentUser.email &&
-    p.isAdminCopy !== true &&
-    !p.linkedLimitedProjectId &&
-    (p.isLimitedProject === true || p.isLimitedProject === undefined)
-);
+            (p.createdBy === currentUser.email || (Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUser.email))) &&
+            p.isAdminCopy !== true &&
+            !p.linkedLimitedProjectId
+        );
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
@@ -371,12 +376,10 @@ async function handleCFSSProjectSearch() {
         const allProjects = await response.json();
         const currentUser = authHelper.getCurrentUser();
         const projects = allProjects.filter(p =>
-    !p.domain &&
-    p.createdBy === currentUser.email &&
-    p.isAdminCopy !== true &&
-    !p.linkedLimitedProjectId &&
-    (p.isLimitedProject === true || p.isLimitedProject === undefined)
-);
+            (p.createdBy === currentUser.email || (Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUser.email))) &&
+            p.isAdminCopy !== true &&
+            !p.linkedLimitedProjectId
+        );
         
         // Apply both search and filter
         const filteredProjects = projects.filter(project => {
