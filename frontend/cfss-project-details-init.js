@@ -88,6 +88,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                     document.getElementById("projectThicknessMin").parentElement.style.display = 'none';
                 }
 
+                // Check if project has rooms data (from interior-system user)
+                if (project.rooms) {
+                    initializePageTabs();
+                    populateSeismicInfo(project);
+                    displayRoomList(project);
+                    initializeAdminRoomSystem(project);
+                }
+
                 // Initialize edit button
                 initializeProjectDetailsEditButton();
 

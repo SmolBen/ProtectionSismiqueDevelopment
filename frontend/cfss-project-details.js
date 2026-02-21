@@ -12407,3 +12407,649 @@ async function generateWallDataSheet() {
     a.click();
     URL.revokeObjectURL(url);
 }
+
+// ===================================================================
+// SEISMIC CEILING — Page Tabs & Room Display (for interior-system projects)
+// ===================================================================
+
+function switchPageTab(tabName) {
+    const cfssTopHalf = document.getElementById('cfssTopHalf');
+    const cfssBottomHalf = document.getElementById('cfssBottomHalf');
+    const seismicSection = document.getElementById('seismicCeilingSection');
+    const tabButtons = document.querySelectorAll('#pageTabs .page-tab-btn');
+
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`#pageTabs .page-tab-btn[data-page-tab="${tabName}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    if (tabName === 'seismic-ceiling') {
+        if (cfssTopHalf) cfssTopHalf.style.display = 'none';
+        if (cfssBottomHalf) cfssBottomHalf.style.display = 'none';
+        if (seismicSection) seismicSection.style.display = 'block';
+    } else {
+        if (cfssTopHalf) cfssTopHalf.style.display = '';
+        if (cfssBottomHalf) cfssBottomHalf.style.display = '';
+        if (seismicSection) seismicSection.style.display = 'none';
+    }
+
+    localStorage.setItem('cfssAdminActivePageTab', tabName);
+}
+
+function initializePageTabs() {
+    const pageTabs = document.getElementById('pageTabs');
+    if (!pageTabs) return;
+
+    pageTabs.style.display = 'flex';
+
+    const tabButtons = pageTabs.querySelectorAll('.page-tab-btn');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            switchPageTab(button.dataset.pageTab);
+        });
+    });
+
+    // Restore persisted tab
+    const savedTab = localStorage.getItem('cfssAdminActivePageTab');
+    if (savedTab) {
+        switchPageTab(savedTab);
+    }
+}
+
+function populateSeismicInfo(project) {
+    const nameEl = document.getElementById('seismicProjectName');
+    const companyEl = document.getElementById('seismicCompanyName');
+    const clientEl = document.getElementById('seismicClientName');
+    const addressEl = document.getElementById('seismicAddress');
+    const statusEl = document.getElementById('seismicStatus');
+
+    if (nameEl) nameEl.textContent = project.name || '';
+    if (companyEl) companyEl.textContent = project.companyName || 'N/A';
+    if (clientEl) clientEl.textContent = project.clientName || 'N/A';
+    if (statusEl) statusEl.textContent = project.status || 'Planning';
+
+    if (addressEl) {
+        const parts = [
+            project.addressLine1,
+            project.addressLine2,
+            project.city,
+            project.province,
+            project.country
+        ].filter(p => p && p.trim());
+        addressEl.textContent = parts.length > 0 ? parts.join(', ') : 'N/A';
+    }
+
+    // Admin info
+    const adminInfo = document.getElementById('seismicAdminInfo');
+    if (adminInfo && project.createdBy) {
+        adminInfo.innerHTML = `
+            <p><strong>Created by:</strong> ${project.createdBy}</p>
+            <p><strong>Created on:</strong> ${project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'N/A'}</p>
+        `;
+    }
+}
+
+function displayRoomList(project) {
+    const container = document.getElementById('roomList');
+    const summary = document.getElementById('roomSelectionSummary');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const rooms = project.rooms || [];
+
+    if (summary) {
+        summary.innerHTML = `<i class="fas fa-door-open"></i> ${rooms.length} room${rooms.length !== 1 ? 's' : ''} added`;
+    }
+
+    if (rooms.length === 0) {
+        container.innerHTML = `<p style="text-align: center; color: #666;">No rooms added yet.</p>`;
+        return;
+    }
+
+    rooms.forEach(room => {
+        const card = document.createElement('div');
+        card.className = 'equipment-card';
+        card.id = `roomCard${room.id}`;
+
+        const imageCount = (room.images || []).length;
+
+        card.innerHTML = `
+            <div class="equipment-header" onclick="toggleAdminRoomDetails('${room.id}')">
+                <div class="equipment-info-compact">
+                    <h4><i class="fas fa-door-open" style="margin-right: 6px; color: #17a2b8;"></i>Room ${room.roomNumber}</h4>
+                    <div class="equipment-meta-compact">
+                        <span>${imageCount} photo${imageCount !== 1 ? 's' : ''}</span>
+                    </div>
+                </div>
+                <div class="equipment-actions-compact">
+                    <button class="details-btn" onclick="event.stopPropagation(); toggleAdminRoomDetails('${room.id}')">Details</button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteAdminRoom('${room.id}')">Delete</button>
+                </div>
+            </div>
+            <div class="equipment-details" id="roomDetails${room.id}">
+                <!-- View Mode -->
+                <div class="equipment-details-container" id="adminRoomView${room.id}">
+                    <div class="equipment-info-section">
+                        <p><strong>Room Number:</strong> ${room.roomNumber}</p>
+                        <p><strong>Photos:</strong> ${imageCount}</p>
+                    </div>
+                    <div class="equipment-images-section">
+                        <h4 style="margin: 10px 0 5px 0; font-size: 14px;">Images:</h4>
+                        ${renderAdminRoomImages(room)}
+                    </div>
+                    <button class="button primary" onclick="showAdminRoomEditForm('${room.id}')" style="margin-top: 15px;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </div>
+                <!-- Edit Mode -->
+                ${generateAdminRoomEditForm(room)}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+window.toggleAdminRoomDetails = function(id) {
+    const details = document.getElementById(`roomDetails${id}`);
+    const btn = document.querySelector(`#roomCard${id} .details-btn`);
+    if (details) {
+        details.classList.toggle('show');
+        if (btn) {
+            const isOpen = details.classList.contains('show');
+            btn.innerHTML = isOpen ? `<i class="fas fa-chevron-up"></i> Hide` : `<i class="fas fa-chevron-down"></i> Details`;
+        }
+    }
+};
+
+function renderAdminRoomImages(room) {
+    if (!room.images || room.images.length === 0) {
+        return `<p style="color: #666; font-style: italic;">No images</p>`;
+    }
+
+    let html = '<div class="room-images-grid">';
+
+    room.images.forEach((image, imgIndex) => {
+        const imageId = `room-image-${room.id}-${imgIndex}`;
+        html += `
+            <img id="${imageId}"
+                 class="room-image-thumb"
+                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Crect width='90' height='90' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='10'%3ELoading...%3C/text%3E%3C/svg%3E"
+                 alt="${image.filename || 'Room image'}"
+                 onclick="openImageModal('${image.key}', '${(image.filename || 'Room image').replace(/'/g, "\\'")}')">
+        `;
+    });
+
+    html += '</div>';
+
+    // Load actual images from S3
+    setTimeout(() => {
+        room.images.forEach((image, imgIndex) => {
+            const imageId = `room-image-${room.id}-${imgIndex}`;
+            const imgElement = document.getElementById(imageId);
+            if (imgElement) {
+                loadWallImage(imgElement, image.key);
+            }
+        });
+    }, 100);
+
+    return html;
+}
+
+// ===================================================================
+// ADMIN ROOM CRUD — Full Create/Edit/Delete for Seismic Ceiling Rooms
+// ===================================================================
+
+let adminEditingRoomId = null;
+let adminEditingRoomImages = {};
+window.adminCurrentRoomImages = [];
+let adminRoomUploadInitialized = false;
+
+function initializeAdminRoomSystem(project) {
+    if (!window.currentProject) window.currentProject = project;
+    if (!window.currentProject.rooms) window.currentProject.rooms = [];
+    setupAdminRoomEventListeners();
+}
+
+function setupAdminRoomEventListeners() {
+    const addRoomButton = document.getElementById('adminAddRoomButton');
+    const roomForm = document.getElementById('adminRoomForm');
+
+    if (addRoomButton && roomForm) {
+        addRoomButton.addEventListener('click', () => {
+            if (roomForm.style.display !== 'none' && roomForm.style.display !== '') {
+                roomForm.style.display = 'none';
+                addRoomButton.innerHTML = '<i class="fas fa-plus-circle"></i> Add Room';
+                addRoomButton.classList.remove('expanded');
+            } else {
+                initializeAdminRoomImageUpload();
+                roomForm.style.display = 'block';
+                roomForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                addRoomButton.innerHTML = '<i class="fas fa-times"></i> Hide Form';
+                addRoomButton.classList.add('expanded');
+                adminEditingRoomId = null;
+                const formElement = document.getElementById('adminRoomFormElement');
+                if (formElement) formElement.reset();
+                clearAdminRoomImages();
+                document.getElementById('adminRoomFormTitle').textContent = 'New Room';
+            }
+        });
+    }
+
+    const roomFormElement = document.getElementById('adminRoomFormElement');
+    if (roomFormElement) {
+        roomFormElement.addEventListener('submit', handleAdminRoomSubmit);
+    }
+
+    const cancelRoom = document.getElementById('adminCancelRoom');
+    if (cancelRoom) {
+        cancelRoom.addEventListener('click', () => {
+            const rf = document.getElementById('adminRoomForm');
+            if (rf) rf.style.display = 'none';
+            const btn = document.getElementById('adminAddRoomButton');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Room';
+                btn.classList.remove('expanded');
+            }
+            adminEditingRoomId = null;
+            clearAdminRoomImages();
+        });
+    }
+}
+
+async function handleAdminRoomSubmit(e) {
+    e.preventDefault();
+
+    const roomNumber = document.getElementById('adminRoomNumber').value.trim();
+    if (!roomNumber) {
+        alert('Room number is required.');
+        return;
+    }
+
+    const roomData = {
+        id: adminEditingRoomId || Date.now().toString(),
+        roomNumber: roomNumber,
+        images: [...(window.adminCurrentRoomImages || [])],
+        createdAt: adminEditingRoomId
+            ? (window.currentProject.rooms.find(r => r.id === adminEditingRoomId)?.createdAt || new Date().toISOString())
+            : new Date().toISOString()
+    };
+
+    if (adminEditingRoomId) {
+        const index = window.currentProject.rooms.findIndex(r => r.id === adminEditingRoomId);
+        if (index !== -1) window.currentProject.rooms[index] = roomData;
+    } else {
+        window.currentProject.rooms.push(roomData);
+    }
+
+    await saveAdminRooms();
+
+    const roomForm = document.getElementById('adminRoomForm');
+    if (roomForm) roomForm.style.display = 'none';
+    const addBtn = document.getElementById('adminAddRoomButton');
+    if (addBtn) {
+        addBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Room';
+        addBtn.classList.remove('expanded');
+    }
+
+    adminEditingRoomId = null;
+    clearAdminRoomImages();
+    displayRoomList(window.currentProject);
+}
+
+async function saveAdminRooms() {
+    try {
+        const response = await fetch('https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects', {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                id: currentProjectId,
+                rooms: window.currentProject.rooms
+            })
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+        console.error('Error saving rooms:', error);
+        alert('Error saving rooms: ' + error.message);
+    }
+}
+
+window.deleteAdminRoom = async function(id) {
+    if (!confirm('Are you sure you want to delete this room?')) return;
+    window.currentProject.rooms = window.currentProject.rooms.filter(r => r.id !== id);
+    await saveAdminRooms();
+    displayRoomList(window.currentProject);
+};
+
+function generateAdminRoomEditForm(room) {
+    return `
+        <form id="adminRoomEditForm${room.id}" style="display: none; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px;" onsubmit="saveAdminRoomEdit('${room.id}', event)">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label><strong>Room Number:</strong></label>
+                <input type="text" id="adminEditRoomNumber${room.id}" value="${room.roomNumber || ''}" required
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label><strong>Images:</strong></label>
+                <div class="room-edit-images-grid" id="adminEditRoomImagesGrid${room.id}"></div>
+            </div>
+
+            <div class="image-upload-section" style="margin-bottom: 15px;">
+                <div class="upload-controls">
+                    <button type="button" class="camera-btn" id="adminEditRoomCameraBtn${room.id}" title="Upload Images">
+                        <i class="fas fa-camera"></i> Browse
+                    </button>
+                    <input class="drop-zone" id="adminEditRoomDropZone${room.id}" placeholder="Drop or paste images here (Ctrl+V) — max 10 total" readonly tabindex="0">
+                </div>
+                <div class="image-preview-container" id="adminEditRoomNewImages${room.id}"></div>
+            </div>
+            <input type="file" id="adminEditRoomImageFileInput${room.id}" multiple accept="image/*" style="display: none;">
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button type="button" onclick="cancelAdminRoomEdit('${room.id}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    `;
+}
+
+window.showAdminRoomEditForm = function(roomId) {
+    const viewSection = document.getElementById(`adminRoomView${roomId}`);
+    const editForm = document.getElementById(`adminRoomEditForm${roomId}`);
+
+    if (viewSection) viewSection.style.display = 'none';
+    if (editForm) {
+        editForm.style.display = 'block';
+
+        const room = window.currentProject.rooms.find(r => r.id === roomId);
+        adminEditingRoomImages[roomId] = room && room.images ? [...room.images] : [];
+
+        renderAdminEditRoomImages(roomId);
+        setupAdminEditRoomImageUploadHandlers(roomId);
+    }
+};
+
+window.cancelAdminRoomEdit = function(roomId) {
+    const viewSection = document.getElementById(`adminRoomView${roomId}`);
+    const editForm = document.getElementById(`adminRoomEditForm${roomId}`);
+
+    if (viewSection) viewSection.style.display = 'block';
+    if (editForm) editForm.style.display = 'none';
+
+    delete adminEditingRoomImages[roomId];
+};
+
+window.saveAdminRoomEdit = async function(roomId, event) {
+    event.preventDefault();
+
+    const index = window.currentProject.rooms.findIndex(r => r.id === roomId);
+    if (index === -1) return;
+
+    const room = window.currentProject.rooms[index];
+    window.currentProject.rooms[index] = {
+        ...room,
+        roomNumber: document.getElementById(`adminEditRoomNumber${roomId}`).value.trim(),
+        images: adminEditingRoomImages[roomId] || []
+    };
+
+    await saveAdminRooms();
+    displayRoomList(window.currentProject);
+    delete adminEditingRoomImages[roomId];
+};
+
+// --- Edit-mode image management ---
+
+function renderAdminEditRoomImages(roomId) {
+    const grid = document.getElementById(`adminEditRoomImagesGrid${roomId}`);
+    if (!grid) return;
+
+    const images = adminEditingRoomImages[roomId] || [];
+    grid.innerHTML = '';
+
+    if (images.length === 0) {
+        grid.innerHTML = '<p style="color: #999; font-style: italic; font-size: 13px;">No images</p>';
+        return;
+    }
+
+    images.forEach((image, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'room-edit-image-wrapper';
+
+        const imgId = `admin-edit-room-img-${roomId}-${idx}`;
+        wrapper.innerHTML = `
+            <img id="${imgId}"
+                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3E...%3C/text%3E%3C/svg%3E"
+                 alt="${image.filename || 'Image'}">
+            <button type="button" class="image-remove" title="Remove image" onclick="removeAdminEditRoomImage('${roomId}', '${image.key}')">x</button>
+        `;
+        grid.appendChild(wrapper);
+
+        const imgEl = document.getElementById(imgId);
+        if (imgEl) loadWallImage(imgEl, image.key);
+    });
+}
+
+window.removeAdminEditRoomImage = function(roomId, imageKey) {
+    if (!adminEditingRoomImages[roomId]) return;
+    adminEditingRoomImages[roomId] = adminEditingRoomImages[roomId].filter(img => img.key !== imageKey);
+    renderAdminEditRoomImages(roomId);
+    updateAdminEditRoomDropZoneState(roomId);
+};
+
+function setupAdminEditRoomImageUploadHandlers(roomId) {
+    const cameraBtn = document.getElementById(`adminEditRoomCameraBtn${roomId}`);
+    const dropZone = document.getElementById(`adminEditRoomDropZone${roomId}`);
+    const fileInput = document.getElementById(`adminEditRoomImageFileInput${roomId}`);
+
+    if (!cameraBtn || !dropZone || !fileInput) return;
+
+    cameraBtn.onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.click();
+    };
+
+    fileInput.onchange = (event) => {
+        processAdminEditRoomFiles(roomId, Array.from(event.target.files));
+    };
+
+    dropZone.onpaste = (event) => {
+        const items = event.clipboardData.items;
+        const files = [];
+        for (let item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const file = item.getAsFile();
+                if (file) files.push(file);
+            }
+        }
+        if (files.length > 0) {
+            event.preventDefault();
+            processAdminEditRoomFiles(roomId, files);
+        }
+    };
+
+    dropZone.ondragover = (event) => {
+        event.preventDefault();
+        dropZone.classList.add('dragover');
+    };
+
+    dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+
+    dropZone.ondrop = (event) => {
+        event.preventDefault();
+        dropZone.classList.remove('dragover');
+        processAdminEditRoomFiles(roomId, Array.from(event.dataTransfer.files));
+    };
+
+    updateAdminEditRoomDropZoneState(roomId);
+}
+
+async function processAdminEditRoomFiles(roomId, files) {
+    const validFiles = files.filter(f => f.type.startsWith('image/'));
+    if (validFiles.length === 0) { alert('Please select valid image files.'); return; }
+
+    const currentCount = (adminEditingRoomImages[roomId] || []).length;
+    const remaining = 10 - currentCount;
+    if (remaining <= 0) { alert('Maximum 10 images per room.'); return; }
+    if (validFiles.length > remaining) { alert(`You can only add ${remaining} more image(s).`); return; }
+
+    for (const file of validFiles) {
+        try {
+            const imageData = await uploadImageToS3(file);
+            if (!adminEditingRoomImages[roomId]) adminEditingRoomImages[roomId] = [];
+            adminEditingRoomImages[roomId].push(imageData);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+
+    renderAdminEditRoomImages(roomId);
+    updateAdminEditRoomDropZoneState(roomId);
+}
+
+function updateAdminEditRoomDropZoneState(roomId) {
+    const dropZone = document.getElementById(`adminEditRoomDropZone${roomId}`);
+    if (!dropZone) return;
+    const count = (adminEditingRoomImages[roomId] || []).length;
+    dropZone.placeholder = count >= 10
+        ? 'Maximum 10 images reached.'
+        : `Drop or paste images here (Ctrl+V) — ${10 - count} slots remaining`;
+}
+
+// --- New room image upload (Add Room form) ---
+
+function initializeAdminRoomImageUpload() {
+    window.adminCurrentRoomImages = [];
+    if (!adminRoomUploadInitialized) {
+        setupAdminRoomImageUploadHandlers();
+        adminRoomUploadInitialized = true;
+    }
+}
+
+function setupAdminRoomImageUploadHandlers() {
+    const cameraBtn = document.getElementById('adminRoomCameraBtn');
+    const dropZone = document.getElementById('adminRoomDropZone');
+    const fileInput = document.getElementById('adminRoomImageFileInput');
+
+    if (!cameraBtn || !dropZone || !fileInput) return;
+
+    cameraBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (event) => {
+        processAdminRoomFiles(Array.from(event.target.files));
+        event.target.value = '';
+    });
+
+    dropZone.addEventListener('paste', (event) => {
+        const items = event.clipboardData.items;
+        const files = [];
+        for (let item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const file = item.getAsFile();
+                if (file) files.push(file);
+            }
+        }
+        if (files.length > 0) {
+            event.preventDefault();
+            processAdminRoomFiles(files);
+        }
+    });
+
+    dropZone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+    dropZone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropZone.classList.remove('dragover');
+        processAdminRoomFiles(Array.from(event.dataTransfer.files));
+    });
+}
+
+async function processAdminRoomFiles(files) {
+    const validFiles = files.filter(f => f.type.startsWith('image/'));
+    if (validFiles.length === 0) { alert('Please select valid image files.'); return; }
+
+    const currentCount = (window.adminCurrentRoomImages || []).length;
+    const remaining = 10 - currentCount;
+    if (remaining <= 0) { alert('Maximum 10 images per room.'); return; }
+    if (validFiles.length > remaining) { alert(`You can only add ${remaining} more image(s).`); return; }
+
+    const dropZone = document.getElementById('adminRoomDropZone');
+    if (dropZone) dropZone.placeholder = `Uploading ${validFiles.length} image(s)...`;
+
+    for (const file of validFiles) {
+        try {
+            const imageData = await uploadImageToS3(file);
+            window.adminCurrentRoomImages.push(imageData);
+            addAdminRoomImagePreview(imageData);
+        } catch (error) {
+            console.error('Error uploading room image:', error);
+            alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+    }
+
+    updateAdminRoomDropZoneState();
+}
+
+function addAdminRoomImagePreview(imageData) {
+    const container = document.getElementById('adminRoomImagePreviewContainer');
+    if (!container) return;
+
+    const preview = document.createElement('div');
+    preview.className = 'image-preview';
+    preview.dataset.imageKey = imageData.key;
+    preview.innerHTML = `
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ELoading...%3C/text%3E%3C/svg%3E" alt="${imageData.filename}">
+        <button type="button" class="image-remove" title="Remove image">x</button>
+    `;
+    container.appendChild(preview);
+
+    preview.querySelector('.image-remove').addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        removeAdminRoomImage(imageData.key);
+    });
+
+    loadImagePreview(preview.querySelector('img'), imageData.key);
+}
+
+function removeAdminRoomImage(key) {
+    window.adminCurrentRoomImages = (window.adminCurrentRoomImages || []).filter(img => img.key !== key);
+    const container = document.getElementById('adminRoomImagePreviewContainer');
+    if (container) {
+        const preview = container.querySelector(`[data-image-key="${key}"]`);
+        if (preview) preview.remove();
+    }
+    updateAdminRoomDropZoneState();
+}
+
+function updateAdminRoomDropZoneState() {
+    const dropZone = document.getElementById('adminRoomDropZone');
+    if (!dropZone) return;
+    const count = (window.adminCurrentRoomImages || []).length;
+    dropZone.placeholder = count >= 10
+        ? 'Maximum 10 images reached.'
+        : `Drop or paste images here (Ctrl+V) — ${10 - count} slots remaining`;
+}
+
+function clearAdminRoomImages() {
+    window.adminCurrentRoomImages = [];
+    const container = document.getElementById('adminRoomImagePreviewContainer');
+    if (container) container.innerHTML = '';
+    updateAdminRoomDropZoneState();
+}

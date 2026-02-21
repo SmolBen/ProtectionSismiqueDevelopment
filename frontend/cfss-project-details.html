@@ -11,6 +11,80 @@
     <link rel="stylesheet" href="email.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
+    <style>
+    /* Page-level tabs (for interior-system projects with rooms) */
+    .page-tabs {
+        display: flex;
+        gap: 0;
+        margin-bottom: 0;
+        border-bottom: 3px solid #e0e0e0;
+        background: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+        overflow: hidden;
+    }
+    .page-tab-btn {
+        padding: 14px 28px;
+        border: none;
+        background: #f0f0f0;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+        color: #666;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: -3px;
+    }
+    .page-tab-btn:hover {
+        background: #e8e8e8;
+        color: #333;
+    }
+    .page-tab-btn.active {
+        background: white;
+        color: #17a2b8;
+        border-bottom-color: #17a2b8;
+    }
+    .room-images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .room-image-thumb {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+    .room-edit-images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .room-edit-image-wrapper {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+    }
+    .room-edit-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    .room-edit-image-wrapper .image-remove {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+    }
+    </style>
+
         <!-- SortableJS for drag-and-drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -54,8 +128,18 @@
     </div>
     
     <div class="container" id="projectContainer" style="display: none;">
+        <!-- Page-level tabs (only shown for interior-system projects with rooms) -->
+        <div class="page-tabs" id="pageTabs" style="display: none;">
+            <button class="page-tab-btn active" data-page-tab="cfss">
+                <i class="fas fa-th-large"></i> CFSS
+            </button>
+            <button class="page-tab-btn" data-page-tab="seismic-ceiling">
+                <i class="fas fa-building"></i> Seismic Ceiling
+            </button>
+        </div>
+
         <!-- Top Half split into two horizontal sections -->
-        <div class="top-half">
+        <div class="top-half" id="cfssTopHalf">
             <div class="left-section">
                 <h1 data-i18n="cfss.projectDetails">CFSS Project Details</h1>
 
@@ -601,7 +685,7 @@
         </div>
 
         <!-- Bottom Half for Wall Details -->
-        <div class="bottom-half">
+        <div class="bottom-half" id="cfssBottomHalf">
             <div class="cfss-data-section">
                 <button class="cfss-btn" onclick="toggleCFSSForm()">
                     <i class="fas fa-plus"></i>
@@ -1681,8 +1765,84 @@
 </div>
 
         </div>
+        </div><!-- end cfssBottomHalf -->
+
+        <!-- Seismic Ceiling section (only shown for projects with rooms data) -->
+        <div id="seismicCeilingSection" style="display: none;">
+            <div class="top-half" style="height: auto;">
+                <div class="left-section">
+                    <h1>Seismic Ceiling Details</h1>
+
+                    <div class="basic-info">
+                        <p><strong>Project Name:</strong> <span id="seismicProjectName"></span></p>
+                        <p><strong>Company Name:</strong> <span id="seismicCompanyName"></span></p>
+                        <p><strong>Client Name:</strong> <span id="seismicClientName"></span></p>
+                        <p><strong>Address:</strong> <span id="seismicAddress"></span></p>
+                        <p><strong>Status:</strong> <span id="seismicStatus"></span></p>
+                    </div>
+
+                    <div id="seismicAdminInfo" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;"></div>
+                </div>
+
+                <div class="right-section">
+                    <div class="selection-summary" id="roomSelectionSummary">
+                        <i class="fas fa-door-open"></i> 0 rooms added
+                    </div>
+                    <div class="tab-content" style="flex: 1; overflow-y: auto;">
+                        <div id="roomList" class="equipment-list">
+                            <!-- Rooms will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom: Add Room button + Room form -->
+            <div class="bottom-half" id="adminRoomBottomHalf">
+                <button id="adminAddRoomButton" class="cfss-btn" style="display: block !important; margin: 20px 0;">
+                    <i class="fas fa-plus-circle"></i> Add Room
+                </button>
+
+                <div id="adminRoomForm" style="display: none;">
+                    <div class="calculation-sections">
+                        <div class="equipment-form-section">
+                            <div class="form-fields">
+                                <h2 id="adminRoomFormTitle">New Room</h2>
+                                <form id="adminRoomFormElement">
+                                    <div class="form-group">
+                                        <label for="adminRoomNumber">Room Number: <span style="color: red;">*</span></label>
+                                        <input type="text" id="adminRoomNumber" name="roomNumber" placeholder="Enter room number..." required>
+                                    </div>
+
+                                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                                        <button type="submit" id="adminSaveRoom" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                            <i class="fas fa-save"></i> Save Room
+                                        </button>
+                                        <button type="button" id="adminCancelRoom" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; flex: 1;">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="image-upload-section">
+                                <div class="upload-controls">
+                                    <button type="button" class="camera-btn" id="adminRoomCameraBtn" title="Upload Images">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Browse</span>
+                                    </button>
+                                    <input class="drop-zone" id="adminRoomDropZone" placeholder="Drop or paste images here (Ctrl+V) — max 10 images" readonly tabindex="0">
+                                </div>
+                                <div class="image-preview-container" id="adminRoomImagePreviewContainer"></div>
+                            </div>
+                            <input type="file" id="adminRoomImageFileInput" multiple accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-    
+
     <!-- AWS Cognito SDK -->
     <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2.1692.0/dist/aws-sdk.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
