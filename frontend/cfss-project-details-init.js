@@ -181,50 +181,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 initializeImageUpload();
 
                 // Load saved CFSS options after everything is initialized
-setTimeout(() => {
-    loadSavedCFSSOptions();
-    // Initialize the active tab to properly show scrollbar and save button
-    switchTab('option-list');
-    // Set right section height to match left section
-    syncRightSectionHeight();
-}, 500);
+                setTimeout(() => {
+                    loadSavedCFSSOptions();
+                    // Initialize the active tab to properly show scrollbar and save button
+                    switchTab('option-list');
+                }, 500);
 
-// Add this function to sync right section height with left section
-function syncRightSectionHeight() {
-    const leftSection = document.querySelector('.left-section');
-    const rightSection = document.querySelector('.right-section');
-    if (leftSection && rightSection) {
-        const leftHeight = leftSection.offsetHeight;
-        rightSection.style.height = leftHeight + 'px';
-    }
-}
-
-                console.log('ðŸ“„ Initializing custom pages...');
+                console.log('ðŸ”„ Initializing custom pages...');
                 initializeCustomPagesWithData(project);
                 setBlankCFSSBackground();
 
                 const newCalcButton = document.getElementById('newCalculationButton');
                 newCalcButton.style.display = 'block';
-
-                // Sync right section height to left section
-                function syncSectionHeights() {
-                    const leftSection = document.querySelector('.left-section');
-                    const rightSection = document.querySelector('.right-section');
-                    if (leftSection && rightSection) {
-                        const leftHeight = leftSection.offsetHeight;
-                        rightSection.style.height = leftHeight + 'px';
-                    }
-                }
-                
-                // Run after content loads and when floors change
-                setTimeout(syncSectionHeights, 600);
-                
-                // Re-sync when tabs are clicked or content changes
-                const observer = new MutationObserver(syncSectionHeights);
-                const leftSection = document.querySelector('.left-section');
-                if (leftSection) {
-                    observer.observe(leftSection, { childList: true, subtree: true });
-                }
 
                 console.log('âœ… CFSS initialization completed successfully');
 

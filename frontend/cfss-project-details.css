@@ -1942,7 +1942,7 @@ button:not(.image-remove):not(.thumb-delete) {
 
 .top-half {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     flex: 1 1 auto;
     min-height: 400px;
     margin-bottom: 20px;
@@ -1960,7 +1960,7 @@ button:not(.image-remove):not(.thumb-delete) {
 .right-section {
     flex: 1 1 auto;
     padding: 20px;
-    overflow-y: hidden;
+    overflow-y: auto;
     min-width: 0;
     box-sizing: border-box;
     display: flex;

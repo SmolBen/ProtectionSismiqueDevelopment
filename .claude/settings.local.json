@@ -29,7 +29,10 @@
       "Bash(gh api:*)",
       "WebFetch(domain:api.pdf4me.com)",
       "WebFetch(domain:developer.pdf4me.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(for func in showCFSSOptionsSelectionModal selectAllCFSSOptions clearAllCFSSOptions backToRevisionSelection closeCFSSOptionsSelectionModal generateCFSSReportWithOptions)",
+      "Bash(do:*)",
+      "Bash(done)"
     ]
   }
 }

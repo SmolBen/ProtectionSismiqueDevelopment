@@ -18,6 +18,30 @@ window.currentSoffiteImages = [];
 // Files state
 let currentUploadMode = 'file'; // 'file' or 'link'
 
+// Helper: sync data to linked limited project so interior system user sees admin changes
+async function syncToLinkedProject(endpoint, body) {
+    const linkedId = window.currentProject?.linkedLimitedProjectId
+        || window.projectData?.linkedLimitedProjectId;
+    if (!linkedId) return;
+
+    try {
+        const syncEndpoint = endpoint.replace(currentProjectId, linkedId);
+        const syncBody = { ...body };
+        if (syncBody.id === currentProjectId) {
+            syncBody.id = linkedId;
+        }
+
+        await fetch(syncEndpoint, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(syncBody)
+        });
+        console.log('Synced to linked limited project:', linkedId);
+    } catch (syncError) {
+        console.warn('Failed to sync to linked limited project:', syncError);
+    }
+}
+
 /**
  * Parse various inch formats: 3.5, 3/4, 9 3/4
  * Returns decimal value or null if invalid
@@ -398,10 +422,16 @@ async function saveCFSSDataToBackend(cfssData) {
         if (!response.ok) {
             throw new Error('Failed to save floor grouping');
         }
-        
+
         // Update local project data
         projectData.cfssWindData = cfssData;
-        
+
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`,
+            { cfssWindData: cfssData }
+        );
+
     } catch (error) {
         console.error('Error saving floor grouping:', error);
         alert(t('cfss.failedSaveGrouping'));
@@ -897,6 +927,12 @@ async function saveProjectDetails() {
         editBtn.classList.remove('cancel-mode');
         
         alert(t('project.detailsUpdated'));
+
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects',
+            updatedData
+        );
 
         // Reload project data from server to ensure fresh data
         await reloadProjectData();
@@ -2732,6 +2768,12 @@ async function saveParapetsToDatabase() {
         }
         
         console.log('Parapets saved to database');
+
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects',
+            { id: currentProjectId, parapets: projectParapets }
+        );
     } catch (error) {
         console.error('Error saving parapets:', error);
         throw error;
@@ -3007,6 +3049,12 @@ async function saveSoffitesToProject() {
         }
         
         console.log('✅ Soffites saved successfully');
+
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects',
+            { id: currentProjectId, soffites: projectSoffites }
+        );
     } catch (error) {
         console.error('❌ Error saving soffites:', error);
         alert(t('cfss.errorSavingSoffites') + ': ' + error.message);
@@ -3296,6 +3344,12 @@ async function saveFilesToProject() {
         if (!response.ok) throw new Error('Failed to save files');
         
         console.log('✅ Files saved successfully');
+
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects',
+            { id: currentProjectId, files: projectFiles }
+        );
     } catch (error) {
         console.error('❌ Error saving files:', error);
         throw error;
@@ -4379,6 +4433,23 @@ async function saveRevisionsToDatabase() {
         }
         
         console.log('âœ… Revisions saved successfully to database');
+
+        // Sync to linked limited project
+        const linkedId = window.currentProject?.linkedLimitedProjectId
+            || window.projectData?.linkedLimitedProjectId;
+        if (linkedId) {
+            try {
+                await fetch(`https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${linkedId}/wall-revisions`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(requestBody)
+                });
+                console.log('Synced revisions to linked limited project:', linkedId);
+            } catch (syncError) {
+                console.warn('Failed to sync revisions to linked limited project:', syncError);
+            }
+        }
+
         return true;
         
     } catch (error) {
@@ -6251,7 +6322,13 @@ async function saveEquipmentToProject(options = {}) {
         const responseData = await response.json();
         console.log('Response data:', responseData);
         console.log('Walls saved successfully to database');
-        
+
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/equipment`,
+            { equipment: projectEquipment }
+        );
+
     } catch (error) {
         console.error('Error saving walls:', error);
         console.error('Error stack:', error.stack);
@@ -6635,9 +6712,15 @@ async function saveProjectStatus(newStatus) {
                 status: newStatus
             })
         });
-        
+
         if (response.ok) {
             console.log('Status saved');
+
+            // Sync to linked limited project
+            await syncToLinkedProject(
+                'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects',
+                { id: currentProjectId, status: newStatus }
+            );
         }
     } catch (error) {
         console.error('Save failed:', error);
@@ -7078,10 +7161,16 @@ async function saveCFSSData() {
         
         cfssWindData = cfssData;
         projectData.cfssWindData = cfssData;
-        
+
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            `https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects/${currentProjectId}/cfss-data`,
+            { cfssWindData: cfssData }
+        );
+
         // Update the display
         displayCFSSData(cfssData);
-        
+
         alert(t('cfss.dataSaved'));
         
         // Hide the form after saving
@@ -10563,6 +10652,12 @@ async function saveCFSSOptions() {
             window.projectData.selectedCFSSOptions = [...selectedCFSSOptions];
         }
 
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects',
+            { id: currentProjectId, selectedCFSSOptions: [...selectedCFSSOptions] }
+        );
+
         // Show success message
         alert(t('cfss.optionsSaved', { count: selectedCFSSOptions.length }));
         console.log('âœ… CFSS options saved successfully to database');
@@ -10688,6 +10783,12 @@ async function saveWindowsToDatabase(immediate = false) {
       // keep local cache in sync
       if (window.projectData) window.projectData.windows = [...projectWindows];
       console.log(`âœ… Saved ${projectWindows.length} windows to database`);
+
+      // Sync to linked limited project
+      await syncToLinkedProject(
+          'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects',
+          { id: currentProjectId, windows: projectWindows }
+      );
     } catch (err) {
       console.error('âŒ Error saving windows:', err);
       alert(t('cfss.errorSavingWindows') + ': ' + err.message);
@@ -11505,14 +11606,7 @@ window.showRevisionSelectionModal = showRevisionSelectionModal;
 window.closeRevisionSelectionModal = closeRevisionSelectionModal;
 window.generateSelectedRevisionReport = generateSelectedRevisionReport;
 window.generateCFSSReportForRevision = generateCFSSReportForRevision;
-window.setupCFSSReportButtonWithRevisionModal = setupCFSSReportButtonWithRevisionModal;
 window.proceedToOptionsSelection = proceedToOptionsSelection;
-window.showCFSSOptionsSelectionModal = showCFSSOptionsSelectionModal;
-window.selectAllCFSSOptions = selectAllCFSSOptions;
-window.clearAllCFSSOptions = clearAllCFSSOptions;
-window.backToRevisionSelection = backToRevisionSelection;
-window.closeCFSSOptionsSelectionModal = closeCFSSOptionsSelectionModal;
-window.generateCFSSReportWithOptions = generateCFSSReportWithOptions;
 window.generateCFSSReportForRevisionWithOptions = generateCFSSReportForRevisionWithOptions;
 
 window.initializeTabSystem = initializeTabSystem;
@@ -11559,8 +11653,6 @@ window.cancelParapetEdit = cancelParapetEdit;
 window.saveParapetEdit = saveParapetEdit;
 window.populateParapetEditMontant = populateParapetEditMontant;
 window.setupParapetEditAutoFill = setupParapetEditAutoFill;
-
-window.setupParapetUnitAutoUpdate = setupParapetUnitAutoUpdate;
 
 window.toggleEditProjectDetails = toggleEditProjectDetails;
 window.saveProjectDetails = saveProjectDetails;
@@ -12515,7 +12607,7 @@ function displayRoomList(project) {
         const imageCount = (room.images || []).length;
 
         card.innerHTML = `
-            <div class="equipment-header" onclick="toggleAdminRoomDetails('${room.id}')">
+            <div class="equipment-header">
                 <div class="equipment-info-compact">
                     <h4><i class="fas fa-door-open" style="margin-right: 6px; color: #17a2b8;"></i>Room ${room.roomNumber}</h4>
                     <div class="equipment-meta-compact">
@@ -12523,8 +12615,8 @@ function displayRoomList(project) {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleAdminRoomDetails('${room.id}')">Details</button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteAdminRoom('${room.id}')">Delete</button>
+                    <button class="details-btn">Details</button>
+                    <button class="delete-btn">Delete</button>
                 </div>
             </div>
             <div class="equipment-details" id="roomDetails${room.id}">
@@ -12538,7 +12630,7 @@ function displayRoomList(project) {
                         <h4 style="margin: 10px 0 5px 0; font-size: 14px;">Images:</h4>
                         ${renderAdminRoomImages(room)}
                     </div>
-                    <button class="button primary" onclick="showAdminRoomEditForm('${room.id}')" style="margin-top: 15px;">
+                    <button class="button primary edit-room-btn" style="margin-top: 15px;">
                         <i class="fas fa-edit"></i> Edit
                     </button>
                 </div>
@@ -12547,20 +12639,30 @@ function displayRoomList(project) {
             </div>
         `;
         container.appendChild(card);
+
+        // Bind event listeners directly (avoids global scope dependency)
+        const header = card.querySelector('.equipment-header');
+        const detailsBtn = card.querySelector('.details-btn');
+        const deleteBtn = card.querySelector('.delete-btn');
+        const editBtn = card.querySelector('.edit-room-btn');
+
+        const toggleDetails = () => {
+            const details = document.getElementById(`roomDetails${room.id}`);
+            if (details) {
+                details.classList.toggle('show');
+                if (detailsBtn) {
+                    const isOpen = details.classList.contains('show');
+                    detailsBtn.innerHTML = isOpen ? `<i class="fas fa-chevron-up"></i> Hide` : `<i class="fas fa-chevron-down"></i> Details`;
+                }
+            }
+        };
+
+        header.addEventListener('click', toggleDetails);
+        detailsBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDetails(); });
+        deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteAdminRoom(room.id); });
+        if (editBtn) editBtn.addEventListener('click', () => showAdminRoomEditForm(room.id));
     });
 }
-
-window.toggleAdminRoomDetails = function(id) {
-    const details = document.getElementById(`roomDetails${id}`);
-    const btn = document.querySelector(`#roomCard${id} .details-btn`);
-    if (details) {
-        details.classList.toggle('show');
-        if (btn) {
-            const isOpen = details.classList.contains('show');
-            btn.innerHTML = isOpen ? `<i class="fas fa-chevron-up"></i> Hide` : `<i class="fas fa-chevron-down"></i> Details`;
-        }
-    }
-};
 
 function renderAdminRoomImages(room) {
     if (!room.images || room.images.length === 0) {
@@ -12709,6 +12811,12 @@ async function saveAdminRooms() {
         });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        // Sync to linked limited project
+        await syncToLinkedProject(
+            'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/projects',
+            { id: currentProjectId, rooms: window.currentProject.rooms }
+        );
     } catch (error) {
         console.error('Error saving rooms:', error);
         alert('Error saving rooms: ' + error.message);
