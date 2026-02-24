@@ -1161,14 +1161,13 @@ async function fillCFSSTemplateWithRevisions(templateBuffer, project, userInfo, 
         const cfssFieldMappings = {
             'clientName': sanitizeText(project.clientName) || '',
             'projectTitle': sanitizeText(project.name) || '',
-            'projectTitle2': sanitizeText(project.name) || '',
             'projectAddress': sanitizeText(projectAddress),
             'contractNumber': sanitizeText(project.projectNumber) || '',
             'registerDate': currentDate,
             'preparedBy': sanitizeText(project.designedBy) || 'Dat Bui Tuan',
-            'approvedBy': sanitizeText(project.approvedBy) || 'Minh Duc Hoang, ing',
+            'approvedBy': sanitizeText(project.approvedBy) || 'Duc Hoang Minh',
             'revision': '',
-            
+
             // Basic project information
             'projectDescription': sanitizeText(project.description) || '',
             'projectType': sanitizeText(project.type) || '',
@@ -1239,7 +1238,7 @@ async function fillCFSSTemplateWithRevisions(templateBuffer, project, userInfo, 
             try {
                 const field = form.getTextField(fieldName);
                 if (field) {
-                    // For projectAddress, check if text would overflow and reduce font size if needed
+                    // Set font sizes per field
                     if (fieldName === 'projectAddress') {
                         const text = field.getText() || '';
                         const widgets = field.acroField.getWidgets();
@@ -1248,7 +1247,7 @@ async function fillCFSSTemplateWithRevisions(templateBuffer, project, userInfo, 
                             const fieldWidth = rect.width;
                             const defaultFontSize = 10;
                             const textWidth = robotoCondensedFont.widthOfTextAtSize(text, defaultFontSize);
-                            
+
                             if (textWidth > fieldWidth) {
                                 field.setFontSize(9);
                                 console.log(`✅ projectAddress text overflows, set font size to 9`);
@@ -1257,6 +1256,10 @@ async function fillCFSSTemplateWithRevisions(templateBuffer, project, userInfo, 
                                 console.log(`✅ projectAddress fits, set font size to 10`);
                             }
                         }
+                    } else if (fieldName === 'projectTitle' || fieldName === 'clientName') {
+                        field.setFontSize(12);
+                    } else {
+                        field.setFontSize(10);
                     }
                     field.updateAppearances(robotoCondensedFont);
                     console.log(`✅ Applied Roboto Condensed to ${fieldName}`);
@@ -1269,18 +1272,6 @@ async function fillCFSSTemplateWithRevisions(templateBuffer, project, userInfo, 
         console.warn('Could not apply Roboto Condensed font:', error.message);
     }
 
-        // Set projectTitle2 font size to 20pt (keeps default font)
-        try {
-            const projectTitle2Field = form.getTextField('projectTitle2');
-            if (projectTitle2Field) {
-                projectTitle2Field.setFontSize(20);
-                projectTitle2Field.updateAppearances();
-                console.log('✅ Set projectTitle2 font size to 20pt');
-            }
-        } catch (error) {
-            console.warn('Could not set projectTitle2 font size:', error.message);
-        }
-        
         try {
             if (!userInfo.isAdmin || shouldForceFlattenForUser(userInfo, project)) {
               form.flatten();
@@ -1304,7 +1295,7 @@ async function applyProjectAddressCondensedStyle(pdfDoc) {
     try {
         const form = pdfDoc.getForm();
         
-        // Fields that should use condensed font at 10pt
+        // Fields that should use condensed font (projectTitle/clientName at 12pt, others at 10pt)
         const condensedFieldNames = ['projectAddress', 'projectTitle', 'clientName', 'contractNumber'];
         
         // Log all available fields in the form for debugging
@@ -1328,14 +1319,14 @@ async function applyProjectAddressCondensedStyle(pdfDoc) {
                     const currentText = field.getText() || '';
                     console.log(`🔍 [CONDENSE] Processing ${fieldName}, current value: "${currentText}"`);
                     
-                    // For projectAddress, check if text would overflow and reduce font size if needed
+                    // Set font sizes per field
                     if (fieldName === 'projectAddress') {
                         const widgets = field.acroField.getWidgets();
                         if (widgets.length > 0) {
                             const rect = widgets[0].getRectangle();
                             const fieldWidth = rect.width;
                             const textWidth = condensedFont.widthOfTextAtSize(currentText, 10);
-                            
+
                             if (textWidth > fieldWidth) {
                                 field.setFontSize(9);
                                 console.log(`✅ [CONDENSE] projectAddress text overflows, set font size to 9`);
@@ -1346,6 +1337,8 @@ async function applyProjectAddressCondensedStyle(pdfDoc) {
                         } else {
                             field.setFontSize(10);
                         }
+                    } else if (fieldName === 'projectTitle' || fieldName === 'clientName') {
+                        field.setFontSize(12);
                     } else {
                         field.setFontSize(10);
                     }
@@ -8759,8 +8752,8 @@ async function fillCFSSWallsTemplateFields(form, project, userInfo, revisionData
         
         // Project detail field mappings for sidebar
         const wallsTemplateFieldMappings = {
-            'clientName': project.clientName || '',
-            'projectTitle': project.name || '',
+            'clientName': sanitizeText(project.clientName) || '',
+            'projectTitle': sanitizeText(project.name) || '',
             'projectAddress': projectAddress,
             'contractNumber': sanitizeText(project.projectNumber) || '',
             'registerDate': currentDate,
@@ -9423,13 +9416,13 @@ function hexToRgb(colorString) {
       
       // Project detail field mappings for sidebar
       const customPageFieldMappings = {
-        'clientName': project.clientName || '',
-        'projectTitle': project.name || '',
+        'clientName': sanitizeText(project.clientName) || '',
+        'projectTitle': sanitizeText(project.name) || '',
         'projectAddress': projectAddress,
         'contractNumber': sanitizeText(project.projectNumber) || '',
         'registerDate': currentDate,
         'preparedBy': sanitizeText(project.designedBy) || 'Dat Bui Tuan',
-        'approvedBy': sanitizeText(project.approvedBy) || 'Minh Duc Hoang, ing',
+        'approvedBy': sanitizeText(project.approvedBy) || 'Duc Hoang Minh',
         'revision': '',
       };
       
