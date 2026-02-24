@@ -342,7 +342,7 @@ function renderUsers() {
             cardClass += ' admin';
             avatarClass = 'admin';
         } else if (userRole === 'limited') {
-            badge = '<span class="admin-badge" style="background: #6c757d;">LIMITED</span>';
+            badge = '<span class="admin-badge">LIMITED</span>';
             cardClass += ' limited';
             avatarClass = 'limited';
         }
@@ -365,11 +365,6 @@ function renderUsers() {
             <div class="user-details">
                 <p><strong>${t('users.company')}</strong> ${companyName}</p>
                 <p><strong>${t('users.domainLabel')}</strong> ${domain}</p>
-                <p><strong>${t('users.statusLabel')}</strong>
-                    <span class="user-status ${isEnabled ? 'active' : 'disabled'}">
-                        ${isEnabled ? t('users.statusActive') : t('users.statusDisabled')}
-                    </span>
-                </p>
                 <p><strong>${t('users.joined')}</strong> ${user.UserCreateDate.toLocaleDateString()}</p>
             </div>
             
@@ -387,7 +382,7 @@ function renderUsers() {
                             <i class="fas fa-user-shield"></i>
                             ${t('users.promoteToAdmin')}
                         </button>
-                        <button class="action-btn demote-btn" onclick="demoteToLimited('${email}')" style="background: #6c757d;">
+                        <button class="action-btn demote-btn" onclick="demoteToLimited('${email}')">
                             <i class="fas fa-user-minus"></i>
                             ${t('users.demoteToLimited')}
                         </button>
@@ -397,7 +392,7 @@ function renderUsers() {
                             ${t('users.demoteToRegular')}
                         </button>
                     ` : userRole === 'limited' ? `
-                        <button class="action-btn promote-btn" onclick="promoteToRegular('${email}')" style="background: #28a745;">
+                        <button class="action-btn promote-btn" onclick="promoteToRegular('${email}')">
                             <i class="fas fa-user-plus"></i>
                             ${t('users.promoteToRegular')}
                         </button>
@@ -408,7 +403,7 @@ function renderUsers() {
                         ${t('users.deleteUser')}
                     </button>
                 ` : `
-                    <p style="text-align: center; color: #666; font-style: italic;">${t('common.thisIsYou')}</p>
+                    <p>${t('common.thisIsYou')}</p>
                 `}
             </div>
         `;
@@ -449,10 +444,6 @@ function updateStats() {
         <div class="stat-item">
             <div class="stat-number">${limitedUsers}</div>
             <div class="stat-label">${t('users.limited')}</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">${activeUsers}</div>
-            <div class="stat-label">${t('users.activeUsers')}</div>
         </div>
     `;
 }
