@@ -532,15 +532,6 @@ function openUserManagement() {
     window.location.href = 'user-management.html';
 }
 
-function viewAllProjects() {
-    if (!authHelper.isAdmin()) {
-        alert(t('admin.adminRequired'));
-        return;
-    }
-    fetchProjects();
-    alert(t('admin.showingAllProjects'));
-}
-
 function openVerifyBulkProjects() {
     const allowedEmails = (typeof BULK_VERIFY_ALLOWED_EMAILS !== 'undefined')
         ? BULK_VERIFY_ALLOWED_EMAILS

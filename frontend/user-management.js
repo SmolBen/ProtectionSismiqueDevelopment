@@ -520,7 +520,6 @@ async function promoteUser(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} promoted successfully`);
-        alert(t('users.promotedSuccess').replace('{email}', email));
         
         // Refresh user list to show updated status
         await loadAllUsers();
@@ -568,7 +567,6 @@ async function demoteUser(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} demoted successfully`);
-        alert(t('users.demotedSuccess').replace('{email}', email));
         
         // Refresh user list to show updated status
         await loadAllUsers();
@@ -723,7 +721,6 @@ async function demoteToLimited(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} demoted to limited successfully`);
-        alert(t('users.demotedToLimitedSuccess').replace('{email}', email));
         
         await loadAllUsers();
         
@@ -763,7 +760,6 @@ async function promoteToRegular(email) {
         
         document.getElementById('loadingOverlay').classList.remove('show');
         addDebugInfo(`User ${email} promoted to regular successfully`);
-        alert(t('users.promotedToRegularSuccess').replace('{email}', email));
         
         await loadAllUsers();
         
