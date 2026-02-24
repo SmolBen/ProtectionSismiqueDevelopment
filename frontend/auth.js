@@ -452,12 +452,6 @@ async function initializeAuth() {
 
         updateDebugInfo('✅ Authentication system ready');
         showLoading(false);
-        showMessage('Authentication system loaded successfully', 'success');
-        
-        // Auto-hide success message
-        setTimeout(() => {
-            document.getElementById('messageContainer').innerHTML = '';
-        }, 3000);
         
     } catch (error) {
         console.error('❌ Initialization failed:', error);
@@ -521,10 +515,13 @@ function switchTab(tabName) {
         targetTab.classList.add('active');
     }
     
-    // Only activate button if event exists (from button click)
-    if (typeof event !== 'undefined' && event && event.target) {
-        event.target.classList.add('active');
-    }
+    // Activate the matching tab button by checking its onclick attribute
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        const onclick = btn.getAttribute('onclick') || '';
+        if (onclick.includes("'" + tabName + "'") || onclick.includes('"' + tabName + '"')) {
+            btn.classList.add('active');
+        }
+    });
     
     // Clear messages
     const messageContainer = document.getElementById('messageContainer');

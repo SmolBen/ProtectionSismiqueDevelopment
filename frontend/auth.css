@@ -1,80 +1,246 @@
 /* Authentication Page Styles */
-body { 
-    font-family: Arial, sans-serif; 
-    margin: 0; 
-    padding: 20px; 
+
+/* Import site-wide design tokens */
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border-color: #e2e8f0;
+    --background-color: #f5f5f7;
+    --surface-color: #ffffff;
+    --success-color: #16a34a;
+    --danger-color: #ef4444;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-.auth-container { 
-    max-width: 400px; 
-    margin: 0 auto; 
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 60px;
 }
 
-.error { 
-    color: red; 
-    background: #ffebee; 
-    padding: 10px; 
-    border-radius: 4px; 
-    margin: 10px 0; 
+/* Main container */
+.auth-container {
+    max-width: 440px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 36px 32px;
+    box-sizing: border-box;
 }
 
-.success { 
-    color: green; 
-    background: #e8f5e8; 
-    padding: 10px; 
-    border-radius: 4px; 
-    margin: 10px 0; 
+.auth-container h1 {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
 }
 
-.loading { 
-    text-align: center; 
-    margin: 20px 0; 
+/* Language switcher (if present in the h1 area) */
+.auth-container h1 .lang-btn,
+.auth-container h1 button {
+    font-size: 12px;
+    padding: 2px 8px;
+    width: auto;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 4px;
+    border-radius: var(--radius-sm);
+    background: var(--background-color);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
 }
 
-.form-group { 
-    margin: 15px 0; 
+.auth-container h1 .lang-btn.active,
+.auth-container h1 button.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
 
-.form-group label { 
-    display: block; 
-    margin-bottom: 5px; 
+/* Debug info - hidden in production */
+#debugInfo {
+    display: none !important;
 }
 
-/* Password input container for positioning the toggle button */
+/* Loading indicator - hidden to prevent flash */
+#loadingIndicator {
+    display: none !important;
+}
+
+/* Messages */
+.error {
+    color: #991b1b;
+    background: #fef2f2;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin: 12px 0;
+    border: 1px solid #fecaca;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.success {
+    color: #166534;
+    background: #f0fdf4;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin: 12px 0;
+    border: 1px solid #bbf7d0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.loading {
+    text-align: center;
+    margin: 20px 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* ========== Tab Buttons ========== */
+.tab-buttons {
+    display: flex;
+    margin-bottom: 24px;
+    gap: 4px;
+    background: var(--background-color);
+    border-radius: var(--radius-md);
+    padding: 4px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 10px 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    width: auto;
+}
+
+.tab-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+}
+
+.tab-button.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-button.active:hover {
+    background: var(--primary-dark);
+}
+
+/* ========== Tab Content ========== */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.tab-content p {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+/* ========== Form Styles ========== */
+.form-group {
+    margin: 16px 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-sizing: border-box;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--surface-color);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-group input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Password input container */
 .password-input-container {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.form-group input, 
-.form-group select { 
-    width: 100%; 
-    padding: 10px; 
-    border: 1px solid #ddd; 
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-/* Special styling for password inputs with toggle */
 .password-input-container input {
-    padding-right: 45px; /* Extra padding on right for icon */
+    padding-right: 42px;
 }
 
 /* Password toggle button */
 .password-toggle {
     position: absolute;
-    right: 12px;
+    right: 10px;
     top: 50%;
     transform: translateY(-50%);
     background: none !important;
     border: none !important;
     cursor: pointer;
-    color: #666;
+    color: var(--text-muted);
     font-size: 14px;
     padding: 0 !important;
     border-radius: 0 !important;
-    transition: transform 0.2s ease;
+    transition: color 0.2s ease, transform 0.2s ease;
     z-index: 10;
     width: auto;
     height: auto;
@@ -86,6 +252,7 @@ body {
 
 .password-toggle:hover {
     transform: translateY(-50%) scale(1.15);
+    color: var(--text-secondary);
     background: none !important;
     box-shadow: none !important;
 }
@@ -94,64 +261,110 @@ body {
     transform: translateY(-50%) scale(0.95);
 }
 
-button { 
-    background: #007bff; 
-    color: white; 
-    padding: 10px 20px; 
-    border: none; 
-    border-radius: 4px; 
-    cursor: pointer; 
-    width: 100%; 
+/* ========== Buttons ========== */
+button {
+    background: var(--primary-color);
+    color: white;
+    padding: 11px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    line-height: 1.4;
 }
 
-button:hover { 
-    background: #0056b3; 
+button:hover {
+    background: var(--primary-dark);
+    box-shadow: var(--shadow-sm);
 }
 
-button:disabled { 
-    opacity: 0.6; 
-    cursor: not-allowed; 
+button:active {
+    transform: scale(0.99);
 }
 
-.tab-buttons { 
-    display: flex; 
-    margin-bottom: 20px; 
+button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
 }
 
-.tab-button { 
-    flex: 1; 
-    padding: 10px; 
-    background: #f0f0f0; 
-    border: none; 
-    cursor: pointer; 
+/* ========== Verification Tab Button Layout ========== */
+/* Stack Verify + Resend with proper spacing */
+#verificationTab button {
+    margin-top: 12px;
 }
 
-.tab-button.active { 
-    background: #007bff; 
-    color: white; 
+#verificationTab button + button {
+    margin-top: 10px;
+    background: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
 }
 
-.tab-content {
-    display: none;
+#verificationTab button + button:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
 }
 
-.tab-content.active {
-    display: block;
+/* Same treatment for Reset Password step 2 (Reset Password + Resend Code) */
+#forgotPasswordStep2 button[type="submit"] {
+    margin-top: 4px;
 }
 
+#forgotPasswordStep2 button[type="button"] {
+    margin-top: 10px;
+    background: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+}
+
+#forgotPasswordStep2 button[type="button"]:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+}
+
+/* ========== Form Links ========== */
+.form-links {
+    text-align: center;
+    margin-top: 16px;
+}
+
+.form-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.form-links a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* ========== Responsive ========== */
 @media (max-width: 480px) {
     body {
-        padding: 12px;
+        padding-top: 20px;
+        padding-left: 12px;
+        padding-right: 12px;
     }
 
     .auth-container {
-        max-width: 100%;
-        padding: 0 4px;
+        padding: 24px 20px;
+        border-radius: var(--radius-md);
+    }
+
+    .auth-container h1 {
+        font-size: 22px;
     }
 
     .tab-button {
-        font-size: 13px;
-        padding: 8px;
+        font-size: 12px;
+        padding: 8px 6px;
     }
 
     .form-group input,
