@@ -284,6 +284,10 @@
     background: #8b5cf6; /* Purple */
 }
 
+.domain-badge.cfss {
+    background: #06b6d4; /* Cyan/teal */
+}
+
 .domain-badge i {
     font-size: 9px;
 }

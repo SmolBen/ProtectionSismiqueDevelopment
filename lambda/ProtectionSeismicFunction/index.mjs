@@ -607,22 +607,6 @@ export const handler = async (event) => {
                 await sendApprovalEmail(email, false, isExistingUser || false);
                 body = { success: true, message: 'Admin notification sent' };
         
-            } else if (method === 'POST' && path.includes('/promote')) {
-                let bodyData = event.body || '{}';
-                if (event.isBase64Encoded) {
-                    bodyData = Buffer.from(bodyData, 'base64').toString('utf-8');
-                }
-                const { email }  = JSON.parse(bodyData);
-                body = await promoteUserToAdmin(email, userInfo);
-                
-            } else if (method === 'POST' && path.includes('/demote-to-limited')) {
-                let bodyData = event.body || '{}';
-                if (event.isBase64Encoded) {
-                    bodyData = Buffer.from(bodyData, 'base64').toString('utf-8');
-                }
-                const { email } = JSON.parse(bodyData);
-                body = await demoteUserToLimited(email, userInfo);
-
             } else if (method === 'POST' && path.includes('/promote-to-regular')) {
                 let bodyData = event.body || '{}';
                 if (event.isBase64Encoded) {
@@ -630,6 +614,22 @@ export const handler = async (event) => {
                 }
                 const { email } = JSON.parse(bodyData);
                 body = await promoteUserToRegular(email, userInfo);
+
+            } else if (method === 'POST' && path.includes('/promote')) {
+                let bodyData = event.body || '{}';
+                if (event.isBase64Encoded) {
+                    bodyData = Buffer.from(bodyData, 'base64').toString('utf-8');
+                }
+                const { email }  = JSON.parse(bodyData);
+                body = await promoteUserToAdmin(email, userInfo);
+
+            } else if (method === 'POST' && path.includes('/demote-to-limited')) {
+                let bodyData = event.body || '{}';
+                if (event.isBase64Encoded) {
+                    bodyData = Buffer.from(bodyData, 'base64').toString('utf-8');
+                }
+                const { email } = JSON.parse(bodyData);
+                body = await demoteUserToLimited(email, userInfo);
 
             } else if (method === 'POST' && path.includes('/demote')) {
                 let bodyData = event.body || '{}';

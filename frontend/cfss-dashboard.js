@@ -414,8 +414,8 @@ function renderCFSSProjects(filteredProjects) {
             });
         }
 
-        // Add click event to entire card for navigation
-        const detailsPage = project.isLimitedProject ? 'limited-cfss-project-details.html' : 'cfss-project-details.html';
+        // Add click event to entire card for navigation — route by user role, not project flag
+        const detailsPage = authHelper.isLimited() ? 'limited-cfss-project-details.html' : 'cfss-project-details.html';
 
         projectCard.addEventListener('click', (e) => {
             if (e.target.closest('button') || e.target.closest('.project-checkbox') || e.target.closest('.reassign-trigger')) {
@@ -481,15 +481,20 @@ async function handleCFSSProjectFilter(e) {
 
         // Visibility rules:
         // - Admin: show only admin copies (submitted duplicates)
-        // - Non-admin: hide limited originals and hide admin copies
+        // - Non-admin: hide admin copies, but allow own projects even if isLimitedProject
+        const currentUserEmail = authHelper.getCurrentUser()?.email;
         if (authHelper.isAdmin()) {
             projects = projects.filter(p => p.isAdminCopy === true || !!p.linkedLimitedProjectId);
         } else {
-            projects = projects.filter(p => p.isLimitedProject !== true && p.isAdminCopy !== true && !p.linkedLimitedProjectId);
+            projects = projects.filter(p => {
+                if (p.isAdminCopy === true || p.linkedLimitedProjectId) return false;
+                if (p.isLimitedProject === true && p.createdBy !== currentUserEmail) return false;
+                return true;
+            });
         }
-        
+
         const filteredProjects = projects.filter(project => {
-            const matchesSearch = searchTerm === '' || 
+            const matchesSearch = searchTerm === '' ||
                 project.name.toLowerCase().includes(searchTerm);
             const matchesFilter = filter === 'all' || 
                 project.status.toLowerCase() === filter;
@@ -525,11 +530,16 @@ async function handleCFSSProjectSearch() {
 
         // Visibility rules:
         // - Admin: show only admin copies (submitted duplicates)
-        // - Non-admin: hide limited originals and hide admin copies
+        // - Non-admin: hide admin copies, but allow own projects even if isLimitedProject
+        const currentUserEmail2 = authHelper.getCurrentUser()?.email;
         if (authHelper.isAdmin()) {
             projects = projects.filter(p => p.isAdminCopy === true || !!p.linkedLimitedProjectId);
         } else {
-            projects = projects.filter(p => p.isLimitedProject !== true && p.isAdminCopy !== true && !p.linkedLimitedProjectId);
+            projects = projects.filter(p => {
+                if (p.isAdminCopy === true || p.linkedLimitedProjectId) return false;
+                if (p.isLimitedProject === true && p.createdBy !== currentUserEmail2) return false;
+                return true;
+            });
         }
         
         // Apply both search and filter

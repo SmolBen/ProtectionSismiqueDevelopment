@@ -7,6 +7,20 @@ let authHelper;
 let selectedProjectIds = new Set();
 let currentRenderedProjects = [];
 
+// Filter project visibility: admins see seismic-only (they have a separate CFSS dashboard),
+// regular users see both but with CFSS visibility rules applied
+function applyCFSSVisibility(projects) {
+    if (authHelper.isAdmin()) return projects.filter(p => p.domain);
+    const currentUserEmail = authHelper.getCurrentUser()?.email;
+    return projects.filter(p => {
+        if (!p.domain) {
+            if (p.isAdminCopy === true || p.linkedLimitedProjectId) return false;
+            if (p.isLimitedProject === true && p.createdBy !== currentUserEmail) return false;
+        }
+        return true;
+    });
+}
+
 // Initialize dashboard
 window.addEventListener('load', async function() {
     console.log('🔄 Dashboard page loaded');
@@ -107,9 +121,8 @@ async function loadDashboardStats() {
         }
 
         const allProjects = await response.json();
-        // Filter for seismic projects (projects with domain field)
-        const projects = allProjects.filter(p => p.domain);
-        console.log('📊 Seismic Projects loaded for stats:', projects.length);
+        const projects = applyCFSSVisibility(allProjects);
+        console.log('📊 Projects loaded for stats:', projects.length);
 
         const totalProjects = projects.length;
         const planningProjects = projects.filter(p => p.status === 'Planning').length;
@@ -157,13 +170,12 @@ async function fetchProjects() {
         }
 
         const allProjects = await response.json();
-        // Filter for seismic projects (projects with domain field)
-        const projects = allProjects.filter(p => p.domain);
+        const projects = applyCFSSVisibility(allProjects);
 
         // Sort by newest first
         projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-        
-        console.log('✅ Seismic Projects fetched:', projects.length);
+
+        console.log('✅ Projects fetched:', projects.length);
         renderProjects(projects);
     } catch (error) {
         console.error('❌ Error fetching seismic projects:', error);
@@ -174,8 +186,11 @@ async function fetchProjects() {
 
 // Helper function to get domain-specific CSS classes, display name, and icon
 function getDomainInfo(domain) {
-    const domainLower = (domain || '').toLowerCase();
-    
+    if (!domain) {
+        return { badgeClass: 'cfss', displayName: 'CFSS', icon: 'fas fa-ruler-combined' };
+    }
+    const domainLower = domain.toLowerCase();
+
     const domainMap = {
         'electricity': {
             badgeClass: 'electricity',
@@ -324,17 +339,18 @@ function renderProjects(filteredProjects) {
         }
 
         // Add click event to entire card for navigation
+        const detailsPage = project.domain ? 'project-details.html' : 'cfss-project-details.html';
         projectCard.addEventListener('click', (e) => {
             if (e.target.closest('button') || e.target.closest('.project-checkbox') || e.target.closest('.reassign-trigger')) {
                 return;
             }
-            window.location.href = `project-details.html?id=${project.id}`;
+            window.location.href = `${detailsPage}?id=${project.id}`;
         });
 
         // Add event listeners
         projectCard.querySelector('.view-details').addEventListener('click', (e) => {
             e.stopPropagation();
-            window.location.href = `project-details.html?id=${project.id}`;
+            window.location.href = `${detailsPage}?id=${project.id}`;
         });
 
         const duplicateButton = projectCard.querySelector('.duplicate-project');
@@ -381,8 +397,7 @@ async function handleProjectFilter() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const allProjects = await response.json();
-        // Filter for seismic projects (projects with domain field)
-        const projects = allProjects.filter(p => p.domain);
+        const projects = applyCFSSVisibility(allProjects);
 
         // Apply search, status filter, and category filter
         const filteredProjects = projects.filter(project => {
@@ -391,14 +406,14 @@ async function handleProjectFilter() {
             const matchesStatus = statusFilter === 'all' ||
                 project.status.toLowerCase() === statusFilter;
             const matchesCategory = categoryFilter === 'all' ||
-                (project.domain || '').toLowerCase() === categoryFilter;
+                (categoryFilter === 'cfss' ? !project.domain : (project.domain || '').toLowerCase() === categoryFilter);
 
             return matchesSearch && matchesStatus && matchesCategory;
         });
 
         renderProjects(filteredProjects);
     } catch (error) {
-        console.error('Error filtering seismic projects:', error);
+        console.error('Error filtering projects:', error);
     }
 }
 
@@ -417,8 +432,7 @@ async function handleProjectSearch() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const allProjects = await response.json();
-        // Filter for seismic projects (projects with domain field)
-        const projects = allProjects.filter(p => p.domain);
+        const projects = applyCFSSVisibility(allProjects);
 
         // Apply search, status filter, and category filter
         const filteredProjects = projects.filter(project => {
@@ -427,14 +441,14 @@ async function handleProjectSearch() {
             const matchesStatus = statusFilter === 'all' ||
                 project.status.toLowerCase() === statusFilter;
             const matchesCategory = categoryFilter === 'all' ||
-                (project.domain || '').toLowerCase() === categoryFilter;
+                (categoryFilter === 'cfss' ? !project.domain : (project.domain || '').toLowerCase() === categoryFilter);
 
             return matchesSearch && matchesStatus && matchesCategory;
         });
 
         renderProjects(filteredProjects);
     } catch (error) {
-        console.error('Error searching seismic projects:', error);
+        console.error('Error searching projects:', error);
     }
 }
 
