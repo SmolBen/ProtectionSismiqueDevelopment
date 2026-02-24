@@ -389,22 +389,22 @@
 
 .created-by-line.reassign-trigger {
     cursor: pointer;
-    transition: color 0.15s ease;
     display: inline-flex;
     align-items: center;
+    background: #f0f4f8;
+    border-radius: 20px;
+    padding: 4px 10px;
+    color: #475569;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .created-by-line.reassign-trigger:hover {
+    background: #e2e8f0;
     color: var(--primary-color, #007bff);
-    text-decoration: underline;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .created-by-line.reassign-trigger i {
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.created-by-line.reassign-trigger:hover i {
     opacity: 1;
 }
 
