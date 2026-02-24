@@ -180,12 +180,14 @@ class AuthHelper {
     }
 
     // Check if user can modify a project
+    // Primary: assignedTo array. Fallback: createdBy (for legacy projects without assignedTo)
     canModifyProject(project) {
         if (this.isAdmin()) return true;
         if (!project) return false;
-        if (project.createdBy === this.currentUserData.email) return true;
-        if (Array.isArray(project.assignedTo) && project.assignedTo.includes(this.currentUserData.email)) return true;
-        return false;
+        if (Array.isArray(project.assignedTo) && project.assignedTo.length > 0) {
+            return project.assignedTo.includes(this.currentUserData.email);
+        }
+        return project.createdBy === this.currentUserData.email;
     }
 
     // Update user interface with current user info

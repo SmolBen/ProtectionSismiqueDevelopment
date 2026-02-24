@@ -15,7 +15,12 @@ function applyCFSSVisibility(projects) {
     return projects.filter(p => {
         if (!p.domain) {
             if (p.isAdminCopy === true || p.linkedLimitedProjectId) return false;
-            if (p.isLimitedProject === true && p.createdBy !== currentUserEmail) return false;
+            if (p.isLimitedProject === true) {
+                const isOwner = (Array.isArray(p.assignedTo) && p.assignedTo.length > 0)
+                    ? p.assignedTo.includes(currentUserEmail)
+                    : p.createdBy === currentUserEmail;
+                if (!isOwner) return false;
+            }
         }
         return true;
     });
@@ -294,10 +299,10 @@ function renderProjects(filteredProjects) {
                         <span>${formattedDate}</span>
                     </div>
                     <p>${project.description}</p>
-                    ${project.createdBy && authHelper.isAdmin() ? `
+                    ${authHelper.isAdmin() ? `
                         <div class="created-by-line reassign-trigger" data-project-id="${project.id}" data-owner-email="${project.createdBy}">
-                            <i class="fas fa-user-edit" style="margin-right:3px;font-size:9px;"></i>
-                            ${t('common.createdBy')} ${project.createdBy}${Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? ` · ${t('reassign.assignedTo')} ${project.assignedToDetails ? project.assignedToDetails.map(u => u.name || u.email).join(', ') : project.assignedTo.join(', ')}` : ''}
+                            <i class="fas fa-user-circle"></i>
+                            ${project.assignedToDetails ? project.assignedToDetails.map(u => u.name || u.email).join(', ') : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo.join(', ') : project.createdBy)}
                         </div>
                     ` : ''}
                 </div>

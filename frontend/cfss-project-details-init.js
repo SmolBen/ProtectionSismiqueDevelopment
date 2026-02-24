@@ -40,7 +40,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return;
                 }
 
-                if (!isAdmin && project.createdBy !== currentUser.email) {
+                const hasAccess = (Array.isArray(project.assignedTo) && project.assignedTo.length > 0)
+                    ? project.assignedTo.includes(currentUser.email)
+                    : project.createdBy === currentUser.email;
+                if (!isAdmin && !hasAccess) {
                     document.getElementById('loadingProject').style.display = 'none';
                     document.getElementById('accessDenied').style.display = 'block';
                     return;

@@ -828,10 +828,12 @@ async function pollPdf4meResult(locationUrl, apiKey, maxRetries = 20, delayMs = 
 }
 
 // Helper: check if a non-admin user can access a project
+// Primary: assignedTo array. Fallback: createdBy (for legacy projects without assignedTo)
 function canAccessProject(project, userEmail) {
-    if (project.createdBy === userEmail) return true;
-    if (Array.isArray(project.assignedTo) && project.assignedTo.includes(userEmail)) return true;
-    return false;
+    if (Array.isArray(project.assignedTo) && project.assignedTo.length > 0) {
+        return project.assignedTo.includes(userEmail);
+    }
+    return project.createdBy === userEmail;
 }
 
 // Function to update project wall revisions
@@ -4481,6 +4483,8 @@ async function duplicateProject(projectId, userInfo) {
             createdByUserId: userInfo.userId,
             createdByName: `${userInfo.firstName} ${userInfo.lastName}`,
             createdByCompany: userInfo.companyName,
+            assignedTo: [userInfo.email],
+            assignedToDetails: [{ email: userInfo.email, userId: userInfo.userId, name: `${userInfo.firstName} ${userInfo.lastName}`, company: userInfo.companyName }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             updatedBy: userInfo.email
@@ -6034,6 +6038,8 @@ async function createProject(project, userInfo) {
             createdByUserId: userInfo.userId,
             createdByName: `${userInfo.firstName} ${userInfo.lastName}`,
             createdByCompany: userInfo.companyName,
+            assignedTo: [userInfo.email],
+            assignedToDetails: [{ email: userInfo.email, userId: userInfo.userId, name: `${userInfo.firstName} ${userInfo.lastName}`, company: userInfo.companyName }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
@@ -6116,6 +6122,8 @@ async function createProject(project, userInfo) {
         createdByUserId: userInfo.userId,
         createdByName: `${userInfo.firstName} ${userInfo.lastName}`,
         createdByCompany: userInfo.companyName,
+        assignedTo: [userInfo.email],
+        assignedToDetails: [{ email: userInfo.email, userId: userInfo.userId, name: `${userInfo.firstName} ${userInfo.lastName}`, company: userInfo.companyName }],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     };

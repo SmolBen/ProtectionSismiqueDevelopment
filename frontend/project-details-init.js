@@ -41,8 +41,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 window.projectData = project;
                 projectData = project;
 
-                const isAssigned = Array.isArray(project.assignedTo) && project.assignedTo.includes(currentUser.email);
-                if (!isAdmin && project.createdBy !== currentUser.email && !isAssigned) {
+                const hasAccess = (Array.isArray(project.assignedTo) && project.assignedTo.length > 0)
+                    ? project.assignedTo.includes(currentUser.email)
+                    : project.createdBy === currentUser.email;
+                if (!isAdmin && !hasAccess) {
                     document.getElementById('loadingProject').style.display = 'none';
                     document.getElementById('accessDenied').style.display = 'block';
                     return;

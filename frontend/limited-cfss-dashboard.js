@@ -114,7 +114,7 @@ async function loadCFSSDashboardStats() {
         // Filter for projects that belong to or are assigned to this user
         const currentUser = authHelper.getCurrentUser();
         const projects = allProjects.filter(p =>
-            (p.createdBy === currentUser.email || (Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUser.email))) &&
+            ((Array.isArray(p.assignedTo) && p.assignedTo.length > 0) ? p.assignedTo.includes(currentUser.email) : p.createdBy === currentUser.email) &&
             p.isAdminCopy !== true &&
             !p.linkedLimitedProjectId
         );
@@ -179,7 +179,7 @@ async function fetchCFSSProjects() {
         // Filter for projects that belong to or are assigned to this user (includes seismic)
         const currentUser = authHelper.getCurrentUser();
         const projects = allProjects.filter(p =>
-            (p.createdBy === currentUser.email || (Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUser.email))) &&
+            ((Array.isArray(p.assignedTo) && p.assignedTo.length > 0) ? p.assignedTo.includes(currentUser.email) : p.createdBy === currentUser.email) &&
             p.isAdminCopy !== true &&
             !p.linkedLimitedProjectId
         );
@@ -278,13 +278,6 @@ function renderCFSSProjects(filteredProjects) {
                     </button>
                 </div>
             </div>
-            ${
-                project.createdBy
-                    ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                           ${t('project.createdBy')}: ${project.createdBy}
-                       </div>`
-                    : ''
-            }
         `;
 
         projectList.appendChild(projectCard);
@@ -335,7 +328,7 @@ async function handleCFSSProjectFilter(e) {
         const allProjects = await response.json();
         const currentUser = authHelper.getCurrentUser();
         const projects = allProjects.filter(p =>
-            (p.createdBy === currentUser.email || (Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUser.email))) &&
+            ((Array.isArray(p.assignedTo) && p.assignedTo.length > 0) ? p.assignedTo.includes(currentUser.email) : p.createdBy === currentUser.email) &&
             p.isAdminCopy !== true &&
             !p.linkedLimitedProjectId
         );
@@ -376,7 +369,7 @@ async function handleCFSSProjectSearch() {
         const allProjects = await response.json();
         const currentUser = authHelper.getCurrentUser();
         const projects = allProjects.filter(p =>
-            (p.createdBy === currentUser.email || (Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUser.email))) &&
+            ((Array.isArray(p.assignedTo) && p.assignedTo.length > 0) ? p.assignedTo.includes(currentUser.email) : p.createdBy === currentUser.email) &&
             p.isAdminCopy !== true &&
             !p.linkedLimitedProjectId
         );

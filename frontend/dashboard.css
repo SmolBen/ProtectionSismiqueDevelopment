@@ -410,6 +410,12 @@
 
 .created-by-line.reassign-trigger i {
     opacity: 1;
+    flex-shrink: 0;
+    width: 12px;
+    font-size: 12px;
+    margin-right: 4px;
+    text-align: center;
+    line-height: 1;
 }
 
 .reassign-user-row:hover {

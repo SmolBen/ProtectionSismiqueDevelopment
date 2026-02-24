@@ -150,7 +150,10 @@ async function loadProject(projectId) {
 
         // Check if user owns this project (admins can view any project)
         const currentUser = authHelper.getCurrentUser();
-        if (!authHelper.isAdmin() && currentProject.createdBy !== currentUser.email) {
+        const hasAccess = (Array.isArray(currentProject.assignedTo) && currentProject.assignedTo.length > 0)
+            ? currentProject.assignedTo.includes(currentUser.email)
+            : currentProject.createdBy === currentUser.email;
+        if (!authHelper.isAdmin() && !hasAccess) {
             document.getElementById('loadingProject').style.display = 'none';
             document.getElementById('accessDenied').style.display = 'block';
             return;
