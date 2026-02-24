@@ -5955,8 +5955,9 @@ async function getProjects(id, userInfo) {
             return [];
         }
 
-        // Access control: non-admins must never access admin copies (submitted-to-admin duplicates)
-        if (!userInfo.isAdmin && (result.Item.isAdminCopy === true || result.Item.linkedLimitedProjectId)) {
+        // Access control: non-admins must never access admin copies, unless explicitly assigned
+        const isAssigned = Array.isArray(result.Item.assignedTo) && result.Item.assignedTo.includes(userInfo.email);
+        if (!userInfo.isAdmin && !isAssigned && (result.Item.isAdminCopy === true || result.Item.linkedLimitedProjectId)) {
             console.log(`🚫 Access denied: ${userInfo.email} tried to access admin copy project ${id}`);
             return [];
         }
@@ -5970,12 +5971,13 @@ async function getProjects(id, userInfo) {
             console.log(`🔑 Admin ${userInfo.email} accessing all ${data.Items?.length || 0} projects`);
             return data.Items || [];
         } else {
-            // Non-admins: only their own or assigned projects, and never admin copies
-            const userProjects = (data.Items || []).filter(project =>
-                canAccessProject(project, userInfo.email) &&
-                project.isAdminCopy !== true &&
-                !project.linkedLimitedProjectId
-            );
+            // Non-admins: only their own or assigned projects, and never admin copies (unless explicitly assigned)
+            const userProjects = (data.Items || []).filter(project => {
+                if (!canAccessProject(project, userInfo.email)) return false;
+                const isAssigned = Array.isArray(project.assignedTo) && project.assignedTo.includes(userInfo.email);
+                if (!isAssigned && (project.isAdminCopy === true || project.linkedLimitedProjectId)) return false;
+                return true;
+            });
             console.log(`👤 User ${userInfo.email} accessing ${userProjects.length} of ${data.Items?.length || 0} projects`);
             return userProjects;
         }
@@ -6429,10 +6431,24 @@ async function reassignProject(projectId, reassignData, userInfo) {
         company: u.company || 'Unknown Company'
     }));
 
+    // Clear admin copy flags so the assigned non-admin user can access the project
+    let updateExpression = 'set assignedTo = :assignedTo, assignedToDetails = :assignedToDetails, #updatedAt = :updatedAt, #updatedBy = :updatedBy, assignedAt = :assignedAt, assignedBy = :assignedBy';
+    const removeFields = [];
+    if (existingProject.Item.isAdminCopy === true) {
+        removeFields.push('isAdminCopy');
+    }
+    if (existingProject.Item.linkedLimitedProjectId) {
+        removeFields.push('linkedLimitedProjectId');
+    }
+    if (removeFields.length > 0) {
+        updateExpression += ' remove ' + removeFields.join(', ');
+        console.log(`🔄 Clearing admin copy flags [${removeFields.join(', ')}] during reassignment`);
+    }
+
     const updateParams = {
         TableName: TABLE_NAME,
         Key: { id: projectId },
-        UpdateExpression: 'set assignedTo = :assignedTo, assignedToDetails = :assignedToDetails, #updatedAt = :updatedAt, #updatedBy = :updatedBy, assignedAt = :assignedAt, assignedBy = :assignedBy',
+        UpdateExpression: updateExpression,
         ExpressionAttributeNames: {
             '#updatedAt': 'updatedAt',
             '#updatedBy': 'updatedBy'

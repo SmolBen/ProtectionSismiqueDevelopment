@@ -371,9 +371,9 @@ function renderCFSSProjects(filteredProjects) {
                     </div>
                     <p>${project.description || ''}</p>
                     ${authHelper.isAdmin() ? `
-                        <div class="created-by-line reassign-trigger" data-project-id="${project.id}" data-owner-email="${project.createdBy}">
+                        <div class="created-by-line reassign-trigger" data-project-id="${project.id}" data-owner-email="${project.assignedToDetails ? project.assignedToDetails[0].email : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo[0] : project.createdBy)}">
                             <i class="fas fa-user-circle"></i>
-                            ${project.assignedToDetails ? project.assignedToDetails.map(u => u.name || u.email).join(', ') : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo.join(', ') : project.createdBy)}
+                            ${project.assignedToDetails ? project.assignedToDetails.map(u => u.email).join(', ') : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo.join(', ') : project.createdBy)}
                         </div>
                     ` : ''}
                 </div>
@@ -450,7 +450,8 @@ function renderCFSSProjects(filteredProjects) {
         if (reassignTrigger) {
             reassignTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
-                openReassignModal(project.id, project.createdBy, authHelper, () => {
+                const ownerEmail = project.assignedToDetails ? project.assignedToDetails[0].email : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo[0] : project.createdBy);
+                openReassignModal(project.id, ownerEmail, authHelper, () => {
                     fetchCFSSProjects();
                     loadCFSSDashboardStats();
                 });

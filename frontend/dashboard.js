@@ -14,11 +14,10 @@ function applyCFSSVisibility(projects) {
     const currentUserEmail = authHelper.getCurrentUser()?.email;
     return projects.filter(p => {
         if (!p.domain) {
-            if (p.isAdminCopy === true || p.linkedLimitedProjectId) return false;
+            const isAssigned = Array.isArray(p.assignedTo) && p.assignedTo.includes(currentUserEmail);
+            if (!isAssigned && (p.isAdminCopy === true || p.linkedLimitedProjectId)) return false;
             if (p.isLimitedProject === true) {
-                const isOwner = (Array.isArray(p.assignedTo) && p.assignedTo.length > 0)
-                    ? p.assignedTo.includes(currentUserEmail)
-                    : p.createdBy === currentUserEmail;
+                const isOwner = isAssigned || p.createdBy === currentUserEmail;
                 if (!isOwner) return false;
             }
         }
@@ -300,9 +299,9 @@ function renderProjects(filteredProjects) {
                     </div>
                     <p>${project.description}</p>
                     ${authHelper.isAdmin() ? `
-                        <div class="created-by-line reassign-trigger" data-project-id="${project.id}" data-owner-email="${project.createdBy}">
+                        <div class="created-by-line reassign-trigger" data-project-id="${project.id}" data-owner-email="${project.assignedToDetails ? project.assignedToDetails[0].email : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo[0] : project.createdBy)}">
                             <i class="fas fa-user-circle"></i>
-                            ${project.assignedToDetails ? project.assignedToDetails.map(u => u.name || u.email).join(', ') : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo.join(', ') : project.createdBy)}
+                            ${project.assignedToDetails ? project.assignedToDetails.map(u => u.email).join(', ') : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo.join(', ') : project.createdBy)}
                         </div>
                     ` : ''}
                 </div>
@@ -378,7 +377,8 @@ function renderProjects(filteredProjects) {
         if (reassignTrigger) {
             reassignTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
-                openReassignModal(project.id, project.createdBy, authHelper, () => {
+                const ownerEmail = project.assignedToDetails ? project.assignedToDetails[0].email : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo[0] : project.createdBy);
+                openReassignModal(project.id, ownerEmail, authHelper, () => {
                     fetchProjects();
                     loadDashboardStats();
                 });
