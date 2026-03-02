@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <base href="/">
     <title>Protection Sismique - Authentication</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PS 2000">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="stylesheet" href="auth.css">
     <!-- Font Awesome for eye icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -174,6 +181,10 @@
         </div>
     </div>
 
+    <script src="offline-store.js"></script>
+    <script src="offline-sync.js"></script>
+    <script src="offline-ui.js"></script>
+    <script src="sw-register.js"></script>
     <script src="translations.js"></script>
     <script src="i18n.js"></script>
     <script src="auth-helper.js"></script>
