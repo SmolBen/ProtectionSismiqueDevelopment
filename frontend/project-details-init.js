@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 // Populate project details
                 document.getElementById("projectName").textContent = project.name;
+                document.getElementById("projectNumber").textContent = (project.projectNumber && project.projectNumber.trim()) || 'N/A';
                 document.getElementById("projectDescription").textContent = project.description;
                 document.getElementById("projectType").textContent = project.type;
                 document.getElementById("projectDomain").textContent = project.domain ? project.domain.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "N/A";

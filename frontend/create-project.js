@@ -235,8 +235,10 @@ async function getGeocode(address) {
             const { lat, lng } = await getGeocode(fullAddress);
 
             const numberOfFloorsValue = formData.get('numberOfFloors');
+            const projectNumberValue = formData.get('projectNumber')?.trim();
             const newProject = {
                 name: formData.get('name'),
+                projectNumber: projectNumberValue || '',
                 description: formData.get('description') || '',
                 type: formData.get('type'),
                 domain: authHelper.getCurrentUser().domain,

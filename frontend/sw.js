@@ -1,5 +1,5 @@
 // Service Worker for Protection Sismique PWA
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 const APP_SHELL_CACHE = `ps-app-shell-v${CACHE_VERSION}`;
 const CDN_CACHE = `ps-cdn-v${CACHE_VERSION}`;
 const API_CACHE = `ps-api-v${CACHE_VERSION}`;
