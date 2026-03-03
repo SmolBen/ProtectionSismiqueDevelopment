@@ -217,14 +217,14 @@ class OfflineUI {
       }
       #ios-install-prompt {
         position: fixed;
-        bottom: 16px;
+        top: 16px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 10000;
-        animation: iosPromptSlideUp 0.4s ease;
+        animation: iosPromptSlideDown 0.4s ease;
       }
-      @keyframes iosPromptSlideUp {
-        from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+      @keyframes iosPromptSlideDown {
+        from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
         to { transform: translateX(-50%) translateY(0); opacity: 1; }
       }
       .ios-install-content {
@@ -271,15 +271,7 @@ class OfflineUI {
         line-height: 1;
       }
       .ios-install-arrow {
-        width: 16px;
-        height: 16px;
-        background: white;
-        transform: rotate(45deg);
-        position: absolute;
-        bottom: -8px;
-        left: 50%;
-        margin-left: -8px;
-        box-shadow: 4px 4px 8px rgba(0,0,0,0.08);
+        display: none;
       }
       #sw-update-bar {
         position: fixed;
