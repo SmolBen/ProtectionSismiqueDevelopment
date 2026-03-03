@@ -215,6 +215,72 @@ class OfflineUI {
         padding: 20px;
         font-size: 14px;
       }
+      #ios-install-prompt {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        animation: iosPromptSlideUp 0.4s ease;
+      }
+      @keyframes iosPromptSlideUp {
+        from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+        to { transform: translateX(-50%) translateY(0); opacity: 1; }
+      }
+      .ios-install-content {
+        background: white;
+        border-radius: 12px;
+        padding: 16px 40px 16px 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        max-width: 340px;
+      }
+      .ios-install-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 14px;
+        color: var(--text-primary, #0f172a);
+        line-height: 1.4;
+      }
+      .ios-install-text span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+        color: var(--text-secondary, #475569);
+      }
+      .ios-share-icon {
+        vertical-align: middle;
+        color: #007aff;
+        flex-shrink: 0;
+      }
+      .ios-install-close {
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        border: none;
+        background: none;
+        font-size: 20px;
+        color: var(--text-secondary, #94a3b8);
+        cursor: pointer;
+        padding: 4px;
+        line-height: 1;
+      }
+      .ios-install-arrow {
+        width: 16px;
+        height: 16px;
+        background: white;
+        transform: rotate(45deg);
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        margin-left: -8px;
+        box-shadow: 4px 4px 8px rgba(0,0,0,0.08);
+      }
       #sw-update-bar {
         position: fixed;
         bottom: 0;
@@ -325,6 +391,7 @@ class OfflineUI {
   // --- Install prompt ---
 
   listenForInstall() {
+    // Standard install prompt (Android/Chrome/Edge)
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.installPrompt = e;
@@ -337,6 +404,21 @@ class OfflineUI {
       if (btn) btn.remove();
       this.installPrompt = null;
     });
+
+    // iOS Safari — no beforeinstallprompt, show manual instructions
+    if (this.isIos() && !this.isInStandaloneMode()) {
+      this.showIosInstallPrompt();
+    }
+  }
+
+  isIos() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  isInStandaloneMode() {
+    return window.navigator.standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches;
   }
 
   showInstallButton() {
@@ -356,6 +438,33 @@ class OfflineUI {
       this.installPrompt = null;
     });
     document.body.appendChild(btn);
+  }
+
+  showIosInstallPrompt() {
+    // Don't show if dismissed recently
+    const dismissed = localStorage.getItem('ios-install-dismissed');
+    if (dismissed && Date.now() - parseInt(dismissed, 10) < 7 * 24 * 60 * 60 * 1000) return;
+
+    const prompt = document.createElement('div');
+    prompt.id = 'ios-install-prompt';
+    prompt.innerHTML = `
+      <div class="ios-install-content">
+        <button class="ios-install-close" aria-label="Close">&times;</button>
+        <div class="ios-install-text">
+          <strong>Install PS 2000</strong>
+          <span>Tap <svg class="ios-share-icon" viewBox="0 0 50 50" width="18" height="18"><path fill="currentColor" d="M25 1L15 11h7v18h6V11h7L25 1z"/><path fill="currentColor" d="M4 22v24h42V22H34v4h8v16H8V26h8v-4H4z"/></svg> then <strong>"Add to Home Screen"</strong></span>
+        </div>
+      </div>
+      <div class="ios-install-arrow"></div>
+    `;
+
+    const closeBtn = prompt.querySelector('.ios-install-close');
+    closeBtn.addEventListener('click', () => {
+      prompt.remove();
+      localStorage.setItem('ios-install-dismissed', Date.now().toString());
+    });
+
+    document.body.appendChild(prompt);
   }
 
   // --- Update state ---
