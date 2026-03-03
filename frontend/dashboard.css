@@ -566,7 +566,8 @@
     /* Compact icon-only buttons on mobile */
     .project-card button.view-details,
     .project-card button.duplicate-project,
-    .project-card button.delete-project {
+    .project-card button.delete-project,
+    .project-card button.assign-project {
         width: auto !important;
         height: 30px !important;
         padding: 0 12px !important;
@@ -577,7 +578,8 @@
 
     .project-card button.view-details i,
     .project-card button.duplicate-project i,
-    .project-card button.delete-project i {
+    .project-card button.delete-project i,
+    .project-card button.assign-project i {
         margin-right: 3px !important;
         font-size: 10px !important;
     }
@@ -665,7 +667,8 @@
     /* Even more compact buttons on small screens */
     .project-card button.view-details,
     .project-card button.duplicate-project,
-    .project-card button.delete-project {
+    .project-card button.delete-project,
+    .project-card button.assign-project {
         height: 28px !important;
         padding: 0 10px !important;
         font-size: 10px !important;
@@ -734,7 +737,8 @@
 /* Complete reset and rebuild for all three buttons */
 .project-card button.view-details,
 .project-card button.duplicate-project,
-.project-card button.delete-project {
+.project-card button.delete-project,
+.project-card button.assign-project {
     /* Nuclear reset - removes ALL inherited styles */
     all: unset !important;
     
@@ -774,7 +778,8 @@
 /* Icon alignment within buttons */
 .project-card button.view-details i,
 .project-card button.duplicate-project i,
-.project-card button.delete-project i {
+.project-card button.delete-project i,
+.project-card button.assign-project i {
     font-size: 12px !important;
     margin-right: 4px !important;
     display: inline-block !important;
@@ -795,6 +800,10 @@
     background: #ef4444 !important;
 }
 
+.project-card button.assign-project {
+    background: #8b5cf6 !important;
+}
+
 /* Hover states */
 .project-card button.view-details:hover {
     background: #1d4ed8 !important;
@@ -812,6 +821,12 @@
     background: #dc2626 !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+}
+
+.project-card button.assign-project:hover {
+    background: #7c3aed !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3) !important;
 }
 
 /* Ensure the status indicator doesn't affect button alignment */

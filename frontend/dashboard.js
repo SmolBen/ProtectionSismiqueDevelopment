@@ -299,7 +299,7 @@ function renderProjects(filteredProjects) {
                     </div>
                     <p>${project.description}</p>
                     ${authHelper.isAdmin() ? `
-                        <div class="created-by-line reassign-trigger" data-project-id="${project.id}" data-owner-email="${project.assignedToDetails ? project.assignedToDetails[0].email : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo[0] : project.createdBy)}">
+                        <div class="created-by-line">
                             <i class="fas fa-user-circle"></i>
                             ${project.assignedToDetails ? project.assignedToDetails.map(u => u.email).join(', ') : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo.join(', ') : project.createdBy)}
                         </div>
@@ -324,6 +324,12 @@ function renderProjects(filteredProjects) {
                             ${t('common.delete')}
                         </button>
                     ` : ''}
+                    ${authHelper.isAdmin() ? `
+                        <button class="assign-project" data-id="${project.id}" title="${t('common.assign')}">
+                            <i class="fas fa-user-plus"></i>
+                            ${t('common.assign')}
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -345,7 +351,7 @@ function renderProjects(filteredProjects) {
         // Add click event to entire card for navigation
         const detailsPage = project.domain ? 'project-details.html' : 'cfss-project-details.html';
         projectCard.addEventListener('click', (e) => {
-            if (e.target.closest('button') || e.target.closest('.project-checkbox') || e.target.closest('.reassign-trigger')) {
+            if (e.target.closest('button') || e.target.closest('.project-checkbox')) {
                 return;
             }
             window.location.href = `${detailsPage}?id=${project.id}`;
@@ -373,9 +379,9 @@ function renderProjects(filteredProjects) {
             });
         }
 
-        const reassignTrigger = projectCard.querySelector('.reassign-trigger');
-        if (reassignTrigger) {
-            reassignTrigger.addEventListener('click', (e) => {
+        const assignButton = projectCard.querySelector('.assign-project');
+        if (assignButton) {
+            assignButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const ownerEmail = project.assignedToDetails ? project.assignedToDetails[0].email : (Array.isArray(project.assignedTo) && project.assignedTo.length > 0 ? project.assignedTo[0] : project.createdBy);
                 openReassignModal(project.id, ownerEmail, authHelper, () => {
