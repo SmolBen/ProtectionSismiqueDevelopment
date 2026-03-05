@@ -34,6 +34,20 @@ body {
     font-size: 14px;
     margin: 0;
     padding: 0;
+    /* iOS safe areas for notch/home indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* Keyboard open adjustments for Capacitor */
+body.keyboard-open {
+    --keyboard-height: 0px;
+}
+
+body.keyboard-open .navbar {
+    position: relative;
 }
 
 /* Modern Navbar */

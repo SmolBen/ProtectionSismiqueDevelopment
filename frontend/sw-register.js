@@ -1,5 +1,33 @@
 // Service Worker registration and offline system initialization
 (function() {
+  // Skip service worker in Capacitor — it serves files natively
+  if (typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform()) {
+    console.log('[PWA] Running in Capacitor — skipping service worker registration');
+    // Still initialize offline system for API caching
+    window.addEventListener('load', async () => {
+      try {
+        if (typeof OfflineStore !== 'undefined' && typeof OfflineSync !== 'undefined') {
+          const store = new OfflineStore();
+          await store.open();
+          const sync = new OfflineSync(store);
+          sync.installFetchInterceptor();
+          window.offlineSync = sync;
+          window.offlineStore = store;
+          if (typeof OfflineUI !== 'undefined') {
+            window.offlineUI = new OfflineUI(sync);
+          }
+          if (navigator.onLine) {
+            sync.syncPendingMutations();
+          }
+          store.clearExpiredCache(7 * 24 * 60 * 60 * 1000).catch(() => {});
+        }
+      } catch (err) {
+        console.error('[PWA] Offline system init failed:', err);
+      }
+    });
+    return;
+  }
+
   if (!('serviceWorker' in navigator)) {
     console.log('[PWA] Service workers not supported');
     return;

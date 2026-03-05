@@ -383,6 +383,11 @@ class OfflineUI {
   // --- Install prompt ---
 
   listenForInstall() {
+    // Skip install prompts when running in Capacitor (already installed as native app)
+    if (typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform()) {
+      return;
+    }
+
     // Standard install prompt (Android/Chrome/Edge)
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();

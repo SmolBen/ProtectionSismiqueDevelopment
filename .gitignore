@@ -9,5 +9,13 @@ function.zip
 *.key
 secrets.js
 bash.exe.stackdump
- 
- 
+
+# iOS build artifacts
+ios/App/Pods/
+ios/App/App/public/
+ios/App/build/
+*.xcarchive
+*.ipa
+
+# Capacitor generated
+ios/App/App/capacitor.config.json
