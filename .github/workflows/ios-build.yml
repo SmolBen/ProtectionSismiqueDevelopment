@@ -26,11 +26,6 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync ios
 
-      - name: Install CocoaPods dependencies
-        run: |
-          cd ios/App
-          pod install || true
-
       - name: Setup code signing
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
@@ -55,7 +50,7 @@ jobs:
       - name: Build archive
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace \
+          xcodebuild -project App.xcodeproj \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
