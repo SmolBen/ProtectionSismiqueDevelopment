@@ -1,6 +1,13 @@
 // CFSS Project Details Page JavaScript
 let currentProjectId = null;
 let projectEquipment = []; // For CFSS, this will store walls
+
+// Re-render walls on language change
+window.addEventListener('languageChanged', () => {
+    if (typeof renderEquipmentList === 'function') {
+        renderEquipmentList();
+    }
+});
 let currentUser = null;
 let isAdmin = false;
 let projectData = null;
@@ -1844,11 +1851,11 @@ function renderParapetList() {
                         </div>
                     </div>
                     <div class="equipment-actions-compact">
-                        <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">${t('common.details')}</button>
-                        <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateParapet('${parapet.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
-                            <i class="fas fa-copy"></i> Duplicate
+                        <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">${t('common.details')}</button>
+                        <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateParapet('${parapet.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-copy"></i> ${t('common.duplicate')}
                         </button>
-                        <button class="delete-btn" onclick="event.stopPropagation(); deleteParapet('${parapet.id}')">Delete</button>
+                        <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteParapet('${parapet.id}')">${t('common.delete')}</button>
                     </div>
                 </div>
 
@@ -2929,11 +2936,11 @@ function renderSoffiteList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">${t('common.details')}</button>
-                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateSoffite('${soffite.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
-                        <i class="fas fa-copy"></i> Duplicate
+                    <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">${t('common.details')}</button>
+                    <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateSoffite('${soffite.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteSoffite('${soffite.id}')">Delete</button>
+                    <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteSoffite('${soffite.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="soffiteDetails${soffite.id}">
@@ -5150,12 +5157,12 @@ function renderEquipmentList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${originalIndex})">${t('common.details')}</button>
+                    <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleEquipmentDetails(${originalIndex})">${t('common.details')}</button>
                     ${canModifyProject() ? `
-                        <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${originalIndex})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
-                            <i class="fas fa-copy"></i> Duplicate
+                        <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateEquipment(${originalIndex})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-copy"></i> ${t('common.duplicate')}
                         </button>
-                        <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipmentWithRevisions(${originalIndex})">Delete</button>
+                        <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteEquipmentWithRevisions(${originalIndex})">${t('common.delete')}</button>
                     ` : ''}
                 </div>
             </div>
@@ -9519,11 +9526,11 @@ function renderWindowList() {
             <div class="equipment-meta-compact">${win.floor ? `<span>Floor: ${win.floor}</span><span class="meta-separator">•</span>` : ''}<span>Dimensions: ${dims}</span></div>
           </div>
           <div class="equipment-actions-compact">
-            <button class="details-btn" onclick="event.stopPropagation(); toggleWindowDetails(${id})">${t('common.details')}</button>
-            <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateWindow(${id})" style="background:#17a2b8;color:#fff;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:13px;">
-              <i class="fas fa-copy"></i> Duplicate
+            <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleWindowDetails(${id})">${t('common.details')}</button>
+            <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateWindow(${id})" style="background:#17a2b8;color:#fff;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:13px;">
+              <i class="fas fa-copy"></i> ${t('common.duplicate')}
             </button>
-            <button class="delete-btn" onclick="event.stopPropagation(); deleteWindow(${id})">Delete</button>
+            <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteWindow(${id})">${t('common.delete')}</button>
           </div>
         </div>
 
@@ -12615,8 +12622,8 @@ function displayRoomList(project) {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn">Details</button>
-                    <button class="delete-btn">Delete</button>
+                    <button class="details-btn" data-i18n="common.details">${t('common.details')}</button>
+                    <button class="delete-btn" data-i18n="common.delete">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="roomDetails${room.id}">

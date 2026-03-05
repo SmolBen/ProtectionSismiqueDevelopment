@@ -123,9 +123,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Track last rendered projects for language re-render
+    let lastRenderedProjects = [];
+
+    // Re-render on language change
+    window.addEventListener('languageChanged', () => {
+        if (lastRenderedProjects.length > 0) {
+            renderProjects(lastRenderedProjects);
+        }
+    });
+
     // Render projects on the page
     function renderProjects(filteredProjects) {
         if (!projectList) return;
+        lastRenderedProjects = filteredProjects;
 
         projectList.innerHTML = '';
         
@@ -148,8 +159,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <p>${t('project.domain')}: ${project.domain || 'N/A'}</p>
                 <p>${t('project.address')}: ${formattedAddress}</p>
                 ${project.createdAt ? `<p><small>${t('project.created')}: ${new Date(project.createdAt).toLocaleDateString()}</small></p>` : ''}
-                <button class="view-details">${t('common.view')}</button>
-                ${authHelper.canModifyProject(project) ? `<button class="delete-project" data-id="${project.id}">${t('common.delete')}</button>` : ''}
+                <button class="view-details" data-i18n="common.view">${t('common.view')}</button>
+                ${authHelper.canModifyProject(project) ? `<button class="delete-project" data-id="${project.id}" data-i18n="common.delete">${t('common.delete')}</button>` : ''}
             `;
 
             // Append the project card to the list

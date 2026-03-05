@@ -110,6 +110,14 @@ function setupEventListeners() {
 
     // Search projects
     document.getElementById('projectSearch').addEventListener('input', handleProjectSearch);
+
+    // Re-render dynamic content on language change
+    window.addEventListener('languageChanged', () => {
+        if (currentRenderedProjects) {
+            renderProjects(currentRenderedProjects);
+        }
+        loadDashboardStats();
+    });
 }
 
 async function loadDashboardStats() {
@@ -310,22 +318,22 @@ function renderProjects(filteredProjects) {
                     <span class="status-text">${project.status}</span>
                 </div>
                 <div class="project-actions">
-                    <button class="view-details" title="${t('common.view')}">
+                    <button class="view-details" data-i18n="common.view" title="${t('common.view')}">
                         <i class="fas fa-eye"></i>
                         ${t('common.view')}
                     </button>
-                    <button class="duplicate-project" data-id="${project.id}" title="${t('common.copy')}">
+                    <button class="duplicate-project" data-id="${project.id}" data-i18n="common.copy" title="${t('common.copy')}">
                         <i class="fas fa-copy"></i>
                         ${t('common.copy')}
                     </button>
                     ${canModify ? `
-                        <button class="delete-project" data-id="${project.id}" title="${t('common.delete')}">
+                        <button class="delete-project" data-id="${project.id}" data-i18n="common.delete" title="${t('common.delete')}">
                             <i class="fas fa-trash"></i>
                             ${t('common.delete')}
                         </button>
                     ` : ''}
                     ${authHelper.isAdmin() ? `
-                        <button class="assign-project" data-id="${project.id}" title="${t('common.assign')}">
+                        <button class="assign-project" data-id="${project.id}" data-i18n="common.assign" title="${t('common.assign')}">
                             <i class="fas fa-user-plus"></i>
                             ${t('common.assign')}
                         </button>

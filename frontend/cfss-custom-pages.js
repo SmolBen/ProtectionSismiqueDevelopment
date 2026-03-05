@@ -225,8 +225,8 @@ function createCanvasElement(type, x, y) {
             <i class="fas fa-grip-vertical"></i>
         </div>
         <div class="element-controls">
-            <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">${t('common.edit')}</button>
-            <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">${t('common.delete')}</button>
+            <button class="control-btn" data-i18n="common.edit" onclick="editCanvasElement(${customPageElementCounter})">${t('common.edit')}</button>
+            <button class="control-btn delete" data-i18n="common.delete" onclick="deleteCanvasElement(${customPageElementCounter})">${t('common.delete')}</button>
         </div>
         <div class="resize-handles">
             <div class="resize-handle corner top-left"></div>
@@ -1195,8 +1195,8 @@ async function loadCustomPageElements(elements) {
     const controls = `
       <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
       <div class="element-controls">
-        <button class="control-btn" onclick="editCanvasElement(${customPageElementCounter})">${t('common.edit')}</button>
-        <button class="control-btn delete" onclick="deleteCanvasElement(${customPageElementCounter})">${t('common.delete')}</button>
+        <button class="control-btn" data-i18n="common.edit" onclick="editCanvasElement(${customPageElementCounter})">${t('common.edit')}</button>
+        <button class="control-btn delete" data-i18n="common.delete" onclick="deleteCanvasElement(${customPageElementCounter})">${t('common.delete')}</button>
       </div>
       <div class="resize-handles">
         <div class="resize-handle corner top-left"></div>
@@ -1745,8 +1745,8 @@ function createSoffitesCanvasElement(type, x, y) {
     const controls = `
         <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
         <div class="element-controls">
-            <button class="control-btn" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.edit')}</button>
-            <button class="control-btn delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.delete')}</button>
+            <button class="control-btn" data-i18n="common.edit" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.edit')}</button>
+            <button class="control-btn delete" data-i18n="common.delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.delete')}</button>
         </div>
         <div class="resize-handles">
             <div class="resize-handle corner top-left"></div>
@@ -1985,8 +1985,8 @@ async function loadSoffitesPageElements(elements) {
         const controls = `
             <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
             <div class="element-controls">
-                <button class="control-btn" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.edit')}</button>
-                <button class="control-btn delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.delete')}</button>
+                <button class="control-btn" data-i18n="common.edit" onclick="editSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.edit')}</button>
+                <button class="control-btn delete" data-i18n="common.delete" onclick="deleteSoffitesCanvasElement(${soffitesPageElementCounter})">${t('common.delete')}</button>
             </div>
             <div class="resize-handles">
                 <div class="resize-handle corner top-left"></div>

@@ -3,6 +3,14 @@ const apiUrl = 'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/proje
 
 let authHelper;
 let currentProject = null;
+
+// Re-render dynamic content on language change
+window.addEventListener('languageChanged', () => {
+    if (currentProject) {
+        displayEquipmentList();
+        displayParapetList();
+    }
+});
 let editingEquipmentId = null;
 let editingParapetId = null;
 let editingWindowId = null;
@@ -1106,11 +1114,11 @@ function displayEquipmentList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleWallDetails('${wall.id}')">${t('common.details')}</button>
-                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateWall('${wall.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                    <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleWallDetails('${wall.id}')">${t('common.details')}</button>
+                    <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateWall('${wall.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                         <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteWall('${wall.id}')">${t('common.delete')}</button>
+                    <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteWall('${wall.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="wallDetails${wall.id}">
@@ -1260,11 +1268,11 @@ function displayParapetList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">${t('common.details')}</button>
-                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateParapet('${parapet.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                    <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleParapetDetails('${parapet.id}')">${t('common.details')}</button>
+                    <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateParapet('${parapet.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                         <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteParapet('${parapet.id}')">${t('common.delete')}</button>
+                    <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteParapet('${parapet.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="parapetDetails${parapet.id}">
@@ -1379,7 +1387,7 @@ function generateParapetEditForm(parapet) {
                         <label><strong>${t('cfss.images')}:</strong></label>
                         <div class="edit-image-upload-section" id="editParapetImageSection${parapet.id}">
                             <div class="upload-controls">
-                                <button type="button" class="camera-btn" id="editParapetCameraBtn${parapet.id}" title="${t('cfss.uploadImages')}">
+                                <button type="button" class="camera-btn" data-i18n="common.browse" id="editParapetCameraBtn${parapet.id}" title="${t('cfss.uploadImages')}">
                                     <i class="fas fa-camera"></i> ${t('common.browse')}
                                 </button>
                                 <input class="drop-zone" id="editParapetDropZone${parapet.id}" placeholder="Drop or paste images here (Ctrl+V)" readonly tabindex="0">
@@ -1647,11 +1655,11 @@ function displayWindowList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleWindowDetails('${win.id}')">${t('common.details')}</button>
-                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateWindow('${win.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                    <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleWindowDetails('${win.id}')">${t('common.details')}</button>
+                    <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateWindow('${win.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                         <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteWindow('${win.id}')">${t('common.delete')}</button>
+                    <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteWindow('${win.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="windowDetails${win.id}">
@@ -1720,11 +1728,11 @@ function displaySoffiteList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">${t('common.details')}</button>
-                    <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateSoffite('${soffite.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                    <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleSoffiteDetails('${soffite.id}')">${t('common.details')}</button>
+                    <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateSoffite('${soffite.id}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                         <i class="fas fa-copy"></i> ${t('common.duplicate')}
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteSoffite('${soffite.id}')">${t('common.delete')}</button>
+                    <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteSoffite('${soffite.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="soffiteDetails${soffite.id}">
@@ -1785,7 +1793,7 @@ function generateSoffiteEditForm(soffite) {
                     <small style="display: block; font-size: 12px; color: #666; margin-bottom: 8px;">${t('cfss.max2Images')}</small>
                     <div class="edit-image-upload-section" id="editSoffiteImageSection${soffite.id}">
                         <div class="upload-controls">
-                            <button type="button" class="camera-btn" id="editSoffiteCameraBtn${soffite.id}" title="${t('cfss.uploadImages')}">
+                            <button type="button" class="camera-btn" data-i18n="common.browse" id="editSoffiteCameraBtn${soffite.id}" title="${t('cfss.uploadImages')}">
                                 <i class="fas fa-camera"></i> ${t('common.browse')}
                             </button>
                             <input class="drop-zone" id="editSoffiteDropZone${soffite.id}" placeholder="Drop or paste images" readonly tabindex="0" style="width: 150px;">
@@ -4982,8 +4990,8 @@ function displayRoomList() {
                     </div>
                 </div>
                 <div class="equipment-actions-compact">
-                    <button class="details-btn" onclick="event.stopPropagation(); toggleRoomDetails('${room.id}')">Details</button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteRoom('${room.id}')">Delete</button>
+                    <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleRoomDetails('${room.id}')">${t('common.details')}</button>
+                    <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteRoom('${room.id}')">${t('common.delete')}</button>
                 </div>
             </div>
             <div class="equipment-details" id="roomDetails${room.id}">

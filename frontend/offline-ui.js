@@ -424,7 +424,8 @@ class OfflineUI {
 
     const btn = document.createElement('button');
     btn.id = 'pwa-install-btn';
-    btn.innerHTML = '<i class="fas fa-download"></i> Install App';
+    btn.setAttribute('data-i18n', 'common.installApp');
+    btn.innerHTML = '<i class="fas fa-download"></i> ' + t('common.installApp');
     btn.addEventListener('click', async () => {
       if (!this.installPrompt) return;
       this.installPrompt.prompt();

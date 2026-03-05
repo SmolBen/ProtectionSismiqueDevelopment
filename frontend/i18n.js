@@ -121,6 +121,7 @@
         if (!SUPPORTED_LANGS.includes(lang)) return;
         localStorage.setItem(STORAGE_KEY, lang);
         applyTranslations();
+        window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
     }
 
     // Toggle between FR and EN

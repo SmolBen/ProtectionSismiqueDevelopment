@@ -46,6 +46,13 @@ if (e.key === 'Escape') window.closeEquipLightbox();
 // Project Details Page JavaScript
 let currentProjectId = null;
 let projectEquipment = [];
+
+// Re-render equipment list on language change
+window.addEventListener('languageChanged', () => {
+    if (typeof renderEquipmentList === 'function' && projectEquipment.length >= 0) {
+        renderEquipmentList();
+    }
+});
 // One-shot guard + debounced, silent persist for image cleanup
 const staleThumbKeys = new Set();
 const debounce = (fn, ms = 1500) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
@@ -3103,24 +3110,25 @@ equipmentCard.innerHTML = `
             </div>
         </div>
         <div class="equipment-actions-compact">
-            <button class="details-btn" onclick="event.stopPropagation(); toggleEquipmentDetails(${index})">${t('common.details')}</button>
+            <button class="details-btn" data-i18n="common.details" onclick="event.stopPropagation(); toggleEquipmentDetails(${index})">${t('common.details')}</button>
             ${canModifyProject() ? `
-                <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateEquipment(${index})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                <button class="duplicate-btn" data-i18n="common.duplicate" onclick="event.stopPropagation(); duplicateEquipment(${index})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px;">
             <i class="fas fa-copy"></i> ${t('common.duplicate')}
                 </button>
                 ${!equipment.imageRequested ? `
-                    <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">${t('project.uploadImage')}</button>
+                    <button class="upload-btn" data-i18n="project.uploadImage" onclick="event.stopPropagation(); triggerUploadImage(${index})">${t('project.uploadImage')}</button>
                 ` : `
-                    <button class="upload-btn" onclick="event.stopPropagation(); triggerUploadImage(${index})">${t('project.uploadImage')}</button>
+                    <button class="upload-btn" data-i18n="project.uploadImage" onclick="event.stopPropagation(); triggerUploadImage(${index})">${t('project.uploadImage')}</button>
                 `}
                 ${isAdmin ? `
-                    <button class="${equipment.imageRequested ? 'cancel-request-btn' : 'request-btn'}" 
+                    <button class="${equipment.imageRequested ? 'cancel-request-btn' : 'request-btn'}"
+                            data-i18n="${equipment.imageRequested ? 'project.cancelRequest' : 'project.requestImage'}"
                             onclick="event.stopPropagation(); requestEquipmentImage(${index})"
                             style="background: ${equipment.imageRequested ? '#dc3545' : '#6f42c1'}; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease; min-width: 60px;">
                         ${equipment.imageRequested ? t('project.cancelRequest') : t('project.requestImage')}
                     </button>
                 ` : ''}
-                <button class="delete-btn" onclick="event.stopPropagation(); deleteEquipment(${index})">${t('common.delete')}</button>
+                <button class="delete-btn" data-i18n="common.delete" onclick="event.stopPropagation(); deleteEquipment(${index})">${t('common.delete')}</button>
                 <input type="file" id="fileInput${index}" accept="image/*,.heic,.HEIC" multiple style="display:none" 
                 onchange="handleImageSelected(event, ${index})">
             ` : ''}
@@ -3150,7 +3158,7 @@ return `
             />
             ${canModifyProject() ? `
                 <button class="thumb-delete" title="${t('project.deleteImage')}"
-                        onclick="confirmDeleteImage(event, ${index}, '${img.key.replace(/'/g,"\\'")}')">Delete</button>
+                        onclick="confirmDeleteImage(event, ${index}, '${img.key.replace(/'/g,"\\'")}')" data-i18n="common.delete">${t('common.delete')}</button>
             ` : ``}
             </div>
         `).join('')}

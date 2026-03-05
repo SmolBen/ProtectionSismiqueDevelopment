@@ -4,6 +4,7 @@ const apiUrl = 'https://o2ji337dna.execute-api.us-east-1.amazonaws.com/dev/proje
 
 // Initialize authHelper for dashboard
 let authHelper;
+let currentRenderedProjects = [];
 
 // Initialize Limited CFSS dashboard
 window.addEventListener('load', async function() {
@@ -89,6 +90,14 @@ function setupCFSSEventListeners() {
 
     // Search projects
     document.getElementById('projectSearch').addEventListener('input', handleCFSSProjectSearch);
+
+    // Re-render dynamic content on language change
+    window.addEventListener('languageChanged', () => {
+        if (currentRenderedProjects) {
+            renderCFSSProjects(currentRenderedProjects);
+        }
+        loadCFSSDashboardStats();
+    });
 }
 
 async function loadCFSSDashboardStats() {
@@ -198,6 +207,7 @@ async function fetchCFSSProjects() {
 
 // Render CFSS projects using the same card layout as the regular CFSS dashboard
 function renderCFSSProjects(filteredProjects) {
+    currentRenderedProjects = filteredProjects;
     const projectList = document.getElementById('projectList');
     projectList.innerHTML = '';
     
@@ -268,11 +278,11 @@ function renderCFSSProjects(filteredProjects) {
                     <span class="status-text">${project.status || 'Planning'}</span>
                 </div>
                 <div class="project-actions">
-                    <button class="view-details" title="${t('common.view')}">
+                    <button class="view-details" data-i18n="common.view" title="${t('common.view')}">
                         <i class="fas fa-eye"></i>
                         ${t('common.view')}
                     </button>
-                    <button class="delete-project" data-id="${project.id}" title="${t('common.delete')}">
+                    <button class="delete-project" data-id="${project.id}" data-i18n="common.delete" title="${t('common.delete')}">
                         <i class="fas fa-trash"></i>
                         ${t('common.delete')}
                     </button>
