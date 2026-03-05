@@ -7,7 +7,7 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.protectionsismique.ps2000
-      node: 20
+      node: 22
       vars:
         XCODE_WORKSPACE: ios/App/App.xcworkspace
         XCODE_SCHEME: App
