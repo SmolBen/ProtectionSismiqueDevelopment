@@ -49,6 +49,10 @@ jobs:
           echo "PP_UUID=$PP_UUID" >> $GITHUB_ENV
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$PP_UUID.mobileprovision
 
+      - name: Set build number
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" ios/App/App/Info.plist
+
       - name: Build archive
         run: |
           cd ios/App
