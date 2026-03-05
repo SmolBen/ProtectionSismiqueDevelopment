@@ -1,4 +1,4 @@
-// Native Bridge — Capacitor native feature integration
+// Native Bridge — Capacitor native feature integration v1.0
 // Falls back gracefully to no-ops when running in a regular browser
 (function () {
   const isNative = typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform();
